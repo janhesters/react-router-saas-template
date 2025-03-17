@@ -1,25 +1,54 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+import { deleteOrganizationFromDatabaseById } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
 
-import { getPath, loginByCookie } from '../../utils';
+import {
+  getPath,
+  loginByCookie,
+  setupOrganizationAndLoginAsMember,
+} from '../../utils';
 
 const path = '/login';
 
 test.describe('login page', () => {
-  test('given: a logged in user, should: redirect to the organizations page', async ({
+  test('given: a logged in user without an account, should: redirect to the login page and log the user out', async ({
     page,
   }) => {
     await loginByCookie({ page });
 
     await page.goto(path);
 
-    expect(getPath(page)).toEqual('/organizations');
+    // Verify redirect to login page
+    expect(getPath(page)).toEqual('/login');
+
+    // Verify auth cookie is cleared
+    const cookies = await page.context().cookies();
+    const authCookie = cookies.find(cookie =>
+      cookie.name.includes('-auth-token'),
+    );
+    expect(authCookie).toBeUndefined();
+  });
+
+  test("given: a logged in and onboarded user, should: redirect to the organization's page", async ({
+    page,
+  }) => {
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+    });
+
+    await page.goto(path);
+
+    // Verify redirect to login page
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
+
+    await deleteUserAccountFromDatabaseById(user.id);
+    await deleteOrganizationFromDatabaseById(organization.id);
   });
 
   test('given: a logged out user, should: have the correct title and show the link to the register page', async ({
@@ -28,7 +57,7 @@ test.describe('login page', () => {
     await page.goto(path);
 
     // The page title is correct.
-    await expect(page).toHaveTitle(/login/i);
+    await expect(page).toHaveTitle(/login | react router saas template/i);
 
     // The register button has the correct link.
     await expect(page.getByRole('link', { name: /sign up/i })).toHaveAttribute(

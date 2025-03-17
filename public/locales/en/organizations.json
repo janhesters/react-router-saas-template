@@ -1,0 +1,15 @@
+{
+  "common": {
+    "roles": {
+      "admin": "Admin",
+      "member": "Member",
+      "owner": "Owner"
+    }
+  },
+  "organizationsList": {
+    "cardDescription": "This is a list of all the organizations you're a member of. Pick one to enter and visit its dashboard.",
+    "cardTitle": "Your organizations",
+    "pageTitle": "Organization list",
+    "title": "Organization List"
+  }
+}

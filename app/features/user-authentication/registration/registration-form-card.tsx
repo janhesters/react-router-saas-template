@@ -7,7 +7,7 @@ import { Form, Link, useSubmit } from 'react-router';
 import { z } from 'zod';
 
 import { GooggleIcon } from '~/components/svgs/google-icon';
-import { Button } from '~/components/ui/button';
+import { Button, buttonVariants } from '~/components/ui/button';
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { cn } from '~/lib/utils';
 
 import { registerIntents } from '../user-authentication-constants';
 
@@ -37,14 +38,14 @@ export const registerWithEmailSchema = z.object({
     .email('user-authentication:common.email-invalid'),
 });
 
+type RegisterWithEmailSchema = z.infer<typeof registerWithEmailSchema>;
+export type EmailRegistrationErrors = FieldErrors<RegisterWithEmailSchema>;
+
 export const registerWithGoogleSchema = z.object({
   intent: z.literal(registerIntents.registerWithGoogle),
 });
 
-export type EmailRegistrationErrors = FieldErrors<{
-  intent: keyof typeof registerIntents;
-  email: string;
-}>;
+type RegisterWithGoogleSchema = z.infer<typeof registerWithGoogleSchema>;
 
 export type RegistrationFormCardProps = {
   errors?: EmailRegistrationErrors;
@@ -64,7 +65,7 @@ export function RegistrationFormCard({
 
   /* Email Registration Form */
 
-  const emailForm = useForm<z.infer<typeof registerWithEmailSchema>>({
+  const emailForm = useForm<RegisterWithEmailSchema>({
     resolver: zodResolver(registerWithEmailSchema),
     defaultValues: {
       intent: registerIntents.registerWithEmail,
@@ -73,24 +74,20 @@ export function RegistrationFormCard({
     errors,
   });
 
-  const handleEmailSubmit = async (
-    values: z.infer<typeof registerWithEmailSchema>,
-  ) => {
+  const handleEmailSubmit = async (values: RegisterWithEmailSchema) => {
     await submit(values, { method: 'POST' });
   };
 
   /* Google Registration Form */
 
-  const googleForm = useForm<z.infer<typeof registerWithGoogleSchema>>({
+  const googleForm = useForm<RegisterWithGoogleSchema>({
     resolver: zodResolver(registerWithGoogleSchema),
     defaultValues: {
       intent: registerIntents.registerWithGoogle,
     },
   });
 
-  const handleGoogleSubmit = async (
-    values: z.infer<typeof registerWithGoogleSchema>,
-  ) => {
+  const handleGoogleSubmit = async (values: RegisterWithGoogleSchema) => {
     await submit(values, { method: 'POST' });
   };
 
@@ -158,7 +155,7 @@ export function RegistrationFormCard({
             </FormProvider>
 
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-              <span className="bg-background text-muted-foreground relative z-10 px-2">
+              <span className="bg-card text-muted-foreground relative z-10 px-2">
                 {t('register.form.dividerText')}
               </span>
             </div>
@@ -198,7 +195,13 @@ export function RegistrationFormCard({
 
             <div className="text-center text-sm">
               {t('register.form.loginPrompt')}{' '}
-              <Link to="/login" className="underline underline-offset-4">
+              <Link
+                to="/login"
+                className={cn(
+                  buttonVariants({ variant: 'link' }),
+                  'text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4',
+                )}
+              >
                 {t('register.form.loginLink')}
               </Link>
             </div>

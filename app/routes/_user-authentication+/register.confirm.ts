@@ -1,6 +1,6 @@
 import { redirect } from 'react-router';
 
-import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model';
+import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';

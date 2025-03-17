@@ -8,13 +8,13 @@ datasource db {
 }
 
 model UserAccount {
-  id                     String                   @id @default(cuid(2))
-  supabaseUserId         String                   @unique
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-  email                  String                   @unique
-  name                   String                   @default("")
-  OrganizationMembership OrganizationMembership[]
+  id             String                   @id @default(cuid(2))
+  supabaseUserId String                   @unique
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  email          String                   @unique
+  name           String                   @default("")
+  memberships    OrganizationMembership[]
 }
 
 model Organization {
@@ -22,10 +22,10 @@ model Organization {
   createdAt   DateTime                 @default(now())
   updatedAt   DateTime                 @updatedAt
   name        String
-  website     String                   @default("")
   /// We avoid conflicts from slugs by using Prisma middleware. See the file
   /// `app/utils/database.server.ts`.
   slug        String                   @unique
+  imageUrl    String                   @default("")
   memberships OrganizationMembership[]
 }
 
@@ -46,4 +46,17 @@ model OrganizationMembership {
   role           OrganizationMembershipRole @default(member)
 
   @@id([memberId, organizationId])
+}
+
+// Test models
+
+/// A mock session table used exclusively for E2E testing.
+/// This enables passing access tokens between MSW and the main application,
+/// as Playwright's utilities cannot programmatically set access tokens directly
+// for user login.
+model MockAccessTokenSession {
+  /// The access token used as the unique identifier for this mock session
+  accessToken String @id
+  /// The full mock session data stored as JSON, representing a Supabase session
+  sessionData Json
 }

@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+import { stringifyTokenHashData } from '~/test/mocks/handlers/supabase/auth';
 import {
-  deleteUserAccountFromDatabaseById,
-  saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+  setupUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from '~/test/test-utils';
 
-import { loginByCookie } from '../../utils';
+import { getPath, loginByCookie } from '../../utils';
 
 const path = '/login/confirm';
 
@@ -15,20 +15,22 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const userAccount = createPopulatedUserAccount();
-    await saveUserAccountToDatabase(userAccount);
+    const { user, organization } = await setupUserWithOrgAndAddAsMember();
 
     // Mock token hash.
-    const tokenHash = userAccount.email;
+    const tokenHash = stringifyTokenHashData({
+      email: user.email,
+      id: user.supabaseUserId,
+    });
 
     // Navigate to the login-confirm page with token hash.
     await page.goto(`${path}?token_hash=${tokenHash}`);
 
     // Verify the user is redirected to the organizations page.
-    expect(page.url()).toContain('/organizations');
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
 
     // Clean up.
-    await deleteUserAccountFromDatabaseById(userAccount.id);
+    await teardownOrganizationAndMember({ user, organization });
   });
 
   test('given: an invalid token_hash, should: return an error', async ({
@@ -55,23 +57,18 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const userAccount = createPopulatedUserAccount();
-    await saveUserAccountToDatabase(userAccount);
+    const { user, organization } = await setupUserWithOrgAndAddAsMember();
 
     // Log in the user using cookies.
-    await loginByCookie({
-      page,
-      supabaseUserId: userAccount.supabaseUserId,
-      email: userAccount.email,
-    });
+    await loginByCookie({ page, user });
 
     // Navigate to the login-confirm page with any token.
     await page.goto(`${path}?token_hash=any_token`);
 
     // Verify the user is redirected to the organizations page.
-    expect(page.url()).toContain('/organizations');
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
 
     // Clean up.
-    await deleteUserAccountFromDatabaseById(userAccount.id);
+    await teardownOrganizationAndMember({ user, organization });
   });
 });

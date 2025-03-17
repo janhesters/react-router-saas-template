@@ -1,23 +1,33 @@
 import { createId } from '@paralleldrive/cuid2';
 import type { RequestHandler } from 'msw';
 import { http, HttpResponse } from 'msw';
+import { z } from 'zod';
 
 import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from '~/features/user-authentication/user-authentication-factories';
 
+import {
+  deleteMockSession,
+  getMockSession,
+  setMockSession,
+} from './mock-sessions';
+
 /*
 Auth handlers
 */
 
+// supabase.auth.getUser
+
 const getUserMock = http.get(
   `${process.env.SUPABASE_URL}/auth/v1/user`,
-  ({ request }) => {
-    // Check for the presence of an Authorization header
+  async ({ request }) => {
+    // Check for the presence of an Authorization header.
     const authHeader = request.headers.get('Authorization');
 
-    // If no Authorization header or it doesn't start with 'Bearer ', return unauthenticated response
+    // If no Authorization header or it doesn't start with 'Bearer ',
+    // return unauthenticated response.
     if (!authHeader?.startsWith('Bearer ')) {
       return HttpResponse.json(
         { message: 'JWT token is missing' },
@@ -25,13 +35,24 @@ const getUserMock = http.get(
       );
     }
 
-    // Use the factory to create a consistent user
-    const mockUser = createPopulatedSupabaseUser();
+    const accessToken = authHeader.split(' ')[1];
 
-    // Mock user data response
-    return HttpResponse.json({ user: mockUser });
+    // Look up the user in the mockSessions map.
+    const session = await getMockSession(accessToken);
+
+    if (!session) {
+      return HttpResponse.json(
+        { message: 'Invalid access token' },
+        { status: 401 },
+      );
+    }
+
+    // Mock user data response.
+    return HttpResponse.json({ user: session.user });
   },
 );
+
+// supabase.auth.signInWithOtp
 
 const rateLimitPrefix = 'rate-limited';
 
@@ -81,6 +102,23 @@ const signInWithOtpMock = http.post(
   },
 );
 
+// supabase.auth.verifyOtp
+
+const tokenHashDataSchema = z.object({
+  email: z.string(),
+  id: z.string().optional(),
+});
+
+type TokenHashData = z.infer<typeof tokenHashDataSchema>;
+
+export function parseTokenHashData(input: string): TokenHashData {
+  return tokenHashDataSchema.parse(JSON.parse(input));
+}
+
+export function stringifyTokenHashData(data: TokenHashData): string {
+  return JSON.stringify(data);
+}
+
 const verifyOtpMock = http.post(
   `${process.env.SUPABASE_URL}/auth/v1/verify`,
   async ({ request }) => {
@@ -107,7 +145,7 @@ const verifyOtpMock = http.post(
       );
     }
 
-    // Use the token_hash to set the email, so we can control the user's email.
+    // The token_hash in tests is the email and the supabase user id stringified.
     const isValid = typeof body.token_hash === 'string';
 
     if (!isValid) {
@@ -120,24 +158,56 @@ const verifyOtpMock = http.post(
       );
     }
 
-    // Create a user with the provided email or phone
-    const mockUser = createPopulatedSupabaseUser({ email: body.token_hash });
+    const { email, id } = parseTokenHashData(body.token_hash);
 
-    // Create a session with the user
-    const mockSession = createPopulatedSupabaseSession({
-      access_token: 'mock-access-token',
-      refresh_token: 'mock-refresh-token',
-      user: mockUser,
-    });
+    // Create a user with the provided email or phone.
+    const mockUser = createPopulatedSupabaseUser({ email, id });
 
-    // Return session data at the root level
+    // Create a session with the user.
+    const mockSession = createPopulatedSupabaseSession({ user: mockUser });
+    await setMockSession(mockSession.access_token, mockSession);
+
+    // Return session data at the root level.
     return HttpResponse.json(mockSession);
   },
 );
 
+// supabase.auth.exchangeCodeForSession
+
+const authCodeDataSchema = z.object({
+  provider: z.string(),
+  email: z.string(),
+  id: z.string().optional(),
+});
+
+type AuthCodeData = z.infer<typeof authCodeDataSchema>;
+
+export function parseAuthCodeData(input: string): AuthCodeData {
+  return authCodeDataSchema.parse(JSON.parse(input));
+}
+
+export function stringifyAuthCodeData(data: AuthCodeData): string {
+  return JSON.stringify(data);
+}
+
 const exchangeCodeForSessionMock = http.post(
-  `${process.env.SUPABASE_URL}/auth/v1/token?grant_type=pkce`,
+  `${process.env.SUPABASE_URL}/auth/v1/token`,
   async ({ request }) => {
+    // Access query parameters dynamically
+    const url = new URL(request.url);
+    const grantType = url.searchParams.get('grant_type');
+
+    // Optionally, validate the grant_type if needed.
+    if (grantType !== 'pkce') {
+      return HttpResponse.json(
+        {
+          error: 'Invalid grant_type',
+          message: 'grant_type must be "pkce"',
+        },
+        { status: 400 },
+      );
+    }
+
     // Parse the request body to get code_verifier.
     const body = (await request.json()) as Record<string, string>;
     const { auth_code, code_verifier } = body;
@@ -161,15 +231,12 @@ const exchangeCodeForSessionMock = http.post(
     }
 
     // Create a mock user with an email based on the provider.
-    const email = auth_code.replace('google-', '');
-    const mockUser = createPopulatedSupabaseUser({ email });
+    const { email, id } = parseAuthCodeData(auth_code);
+    const mockUser = createPopulatedSupabaseUser({ email, id });
 
     // Create a session with the user.
-    const mockSession = createPopulatedSupabaseSession({
-      access_token: `mock-access-token-${createId()}`,
-      refresh_token: `mock-refresh-token-${createId()}`,
-      user: mockUser,
-    });
+    const mockSession = createPopulatedSupabaseSession({ user: mockUser });
+    await setMockSession(mockSession.access_token, mockSession);
 
     // Return the session data in the format expected by _sessionResponse.
     return HttpResponse.json({
@@ -183,9 +250,36 @@ const exchangeCodeForSessionMock = http.post(
   },
 );
 
-export const supabaseHandlers: RequestHandler[] = [
+// supabase.auth.logout
+
+const logoutMock = http.post(
+  `${process.env.SUPABASE_URL}/auth/v1/logout`,
+  async ({ request }) => {
+    // Check for the presence of an Authorization header
+    const authHeader = request.headers.get('Authorization');
+
+    // If no Authorization header or it doesn't start with 'Bearer ', return unauthenticated response
+    if (!authHeader?.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        { message: 'JWT token is missing' },
+        { status: 401 },
+      );
+    }
+
+    const accessToken = authHeader.split(' ')[1];
+
+    // Remove the session from the mockSessions map.
+    await deleteMockSession(accessToken);
+
+    // Return successful logout response
+    return HttpResponse.json(undefined, { status: 204 });
+  },
+);
+
+export const supabaseAuthHandlers: RequestHandler[] = [
   getUserMock,
   signInWithOtpMock,
   verifyOtpMock,
   exchangeCodeForSessionMock,
+  logoutMock,
 ];

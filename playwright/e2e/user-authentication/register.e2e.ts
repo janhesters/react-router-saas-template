@@ -5,9 +5,10 @@ import { createPopulatedUserAccount } from '~/features/user-accounts/user-accoun
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
+import { teardownOrganizationAndMember } from '~/test/test-utils';
 
-import { getPath, loginByCookie } from '../../utils';
+import { getPath, setupOrganizationAndLoginAsMember } from '../../utils';
 
 const path = '/register';
 
@@ -15,11 +16,15 @@ test.describe('register page', () => {
   test('given: a logged in user, should: redirect to the organizations page', async ({
     page,
   }) => {
-    await loginByCookie({ page });
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+    });
 
     await page.goto(path);
 
-    expect(getPath(page)).toEqual('/organizations');
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
+
+    await teardownOrganizationAndMember({ user, organization });
   });
 
   test('given: a logged out user, should: have the correct title, and show the link to the login page & the terms and privacy policy links', async ({
@@ -28,7 +33,7 @@ test.describe('register page', () => {
     await page.goto(path);
 
     // The page title is correct.
-    await expect(page).toHaveTitle(/register/i);
+    await expect(page).toHaveTitle(/register | react router saas template/i);
 
     // The login button has the correct link.
     await expect(page.getByRole('link', { name: /log in/i })).toHaveAttribute(

@@ -3,7 +3,7 @@ import { redirect } from 'react-router';
 import {
   retrieveUserAccountFromDatabaseByEmail,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
 import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
 

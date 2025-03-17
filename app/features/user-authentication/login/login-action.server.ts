@@ -2,7 +2,7 @@ import type { AuthOtpResponse } from '@supabase/supabase-js';
 import { redirect } from 'react-router';
 import { z } from 'zod';
 
-import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model';
+import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { tooManyRequests, unauthorized } from '~/utils/http-responses.server';
@@ -18,8 +18,7 @@ import type { Route } from '.react-router/types/app/routes/_user-authentication+
 export type LoginActionData =
   | (AuthOtpResponse['data'] & { email: string })
   | Response
-  | { errors: EmailLoginErrors }
-  | undefined;
+  | { errors: EmailLoginErrors };
 
 const loginSchema = z.discriminatedUnion('intent', [
   loginWithEmailSchema,
@@ -41,7 +40,6 @@ export async function loginAction({
         );
 
         if (!userAccount) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw unauthorized({
             errors: {
               email: {
@@ -64,7 +62,6 @@ export async function loginAction({
 
           // Error: For security purposes, you can only request this after 10 seconds.
           if (errorMessage.includes('you can only request this after')) {
-            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw tooManyRequests({
               errors: {
                 email: {

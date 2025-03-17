@@ -2,7 +2,7 @@ import type { AuthOtpResponse } from '@supabase/supabase-js';
 import { redirect } from 'react-router';
 import { z } from 'zod';
 
-import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model';
+import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { conflict, tooManyRequests } from '~/utils/http-responses.server';
@@ -21,8 +21,7 @@ import type { Route } from '.react-router/types/app/routes/_user-authentication+
 export type RegisterActionData =
   | (AuthOtpResponse['data'] & { email: string })
   | Response
-  | { errors: EmailRegistrationErrors }
-  | undefined;
+  | { errors: EmailRegistrationErrors };
 
 const registerSchema = z.discriminatedUnion('intent', [
   registerWithEmailSchema,
@@ -44,7 +43,6 @@ export async function registerAction({
         );
 
         if (userAccount) {
-          // eslint-disable-next-line @typescript-eslint/only-throw-error
           throw conflict({
             errors: {
               email: {
@@ -67,7 +65,6 @@ export async function registerAction({
           const errorMessage = getErrorMessage(error);
 
           if (errorMessage.includes('you can only request this after')) {
-            // eslint-disable-next-line @typescript-eslint/only-throw-error
             throw tooManyRequests({
               errors: {
                 email: {

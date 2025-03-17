@@ -1,12 +1,17 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
+import { getPath } from 'playwright/utils';
 
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
   retrieveUserAccountFromDatabaseByEmail,
-  saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
+import { stringifyAuthCodeData } from '~/test/mocks/handlers/supabase/auth';
+import {
+  setupUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from '~/test/test-utils';
 
 const path = '/auth/callback';
 
@@ -38,13 +43,13 @@ test.describe(`${path} API route`, () => {
     // Use a code that includes 'google' to simulate Google OAuth. The email
     // will be used to create a mock user in the mock handler.
     const { email } = createPopulatedUserAccount();
-    const code = `google-${email}`;
+    const code = stringifyAuthCodeData({ provider: 'google', email });
 
     // Navigate to the callback page with code.
     await page.goto(`${path}?code=${code}`);
 
     // Verify we're on the onboarding page.
-    expect(page.url()).toContain('/onboarding');
+    expect(getPath(page)).toEqual('/onboarding/user-account');
 
     // Get the created user account from the database.
     // Note: The mock handler for `exchangeCodeForSession` returns a user based
@@ -62,23 +67,25 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create an existing user account first.
-    const userAccount = createPopulatedUserAccount();
-    await saveUserAccountToDatabase(userAccount);
+    const { user, organization } = await setupUserWithOrgAndAddAsMember();
 
     // Set up the code verifier cookie.
     await setupCodeVerifierCookie({ page });
 
-    const { email } = userAccount;
-    const code = `google-${email}`;
+    const code = stringifyAuthCodeData({
+      provider: 'google',
+      email: user.email,
+      id: user.supabaseUserId,
+    });
 
     // Navigate to callback with code.
     await page.goto(`${path}?code=${code}`);
 
     // Verify we're on the organizations page.
-    expect(page.url()).toContain('/organizations');
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
 
     // Clean up.
-    await deleteUserAccountFromDatabaseById(userAccount.id);
+    await teardownOrganizationAndMember({ user, organization });
   });
 
   test('given: no code parameter, should: return an error', async ({

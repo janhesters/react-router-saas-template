@@ -1,11 +1,5 @@
 # Welcome to React Router!
 
-TODO:
-- login confirmation is visited and user exists
-- login confirmation route is visited, but user doesn't exist
-- register confirmation is visited, but user exists
-- register confirmation is visited and doesn't exists
-- login / register forms recover for invalid input
 
 
 

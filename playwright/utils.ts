@@ -1,11 +1,18 @@
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
 import type { APIResponse, Page } from '@playwright/test';
 import { request } from '@playwright/test';
-import type { UserAccount } from '@prisma/client';
+import type { Organization, UserAccount } from '@prisma/client';
+import { OrganizationMembershipRole } from '@prisma/client';
 import dotenv from 'dotenv';
+import { promiseHash } from 'remix-utils/promise';
 
+import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import {
+  addMembersToOrganizationInDatabaseById,
+  saveOrganizationToDatabase,
+} from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
+import { setMockSession } from '~/test/mocks/handlers/supabase/mock-sessions';
 import { createMockSupabaseSession } from '~/test/test-utils';
 
 dotenv.config();
@@ -38,22 +45,17 @@ export const getPath = (page: Page | APIResponse) => {
  * @returns A promise that resolves when the cookies have been set.
  */
 export async function loginByCookie({
-  email = faker.internet.email(),
   page,
-  supabaseUserId = createId(),
+  user = createPopulatedUserAccount(),
 }: {
-  email?: UserAccount['email'];
   page: Page;
-  supabaseUserId?: UserAccount['supabaseUserId'];
+  user?: UserAccount;
 }) {
   // Create a mock session with the provided user details
-  const mockSession = createMockSupabaseSession({
-    user: createPopulatedUserAccount({ email, supabaseUserId }),
-  });
+  const mockSession = createMockSupabaseSession({ user });
+  await setMockSession(mockSession.access_token, mockSession);
 
   // Set the Supabase session cookie
-  // The cookie name is typically 'sb-{project-ref}-auth-token'
-  // You may need to adjust this based on your Supabase project reference
   const projectReference =
     process.env.SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
 
@@ -87,6 +89,7 @@ export async function createAuthenticatedRequest({
   // Create a mock session with the provided user details
   const user = createPopulatedUserAccount({ supabaseUserId, email });
   const mockSession = createMockSupabaseSession({ user });
+  await setMockSession(mockSession.access_token, mockSession);
 
   // Determine the Supabase project reference for the cookie name
   const projectReference =
@@ -102,4 +105,58 @@ export async function createAuthenticatedRequest({
   });
 
   return authenticatedRequest;
+}
+
+/**
+ * Logs in a user by saving them to the database and then logging them in
+ * via the cookie.
+ *
+ * @param user - The user to save and login.
+ * @param page - The Playwright page to set cookies on.
+ * @returns The user account that was saved and logged in.
+ */
+export async function loginAndSaveUserAccountToDatabase({
+  user = createPopulatedUserAccount(),
+  page,
+}: {
+  user?: UserAccount;
+  page: Page;
+}) {
+  const [userAccount] = await Promise.all([
+    saveUserAccountToDatabase(user),
+    loginByCookie({ user, page }),
+  ]);
+
+  return userAccount;
+}
+
+/**
+ * Creates an organization and a user, adds that user as a member of the
+ * organization, and logs in the user via cookie for the given page.
+ *
+ * @param params - The organization and user to create and the test's page.
+ * @returns The organization and user that were created.
+ */
+export async function setupOrganizationAndLoginAsMember({
+  organization = createPopulatedOrganization(),
+  page,
+  user = createPopulatedUserAccount(),
+  role = OrganizationMembershipRole.member,
+}: {
+  organization?: Organization;
+  page: Page;
+  role?: OrganizationMembershipRole;
+  user?: UserAccount;
+}) {
+  const data = await promiseHash({
+    organization: saveOrganizationToDatabase(organization),
+    user: loginAndSaveUserAccountToDatabase({ user, page }),
+  });
+  await addMembersToOrganizationInDatabaseById({
+    id: data.organization.id,
+    members: [data.user.id],
+    role,
+  });
+
+  return data;
 }

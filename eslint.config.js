@@ -40,6 +40,23 @@ export default tseslint.config(
         'error',
         { checksVoidReturn: { attributes: false } },
       ],
+      '@typescript-eslint/only-throw-error': [
+        'error',
+        {
+          allow: [
+            // For your custom DataWithResponseInit type
+            {
+              from: 'file',
+              name: 'DataWithResponseInit',
+            },
+            // For the built-in Response type from lib.dom.d.ts
+            {
+              from: 'lib',
+              name: 'Response',
+            },
+          ],
+        },
+      ],
       'simple-import-sort/imports': 'error',
       'simple-import-sort/exports': 'error',
       'unicorn/better-regex': 'warn',
@@ -56,6 +73,16 @@ export default tseslint.config(
           },
         },
       ],
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'kebabCase',
+          ignore: [
+            /.*\._index\.(tsx|ts)$/, // Files ending with ._index.tsx
+            /.*\$[A-Za-z]+Slug(\.[A-Za-z]+)*\.(tsx,ts)$/, // Files with $SomethingSlug.tsx (e.g., $organizationSlug)
+          ],
+        },
+      ],
     },
   },
   {
@@ -70,10 +97,12 @@ export default tseslint.config(
     ...testingLibrary.configs['flat/react'],
   },
   {
-    files: ['playwright/**/*.spec.ts'],
+    files: ['playwright/**/*.e2e.ts'],
     ...playwright.configs['flat/recommended'],
     rules: {
+      'playwright/require-top-level-describe': 'error',
       'playwright/no-conditional-expect': 'off',
+      'unicorn/prevent-abbreviations': ['error', { checkFilenames: false }],
     },
   },
   eslintPluginPrettierRecommended,

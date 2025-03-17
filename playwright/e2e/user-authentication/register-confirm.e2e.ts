@@ -5,9 +5,14 @@ import {
   deleteUserAccountFromDatabaseById,
   retrieveUserAccountFromDatabaseByEmail,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
+import { stringifyTokenHashData } from '~/test/mocks/handlers/supabase/auth';
+import {
+  setupUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from '~/test/test-utils';
 
-import { loginByCookie } from '../../utils';
+import { getPath, loginByCookie } from '../../utils';
 
 const path = '/register/confirm';
 
@@ -19,13 +24,13 @@ test.describe(`${path} API route`, () => {
     const testEmail = `test-${Date.now()}@example.com`;
 
     // Use the email as the token hash.
-    const tokenHash = testEmail;
+    const tokenHash = stringifyTokenHashData({ email: testEmail });
 
     // Navigate to the register-confirm page with token hash.
     await page.goto(`${path}?token_hash=${tokenHash}`);
 
     // Verify the user is redirected to the onboarding page.
-    expect(page.url()).toContain('/onboarding');
+    expect(getPath(page)).toEqual('/onboarding/user-account');
 
     // Verify the user account was created in the database.
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -42,17 +47,20 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account first.
-    const userAccount = createPopulatedUserAccount();
+    const userAccount = createPopulatedUserAccount({ name: '' });
     await saveUserAccountToDatabase(userAccount);
 
     // Use the existing email as the token hash.
-    const tokenHash = userAccount.email;
+    const tokenHash = stringifyTokenHashData({
+      email: userAccount.email,
+      id: userAccount.supabaseUserId,
+    });
 
     // Navigate to the register-confirm page with token hash.
     await page.goto(`${path}?token_hash=${tokenHash}`);
 
     // Verify the user is redirected to the onboarding page.
-    expect(page.url()).toContain('/onboarding');
+    expect(getPath(page)).toEqual('/onboarding/user-account');
 
     // Clean up.
     await deleteUserAccountFromDatabaseById(userAccount.id);
@@ -82,23 +90,18 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const userAccount = createPopulatedUserAccount();
-    await saveUserAccountToDatabase(userAccount);
+    const { user, organization } = await setupUserWithOrgAndAddAsMember();
 
     // Log in the user using cookies.
-    await loginByCookie({
-      page,
-      supabaseUserId: userAccount.supabaseUserId,
-      email: userAccount.email,
-    });
+    await loginByCookie({ page, user });
 
     // Navigate to the register-confirm page with any token.
     await page.goto(`${path}?token_hash=any_token`);
 
     // Verify the user is redirected to the organizations page.
-    expect(page.url()).toContain('/organizations');
+    expect(getPath(page)).toEqual(`/organizations/${organization.slug}`);
 
     // Clean up.
-    await deleteUserAccountFromDatabaseById(userAccount.id);
+    await teardownOrganizationAndMember({ user, organization });
   });
 });

@@ -39,7 +39,6 @@ export async function validateFormData<T>(
 
   if (!result.success) {
     const errors = processErrors(result.error);
-    // eslint-disable-next-line @typescript-eslint/only-throw-error
     throw badRequest({ errors });
   }
 

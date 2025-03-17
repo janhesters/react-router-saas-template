@@ -1,18 +1,13 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
-
-/**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
+  /* Look for tests in the playwright directory */
   testDir: './playwright',
+  /* Match tests with the .e2e.ts extension */
+  testMatch: '*.e2e.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -28,6 +23,8 @@ export default defineConfig({
     baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
     trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
+
+  globalTeardown: './playwright/global-tear-down.ts',
 
   /* Configure projects for major browsers */
   projects: [

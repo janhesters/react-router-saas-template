@@ -20,7 +20,11 @@ const testConfig = defineConfig({
       },
       {
         ...rootConfig,
-        test: { include: ['app/**/*.spec.ts'], name: 'integration-tests' },
+        test: {
+          include: ['app/**/*.spec.ts'],
+          name: 'integration-tests',
+          setupFiles: ['app/test/setup-server-test-environment.ts'],
+        },
       },
       {
         ...rootConfig,
@@ -28,7 +32,7 @@ const testConfig = defineConfig({
           environment: 'happy-dom',
           include: ['app/**/*.test.tsx'],
           name: 'react-happy-dom-tests',
-          setupFiles: ['app/test/setup-test-environment.ts'],
+          setupFiles: ['app/test/setup-browser-test-environment.ts'],
         },
       },
     ],

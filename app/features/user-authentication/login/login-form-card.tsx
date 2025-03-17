@@ -7,7 +7,7 @@ import { Form, Link, useSubmit } from 'react-router';
 import { z } from 'zod';
 
 import { GooggleIcon } from '~/components/svgs/google-icon';
-import { Button } from '~/components/ui/button';
+import { Button, buttonVariants } from '~/components/ui/button';
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { cn } from '~/lib/utils';
 
 import { loginIntents } from '../user-authentication-constants';
 
@@ -37,14 +38,14 @@ export const loginWithEmailSchema = z.object({
     .email('user-authentication:common.email-invalid'),
 });
 
+type LoginWithEmailSchema = z.infer<typeof loginWithEmailSchema>;
+export type EmailLoginErrors = FieldErrors<LoginWithEmailSchema>;
+
 export const loginWithGoogleSchema = z.object({
   intent: z.literal(loginIntents.loginWithGoogle),
 });
 
-export type EmailLoginErrors = FieldErrors<{
-  intent: keyof typeof loginIntents;
-  email: string;
-}>;
+type LoginWithGoogleSchema = z.infer<typeof loginWithGoogleSchema>;
 
 export type LoginFormCardProps = {
   errors?: EmailLoginErrors;
@@ -64,7 +65,7 @@ export function LoginFormCard({
 
   /* Email Login Form */
 
-  const emailForm = useForm<z.infer<typeof loginWithEmailSchema>>({
+  const emailForm = useForm<LoginWithEmailSchema>({
     resolver: zodResolver(loginWithEmailSchema),
     defaultValues: {
       intent: loginIntents.loginWithEmail,
@@ -73,24 +74,20 @@ export function LoginFormCard({
     errors,
   });
 
-  const handleEmailSubmit = async (
-    values: z.infer<typeof loginWithEmailSchema>,
-  ) => {
+  const handleEmailSubmit = async (values: LoginWithEmailSchema) => {
     await submit(values, { method: 'POST' });
   };
 
   /* Google Login Form */
 
-  const googleForm = useForm<z.infer<typeof loginWithGoogleSchema>>({
+  const googleForm = useForm<LoginWithGoogleSchema>({
     resolver: zodResolver(loginWithGoogleSchema),
     defaultValues: {
       intent: loginIntents.loginWithGoogle,
     },
   });
 
-  const handleGoogleSubmit = async (
-    values: z.infer<typeof loginWithGoogleSchema>,
-  ) => {
+  const handleGoogleSubmit = async (values: LoginWithGoogleSchema) => {
     await submit(values, { method: 'POST' });
   };
 
@@ -153,7 +150,7 @@ export function LoginFormCard({
           </FormProvider>
 
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
-            <span className="bg-background text-muted-foreground relative z-10 px-2">
+            <span className="bg-card text-muted-foreground relative z-10 px-2">
               {t('login.form.dividerText')}
             </span>
           </div>
@@ -190,7 +187,13 @@ export function LoginFormCard({
 
           <div className="text-center text-sm">
             {t('login.form.registerPrompt')}{' '}
-            <Link to="/register" className="underline underline-offset-4">
+            <Link
+              to="/register"
+              className={cn(
+                buttonVariants({ variant: 'link' }),
+                'text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4',
+              )}
+            >
               {t('login.form.registerLink')}
             </Link>
           </div>

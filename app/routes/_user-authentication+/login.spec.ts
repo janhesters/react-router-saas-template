@@ -4,7 +4,7 @@ import { createPopulatedUserAccount } from '~/features/user-accounts/user-accoun
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model';
+} from '~/features/user-accounts/user-accounts-model.server';
 import { loginIntents } from '~/features/user-authentication/user-authentication-constants';
 import {
   createRateLimitedEmail,
@@ -43,7 +43,7 @@ describe('/login route action', () => {
     onTestFinished(async () => {
       await deleteUserAccountFromDatabaseById(userAccount.id);
     });
-    const request = createAuthenticatedRequest({
+    const request = await createAuthenticatedRequest({
       url: createUrl(),
       user: userAccount,
       method: 'POST',
