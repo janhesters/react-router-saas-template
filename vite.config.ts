@@ -9,6 +9,13 @@ const rootConfig = defineConfig({
     !process.env.VITEST && reactRouter(),
     tsconfigPaths(),
   ],
+  resolve: {
+    alias: {
+      '.prisma/client/index-browser':
+        './node_modules/.prisma/client/index-browser.js',
+    },
+  },
+  server: { port: 3000 },
 });
 
 const testConfig = defineConfig({

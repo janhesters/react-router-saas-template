@@ -20,7 +20,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/general';
 
-export const handle = { i18n: 'organizations' };
+export const handle = { i18n: ['organizations', 'drag-and-drop'] };
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const {
@@ -69,7 +69,7 @@ export default function GeneralOrganizationSettingsRoute({
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
-      <div className="mx-auto w-full max-w-4xl space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="flex flex-col gap-2">
           <h2 className="leading-none font-semibold">{t('page-title')}</h2>
 

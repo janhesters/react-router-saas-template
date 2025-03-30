@@ -28,7 +28,7 @@ describe('RegistrationVerificationAwaiting Component', () => {
     vi.useRealTimers();
   });
 
-  test('given: component renders with default props, should: display correct content, include email input, show resend button, and disable fieldset when waiting', () => {
+  test('given: component renders with default props, should: display correct content, include email input, show resend button, disable fieldset when waiting and render an alert that the user should check their spam folder', () => {
     const email = faker.internet.email();
     const props = createProps({ email });
     const path = '/register';
@@ -65,6 +65,11 @@ describe('RegistrationVerificationAwaiting Component', () => {
     expect(button).toBeInTheDocument();
     expect(button).toHaveAttribute('name', 'intent');
     expect(button).toHaveAttribute('value', registerIntents.registerWithEmail);
+
+    // Verify the alert is displayed
+    expect(
+      screen.getByText(/remember to check your spam folder/i),
+    ).toBeInTheDocument();
   });
 
   test('given: countdown reaches zero after 60 seconds, should: enable the form', () => {

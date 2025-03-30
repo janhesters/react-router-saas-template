@@ -8,26 +8,29 @@ datasource db {
 }
 
 model UserAccount {
-  id             String                   @id @default(cuid(2))
-  supabaseUserId String                   @unique
-  createdAt      DateTime                 @default(now())
-  updatedAt      DateTime                 @updatedAt
-  email          String                   @unique
-  name           String                   @default("")
-  imageUrl       String                   @default("")
-  memberships    OrganizationMembership[]
+  id                 String                   @id @default(cuid(2))
+  supabaseUserId     String                   @unique
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+  email              String                   @unique
+  name               String                   @default("")
+  imageUrl           String                   @default("")
+  memberships        OrganizationMembership[]
+  createdInviteLinks OrganizationInviteLink[]
+  usedInviteLinks    InviteLinkUse[]
 }
 
 model Organization {
-  id          String                   @id() @default(cuid(2))
-  createdAt   DateTime                 @default(now())
-  updatedAt   DateTime                 @updatedAt
-  name        String
+  id                      String                   @id() @default(cuid(2))
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  name                    String
   /// We avoid conflicts from slugs by using Prisma middleware. See the file
   /// `app/utils/database.server.ts`.
-  slug        String                   @unique
-  imageUrl    String                   @default("")
-  memberships OrganizationMembership[]
+  slug                    String                   @unique
+  imageUrl                String                   @default("")
+  memberships             OrganizationMembership[]
+  organizationInviteLinks OrganizationInviteLink[]
 }
 
 enum OrganizationMembershipRole {
@@ -47,6 +50,39 @@ model OrganizationMembership {
   role           OrganizationMembershipRole @default(member)
 
   @@id([memberId, organizationId])
+}
+
+model OrganizationInviteLink {
+  id             String          @id @default(cuid(2))
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  // The user who created the invite link.
+  creator        UserAccount?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  creatorId      String?
+  // Users who used the invite link.
+  linkUsages     InviteLinkUse[]
+  // The date when the invite link expires.
+  expiresAt      DateTime
+  // The token that is used to authenticate the invite link.
+  token          String          @unique
+  // The date when the link was manually deactivated.
+  deactivatedAt  DateTime?
+}
+
+model InviteLinkUse {
+  id           String                 @id @default(cuid(2))
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  // The invite link that was used.
+  inviteLink   OrganizationInviteLink @relation(fields: [inviteLinkId], references: [id], onDelete: Cascade)
+  inviteLinkId String
+  // The user who used the invite link.
+  user         UserAccount?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId       String?
+
+  @@unique([inviteLinkId, userId])
 }
 
 // Test models

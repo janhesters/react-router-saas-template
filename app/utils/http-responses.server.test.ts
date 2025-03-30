@@ -3,11 +3,41 @@ import { describe, expect, test } from 'vitest';
 import {
   badRequest,
   conflict,
+  created,
   forbidden,
   notFound,
   tooManyRequests,
   unauthorized,
 } from './http-responses.server';
+
+describe('created()', () => {
+  test('given: no arguments, should: return a 201 status with a message', () => {
+    const response = created();
+
+    expect(response.init?.status).toEqual(201);
+    expect(response.data).toEqual({ message: 'Created' });
+  });
+
+  test('given: custom data object, should: return a 201 status with the custom data object', () => {
+    const customData = { id: '123', name: 'Test Resource' };
+    const response = created(customData);
+
+    expect(response.init?.status).toEqual(201);
+    expect(response.data).toEqual({ message: 'Created', ...customData });
+  });
+
+  test('given: custom data and headers, should: return a 201 status with the custom data and the headers', () => {
+    const headers = new Headers({ Location: '/api/resources/123' });
+    const customData = { id: '123', name: 'Test Resource' };
+    const response = created(customData, { headers });
+
+    expect(response.init?.status).toEqual(201);
+    expect(response.data).toEqual({ message: 'Created', ...customData });
+    expect((response.init?.headers as Headers).get('Location')).toEqual(
+      '/api/resources/123',
+    );
+  });
+});
 
 describe('badRequest()', () => {
   test('given: no arguments, should: return a 400 status with a message', () => {

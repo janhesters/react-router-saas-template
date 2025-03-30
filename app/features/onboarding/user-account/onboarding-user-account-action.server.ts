@@ -38,5 +38,3 @@ export async function onboardingUserAccountAction({
     throw error;
   }
 }
-
-// TODO: test entering New as the organization name

@@ -12,7 +12,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/new';
 
-export const handle = { i18n: 'organizations' };
+export const handle = { i18n: ['organizations', 'drag-and-drop'] };
 
 export async function loader(args: Route.LoaderArgs) {
   const { t } = await promiseHash({

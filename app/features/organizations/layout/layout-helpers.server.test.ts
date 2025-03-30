@@ -1,7 +1,7 @@
 import { href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
-import { createUserWithOrganizations } from '~/features/onboarding/onboarding-helpers.server.test';
+import { createOnboardingUser } from '~/test/test-utils';
 
 import { createPopulatedOrganization } from '../organizations-factories.server';
 import { getSidebarState, switchSlugInRoute } from './layout-helpers.server';
@@ -59,7 +59,7 @@ describe('getSidebarState', () => {
 
 describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
   test('given: onboarding user with organizations, should: map to organization layout props', () => {
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       name: 'John Doe',
       email: 'john@example.com',
       imageUrl: 'https://example.com/avatar.jpg',
@@ -127,7 +127,7 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
   });
 
   test('given: onboarding user with no organizations, should: return empty organizations array', () => {
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       name: 'John Doe',
       email: 'john@example.com',
       imageUrl: 'https://example.com/avatar.jpg',

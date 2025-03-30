@@ -1,7 +1,8 @@
-import { Loader2Icon } from 'lucide-react';
+import { Loader2Icon, TriangleAlertIcon } from 'lucide-react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Form } from 'react-router';
 
+import { Alert, AlertDescription } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -25,7 +26,9 @@ export function LoginVerificationAwaiting({
   isResending = false,
   isSubmitting = false,
 }: LoginVerificationAwaitingProps) {
-  const { t } = useTranslation('user-authentication');
+  const { t } = useTranslation('user-authentication', {
+    keyPrefix: 'login.magic-link',
+  });
 
   const { secondsLeft, reset } = useCountdown(60);
 
@@ -34,12 +37,10 @@ export function LoginVerificationAwaiting({
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">
-          {t('login.magic-link.card-title')}
-        </CardTitle>
+        <CardTitle className="text-xl">{t('card-title')}</CardTitle>
 
         <CardDescription className="text-center">
-          {t('login.magic-link.card-description')}
+          {t('card-description')}
         </CardDescription>
       </CardHeader>
 
@@ -66,14 +67,20 @@ export function LoginVerificationAwaiting({
                 {isResending ? (
                   <>
                     <Loader2Icon className="animate-spin" />
-                    {t('login.magic-link.resend-button-loading')}
+                    {t('resend-button-loading')}
                   </>
                 ) : (
-                  t('login.magic-link.resend-button')
+                  t('resend-button')
                 )}
               </Button>
             </fieldset>
           </Form>
+
+          <Alert>
+            <TriangleAlertIcon />
+
+            <AlertDescription>{t('alert-description')}</AlertDescription>
+          </Alert>
         </div>
       </CardContent>
     </Card>

@@ -1,6 +1,12 @@
 import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
-import type { Organization } from '@prisma/client';
+import type {
+  InviteLinkUse,
+  Organization,
+  OrganizationInviteLink,
+  OrganizationMembership,
+} from '@prisma/client';
+import { addDays } from 'date-fns';
 
 import { slugify } from '~/utils/slugify.server';
 import type { Factory } from '~/utils/types';
@@ -19,3 +25,71 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   createdAt = faker.date.past({ years: 1, refDate: updatedAt }),
   imageUrl = faker.image.url(),
 } = {}) => ({ id, name, slug, createdAt, updatedAt, imageUrl });
+
+/**
+ * Creates an organization invite link with populated values.
+ *
+ * @param linkParams - OrganizationInviteLink params to create organization invite link with.
+ * @returns A populated organization invite link with given params.
+ */
+export const createPopulatedOrganizationInviteLink: Factory<
+  OrganizationInviteLink
+> = ({
+  updatedAt = faker.date.recent({ days: 1 }),
+  createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  id = createId(),
+  organizationId = createId(),
+  creatorId = createId(),
+  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
+  token = createId(),
+  // eslint-disable-next-line unicorn/no-null
+  deactivatedAt = null,
+} = {}) => ({
+  id,
+  createdAt,
+  updatedAt,
+  organizationId,
+  creatorId,
+  expiresAt,
+  token,
+  deactivatedAt,
+});
+
+/**
+ * Creates an invite link usage with populated values.
+ *
+ * @param usageParams - inviteLinkUse params to create invite link usage with.
+ * @returns A populated invite link usage with given params.
+ */
+export const createPopulatedinviteLinkUse: Factory<InviteLinkUse> = ({
+  updatedAt = faker.date.recent({ days: 1 }),
+  createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  id = createId(),
+  inviteLinkId = createId(),
+  userId = createId(),
+} = {}) => ({ id, createdAt, updatedAt, inviteLinkId, userId });
+
+/**
+ * Creates an organization membership with populated values.
+ *
+ * @param membershipParams - OrganizationMembership params to create membership with.
+ * @returns A populated organization membership with given params.
+ */
+export const createPopulatedOrganizationMembership: Factory<
+  OrganizationMembership
+> = ({
+  updatedAt = faker.date.recent({ days: 1 }),
+  createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  memberId = createId(),
+  organizationId = createId(),
+  role = 'member',
+  // eslint-disable-next-line unicorn/no-null
+  deactivatedAt = null,
+} = {}) => ({
+  createdAt,
+  updatedAt,
+  memberId,
+  organizationId,
+  role,
+  deactivatedAt,
+});

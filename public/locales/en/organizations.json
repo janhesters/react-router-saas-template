@@ -103,6 +103,79 @@
       "general": "General",
       "settings-nav": "Settings navigation",
       "team-members": "Team Members"
+    },
+    "team-members": {
+      "description": "Manage your team members and their permissions.",
+      "description-member": "View who is a member of your organization.",
+      "invite-by-email": {
+        "card-description": "Enter your colleagues' email addresses, and we'll send them a personalized invitation to join your organization. You can also choose the role they'll join with.",
+        "card-title": "Invite by Email",
+        "form": {
+          "email": "Email",
+          "email-invalid": "A valid email consists of characters, '@' and '.'.",
+          "email-must-be-string": "A valid email address must be string.",
+          "email-placeholder": "Your colleague's email ...",
+          "email-required": "Please enter a valid email (required).",
+          "inviting": "Sending email invitation ...",
+          "role": "Role",
+          "role-admin": "Admin",
+          "role-member": "Member",
+          "role-owner": "Owner",
+          "role-placeholder": "Select a role ...",
+          "submit-button": "Send email invitation"
+        }
+      },
+      "invite-link": {
+        "card-description": "After generating the link, it will be valid for 48 hours. Copy and share it with anyone you'd like to join with the role of \"Member\".",
+        "card-title": "Share an Invite Link",
+        "copied": "Copied!",
+        "copy-invite-link": "Copy invite link to clipboard",
+        "create-new-invite-link": "Create new invite link",
+        "creating": "Creating ...",
+        "deactivate-link": "Deactivate link",
+        "deactivating": "Deactivating ...",
+        "go-to-link": "Go to the invite link's page",
+        "invite-link-copied": "Invite link copied to clipboard",
+        "link-valid-until": "Your link is valid until {{date}}.",
+        "new-link-deactivates-old": "Generating a new link automatically deactivates the old one.",
+        "regenerate-link": "Regenerate link",
+        "regenerating": "Regenerating ..."
+      },
+      "page-title": "Team Members",
+      "table": {
+        "avatar-header": "Avatar",
+        "email-header": "Email",
+        "name-header": "Name",
+        "no-results": "No members found.",
+        "pagination": {
+          "go-to-first": "Go to first page",
+          "go-to-last": "Go to last page",
+          "go-to-next": "Go to next page",
+          "go-to-previous": "Go to previous page",
+          "page-info": "Page {{current}} of {{total}}",
+          "rows-per-page": "Rows per page"
+        },
+        "role-header": "Role",
+        "role-switcher": {
+          "admin": "Admin",
+          "admin-description": "Can edit the organization and manage billing.",
+          "deactivated": "Deactivated",
+          "deactivated-description": "Access revoked to everything.",
+          "member": "Member",
+          "member-description": "Access to standard features.",
+          "no-roles-found": "No roles found.",
+          "owner": "Owner",
+          "owner-description": "Can assign roles and delete the organization.",
+          "roles-placeholder": "Select new role ..."
+        },
+        "status": {
+          "createdTheOrganization": "Joined",
+          "emailInvitePending": "Pending",
+          "joinedViaEmailInvite": "Joined",
+          "joinedViaLink": "Joined"
+        },
+        "status-header": "Status"
+      }
     }
   }
 }

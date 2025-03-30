@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import {
   type Organization,
   type OrganizationMembership,
@@ -72,6 +73,30 @@ export async function retrieveOrganizationWithMembershipsFromDatabaseBySlug(
   return prisma.organization.findUnique({
     where: { slug },
     include: { memberships: { include: { member: true } } },
+  });
+}
+
+/**
+ * Retrieves an organization by its slug with memberships and latest active
+ * invite link.
+ *
+ * @param slug - The slug of the organization to retrieve.
+ * @returns The organization with memberships and latest active invite link or
+ * null if not found.
+ */
+export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug(
+  slug: Organization['slug'],
+) {
+  return prisma.organization.findUnique({
+    where: { slug },
+    include: {
+      memberships: { include: { member: true } },
+      organizationInviteLinks: {
+        where: { expiresAt: { gt: new Date() }, deactivatedAt: null },
+        orderBy: { createdAt: 'desc' },
+        take: 1,
+      },
+    },
   });
 }
 

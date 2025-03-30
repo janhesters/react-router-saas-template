@@ -35,7 +35,7 @@ Start the development server with HMR:
 npm run dev
 ```
 
-Your application will be available at `http://localhost:5173`.
+Your application will be available at `http://localhost:3000`.
 
 ## Building for Production
 
@@ -161,7 +161,7 @@ This section is based on the Supabase documentation for [**Login With Google**](
    - Choose `Web application`.
    - Click Create.
 3. Now edit your OAuth client with your URLs.
-   - Under **Authorized JavaScript origins**, add your site URL. (E.g. `http://localhost:5173`, and your production site URL.)
+   - Under **Authorized JavaScript origins**, add your site URL. (E.g. `http://localhost:3000`, and your production site URL.)
    - Under **Authorized redirect URIs**, enter the callback URL from the [Supabase dashboard](https://supabase.com/dashboard/project/_/auth/providers). Expand the Google Auth Provider section to display it.
       - You need to enter the Client ID and Client Secret in the Google Auth Provider section of the Supabase Dashboard, which you can find under **Additional Information** your OAuth client.
       - The redirect URL is visible to your users. You can customize it by configuring [custom domains](https://supabase.com/docs/guides/platform/custom-domains).
@@ -172,7 +172,7 @@ This section is based on the Supabase documentation for [**Login With Google**](
      - `openid`
    - Click `Update`.
 5. In the Google Cloud console, Under **Branding** and then **Authorized Domains**, add your Supabase project's domain, which has the form `<PROJECT_ID>.supabase.co`.
-6. In your `.env` file, set the `APP_URL` to your local development URL (by default it's `http://localhost:5173`) or your production site URL.
+6. In your `.env` file, set the `APP_URL` to your local development URL (by default it's `http://localhost:3000`) or your production site URL.
 
 **Note:** [Here](https://supabase.com/docs/guides/auth/social-login/auth-google?queryGroups=environment&environment=server&queryGroups=framework&framework=remix#google-consent-screen) are more details on how to configure the Google consent screen to show your custom domain, and even your app's name and logo.
 

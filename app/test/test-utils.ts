@@ -1,6 +1,8 @@
+/* eslint-disable unicorn/no-null */
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 
+import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   addMembersToOrganizationInDatabaseById,
@@ -16,8 +18,36 @@ import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from '~/features/user-authentication/user-authentication-factories';
+import type { Factory } from '~/utils/types';
 
 import { setMockSession } from './mocks/handlers/supabase/mock-sessions';
+
+/**
+ * A factory function for creating an onboarded user with their memberships.
+ *
+ * @param props - The properties of the onboarding user.
+ * @returns An onboarding user.
+ */
+export const createOnboardingUser: Factory<OnboardingUser> = ({
+  memberships = [
+    {
+      role: OrganizationMembershipRole.member,
+      organization: createPopulatedOrganization(),
+      deactivatedAt: null,
+    },
+    {
+      role: OrganizationMembershipRole.member,
+      organization: createPopulatedOrganization(),
+      deactivatedAt: null,
+    },
+    {
+      role: OrganizationMembershipRole.member,
+      organization: createPopulatedOrganization(),
+      deactivatedAt: null,
+    },
+  ],
+  ...props
+} = {}) => ({ ...createPopulatedUserAccount(), ...props, memberships });
 
 function createMockJWT(payload: object): string {
   const header = { alg: 'HS256', typ: 'JWT' };

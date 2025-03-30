@@ -10,40 +10,46 @@ import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from
 import type { Route } from './+types/auth.callback';
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { supabase, headers } = await requireUserIsAnonymous(request);
+  try {
+    const { supabase, headers } = await requireUserIsAnonymous(request);
 
-  const code = getSearchParameterFromRequest('code')(request);
+    const code = getSearchParameterFromRequest('code')(request);
 
-  if (!code) {
-    throw new Error('Missing code');
-  }
+    if (!code) {
+      throw new Error('Missing code');
+    }
+    console.log('code', code);
 
-  const {
-    error,
-    data: { user },
-  } = await supabase.auth.exchangeCodeForSession(code);
+    const {
+      error,
+      data: { user },
+    } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (error) {
+    if (error) {
+      throw error;
+    }
+
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    const { email } = user;
+
+    if (!email) {
+      throw new Error('User email not found');
+    }
+
+    const maybeUser = await retrieveUserAccountFromDatabaseByEmail(email);
+
+    if (maybeUser) {
+      return redirect(href('/organizations'), { headers });
+    }
+
+    await saveUserAccountToDatabase({ email, supabaseUserId: user.id });
+
+    return redirect(href('/onboarding'), { headers });
+  } catch (error) {
+    console.log(error);
     throw error;
   }
-
-  if (!user) {
-    throw new Error('User not found');
-  }
-
-  const { email } = user;
-
-  if (!email) {
-    throw new Error('User email not found');
-  }
-
-  const maybeUser = await retrieveUserAccountFromDatabaseByEmail(email);
-
-  if (maybeUser) {
-    return redirect(href('/organizations'), { headers });
-  }
-
-  await saveUserAccountToDatabase({ email, supabaseUserId: user.id });
-
-  return redirect(href('/onboarding'), { headers });
 }

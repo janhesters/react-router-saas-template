@@ -1,9 +1,9 @@
 import { OrganizationMembershipRole } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 
+import { createOnboardingUser } from '~/test/test-utils';
 import { notFound } from '~/utils/http-responses.server';
 
-import { createUserWithOrganizations } from '../onboarding/onboarding-helpers.server.test';
 import { createPopulatedOrganization } from './organizations-factories.server';
 import {
   findOrganizationIfUserIsMemberById,
@@ -13,7 +13,7 @@ import {
 describe('findOrganizationIfUserIsMemberBySlug()', () => {
   test('given: a user who is a member of the organization, should: return the organization and role', () => {
     const organization = createPopulatedOrganization();
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
@@ -34,7 +34,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
 
   test('given: a user who is an admin of the organization, should: return the organization and admin role', () => {
     const organization = createPopulatedOrganization();
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.admin,
@@ -56,7 +56,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
   test('given: a user who is not a member of the organization, should: throw a 404', () => {
     expect.assertions(1);
 
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
@@ -77,7 +77,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
   test('given: a user with no memberships, should: throw a 404', () => {
     expect.assertions(1);
 
-    const user = createUserWithOrganizations({ memberships: [] });
+    const user = createOnboardingUser({ memberships: [] });
     const organizationSlug = createPopulatedOrganization().slug;
 
     try {
@@ -91,7 +91,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
 describe('findOrganizationIfUserIsMemberById()', () => {
   test('given: a user who is a member of the organization, should: return the organization and role', () => {
     const organization = createPopulatedOrganization();
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
@@ -109,7 +109,7 @@ describe('findOrganizationIfUserIsMemberById()', () => {
 
   test('given: a user who is an admin of the organization, should: return the organization and admin role', () => {
     const organization = createPopulatedOrganization();
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.admin,
@@ -128,7 +128,7 @@ describe('findOrganizationIfUserIsMemberById()', () => {
   test('given: a user who is not a member of the organization, should: throw a 404', () => {
     expect.assertions(1);
 
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
@@ -149,7 +149,7 @@ describe('findOrganizationIfUserIsMemberById()', () => {
   test('given: a user with no memberships, should: throw a 404', () => {
     expect.assertions(1);
 
-    const user = createUserWithOrganizations({ memberships: [] });
+    const user = createOnboardingUser({ memberships: [] });
     const organizationId = createPopulatedOrganization().id;
 
     try {

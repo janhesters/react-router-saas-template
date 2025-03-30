@@ -7,6 +7,31 @@ type NestedJSON = {
 export type DataWithResponseInit<Data> = ReturnType<typeof data<Data>>;
 
 /**
+ * Returns a 201 Created response.
+ *
+ * @returns A response with the 201 status code and a message.
+ */
+export function created(): DataWithResponseInit<{ message: string }>;
+/**
+ * Returns a 201 Created response.
+ *
+ * @param createdData - An object containing the created resource data.
+ * @returns A response with the 201 status code and the created resource data.
+ */
+export function created<T extends NestedJSON>(
+  createdData: T,
+  init?: Omit<ResponseInit, 'status'>,
+): DataWithResponseInit<{ message: string } & T>;
+export function created<T extends NestedJSON>(
+  createdData?: T,
+  init?: Omit<ResponseInit, 'status'>,
+): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
+  return createdData
+    ? data({ message: 'Created', ...createdData }, { ...init, status: 201 })
+    : data({ message: 'Created' }, { status: 201 });
+}
+
+/**
  * Returns a 400 Bad Request error.
  *
  * @returns A response with the 400 status code and a message.

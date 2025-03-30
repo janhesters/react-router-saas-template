@@ -9,7 +9,7 @@ import {
   NavigationMenuList,
 } from '~/components/ui/navigation-menu';
 
-import type { Route } from './+types/_settings-layout';
+import type { Route } from './+types/_organization-settings-layout';
 
 export const handle = { i18n: 'organizations' };
 
@@ -22,7 +22,9 @@ export function loader({ request }: Route.LoaderArgs) {
   return { headerTitle: 'Organization Settings' };
 }
 
-export default function SettingsLayout({ params }: Route.ComponentProps) {
+export default function OrganizationSettingsLayout({
+  params,
+}: Route.ComponentProps) {
   const pathname = useLocation().pathname;
   const { t } = useTranslation('organizations', {
     keyPrefix: 'settings.layout',

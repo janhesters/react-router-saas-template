@@ -2,11 +2,9 @@ import { faker } from '@faker-js/faker';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 
-import type { Factory } from '~/utils/types';
+import { createOnboardingUser } from '~/test/test-utils';
 
 import { createPopulatedOrganization } from '../organizations/organizations-factories.server';
-import { createPopulatedUserAccount } from '../user-accounts/user-accounts-factories.server';
-import type { OnboardingUser } from './onboarding-helpers.server';
 import {
   getUserIsOnboarded,
   redirectUserToOnboardingStep,
@@ -14,36 +12,9 @@ import {
   throwIfUserNeedsOnboarding,
 } from './onboarding-helpers.server';
 
-/**
- * A factory function for creating an onboarded user with their memberships.
- *
- * @param props - The properties of the onboarding user.
- * @returns An onboarding user.
- */
-export const createUserWithOrganizations: Factory<OnboardingUser> = ({
-  memberships = [
-    {
-      role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
-      deactivatedAt: null,
-    },
-    {
-      role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
-      deactivatedAt: null,
-    },
-    {
-      role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
-      deactivatedAt: null,
-    },
-  ],
-  ...props
-} = {}) => ({ ...createPopulatedUserAccount(), ...props, memberships });
-
 describe('getUserIsOnboarded()', () => {
   test('given a user with no memberships and no name: returns false', () => {
-    const user = createUserWithOrganizations({ name: '', memberships: [] });
+    const user = createOnboardingUser({ name: '', memberships: [] });
 
     const actual = getUserIsOnboarded(user);
     const expected = false;
@@ -52,7 +23,7 @@ describe('getUserIsOnboarded()', () => {
   });
 
   test('given a user with memberships but no name: returns false', () => {
-    const user = createUserWithOrganizations({ name: '' });
+    const user = createOnboardingUser({ name: '' });
 
     const actual = getUserIsOnboarded(user);
     const expected = false;
@@ -61,7 +32,7 @@ describe('getUserIsOnboarded()', () => {
   });
 
   test('given a user with a name but no memberships: returns false', () => {
-    const user = createUserWithOrganizations({ memberships: [] });
+    const user = createOnboardingUser({ memberships: [] });
 
     const actual = getUserIsOnboarded(user);
     const expected = false;
@@ -70,7 +41,7 @@ describe('getUserIsOnboarded()', () => {
   });
 
   test('given a user with both a name and memberships: returns true', () => {
-    const user = createUserWithOrganizations();
+    const user = createOnboardingUser();
 
     const actual = getUserIsOnboarded(user);
     const expected = true;
@@ -81,7 +52,7 @@ describe('getUserIsOnboarded()', () => {
 
 describe('throwIfUserIsOnboarded()', () => {
   test('given: a user with no name and no memberships, should: return the user', () => {
-    const user = createUserWithOrganizations({ name: '', memberships: [] });
+    const user = createOnboardingUser({ name: '', memberships: [] });
     const headers = new Headers({ 'X-Test-Header': 'test-value' });
 
     const actual = throwIfUserIsOnboarded(user, headers);
@@ -93,7 +64,7 @@ describe('throwIfUserIsOnboarded()', () => {
   test('given: an onboarded user with exactly one organization, should: redirect to the organization page', () => {
     expect.assertions(3);
 
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       name: 'Test User',
       memberships: [
         {
@@ -127,7 +98,7 @@ describe('throwIfUserIsOnboarded()', () => {
   test('given: an onboarded user with multiple organizations, should: redirect to the organizations page', () => {
     expect.assertions(3);
 
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       name: 'Test User',
       memberships: [
         {
@@ -159,7 +130,7 @@ describe('throwIfUserIsOnboarded()', () => {
   });
 
   test('given: a user with memberships but no name, should: return the user', () => {
-    const user = createUserWithOrganizations({ name: '' });
+    const user = createOnboardingUser({ name: '' });
     const headers = new Headers({ 'X-Test-Header': 'test-value' });
 
     const actual = throwIfUserIsOnboarded(user, headers);
@@ -169,7 +140,7 @@ describe('throwIfUserIsOnboarded()', () => {
   });
 
   test('given: a user with a name but no memberships, should: return the user', () => {
-    const user = createUserWithOrganizations({
+    const user = createOnboardingUser({
       name: 'Test User',
       memberships: [],
     });
@@ -188,7 +159,7 @@ describe('redirectUserToOnboardingStep()', () => {
       const url = 'http://localhost:3000/onboarding/user-account';
       const method = faker.internet.httpMethod();
       const request = new Request(url, { method });
-      const user = createUserWithOrganizations({ name: '', memberships: [] });
+      const user = createOnboardingUser({ name: '', memberships: [] });
       const headers = new Headers({ 'X-Test-Header': 'test-value' });
 
       const actual = redirectUserToOnboardingStep(request, user, headers);
@@ -205,7 +176,7 @@ describe('redirectUserToOnboardingStep()', () => {
       url => {
         expect.assertions(3);
 
-        const user = createUserWithOrganizations({ name: '', memberships: [] });
+        const user = createOnboardingUser({ name: '', memberships: [] });
         const method = faker.internet.httpMethod();
         const request = new Request(url, { method });
         const headers = new Headers({ 'X-Test-Header': 'test-value' });
@@ -230,7 +201,7 @@ describe('redirectUserToOnboardingStep()', () => {
 
   describe('organization onboarding page', () => {
     test('given: a request to the organization onboarding page and a user that is NOT a member of any organizations yet, should: return the user', () => {
-      const user = createUserWithOrganizations({ memberships: [] });
+      const user = createOnboardingUser({ memberships: [] });
       const url = 'http://localhost:3000/onboarding/organization';
       const method = faker.internet.httpMethod();
       const request = new Request(url, { method });
@@ -250,7 +221,7 @@ describe('redirectUserToOnboardingStep()', () => {
       url => {
         expect.assertions(3);
 
-        const user = createUserWithOrganizations({ memberships: [] });
+        const user = createOnboardingUser({ memberships: [] });
         const method = faker.internet.httpMethod();
         const request = new Request(url, { method });
         const headers = new Headers({ 'X-Test-Header': 'test-value' });
@@ -276,7 +247,7 @@ describe('redirectUserToOnboardingStep()', () => {
 
 describe('throwIfUserNeedsOnboarding()', () => {
   test('given: a user with both a name and memberships, should: return the user', () => {
-    const user = createUserWithOrganizations();
+    const user = createOnboardingUser();
     const headers = new Headers();
 
     const actual = throwIfUserNeedsOnboarding({ user, headers });
@@ -288,7 +259,7 @@ describe('throwIfUserNeedsOnboarding()', () => {
   test('given: a user with no memberships, should: redirect to the onboarding page', () => {
     expect.assertions(3);
 
-    const user = createUserWithOrganizations({ memberships: [] });
+    const user = createOnboardingUser({ memberships: [] });
     const headers = new Headers({ 'X-Test-Header': 'test-value' });
 
     try {
@@ -308,7 +279,7 @@ describe('throwIfUserNeedsOnboarding()', () => {
   test('given: a user with no name, should: redirect to the onboarding page', () => {
     expect.assertions(3);
 
-    const user = createUserWithOrganizations({ name: '' });
+    const user = createOnboardingUser({ name: '' });
     const headers = new Headers({ 'X-Test-Header': 'test-value' });
 
     try {

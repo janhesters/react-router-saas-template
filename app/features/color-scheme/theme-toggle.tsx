@@ -1,3 +1,4 @@
+import { IconBrightness } from '@tabler/icons-react';
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +21,6 @@ import {
   RETURN_TO_FORM_KEY,
   THEME_TOGGLE_INTENT,
 } from './color-scheme-constants';
-import { BrightnessIcon } from './tabler-react-brightness-icon';
 import { useColorScheme } from './use-color-scheme';
 
 function ColorSchemeButton({
@@ -61,7 +61,7 @@ export function ThemeToggle() {
           size="icon"
           variant="outline"
         >
-          <BrightnessIcon />
+          <IconBrightness />
         </Button>
       </DropdownMenuTrigger>
 

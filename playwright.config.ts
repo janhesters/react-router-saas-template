@@ -14,13 +14,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
+  /* Opt out of parallel tests. */
   workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: process.env.BASE_URL ?? 'http://localhost:5173',
+    baseURL: process.env.APP_URL ?? 'http://localhost:3000',
     trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
 
@@ -69,6 +69,7 @@ export default defineConfig({
     command: process.env.CI
       ? 'npm run build && npm run start-with-server-mocks'
       : 'npm run dev-with-server-mocks',
-    reuseExistingServer: true,
+    port: 3000,
+    reuseExistingServer: process.env.CI ? false : true,
   },
 });

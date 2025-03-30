@@ -1,0 +1,92 @@
+import type { OrganizationMembership, UserAccount } from '@prisma/client';
+import { OrganizationMembershipRole } from '@prisma/client';
+
+import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from '~/features/organizations/organizations-model.server';
+import { asyncPipe } from '~/utils/async-pipe.server';
+import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
+
+import type { EmailInviteCardProps } from './invite-by-email-card';
+import type { InviteLinkCardProps } from './invite-link-card';
+import type { TeamMembersTableProps } from './team-members-table';
+
+/**
+ * Converts a token to an invite link.
+ *
+ * @param token - The token to convert.
+ * @param request - The request object.
+ * @returns The invite link.
+ */
+export const tokenToInviteLink = (token: string, request: Request) => {
+  const requestUrl = new URL(request.url);
+  const url = new URL('/organizations/invite', requestUrl.origin);
+  url.searchParams.set('token', token);
+  return url.toString();
+};
+
+export const requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug =
+  asyncPipe(
+    retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug,
+    throwIfEntityIsMissing,
+  );
+
+export type OrganizationWithMembers = Awaited<
+  ReturnType<
+    typeof requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug
+  >
+>;
+
+/**
+ * Maps organization data to team member settings props.
+ *
+ * @param currentUsersRole - The current user's role.
+ * @param organization - The organization.
+ * @param request - The request object.
+ * @returns The team member settings props.
+ */
+export function mapOrganizationDataToTeamMemberSettingsProps({
+  currentUsersId,
+  currentUsersRole,
+  organization,
+  request,
+}: {
+  currentUsersId: UserAccount['id'];
+  currentUsersRole: OrganizationMembership['role'];
+  organization: OrganizationWithMembers;
+  request: Request;
+}): {
+  emailInviteCard: Pick<EmailInviteCardProps, 'currentUserIsOwner'>;
+  inviteLinkCard: InviteLinkCardProps;
+  teamMemberTable: TeamMembersTableProps;
+} {
+  const link = organization.organizationInviteLinks[0];
+
+  return {
+    emailInviteCard: {
+      currentUserIsOwner: currentUsersRole === OrganizationMembershipRole.owner,
+    },
+    inviteLinkCard: {
+      inviteLink: link
+        ? {
+            href: tokenToInviteLink(link.token, request),
+            expiryDate: link.expiresAt.toISOString(),
+          }
+        : undefined,
+    },
+    teamMemberTable: {
+      currentUsersRole,
+      members: organization.memberships.map(membership => {
+        const isCurrentUser = membership.member.id === currentUsersId;
+        return {
+          avatar: membership.member.imageUrl,
+          email: membership.member.email,
+          id: membership.member.id,
+          isCurrentUser,
+          name: membership.member.name,
+          role: membership.role,
+          deactivatedAt: membership.deactivatedAt,
+          status: isCurrentUser ? 'createdTheOrganization' : 'joinedViaLink',
+        };
+      }),
+    },
+  };
+}

@@ -3,10 +3,8 @@ import type { Organization } from '@prisma/client';
 import { notFound } from '~/utils/http-responses.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
 
-import {
-  type OnboardingUser,
-  requireOnboardedUserAccountExists,
-} from '../onboarding/onboarding-helpers.server';
+import type { OnboardingUser } from '../onboarding/onboarding-helpers.server';
+import { requireOnboardedUserAccountExists } from '../onboarding/onboarding-helpers.server';
 
 /**
  * Finds an organization by ID if the given user is a member of it.

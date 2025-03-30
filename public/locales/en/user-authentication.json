@@ -20,6 +20,7 @@
       "user-doesnt-exist": "User with given email doesn't exist. Did you mean to create a new account instead?"
     },
     "magic-link": {
+      "alert-description": "Remember to check your spam folder.",
       "card-description": "We've sent a secure login link to your email address. Please check your inbox and click the link to access your account.",
       "card-title": "Check your email",
       "countdown-message_one": "Once you click the link, <1>please close this tab</1>. If you haven't received the email within {{count}} second, you may request another link.",
@@ -48,6 +49,7 @@
       "user-already-exists": "User with given email already exists. Did you mean to log in instead?"
     },
     "magic-link": {
+      "alert-description": "Remember to check your spam folder.",
       "card-description": "We've sent a verification link to your email address. Please check your inbox and click the link to complete your registration.",
       "card-title": "Verify your email",
       "countdown-message_one": "Once you click the link, <1>please close this tab</1>. If you haven't received the email within {{count}} second, you may request another verification link.",
