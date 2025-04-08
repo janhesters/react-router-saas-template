@@ -32,6 +32,28 @@ export async function retrieveOrganizationInviteLinkFromDatabaseById(
 }
 
 /**
+ * Retrieves a creator and organization associated with a specific
+ * OrganizationInviteLink record from the database based on the token.
+ *
+ * @param token - The token of the OrganizationInviteLink to retrieve.
+ * @returns An object containing the names of the creator and the organization
+ * associated with the provided token, or null if no link was found.
+ */
+export async function retrieveCreatorAndOrganizationFromDatabaseByToken(
+  token: OrganizationInviteLink['token'],
+) {
+  return prisma.organizationInviteLink.findUnique({
+    where: { token },
+    select: {
+      id: true,
+      creator: { select: { name: true, id: true } },
+      expiresAt: true,
+      organization: { select: { name: true, id: true } },
+    },
+  });
+}
+
+/**
  * Retrieves the latest active invite link for an organization.
  *
  * @param organizationId - The id of the organization to retrieve the invite
@@ -49,6 +71,31 @@ export async function retrieveLatestInviteLinkFromDatabaseByOrganizationId(
     },
     orderBy: { createdAt: 'desc' },
     take: 1,
+  });
+}
+
+/**
+ * Retrieves an active OrganizationInviteLink record from the database based on
+ * its token.
+ *
+ * @param token - The token of the OrganizationInviteLink to get.
+ * @returns The OrganizationInviteLink with a given token or null if it wasn't
+ * found or its deactivated or expired.
+ */
+export async function retrieveActiveInviteLinkFromDatabaseByToken(
+  token: OrganizationInviteLink['token'],
+) {
+  const now = new Date();
+  return prisma.organizationInviteLink.findFirst({
+    where: { token, deactivatedAt: null, expiresAt: { gt: now } },
+    select: {
+      creator: { select: { id: true, name: true } },
+      deactivatedAt: true,
+      expiresAt: true,
+      id: true,
+      organization: { select: { id: true, name: true, slug: true } },
+      token: true,
+    },
   });
 }
 

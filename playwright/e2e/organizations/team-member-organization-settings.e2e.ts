@@ -346,7 +346,10 @@ test.describe('organization settings members page', () => {
         // UI should ideally update after fetcher returns, check for the "Admin" button now
         await page.keyboard.press('Escape'); // Close the dropdown
         await expect(
-          memberRow.getByRole('button', { name: /admin/i }),
+          page
+            .getByRole('table')
+            .getByRole('row', { name: memberUser.email })
+            .getByRole('button', { name: /admin/i }),
         ).toBeVisible();
 
         // Check DB
@@ -468,10 +471,12 @@ test.describe('organization settings members page', () => {
       await page.keyboard.press('Escape');
 
       // Verify Member Table & Role Changes
-      const table = page.getByRole('table');
+      await expect(page.getByRole('table')).toBeVisible();
 
       // Check Owner's own row (cannot change self)
-      const ownerRow = table.getByRole('row', { name: requestingUser.email });
+      const ownerRow = page
+        .getByRole('table')
+        .getByRole('row', { name: requestingUser.email });
       await expect(
         ownerRow.getByRole('cell', { name: /owner/i }),
       ).toBeVisible();
@@ -480,15 +485,40 @@ test.describe('organization settings members page', () => {
       ).toBeHidden();
 
       // Check Member's row (Owner CAN change Member to Owner)
-      const memberRow = table.getByRole('row', { name: memberUser.email });
+      const memberRow = page
+        .getByRole('table')
+        .getByRole('row', { name: memberUser.email });
       await memberRow.getByRole('button', { name: /member/i }).click();
       await page.getByRole('button', { name: /owner/i }).click();
       await page.keyboard.press('Escape'); // Close the dropdown
       await expect(
-        memberRow.getByRole('button', { name: /^owner$/i }),
+        page
+          .getByRole('table')
+          .getByRole('row', {
+            name: memberUser.email,
+          })
+          .getByRole('button', { name: /^owner$/i }),
       ).toBeVisible(); // Button text updated
 
-      // Check DB
+      // Check Admin's row (Owner CAN change Admin to Member)
+      await page
+        .getByRole('table')
+        .getByRole('row', { name: adminUser.email })
+        .getByRole('button', { name: /admin/i })
+        .click();
+      await page
+        .getByRole('button', { name: /member/i })
+        .first()
+        .click();
+      await page.keyboard.press('Escape'); // Close the dropdown
+      await expect(
+        page
+          .getByRole('table')
+          .getByRole('row', { name: adminUser.email })
+          .getByRole('button', { name: /^member$/i }),
+      ).toBeVisible();
+
+      // Check DB for member
       const updatedMemberMembership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
           { userId: memberUser.id, organizationId: organization.id },
@@ -497,16 +527,7 @@ test.describe('organization settings members page', () => {
         OrganizationMembershipRole.owner,
       );
 
-      // Check Admin's row (Owner CAN change Admin to Member)
-      const adminRow = table.getByRole('row', { name: adminUser.email });
-      await adminRow.getByRole('button', { name: /admin/i }).click();
-      await page.getByRole('button', { name: /member/i }).click();
-      await page.keyboard.press('Escape'); // Close the dropdown
-      await expect(
-        adminRow.getByRole('button', { name: /^member$/i }),
-      ).toBeVisible();
-
-      // Check DB
+      // Check DB for admin
       const updatedAdminMembership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
           { userId: adminUser.id, organizationId: organization.id },
@@ -533,7 +554,6 @@ test.describe('organization settings members page', () => {
       const { organization, otherUsers } = data;
 
       await page.goto(getMembersPagePath(organization.slug));
-      const table = page.getByRole('table');
 
       // Deactivate each type of user
       for (const userToDeactivate of otherUsers) {
@@ -545,15 +565,22 @@ test.describe('organization settings members page', () => {
 
         // Close any open dropdown
         await page.keyboard.press('Escape');
-        const userRow = table.getByRole('row', {
-          name: userToDeactivate.email,
-        });
-        await expect(userRow).toBeVisible();
-        await userRow
+        const table = page.getByRole('table');
+        await expect(table).toBeVisible();
+        await expect(
+          table.getByRole('row', {
+            name: userToDeactivate.email,
+          }),
+        ).toBeVisible();
+        await table
+          .getByRole('row', {
+            name: userToDeactivate.email,
+          })
           .getByRole('button', { name: new RegExp(initialRole ?? '', 'i') })
           .click();
         await page
-          .getByRole('button', { name: /access revoked to everything/i })
+          .getByRole('button', { name: /deactivated/i })
+          .last()
           .click();
 
         // Close the dropdown
@@ -561,7 +588,12 @@ test.describe('organization settings members page', () => {
 
         // Check UI
         await expect(
-          userRow.getByRole('cell', { name: /^deactivated$/i }),
+          page
+            .getByRole('table')
+            .getByRole('row', {
+              name: userToDeactivate.email,
+            })
+            .getByRole('cell', { name: /^deactivated$/i }),
         ).toBeVisible();
 
         // Check DB
@@ -623,7 +655,7 @@ test.describe('organization settings members page', () => {
 
       // Check link href structure
       const href = await linkDisplay.getAttribute('href');
-      expect(href).toContain('/organizations/invite?token=');
+      expect(href).toContain('/organizations/invite-link?token=');
 
       await teardownMultipleMembers(data);
     });
@@ -680,7 +712,7 @@ test.describe('organization settings members page', () => {
           'navigator.clipboard.readText()',
         );
         expect(clipboardText).toEqual(
-          expect.stringContaining('/organizations/invite?token='),
+          expect.stringContaining('/organizations/invite-link?token='),
         );
       }
 
@@ -837,7 +869,7 @@ test.describe('organization settings members page', () => {
     await page.goto(getMembersPagePath(data.organization.slug));
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules(['color-contrast']) // Often requires manual checks
+      .disableRules(['color-contrast'])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

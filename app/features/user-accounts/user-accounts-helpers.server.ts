@@ -39,3 +39,15 @@ export const requireAuthenticatedUserExists = async (request: Request) => {
   const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
   return { user: await throwIfUserAccountIsMissing(request, user), headers };
 };
+
+/**
+ * Ensures that a user account for the provided supabase user id exists.
+ *
+ * @param request - The incoming request object.
+ * @param id - The supabase user id.
+ * @returns The user account.
+ */
+export async function requireSupabaseUserExists(request: Request, id: string) {
+  const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
+  return await throwIfUserAccountIsMissing(request, user);
+}

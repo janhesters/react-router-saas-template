@@ -18,7 +18,7 @@ import type { TeamMembersTableProps } from './team-members-table';
  */
 export const tokenToInviteLink = (token: string, request: Request) => {
   const requestUrl = new URL(request.url);
-  const url = new URL('/organizations/invite', requestUrl.origin);
+  const url = new URL('/organizations/invite-link', requestUrl.origin);
   url.searchParams.set('token', token);
   return url.toString();
 };

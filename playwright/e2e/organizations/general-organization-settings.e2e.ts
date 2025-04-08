@@ -176,6 +176,9 @@ test.describe('general organization settings', () => {
       await expect(
         page.getByRole('button', { name: /saving changes/i }),
       ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /save changes/i }),
+      ).toBeVisible();
 
       // Verify database update
       const updatedOrganization = await retrieveOrganizationFromDatabaseById(

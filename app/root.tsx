@@ -82,6 +82,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 }
 
+export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+
 export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
@@ -114,11 +116,9 @@ export function Layout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
-        <title>
-          {isErrorFromRoute
-            ? `${error.status} ${error.statusText}`
-            : data?.title}
-        </title>
+        {isErrorFromRoute && (
+          <title>{`${error.status} ${error.statusText}`}</title>
+        )}
       </head>
 
       <body className="min-h-svh">

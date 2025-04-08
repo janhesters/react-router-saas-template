@@ -61,7 +61,7 @@ export const createPopulatedOrganizationInviteLink: Factory<
  * @param usageParams - inviteLinkUse params to create invite link usage with.
  * @returns A populated invite link usage with given params.
  */
-export const createPopulatedinviteLinkUse: Factory<InviteLinkUse> = ({
+export const createPopulatedInviteLinkUse: Factory<InviteLinkUse> = ({
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
   id = createId(),

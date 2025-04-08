@@ -1,0 +1,118 @@
+import { OrganizationMembershipRole } from '@prisma/client';
+import { z } from 'zod';
+
+import { requireSupabaseUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
+import { createSupabaseServerClient } from '~/features/user-authentication/supabase.server';
+import { combineHeaders } from '~/utils/combine-headers.server';
+import { getErrorMessage } from '~/utils/get-error-message';
+import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
+import { badRequest } from '~/utils/http-responses.server';
+import i18next from '~/utils/i18next.server';
+import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
+import { validateFormData } from '~/utils/validate-form-data.server';
+
+import { retrieveActiveInviteLinkFromDatabaseByToken } from '../organization-invite-link-model.server';
+import { addMembersToOrganizationInDatabaseById } from '../organizations-model.server';
+import { ACCEPT_INVITE_LINK_INTENT } from './accept-invite-link-constants';
+import { getInviteLinkToken } from './accept-invite-link-helpers.server';
+import { saveInviteLinkUseToDatabase } from './invite-link-use-model.server';
+import type { Route } from '.react-router/types/app/routes/organizations_+/+types/invite-link';
+
+const acceptInviteLinkSchema = z.object({
+  intent: z.literal(ACCEPT_INVITE_LINK_INTENT),
+});
+
+export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
+  try {
+    const t = await i18next.getFixedT(request, 'organizations', {
+      keyPrefix: 'accept-invite-link',
+    });
+    const data = await validateFormData(request, acceptInviteLinkSchema);
+
+    switch (data.intent) {
+      case ACCEPT_INVITE_LINK_INTENT: {
+        const { supabase, headers } = createSupabaseServerClient({ request });
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        const token = getInviteLinkToken(request);
+        const link = await retrieveActiveInviteLinkFromDatabaseByToken(token);
+
+        if (!link) {
+          const toastHeaders = await createToastHeaders({
+            title: t('invite-link-invalid-toast-title'),
+            description: t('invite-link-invalid-toast-description'),
+            type: 'error',
+          });
+
+          return badRequest(
+            { error: 'Invalid token' },
+            { headers: combineHeaders(headers, toastHeaders) },
+          );
+        }
+
+        if (user) {
+          const userAccount = await requireSupabaseUserExists(request, user.id);
+
+          try {
+            await addMembersToOrganizationInDatabaseById({
+              id: link.organization.id,
+              members: [userAccount.id],
+              role: OrganizationMembershipRole.member,
+            });
+            await saveInviteLinkUseToDatabase({
+              inviteLinkId: link.id,
+              userId: userAccount.id,
+            });
+            return redirectWithToast(
+              `/organizations/${link.organization.slug}/dashboard`,
+              {
+                title: t('join-success-toast-title'),
+                description: t('join-success-toast-description', {
+                  organizationName: link.organization.name,
+                }),
+                type: 'success',
+              },
+              { headers },
+            );
+          } catch (error) {
+            const message = getErrorMessage(error);
+
+            if (
+              message.includes(
+                'Unique constraint failed on the fields: (`memberId`,`organizationId`)',
+              )
+            ) {
+              return await redirectWithToast(
+                `/organizations/${link.organization.slug}/dashboard`,
+                {
+                  title: t('already-member-toast-title'),
+                  description: t('already-member-toast-description', {
+                    organizationName: link.organization.name,
+                  }),
+                  type: 'info',
+                },
+                { headers },
+              );
+            }
+
+            throw error;
+          }
+        }
+
+        return redirectWithToast(`/register?token=${token}`, {
+          title: t('invite-link-valid-toast-title'),
+          description: t('invite-link-valid-toast-description'),
+          type: 'info',
+        });
+      }
+    }
+  } catch (error) {
+    if (getIsDataWithResponseInit(error)) {
+      return error;
+    }
+
+    throw error;
+  }
+}

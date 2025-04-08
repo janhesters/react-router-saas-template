@@ -52,7 +52,7 @@ describe('tokenToInviteLink()', () => {
     const request = new Request(`${basePath}/foo`);
 
     const actual = tokenToInviteLink(token, request);
-    const expected = `${basePath}/organizations/invite?token=${token}`;
+    const expected = `${basePath}/organizations/invite-link?token=${token}`;
 
     expect(actual).toEqual(expected);
   });
@@ -80,7 +80,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       },
       inviteLinkCard: {
         inviteLink: {
-          href: `http://localhost/organizations/invite?token=${organization.organizationInviteLinks[0].token}`,
+          href: `http://localhost/organizations/invite-link?token=${organization.organizationInviteLinks[0].token}`,
           expiryDate:
             organization.organizationInviteLinks[0].expiresAt.toISOString(),
         },

@@ -90,7 +90,10 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
   return prisma.organization.findUnique({
     where: { slug },
     include: {
-      memberships: { include: { member: true } },
+      memberships: {
+        include: { member: true },
+        orderBy: { createdAt: 'desc' },
+      },
       organizationInviteLinks: {
         where: { expiresAt: { gt: new Date() }, deactivatedAt: null },
         orderBy: { createdAt: 'desc' },

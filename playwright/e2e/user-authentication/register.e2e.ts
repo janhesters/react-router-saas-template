@@ -58,8 +58,11 @@ test.describe('register page', () => {
       await page.goto(path);
 
       // Invalid email.
+      await expect(page.getByText(/new here/i)).toBeVisible();
       const registerButton = page.getByRole('button', { name: /register/i });
+      await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible();
       await emailInput.fill('invalid@email');
       await registerButton.click();
       await expect(
@@ -76,8 +79,11 @@ test.describe('register page', () => {
       await page.goto(path);
 
       // Fill in the email and click the register button.
+      await expect(page.getByText(/new here/i)).toBeVisible();
       const registerButton = page.getByRole('button', { name: /register/i });
+      await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible();
       await emailInput.fill(userAccount.email);
       await registerButton.click();
 

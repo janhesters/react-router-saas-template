@@ -58,7 +58,8 @@ model OrganizationInviteLink {
   updatedAt      DateTime        @updatedAt
   organization   Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String
-  // The user who created the invite link.
+  // The user who created the invite link. If the creator is deleted, the
+  // `creatorId` will be null, which is why this property is optional.
   creator        UserAccount?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
   creatorId      String?
   // Users who used the invite link.

@@ -75,8 +75,11 @@ test.describe('login page', () => {
       await page.goto(path);
 
       // Invalid email.
+      await expect(page.getByText(/welcome back/i)).toBeVisible();
       const loginButton = page.getByRole('button', { name: /login/i });
+      await expect(loginButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible();
       await emailInput.fill('invalid@email');
       await loginButton.click();
       await expect(

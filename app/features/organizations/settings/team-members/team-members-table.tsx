@@ -1,13 +1,5 @@
 import type { OrganizationMembership, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconChevronsLeft,
-  IconChevronsRight,
-  IconCircleCheckFilled,
-  IconLoader,
-} from '@tabler/icons-react';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   flexRender,
@@ -19,6 +11,14 @@ import type { TFunction } from 'i18next';
 import { ChevronDownIcon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import {
+  TbChevronLeft,
+  TbChevronRight,
+  TbChevronsLeft,
+  TbChevronsRight,
+  TbCircleCheckFilled,
+  TbLoader,
+} from 'react-icons/tb';
 import { useFetcher } from 'react-router';
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
@@ -232,9 +232,9 @@ const createColumns = ({
           className="text-muted-foreground px-1.5 font-normal"
         >
           {row.original.status === 'emailInvitePending' ? (
-            <IconLoader />
+            <TbLoader />
           ) : (
-            <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            <TbCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
           )}
           {t(`status.${row.original.status}`)}
         </Badge>
@@ -390,7 +390,7 @@ export function TeamMembersTable({
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">{t('pagination.go-to-first')}</span>
-              <IconChevronsLeft />
+              <TbChevronsLeft />
             </Button>
 
             <Button
@@ -401,7 +401,7 @@ export function TeamMembersTable({
               disabled={!table.getCanPreviousPage()}
             >
               <span className="sr-only">{t('pagination.go-to-previous')}</span>
-              <IconChevronLeft />
+              <TbChevronLeft />
             </Button>
 
             <Button
@@ -412,7 +412,7 @@ export function TeamMembersTable({
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">{t('pagination.go-to-next')}</span>
-              <IconChevronRight />
+              <TbChevronRight />
             </Button>
 
             <Button
@@ -423,7 +423,7 @@ export function TeamMembersTable({
               disabled={!table.getCanNextPage()}
             >
               <span className="sr-only">{t('pagination.go-to-last')}</span>
-              <IconChevronsRight />
+              <TbChevronsRight />
             </Button>
           </div>
         </div>

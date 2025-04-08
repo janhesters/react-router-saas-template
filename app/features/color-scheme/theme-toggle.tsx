@@ -1,7 +1,7 @@
-import { IconBrightness } from '@tabler/icons-react';
 import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TbBrightness } from 'react-icons/tb';
 import { Form, useLocation } from 'react-router';
 
 import { Button } from '~/components/ui/button';
@@ -61,7 +61,7 @@ export function ThemeToggle() {
           size="icon"
           variant="outline"
         >
-          <IconBrightness />
+          <TbBrightness />
         </Button>
       </DropdownMenuTrigger>
 
