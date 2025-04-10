@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { Organization, UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -37,6 +38,10 @@ import {
 
 export type RegistrationFormCardProps = {
   errors?: EmailRegistrationErrors;
+  inviteLinkInfo?: {
+    creatorName: UserAccount['name'];
+    organizationName: Organization['name'];
+  };
   isRegisteringWithEmail?: boolean;
   isRegisteringWithGoogle?: boolean;
   isSubmitting?: boolean;
@@ -44,6 +49,7 @@ export type RegistrationFormCardProps = {
 
 export function RegistrationFormCard({
   errors,
+  inviteLinkInfo,
   isRegisteringWithEmail = false,
   isRegisteringWithGoogle = false,
   isSubmitting = false,
@@ -82,11 +88,26 @@ export function RegistrationFormCard({
       <Card>
         <CardHeader className="text-center">
           <CardTitle className="text-xl">
-            {t('register.form.card-title')}
+            {inviteLinkInfo ? (
+              <span>
+                {t('register.form.join-organization', {
+                  organizationName: inviteLinkInfo.organizationName,
+                  interpolation: { escapeValue: false },
+                })}
+              </span>
+            ) : (
+              t('register.form.card-title')
+            )}
           </CardTitle>
 
           <CardDescription>
-            {t('register.form.card-description')}
+            {inviteLinkInfo
+              ? t('register.form.join-organization-description', {
+                  organizationName: inviteLinkInfo.organizationName,
+                  creatorName: inviteLinkInfo.creatorName,
+                  interpolation: { escapeValue: false },
+                })
+              : t('register.form.card-description')}
           </CardDescription>
         </CardHeader>
 

@@ -1,16 +1,24 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import {
+  createPopulatedOrganization,
+  createPopulatedOrganizationInviteLink,
+} from '~/features/organizations/organizations-factories.server';
+import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import { deleteOrganizationFromDatabaseById } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
+import { createUserWithOrgAndAddAsMember } from '~/test/test-utils';
 
 import {
   getPath,
   loginByCookie,
+  setupInviteLinkCookie,
   setupOrganizationAndLoginAsMember,
 } from '../../utils';
 
@@ -157,5 +165,89 @@ test.describe('login page', () => {
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
+  });
+
+  test('given: an anonymous user with an active invite link in their cookies, should: show text letting the user know they will join the organization after logging in', async ({
+    page,
+  }) => {
+    const { organization, user } = await createUserWithOrgAndAddAsMember({
+      organization: createPopulatedOrganization({
+        name: "Moore, O'Hara and Gerlach",
+      }),
+    });
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: user.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { tokenId: link.id, expiresAt: link.expiresAt },
+    });
+
+    await page.goto(path);
+
+    await expect(
+      page.getByText(new RegExp(`log in to join ${organization.name}`, 'i')),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        new RegExp(
+          `${user.name} has invited you to join ${organization.name}`,
+          'i',
+        ),
+      ),
+    ).toBeVisible();
+
+    await deleteUserAccountFromDatabaseById(user.id);
+    await deleteOrganizationFromDatabaseById(organization.id);
+  });
+
+  test('given: an anonymous user with an inactive invite link in their cookies, should: NOT show any text about joining an organization and also clear the invite link cookie', async ({
+    page,
+  }) => {
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: user.id,
+      deactivatedAt: new Date(),
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { tokenId: link.id, expiresAt: link.expiresAt },
+    });
+
+    await page.goto(path);
+
+    // Check that the normal login text is shown instead of the invite text
+    await expect(page.getByText(/welcome back/i)).toBeVisible();
+
+    // Verify that the invite-specific text is not shown
+    await expect(
+      page.getByText(new RegExp(`log in to join ${organization.name}`, 'i')),
+    ).not.toBeVisible();
+    await expect(
+      page.getByText(
+        new RegExp(
+          `${user.name} has invited you to join ${organization.name}`,
+          'i',
+        ),
+      ),
+    ).not.toBeVisible();
+
+    // Verify that the invite link cookie is cleared
+    const cookies = await page.context().cookies();
+    const inviteLinkCookie = cookies.find(
+      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+    );
+    expect(inviteLinkCookie).toBeUndefined();
+
+    await deleteUserAccountFromDatabaseById(user.id);
+    await deleteOrganizationFromDatabaseById(organization.id);
   });
 });

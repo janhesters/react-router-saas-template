@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { href, useNavigation } from 'react-router';
+import { data, href, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
@@ -17,12 +17,15 @@ import type { Route } from './+types/organization';
 export const handle = { i18n: 'onboarding' };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { t } = await promiseHash({
-    userNeedsOnboarding: requireUserNeedsOnboarding(request),
+  const { t, auth } = await promiseHash({
+    auth: requireUserNeedsOnboarding(request),
     t: i18next.getFixedT(request, ['onboarding', 'common']),
   });
 
-  return { title: getPageTitle(t, 'organization.title') };
+  return data(
+    { title: getPageTitle(t, 'organization.title') },
+    { headers: auth.headers },
+  );
 }
 
 export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];

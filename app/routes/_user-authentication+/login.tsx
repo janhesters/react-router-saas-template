@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { useActionData, useNavigation } from 'react-router';
+import { data, useActionData, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
+import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
 import type { LoginActionData } from '~/features/user-authentication/login/login-action.server';
 import { loginAction } from '~/features/user-authentication/login/login-action.server';
 import { LoginFormCard } from '~/features/user-authentication/login/login-form-card';
@@ -19,11 +20,18 @@ import type { Route } from './+types/login';
 export const handle = { i18n: 'user-authentication' };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { t } = await promiseHash({
+  const { t, linkData } = await promiseHash({
     userIsAnonymous: requireUserIsAnonymous(request),
     t: i18next.getFixedT(request, ['user-authentication', 'common']),
+    linkData: getValidInviteLinkInfo(request),
   });
-  return { title: getPageTitle(t, 'login.page-title') };
+  return data(
+    {
+      title: getPageTitle(t, 'login.page-title'),
+      inviteLinkInfo: linkData.inviteLinkInfo,
+    },
+    { headers: linkData.headers },
+  );
 }
 
 export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
@@ -32,9 +40,10 @@ export async function action(args: Route.ActionArgs) {
   return loginAction(args);
 }
 
-export default function LoginRoute() {
+export default function LoginRoute({ loaderData }: Route.ComponentProps) {
   const { t } = useTranslation('user-authentication');
   const navigation = useNavigation();
+  const { inviteLinkInfo } = loaderData;
   const actionData = useActionData<LoginActionData>();
 
   const isAwaitingEmailConfirmation =
@@ -61,6 +70,7 @@ export default function LoginRoute() {
         ) : (
           <LoginFormCard
             errors={errors}
+            inviteLinkInfo={inviteLinkInfo}
             isLoggingInWithEmail={isLoggingInWithEmail}
             isLoggingInWithGoogle={isLoggingInWithGoogle}
             isSubmitting={isSubmitting}

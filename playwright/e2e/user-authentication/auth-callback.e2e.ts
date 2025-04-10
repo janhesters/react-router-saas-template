@@ -2,6 +2,9 @@ import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { getPath } from 'playwright/utils';
 
+import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
+import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
@@ -12,6 +15,8 @@ import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
 } from '~/test/test-utils';
+
+import { setupInviteLinkCookie } from '../../utils';
 
 const path = '/auth/callback';
 
@@ -88,6 +93,146 @@ test.describe(`${path} API route`, () => {
 
     // Clean up.
     await teardownOrganizationAndMember({ user, organization });
+  });
+
+  test('given: a valid code for a new user with an active invite link cookie, should: create their account, add them to the organization, show a success toast, and clear the invite link cookie', async ({
+    page,
+  }) => {
+    // Create organization and invite link
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Generate email for the new user and create auth code
+    const { email } = createPopulatedUserAccount();
+    const code = stringifyAuthCodeData({ provider: 'google', email });
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { tokenId: link.id, expiresAt: link.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify redirect to onboarding page
+    await expect(
+      page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(`/onboarding/user-account`);
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(email);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(email);
+
+    // Enter the account details
+    const { name } = createPopulatedUserAccount();
+    await page.getByRole('textbox', { name: /name/i }).fill(name);
+    await page.getByRole('button', { name: /save/i }).click();
+
+    // Verify success toast
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page
+        .getByRole('region', {
+          name: /notifications/i,
+        })
+        .getByText(/successfully joined organization/i),
+    ).toBeVisible();
+
+    // Verify invite link cookie is cleared
+    const cookies = await page.context().cookies();
+    const inviteLinkCookie = cookies.find(
+      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+    );
+    expect(inviteLinkCookie).toBeUndefined();
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a code for an existing user with an active invite link cookie, should: add them to the organization and show success toast', async ({
+    page,
+  }) => {
+    // Create organization and invite link
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Create auth code for existing user
+    const code = stringifyAuthCodeData({
+      provider: 'google',
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+    });
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { tokenId: link.id, expiresAt: link.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify redirect to organization dashboard
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+
+    // Verify success toast
+    await expect(
+      page
+        .getByRole('region', {
+          name: /notifications/i,
+        })
+        .getByText(/successfully joined organization/i),
+    ).toBeVisible();
+
+    // Verify invite link cookie is cleared
+    const cookies = await page.context().cookies();
+    const inviteLinkCookie = cookies.find(
+      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+    );
+    expect(inviteLinkCookie).toBeUndefined();
+
+    // Cleanup
+    await teardownOrganizationAndMember({
+      user: existingUser,
+      organization: existingOrg,
+    });
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
   });
 
   test('given: no code parameter, should: return an error', async ({

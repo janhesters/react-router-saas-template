@@ -1,9 +1,16 @@
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { ONBOARDING_USER_ACCOUNT_INTENT } from '~/features/onboarding/user-account/onboarding-user-account-constants';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import {
+  createPopulatedOrganization,
+  createPopulatedOrganizationInviteLink,
+} from '~/features/organizations/organizations-factories.server';
+import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
+import {
+  addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
+  saveOrganizationToDatabase,
   saveOrganizationWithOwnerToDatabase,
 } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
@@ -16,6 +23,7 @@ import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
 import { badRequest } from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
+import { getToast } from '~/utils/toast.server';
 
 import { action } from './user-account';
 
@@ -24,15 +32,18 @@ const createUrl = () => `http://localhost:3000/onboarding/user-account`;
 async function sendAuthenticatedRequest({
   userAccount,
   formData,
+  headers,
 }: {
   userAccount: ReturnType<typeof createPopulatedUserAccount>;
   formData: FormData;
+  headers?: Headers;
 }) {
   const request = await createAuthenticatedRequest({
     url: createUrl(),
     user: userAccount,
     method: 'POST',
     formData,
+    headers,
   });
 
   return await action({ request, context: {}, params: {} });
@@ -178,5 +189,62 @@ describe('/onboarding/user-account route action', () => {
         expect(actual).toEqual(expected);
       },
     );
+
+    test('given: a user who needs onboarding with a invite link session info in the request, should: redirect to the organizations dashboard page and show a toast', async () => {
+      // The user who was invited and just picked their name.
+      const { userAccount } = await setup(
+        createPopulatedUserAccount({ name: '' }),
+      );
+      // The user who created the invite link.
+      const { userAccount: invitingUser } = await setup();
+      // The organization that the user was invited to.
+      const organization = createPopulatedOrganization();
+      await saveOrganizationToDatabase(organization);
+      onTestFinished(async () => {
+        await deleteOrganizationFromDatabaseById(organization.id);
+      });
+      // Add the users as members of the organization.
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [userAccount.id, invitingUser.id],
+      });
+      // The invite link that was used to invite the user.
+      const inviteLink = createPopulatedOrganizationInviteLink({
+        organizationId: organization.id,
+        creatorId: invitingUser.id,
+      });
+      await saveOrganizationInviteLinkToDatabase(inviteLink);
+      const cookie = await createInviteLinkInfoCookie({
+        tokenId: inviteLink.id,
+        expiresAt: inviteLink.expiresAt,
+      });
+      const headers = new Headers({ Cookie: cookie });
+
+      const formData = toFormData({ intent, name: 'Test User' });
+
+      const response = (await sendAuthenticatedRequest({
+        userAccount,
+        formData,
+        headers,
+      })) as Response;
+
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual(
+        `/organizations/${organization.slug}/dashboard`,
+      );
+
+      const maybeToast = response.headers.get('Set-Cookie')?.split(',')[2];
+      const { toast } = await getToast(
+        new Request(createUrl(), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        id: expect.any(String) as string,
+        title: 'Successfully joined organization',
+        description: `You are now a member of ${organization.name}`,
+        type: 'success',
+      });
+    });
   });
 });

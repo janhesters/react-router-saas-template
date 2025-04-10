@@ -6,10 +6,6 @@ import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 
 import {
-  retrieveLatestInviteLinkFromDatabaseByOrganizationId,
-  saveOrganizationInviteLinkToDatabase,
-} from '~/features/organizations/organization-invite-link-model.server';
-import {
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
 } from '~/features/organizations/organization-membership-model.server';
@@ -17,6 +13,10 @@ import {
   createPopulatedOrganization,
   createPopulatedOrganizationInviteLink,
 } from '~/features/organizations/organizations-factories.server';
+import {
+  retrieveLatestInviteLinkFromDatabaseByOrganizationId,
+  saveOrganizationInviteLinkToDatabase,
+} from '~/features/organizations/organizations-invite-link-model.server';
 import {
   addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,

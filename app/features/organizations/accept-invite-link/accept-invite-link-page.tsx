@@ -1,3 +1,4 @@
+import type { Organization, UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Form, useNavigation } from 'react-router';
@@ -8,8 +9,8 @@ import { Button } from '~/components/ui/button';
 import { ACCEPT_INVITE_LINK_INTENT } from './accept-invite-link-constants';
 
 export type AcceptInviteLinkPageProps = {
-  inviterName: string;
-  organizationName: string;
+  inviterName: UserAccount['name'];
+  organizationName: Organization['name'];
 };
 
 export function AcceptInviteLinkPage({

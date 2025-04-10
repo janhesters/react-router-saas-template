@@ -2,9 +2,10 @@ import type { UserAccount } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 
 import { ACCEPT_INVITE_LINK_INTENT } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
-import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organization-invite-link-model.server';
+import { getInviteLinkInfoFromSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from '~/features/organizations/organization-membership-model.server';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
+import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -132,7 +133,7 @@ describe('/organizations/invite-link route action', () => {
       });
     });
 
-    test('given: an unauthenticated request with valid token, should: redirect to register page', async () => {
+    test('given: an unauthenticated request with valid token, should: redirect to register page and set the token the session cookie', async () => {
       const { inviteLink } = await setup();
 
       const response = (await sendRequest({
@@ -140,9 +141,14 @@ describe('/organizations/invite-link route action', () => {
       })) as Response;
 
       expect(response.status).toEqual(302);
-      expect(response.headers.get('Location')).toEqual(
-        `/register?token=${inviteLink.token}`,
+      expect(response.headers.get('Location')).toEqual('/register');
+      const maybeHeaders = response.headers.get('Set-Cookie');
+      const inviteLinkInfo = await getInviteLinkInfoFromSession(
+        new Request(createUrl(), {
+          headers: { cookie: maybeHeaders ?? '' },
+        }),
       );
+      expect(inviteLinkInfo).toMatchObject({ tokenId: inviteLink.id });
     });
   });
 

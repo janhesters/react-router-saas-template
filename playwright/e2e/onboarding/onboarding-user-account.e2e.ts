@@ -132,12 +132,16 @@ test.describe('onboarding user account page', () => {
       ).toBeVisible();
 
       // Verify onboarding steps - only user account step should be shown
+      const onboardingNav = page.getByRole('navigation', {
+        name: /onboarding progress/i,
+      });
+      await expect(onboardingNav).toBeVisible();
       await expect(
-        page.getByRole('navigation', { name: /onboarding progress/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole('link', { name: /user account/i }),
+        onboardingNav.getByRole('link', { name: /user account/i }),
       ).toHaveAttribute('aria-current', 'step');
+
+      // It ONLY shows the user account step and hides the organization step.
+      await expect(onboardingNav.getByText(/organization/i)).not.toBeVisible();
 
       // Create profile
       const newName = createPopulatedUserAccount().name;
@@ -160,7 +164,7 @@ test.describe('onboarding user account page', () => {
       await teardownOrganizationAndMember({ user, organization });
     });
 
-    test('given: a logged in user without name, should: show validation errors for invalid input', async ({
+    test('given: a logged in user without name and without an organization, should: show validation errors for invalid input', async ({
       page,
     }) => {
       const { id } = await loginAndSaveUserAccountToDatabase({
@@ -185,12 +189,17 @@ test.describe('onboarding user account page', () => {
       ).toBeVisible();
 
       // Verify onboarding steps
+      const onboardingNav = page.getByRole('navigation', {
+        name: /onboarding progress/i,
+      });
+      await expect(onboardingNav).toBeVisible();
       await expect(
-        page.getByRole('navigation', { name: /onboarding progress/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole('link', { name: /user account/i }),
+        onboardingNav.getByRole('link', { name: /user account/i }),
       ).toHaveAttribute('aria-current', 'step');
+
+      // If the user lacks an organization, the organization step should be
+      // shown.
+      await expect(onboardingNav.getByText(/organization/i)).toBeVisible();
 
       const nameInput = page.getByRole('textbox', { name: /name/i });
       const saveButton = page.getByRole('button', { name: /save/i });

@@ -40,7 +40,7 @@ export function retrieveInviteLinkUseFromDatabaseById(id: InviteLinkUse['id']) {
   return prisma.inviteLinkUse.findUnique({ where: { id } });
 }
 
-export function retrieveinviteLinkUseFromDatabaseByUserIdAndLinkId({
+export function retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
   inviteLinkId,
   userId,
 }: {

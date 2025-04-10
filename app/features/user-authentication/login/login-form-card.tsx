@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { Organization, UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +35,10 @@ import { loginWithEmailSchema, loginWithGoogleSchema } from './login-schemas';
 
 export type LoginFormCardProps = {
   errors?: EmailLoginErrors;
+  inviteLinkInfo?: {
+    creatorName: UserAccount['name'];
+    organizationName: Organization['name'];
+  };
   isLoggingInWithEmail?: boolean;
   isLoggingInWithGoogle?: boolean;
   isSubmitting?: boolean;
@@ -41,6 +46,7 @@ export type LoginFormCardProps = {
 
 export function LoginFormCard({
   errors,
+  inviteLinkInfo,
   isLoggingInWithEmail = false,
   isLoggingInWithGoogle = false,
   isSubmitting = false,
@@ -77,9 +83,25 @@ export function LoginFormCard({
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">{t('login.form.card-title')}</CardTitle>
+        <CardTitle className="text-xl">
+          {inviteLinkInfo
+            ? t('login.form.join-organization', {
+                organizationName: inviteLinkInfo.organizationName,
+                creatorName: inviteLinkInfo.creatorName,
+                interpolation: { escapeValue: false },
+              })
+            : t('login.form.card-title')}
+        </CardTitle>
 
-        <CardDescription>{t('login.form.card-description')}</CardDescription>
+        <CardDescription>
+          {inviteLinkInfo
+            ? t('login.form.join-organization-description', {
+                organizationName: inviteLinkInfo.organizationName,
+                creatorName: inviteLinkInfo.creatorName,
+                interpolation: { escapeValue: false },
+              })
+            : t('login.form.card-description')}
+        </CardDescription>
       </CardHeader>
 
       <CardContent>

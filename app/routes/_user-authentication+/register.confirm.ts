@@ -1,7 +1,12 @@
+import { OrganizationMembershipRole } from '@prisma/client';
 import { href, redirect } from 'react-router';
 
+import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
+import { saveInviteLinkUseToDatabase } from '~/features/organizations/accept-invite-link/invite-link-use-model.server';
+import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
 import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
+import { combineHeaders } from '~/utils/combine-headers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
 
@@ -9,6 +14,8 @@ import type { Route } from './+types/register.confirm';
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { supabase, headers } = await requireUserIsAnonymous(request);
+  const { inviteLinkInfo, headers: inviteLinkHeaders } =
+    await getValidInviteLinkInfo(request);
 
   const tokenHash = getSearchParameterFromRequest('token_hash')(request);
 
@@ -29,10 +36,22 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   try {
-    await saveUserAccountToDatabase({
+    const userProfile = await saveUserAccountToDatabase({
       email: user.email,
       supabaseUserId: user.id,
     });
+
+    if (inviteLinkInfo) {
+      await addMembersToOrganizationInDatabaseById({
+        id: inviteLinkInfo.organizationId,
+        members: [userProfile.id],
+        role: OrganizationMembershipRole.member,
+      });
+      await saveInviteLinkUseToDatabase({
+        inviteLinkId: inviteLinkInfo.inviteLinkId,
+        userId: userProfile.id,
+      });
+    }
   } catch (error) {
     const message = getErrorMessage(error);
 
@@ -45,5 +64,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   }
 
-  return redirect(href('/onboarding'), { headers });
+  return redirect(href('/onboarding'), {
+    headers: combineHeaders(headers, inviteLinkHeaders),
+  });
 }

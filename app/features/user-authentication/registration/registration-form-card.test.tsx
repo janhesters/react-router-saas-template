@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
+import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import { createRoutesStub, render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
@@ -12,11 +14,13 @@ const createProps: Factory<RegistrationFormCardProps> = ({
   isRegisteringWithEmail = false,
   isRegisteringWithGoogle = false,
   isSubmitting = false,
+  inviteLinkInfo,
 } = {}) => ({
   errors,
   isRegisteringWithEmail,
   isRegisteringWithGoogle,
   isSubmitting,
+  inviteLinkInfo,
 });
 describe('RegistrationFormCard Component', () => {
   test('given: component renders with default props, should: render a card with an email registration form, a google registration form, and links to the terms and privacy policy', () => {
@@ -114,5 +118,36 @@ describe('RegistrationFormCard Component', () => {
 
     // Verify the error message is displayed.
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
+
+  test('given: inviteLinkInfo is provided, should: show a message informing the user what organization they are joining', () => {
+    const inviteLinkInfo = {
+      creatorName: createPopulatedUserAccount().name,
+      organizationName: createPopulatedOrganization().name,
+      inviteToken: '1234567890',
+    };
+    const props = createProps({ inviteLinkInfo });
+
+    const path = '/register';
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <RegistrationFormCard {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify the invite link info is displayed.
+    expect(
+      screen.getByText(
+        new RegExp(`register to join ${inviteLinkInfo.organizationName}`, 'i'),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        new RegExp(
+          `${inviteLinkInfo.creatorName} has invited you to join ${inviteLinkInfo.organizationName}`,
+          'i',
+        ),
+      ),
+    ).toBeInTheDocument();
   });
 });

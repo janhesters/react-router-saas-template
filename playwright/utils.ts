@@ -5,6 +5,9 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import dotenv from 'dotenv';
 import { promiseHash } from 'remix-utils/promise';
 
+import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import type { CreateInviteLinkInfoCookieParams } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
+import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   addMembersToOrganizationInDatabaseById,
@@ -159,4 +162,48 @@ export async function setupOrganizationAndLoginAsMember({
   });
 
   return data;
+}
+
+/**
+ * Sets up the invite link cookie with organization and creator information.
+ * This simulates what happens when a user clicks an invite link before authentication.
+ *
+ * @param params - The page and invite link information to set up the cookie.
+ * @returns A promise that resolves when the cookie has been set.
+ */
+export async function setupInviteLinkCookie({
+  page,
+  link,
+}: {
+  page: Page;
+  link: CreateInviteLinkInfoCookieParams; // Adjust type as needed
+}) {
+  const cookieHeader = await createInviteLinkInfoCookie(link);
+
+  // Extract the raw cookie value from the Set-Cookie header
+  const cookieValueMatch = /^__invite_link_info=([^;]+)/.exec(cookieHeader);
+  if (!cookieValueMatch?.[1]) {
+    throw new Error('Failed to extract cookie value from Set-Cookie header');
+  }
+  const cookieValue = cookieValueMatch[1];
+
+  // Extract Max-Age and convert to expires (optional)
+  const maxAgeMatch = /Max-Age=(\d+)/.exec(cookieHeader);
+  let expires: number | undefined;
+  if (maxAgeMatch) {
+    const maxAgeSeconds = Number.parseInt(maxAgeMatch[1], 10);
+    expires = Math.floor(Date.now() / 1000) + maxAgeSeconds; // Convert to Unix timestamp in seconds
+  }
+
+  await page.context().addCookies([
+    {
+      name: INVITE_LINK_INFO_SESSION_NAME,
+      value: cookieValue, // Only the raw signed value
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true, // Match your cookie config
+      sameSite: 'Lax', // Match your cookie config
+      expires, // Use expires instead of maxAge
+    },
+  ]);
 }

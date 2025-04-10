@@ -106,11 +106,13 @@ export async function createAuthenticatedRequest({
   user,
   method = 'POST',
   formData,
+  headers,
 }: {
   url: string;
   user: UserAccount;
   method?: string;
   formData?: FormData;
+  headers?: Headers;
 }) {
   // Create a mock session with the provided user details.
   const mockSession = createMockSupabaseSession({ user });
@@ -125,7 +127,21 @@ export async function createAuthenticatedRequest({
 
   // Create a new request with the auth cookie.
   const request = new Request(url, { method, body: formData });
-  request.headers.set('Cookie', `${cookieName}=${cookieValue}`);
+
+  // Add any additional headers to the request first
+  if (headers) {
+    for (const [key, value] of headers.entries()) {
+      request.headers.set(key, value);
+    }
+  }
+
+  // Set the auth cookie, preserving any existing cookies
+  const existingCookies = request.headers.get('Cookie') ?? '';
+  const authCookie = `${cookieName}=${cookieValue}`;
+  request.headers.set(
+    'Cookie',
+    existingCookies ? `${existingCookies}; ${authCookie}` : authCookie,
+  );
 
   return request;
 }

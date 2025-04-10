@@ -83,6 +83,29 @@ describe('getToast() & createToastHeaders()', () => {
 
     expect(actual).toEqual(expected);
   });
+
+  test('given: a request with special characters in the toast message, should: preserve special characters exactly', async () => {
+    const toastMessage = {
+      description: "Moore, O'Hara & Gerlach",
+      title: 'Special & chars: "quotes" and apostrophe\'s',
+    };
+    const headers = await createToastHeaders(toastMessage);
+    const request = new Request(faker.internet.url(), {
+      headers: mapHeaders(headers),
+    });
+
+    const { toast: actual } = await getToast(request);
+    const expected = {
+      ...toastMessage,
+      id: expect.any(String) as unknown as string,
+      type: 'message',
+    };
+
+    expect(actual).toMatchObject(expected);
+    // Explicitly verify the special characters are preserved exactly
+    expect(actual?.description).toBe("Moore, O'Hara & Gerlach");
+    expect(actual?.title).toBe('Special & chars: "quotes" and apostrophe\'s');
+  });
 });
 
 describe('redirectWithToast()', () => {

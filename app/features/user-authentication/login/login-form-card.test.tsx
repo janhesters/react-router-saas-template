@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
+import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import { createRoutesStub, render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
@@ -12,11 +14,13 @@ const createProps: Factory<LoginFormCardProps> = ({
   isLoggingInWithEmail = false,
   isLoggingInWithGoogle = false,
   isSubmitting = false,
+  inviteLinkInfo,
 } = {}) => ({
   errors,
   isLoggingInWithEmail,
   isLoggingInWithGoogle,
   isSubmitting,
+  inviteLinkInfo,
 });
 
 describe('LoginFormCard Component', () => {
@@ -121,5 +125,36 @@ describe('LoginFormCard Component', () => {
 
     // Verify the error message is displayed.
     expect(screen.getByText(errorMessage)).toBeInTheDocument();
+  });
+
+  test('given: inviteLinkInfo is provided, should: a message informing the user what organization they are joining', () => {
+    const inviteLinkInfo = {
+      creatorName: createPopulatedUserAccount().name,
+      organizationName: createPopulatedOrganization().name,
+      inviteToken: '1234567890',
+    };
+    const props = createProps({ inviteLinkInfo });
+
+    const path = '/login';
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <LoginFormCard {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify the invite link info is displayed.
+    expect(
+      screen.getByText(
+        new RegExp(`log in to join ${inviteLinkInfo.organizationName}`, 'i'),
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        new RegExp(
+          `${inviteLinkInfo.creatorName} has invited you to join ${inviteLinkInfo.organizationName}`,
+          'i',
+        ),
+      ),
+    ).toBeInTheDocument();
   });
 });

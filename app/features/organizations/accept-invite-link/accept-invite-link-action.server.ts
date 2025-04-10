@@ -1,4 +1,5 @@
 import { OrganizationMembershipRole } from '@prisma/client';
+import { href } from 'react-router';
 import { z } from 'zod';
 
 import { requireSupabaseUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
@@ -11,10 +12,11 @@ import i18next from '~/utils/i18next.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import { retrieveActiveInviteLinkFromDatabaseByToken } from '../organization-invite-link-model.server';
+import { retrieveActiveInviteLinkFromDatabaseByToken } from '../organizations-invite-link-model.server';
 import { addMembersToOrganizationInDatabaseById } from '../organizations-model.server';
 import { ACCEPT_INVITE_LINK_INTENT } from './accept-invite-link-constants';
 import { getInviteLinkToken } from './accept-invite-link-helpers.server';
+import { createInviteLinkInfoHeaders } from './accept-invite-link-session.server';
 import { saveInviteLinkUseToDatabase } from './invite-link-use-model.server';
 import type { Route } from '.react-router/types/app/routes/organizations_+/+types/invite-link';
 
@@ -66,7 +68,9 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
               userId: userAccount.id,
             });
             return redirectWithToast(
-              `/organizations/${link.organization.slug}/dashboard`,
+              href('/organizations/:organizationSlug/dashboard', {
+                organizationSlug: link.organization.slug,
+              }),
               {
                 title: t('join-success-toast-title'),
                 description: t('join-success-toast-description', {
@@ -85,7 +89,9 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
               )
             ) {
               return await redirectWithToast(
-                `/organizations/${link.organization.slug}/dashboard`,
+                href('/organizations/:organizationSlug/dashboard', {
+                  organizationSlug: link.organization.slug,
+                }),
                 {
                   title: t('already-member-toast-title'),
                   description: t('already-member-toast-description', {
@@ -101,11 +107,19 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
           }
         }
 
-        return redirectWithToast(`/register?token=${token}`, {
-          title: t('invite-link-valid-toast-title'),
-          description: t('invite-link-valid-toast-description'),
-          type: 'info',
+        const inviteLinkInfo = await createInviteLinkInfoHeaders({
+          tokenId: link.id,
+          expiresAt: link.expiresAt,
         });
+        return redirectWithToast(
+          href('/register'),
+          {
+            title: t('invite-link-valid-toast-title'),
+            description: t('invite-link-valid-toast-description'),
+            type: 'info',
+          },
+          { headers: combineHeaders(headers, inviteLinkInfo) },
+        );
       }
     }
   } catch (error) {

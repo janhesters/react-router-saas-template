@@ -5,8 +5,8 @@ import { expect, test } from '@playwright/test';
 import type { OrganizationInviteLink } from '@prisma/client';
 import { promiseHash } from 'remix-utils/promise';
 
-import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organization-invite-link-model.server';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
+import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
@@ -19,10 +19,13 @@ const getInviteLinkPagePath = (token?: string) =>
 
 test.describe('organizations invite link page', () => {
   test.describe('given: a logged out user', () => {
-    async function setup() {
+    async function setup(
+      deactivatedAt?: OrganizationInviteLink['deactivatedAt'],
+    ) {
       const { user, organization } = await createUserWithOrgAndAddAsMember();
       const link = createPopulatedOrganizationInviteLink({
         creatorId: user.id,
+        deactivatedAt,
         organizationId: organization.id,
       });
       await saveOrganizationInviteLinkToDatabase(link);
@@ -57,6 +60,21 @@ test.describe('organizations invite link page', () => {
 
       // The page title is correct.
       await expect(page).toHaveTitle(/register | react router saas template/i);
+
+      await teardownOrganizationAndMember({ organization, user });
+    });
+
+    test('given: a valid token for a deactivated invite link, should: show a 404 page ', async ({
+      page,
+    }) => {
+      const { link, user, organization } = await setup(new Date());
+
+      await page.goto(getInviteLinkPagePath(link.token));
+
+      await expect(
+        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+      ).toBeVisible();
+      await expect(page).toHaveTitle(/404/i);
 
       await teardownOrganizationAndMember({ organization, user });
     });
@@ -166,6 +184,24 @@ test.describe('organizations invite link page', () => {
         `/organizations/${data.organization.slug}/dashboard`,
       );
 
+      await teardownOrganizationAndMember(data);
+      await teardownOrganizationAndMember(auth);
+    });
+
+    test('given: a valid token for a deactivated invite link, should: show a 404 page ', async ({
+      page,
+    }) => {
+      const { link, auth, data } = await setup({
+        page,
+        deactivatedAt: new Date(),
+      });
+
+      await page.goto(getInviteLinkPagePath(link.token));
+
+      await expect(
+        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+      ).toBeVisible();
+      await expect(page).toHaveTitle(/404/i);
       await teardownOrganizationAndMember(data);
       await teardownOrganizationAndMember(auth);
     });

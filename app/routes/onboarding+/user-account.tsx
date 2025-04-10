@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { href, useNavigation } from 'react-router';
+import { data, href, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
@@ -17,12 +17,18 @@ import type { Route } from './+types/user-account';
 export const handle = { i18n: 'onboarding' };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { t } = await promiseHash({
-    userNeedsOnboarding: requireUserNeedsOnboarding(request),
+  const { t, auth } = await promiseHash({
+    auth: requireUserNeedsOnboarding(request),
     t: i18next.getFixedT(request, ['onboarding', 'common']),
   });
 
-  return { title: getPageTitle(t, 'user-account.title') };
+  return data(
+    {
+      title: getPageTitle(t, 'user-account.title'),
+      userNeedsOrganization: auth.user.memberships.length === 0,
+    },
+    { headers: auth.headers },
+  );
 }
 
 export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
@@ -33,8 +39,10 @@ export async function action(args: Route.ActionArgs) {
 
 export default function UserAccountOnboardingRoute({
   actionData,
+  loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation('onboarding');
+  const { userNeedsOrganization } = loaderData;
   const navigation = useNavigation();
   const isCreatingUserAccount =
     navigation.formData?.get('intent') === ONBOARDING_USER_ACCOUNT_INTENT;
@@ -56,12 +64,16 @@ export default function UserAccountOnboardingRoute({
               href: href('/onboarding/user-account'),
               status: 'current',
             },
-            {
-              name: t('organization.title'),
-              href: href('/onboarding/organization'),
-              status: 'upcoming',
-              disabled: true,
-            },
+            ...(userNeedsOrganization
+              ? [
+                  {
+                    name: t('organization.title'),
+                    href: href('/onboarding/organization'),
+                    status: 'upcoming' as const,
+                    disabled: true,
+                  },
+                ]
+              : []),
           ]}
         />
 
