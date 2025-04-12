@@ -47,7 +47,7 @@ test.describe('new organization page', () => {
   });
 
   test.describe('organization creation', () => {
-    test('given: a logged in and onboarded user who visits the url directly, should: allow organization creation and redirect to organization page', async ({
+    test('given: a logged in and onboarded user who visits the url directly, should: show a header, allow organization creation and redirect to organization page', async ({
       page,
     }) => {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
@@ -57,6 +57,13 @@ test.describe('new organization page', () => {
       await page.goto(path);
 
       // Verify page content
+      await expect(
+        page.getByRole('heading', { name: /new organization/i, level: 1 }),
+      ).toBeVisible();
+      await expect(page.getByRole('link', { name: /back/i })).toHaveAttribute(
+        'href',
+        '/organizations',
+      );
       await expect(page).toHaveTitle(
         /new organization | react router saas template/i,
       );
@@ -102,7 +109,7 @@ test.describe('new organization page', () => {
 
     // You might ask yourself, why is this test needed?
     // It is good practice to add an E2E test for each bug you find so that
-    // the bug never occurs again. In this case, the bug was that the
+    // the bug NEVER occurs again. In this case, the bug was that the
     // button in the organization switcher did NOT update with the new
     // organization name when the user already had an organization and created
     // a new one. The reason was that the switcher always showed

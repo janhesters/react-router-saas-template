@@ -43,8 +43,8 @@ export function DangerZone({
   isDeletingAccount = false,
   organizationsBlockingAccountDeletion,
 }: DangerZoneProps) {
-  const { t } = useTranslation('user-accounts', {
-    keyPrefix: 'settings.account.danger-zone',
+  const { t } = useTranslation('settings', {
+    keyPrefix: 'user-account.danger-zone',
   });
 
   const isDeleteBlocked = organizationsBlockingAccountDeletion.length > 0;
@@ -68,7 +68,7 @@ export function DangerZone({
                 <Trans
                   components={{ 1: <Strong /> }}
                   count={organizationsBlockingAccountDeletion.length}
-                  i18nKey="user-accounts:settings.account.danger-zone.blocking-organizations"
+                  i18nKey="settings:user-account.danger-zone.blocking-organizations"
                   values={{
                     organizations:
                       organizationsBlockingAccountDeletion.join(', '),
@@ -104,7 +104,7 @@ export function DangerZone({
                       <Trans
                         components={{ 1: <Strong /> }}
                         count={imlicitlyDeletedOrganizations.length}
-                        i18nKey="user-accounts:settings.account.danger-zone.implicitly-deleted-organizations"
+                        i18nKey="settings:user-account.danger-zone.implicitly-deleted-organizations"
                         shouldUnescape
                         values={{
                           organizations:

@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
+import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
 import { requireOnboardedUserAccountExists } from '~/features/onboarding/onboarding-helpers.server';
 import { cn } from '~/lib/utils';
 import { getPageTitle } from '~/utils/get-page-title.server';
@@ -38,7 +39,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     memberships: user.memberships,
-    title: getPageTitle(t, 'organizationsList.title'),
+    title: getPageTitle(t, 'organizations-list.title'),
   };
 }
 
@@ -48,21 +49,26 @@ export default function OrganizationsRoute({
   loaderData,
 }: Route.ComponentProps) {
   const { memberships } = loaderData;
-  const { t } = useTranslation('organizations');
+  const { t } = useTranslation('organizations', {
+    keyPrefix: 'organizations-list',
+  });
 
   return (
     <>
-      <header className="sr-only">
-        <h1>{t('organizationsList.page-title')}</h1>
+      <header className="flex h-(--header-height) items-center border-b">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
+          <h1 className="text-base font-medium">{t('page-title')}</h1>
+
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="mx-auto max-w-xl p-4 md:px-0 md:py-12">
         <Card>
           <CardHeader>
-            <CardTitle>{t('organizationsList.card-title')}</CardTitle>
-            <CardDescription>
-              {t('organizationsList.card-description')}
-            </CardDescription>
+            <CardTitle>{t('card-title')}</CardTitle>
+
+            <CardDescription>{t('card-description')}</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -105,10 +111,10 @@ export default function OrganizationsRoute({
                       className="shrink-0"
                     >
                       {membership.role === OrganizationMembershipRole.owner
-                        ? t('common.roles.owner')
+                        ? t('roles.owner')
                         : membership.role === OrganizationMembershipRole.admin
-                          ? t('common.roles.admin')
-                          : t('common.roles.member')}
+                          ? t('roles.admin')
+                          : t('roles.member')}
                     </Badge>
                   </Link>
                 </li>

@@ -130,7 +130,7 @@ describe('/settings/account route action', () => {
         expected: badRequest({
           errors: {
             name: {
-              message: 'user-accounts:settings.account.form.name-min-length',
+              message: 'settings:user-account.form.name-min-length',
             },
           },
         }),
@@ -141,7 +141,7 @@ describe('/settings/account route action', () => {
         expected: badRequest({
           errors: {
             name: {
-              message: 'user-accounts:settings.account.form.name-max-length',
+              message: 'settings:user-account.form.name-max-length',
             },
           },
         }),
@@ -152,7 +152,7 @@ describe('/settings/account route action', () => {
         expected: badRequest({
           errors: {
             name: {
-              message: 'user-accounts:settings.account.form.name-min-length',
+              message: 'settings:user-account.form.name-min-length',
             },
           },
         }),
@@ -163,7 +163,7 @@ describe('/settings/account route action', () => {
         expected: badRequest({
           errors: {
             name: {
-              message: 'user-accounts:settings.account.form.name-min-length',
+              message: 'settings:user-account.form.name-min-length',
             },
           },
         }),

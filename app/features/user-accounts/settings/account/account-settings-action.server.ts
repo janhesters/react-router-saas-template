@@ -32,8 +32,8 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
   try {
     const { auth, t } = await promiseHash({
       auth: requireAuthenticatedUserWithMembershipsExists(request),
-      t: i18next.getFixedT(request, 'user-accounts', {
-        keyPrefix: 'settings.account.toast',
+      t: i18next.getFixedT(request, 'settings', {
+        keyPrefix: 'user-account.toast',
       }),
     });
     const { user, headers } = auth;

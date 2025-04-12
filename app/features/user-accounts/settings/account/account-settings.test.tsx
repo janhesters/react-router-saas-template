@@ -76,7 +76,7 @@ describe('AccountSettings Component', () => {
     const errors = {
       name: {
         type: 'manual', // Or 'validation'
-        message: 'user-accounts:settings.account.form.name-min-length',
+        message: 'settings:user-account.form.name-min-length',
       },
     };
     const props = createProps({ errors });

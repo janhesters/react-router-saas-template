@@ -1,8 +1,3 @@
-// TODO: add header to user account page that redirects to the last organization
-// page they were on. (Use team switcher cookies for this.)
-// TODO: add header to organization creation page that redirects to the last
-// organization page they were on. (Use team switcher cookies for this.)
-
 // TODO: File uploads for logos & avatars
 // TODO: invite via email
 // TODO: Notifications
@@ -49,19 +44,23 @@ test.describe('account settings', () => {
     await expect(page).toHaveURL('/login?redirectTo=%2Fsettings%2Faccount');
   });
 
-  test('given: a logged in user, should: show account settings form', async ({
+  test('given: a logged in user, should: show a header and an account settings form', async ({
     page,
   }) => {
     const user = await loginAndSaveUserAccountToDatabase({ page });
 
     await page.goto('/settings/account');
 
-    // Verify page content
+    // Verify header
     await expect(
       page.getByRole('heading', { name: /settings/i, level: 1 }),
     ).toBeVisible();
     await expect(page).toHaveTitle(/account | react router saas template/i);
     await expect(page.getByText(/manage your account settings/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /back/i })).toHaveAttribute(
+      'href',
+      '/organizations',
+    );
 
     // Verify form values
     await expect(page.getByRole('textbox', { name: /name/i })).toHaveValue(

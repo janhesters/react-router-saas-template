@@ -45,8 +45,8 @@ export function AccountSettings({
   isUpdatingUserAccount = false,
   user,
 }: AccountSettingsProps) {
-  const { t } = useTranslation('user-accounts', {
-    keyPrefix: 'settings.account.form',
+  const { t } = useTranslation('settings', {
+    keyPrefix: 'user-account.form',
   });
   const submit = useSubmit();
   const avatarInputReference = useRef<HTMLInputElement>(null);
@@ -210,6 +210,7 @@ export function AccountSettings({
                   <FormLabel className="invisible" aria-hidden="true">
                     {t('avatar-label')}
                   </FormLabel>
+
                   <div className="flex h-32 justify-end">
                     <Avatar className="aspect-square size-32 rounded-md">
                       <AvatarImage

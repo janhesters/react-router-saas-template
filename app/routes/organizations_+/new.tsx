@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from 'react-router';
+import { TbArrowLeft } from 'react-icons/tb';
+import { Link, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
+import { Button } from '~/components/ui/button';
+import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
 import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-organization/create-organization-constants';
 import { CreateOrganizationFormCard } from '~/features/organizations/create-organization/create-organization-form-card';
 import { createOrganizationAction } from '~/features/organizations/create-organization/creatie-organization-action.server';
@@ -41,11 +44,23 @@ export default function NewOrganizationRoute({
 
   return (
     <>
-      <header className="sr-only">
-        <h1>{t('page-title')}</h1>
+      <header className="flex h-[--header-height] items-center border-b">
+        <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
+          <div className="flex items-center gap-2">
+            <Button asChild className="size-8" size="icon" variant="outline">
+              <Link aria-label={t('back-button-label')} to="/organizations">
+                <TbArrowLeft />
+              </Link>
+            </Button>
+
+            <h1 className="text-base font-medium">{t('page-title')}</h1>
+          </div>
+
+          <ThemeToggle />
+        </div>
       </header>
 
-      <main className="mx-auto max-w-lg px-4 py-4 md:py-6 lg:px-6">
+      <main className="mx-auto flex min-h-[calc(100svh-var(--header-height))] w-full max-w-lg flex-col items-center justify-center px-4 py-4 md:py-6 lg:px-6">
         <CreateOrganizationFormCard
           errors={errors}
           isCreatingOrganization={isCreatingOrganization}
