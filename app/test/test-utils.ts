@@ -187,6 +187,14 @@ export async function teardownOrganizationAndMember({
   organization: Organization;
   user: UserAccount;
 }) {
-  await deleteOrganizationFromDatabaseById(organization.id);
-  await deleteUserAccountFromDatabaseById(user.id);
+  try {
+    await deleteOrganizationFromDatabaseById(organization.id);
+  } catch {
+    // do nothing, the org was probably deleted in the test
+  }
+  try {
+    await deleteUserAccountFromDatabaseById(user.id);
+  } catch {
+    // do nothing, the user was probably deleted in the test
+  }
 }

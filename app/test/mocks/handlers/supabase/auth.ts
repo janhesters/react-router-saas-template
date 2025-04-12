@@ -276,10 +276,51 @@ const logoutMock = http.post(
   },
 );
 
+// supabase.auth.admin.deleteUser
+
+const deleteUserMock = http.delete(
+  `${process.env.SUPABASE_URL}/auth/v1/admin/users/:id`,
+  async ({ request, params }) => {
+    // Check for the presence of an Authorization header
+    const authHeader = request.headers.get('Authorization');
+
+    // If no Authorization header or it doesn't start with 'Bearer ', return unauthenticated response
+    if (!authHeader?.startsWith('Bearer ')) {
+      return HttpResponse.json(
+        { message: 'JWT token is missing' },
+        { status: 401 },
+      );
+    }
+
+    // Get the user ID from the URL params
+    const { id } = params;
+
+    if (!id) {
+      return HttpResponse.json(
+        { message: 'User ID is required' },
+        { status: 400 },
+      );
+    }
+
+    // Parse the request body to get the soft delete flag
+    const body = (await request.json()) as { should_soft_delete?: boolean };
+
+    // Return a successful response with a mock user
+    return HttpResponse.json({
+      user: {
+        id,
+        deleted_at: new Date().toISOString(),
+        soft_delete: body.should_soft_delete ?? false,
+      },
+    });
+  },
+);
+
 export const supabaseAuthHandlers: RequestHandler[] = [
   getUserMock,
   signInWithOtpMock,
   verifyOtpMock,
   exchangeCodeForSessionMock,
   logoutMock,
+  deleteUserMock,
 ];

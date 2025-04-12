@@ -4,7 +4,10 @@ import {
   logout,
   requireUserIsAuthenticated,
 } from '../user-authentication/user-authentication-helpers.server';
-import { retrieveUserAccountFromDatabaseBySupabaseUserId } from './user-accounts-model.server';
+import {
+  retrieveUserAccountFromDatabaseBySupabaseUserId,
+  retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId,
+} from './user-accounts-model.server';
 
 /**
  * Ensures that a user account is present.
@@ -38,6 +41,36 @@ export const requireAuthenticatedUserExists = async (request: Request) => {
   } = await requireUserIsAuthenticated(request);
   const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
   return { user: await throwIfUserAccountIsMissing(request, user), headers };
+};
+
+/**
+ * Ensures that a user account for the authenticated user exists and also
+ * returns their memberships.
+ *
+ * IMPORTANT: This function does not check if the user is an active member of
+ * the current slug in the URL! For that use `requireUserIsMemberOfOrganization`
+ * instead.
+ *
+ * @param request - The incoming request object.
+ * @returns The user account and their memberships.
+ */
+export const requireAuthenticatedUserWithMembershipsExists = async (
+  request: Request,
+) => {
+  const {
+    user: { id },
+    headers,
+    supabase,
+  } = await requireUserIsAuthenticated(request);
+  const user =
+    await retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId(
+      id,
+    );
+  return {
+    user: await throwIfUserAccountIsMissing(request, user),
+    headers,
+    supabase,
+  };
 };
 
 /**

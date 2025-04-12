@@ -1,7 +1,16 @@
-import type { UserAccount } from '@prisma/client';
+import { OrganizationMembershipRole, type UserAccount } from '@prisma/client';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { UPDATE_USER_ACCOUNT_INTENT } from '~/features/user-accounts/settings/account/account-settings-constants';
+import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import {
+  addMembersToOrganizationInDatabaseById,
+  retrieveOrganizationFromDatabaseById,
+  saveOrganizationToDatabase,
+} from '~/features/organizations/organizations-model.server';
+import {
+  DELETE_USER_ACCOUNT_INTENT,
+  UPDATE_USER_ACCOUNT_INTENT,
+} from '~/features/user-accounts/settings/account/account-settings-constants';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
@@ -10,8 +19,12 @@ import {
 } from '~/features/user-accounts/user-accounts-model.server';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
+import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
-import { badRequest } from '~/utils/http-responses.server';
+import {
+  badRequest,
+  type DataWithResponseInit,
+} from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
 import { getToast } from '~/utils/toast.server';
 
@@ -82,10 +95,11 @@ describe('/settings/account route action', () => {
       const newName = createPopulatedUserAccount().name;
       const formData = toFormData({ intent, name: newName });
 
-      const actual = await sendAuthenticatedRequest({
+      const actual = (await sendAuthenticatedRequest({
         user,
         formData,
-      });
+        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+      })) as DataWithResponseInit<{}>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -168,5 +182,155 @@ describe('/settings/account route action', () => {
         expect(actual).toEqual(expected);
       },
     );
+  });
+
+  describe(`${DELETE_USER_ACCOUNT_INTENT} intent`, () => {
+    const intent = DELETE_USER_ACCOUNT_INTENT;
+
+    test('given: a user who is only a member or admin of organizations, should: delete the user account and return a redirect to the home page', async () => {
+      // Setup: Create a user who is a member of one org and admin of another
+      const { user: memberUser, organization: memberOrg } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.member,
+        });
+      const { organization: adminOrg } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+      await addMembersToOrganizationInDatabaseById({
+        id: adminOrg.id,
+        members: [memberUser.id],
+        role: OrganizationMembershipRole.admin,
+      });
+
+      const formData = toFormData({ intent });
+
+      const response = (await sendAuthenticatedRequest({
+        user: memberUser,
+        formData,
+      })) as Response;
+
+      // Verify redirect to home page
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual('/');
+
+      // Verify user was deleted
+      const deletedUser = await retrieveUserAccountFromDatabaseById(
+        memberUser.id,
+      );
+      expect(deletedUser).toEqual(null);
+
+      // Verify organizations still exist
+      const memberOrgExists = await retrieveOrganizationFromDatabaseById(
+        memberOrg.id,
+      );
+      const adminOrgExists = await retrieveOrganizationFromDatabaseById(
+        adminOrg.id,
+      );
+      expect(memberOrgExists).not.toEqual(null);
+      expect(adminOrgExists).not.toEqual(null);
+    });
+
+    test('given: a user who is the sole owner (only member) of an organization, should: delete both the user account and organization, and return a redirect to the home page', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+
+      const formData = toFormData({ intent });
+
+      const response = (await sendAuthenticatedRequest({
+        user,
+        formData,
+      })) as Response;
+
+      // Verify redirect to home page
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual('/');
+
+      // Verify user was deleted
+      const deletedUser = await retrieveUserAccountFromDatabaseById(user.id);
+      expect(deletedUser).toEqual(null);
+
+      // Verify organization was deleted
+      const deletedOrg = await retrieveOrganizationFromDatabaseById(
+        organization.id,
+      );
+      expect(deletedOrg).toEqual(null);
+    });
+
+    test('given: a user who is an owner of an organization with other members, should: return a 400 error indicating they must transfer ownership first', async () => {
+      const { user: ownerUser, organization } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.owner,
+        });
+      const otherUser = createPopulatedUserAccount();
+      await saveUserAccountToDatabase(otherUser);
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [otherUser.id],
+        role: OrganizationMembershipRole.member,
+      });
+
+      const formData = toFormData({ intent });
+
+      const response = (await sendAuthenticatedRequest({
+        user: ownerUser,
+        formData,
+      })) as Response;
+
+      expect(response).toEqual(
+        badRequest({
+          error:
+            'Cannot delete account while owner of organizations with other members',
+        }),
+      );
+
+      // Cleanup the additional user since setupUserWithOrgAndAddAsMember won't handle it
+      await deleteUserAccountFromDatabaseById(otherUser.id);
+    });
+
+    test('given: a user who is both a sole owner of one org and a member of others, should: delete the user account, delete the solely owned org, and return a redirect to home page', async () => {
+      // Setup user as member of one org
+      const { user: memberUser, organization: memberOrg } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.member,
+        });
+      // Setup same user as sole owner of another org
+      const soloOwnedOrg = createPopulatedOrganization();
+      await saveOrganizationToDatabase(soloOwnedOrg);
+      await addMembersToOrganizationInDatabaseById({
+        id: soloOwnedOrg.id,
+        members: [memberUser.id],
+        role: OrganizationMembershipRole.owner,
+      });
+
+      const formData = toFormData({ intent });
+
+      const response = (await sendAuthenticatedRequest({
+        user: memberUser,
+        formData,
+      })) as Response;
+
+      // Verify redirect to home page
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual('/');
+
+      // Verify user was deleted
+      const deletedUser = await retrieveUserAccountFromDatabaseById(
+        memberUser.id,
+      );
+      expect(deletedUser).toEqual(null);
+
+      // Verify solely owned org was deleted
+      const deletedSoloOrg = await retrieveOrganizationFromDatabaseById(
+        soloOwnedOrg.id,
+      );
+      expect(deletedSoloOrg).toEqual(null);
+
+      // Verify member org still exists
+      const memberOrgExists = await retrieveOrganizationFromDatabaseById(
+        memberOrg.id,
+      );
+      expect(memberOrgExists).not.toEqual(null);
+    });
   });
 });

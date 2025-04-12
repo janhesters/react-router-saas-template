@@ -1,14 +1,3 @@
-// User can change their name.
-// Users should see their avatar (like the organization logo in the general
-// settings).
-// User can see their email, but can't change it.
-// User can delete their account, if they are only admins or members of
-// organizations, or if they are the only owner and member of an organization.
-// This will implicitly delete those organizations.
-// If they are an owner of an organization with multiple members, they first
-// have to deactivate all members, or transfer ownership to another member and
-// can NOT delete their own account.
-
 // TODO: add e2e tests if a user tries to join an organization that they're
 // already a member of.
 // If its from the accept invite link page, they should be redirected to the
@@ -35,11 +24,29 @@
 
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { OrganizationMembershipRole } from '@prisma/client';
 
+import {
+  deleteOrganizationFromDatabaseById,
+  retrieveOrganizationFromDatabaseById,
+} from '~/features/organizations/organizations-model.server';
+import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { deleteUserAccountFromDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
+import {
+  deleteUserAccountFromDatabaseById,
+  retrieveUserAccountFromDatabaseById,
+  saveUserAccountToDatabase,
+} from '~/features/user-accounts/user-accounts-model.server';
+import {
+  createUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from '~/test/test-utils';
 
-import { loginAndSaveUserAccountToDatabase } from '../../utils';
+import {
+  getPath,
+  loginAndSaveUserAccountToDatabase,
+  setupOrganizationAndLoginAsMember,
+} from '../../utils';
 
 test.describe('account settings', () => {
   test('given: a logged out user, should: redirect to login page with redirectTo parameter', async ({
@@ -139,5 +146,152 @@ test.describe('account settings', () => {
     expect(accessibilityScanResults.violations).toEqual([]);
 
     await deleteUserAccountFromDatabaseById(user.id);
+  });
+
+  test('given: a logged in user that is only a member or admin of organizations, should: be able to delete their account', async ({
+    page,
+  }) => {
+    // The user is a member of the first organization.
+    const { user, organization } = await setupOrganizationAndLoginAsMember({
+      page,
+      role: OrganizationMembershipRole.member,
+    });
+    const { user: otherUser, organization: otherOrganization } =
+      await createUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+    // The user is an admin of the second organization.
+    await addMembersToOrganizationInDatabaseById({
+      id: otherOrganization.id,
+      members: [user.id],
+      role: OrganizationMembershipRole.admin,
+    });
+
+    // Visit the account settings page
+    await page.goto('/settings/account');
+    await expect(
+      page.getByRole('heading', { name: /danger zone/i, level: 2 }),
+    ).toBeVisible();
+
+    // Open the delete account dialog
+    await page.getByRole('button', { name: /delete account/i }).click();
+
+    // Verify dialog content
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /delete account/i, level: 2 }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/are you sure you want to delete your account/i),
+    ).toBeVisible();
+    // Cancel the deletion
+    await page.getByRole('button', { name: /cancel/i }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+
+    // Confirm the deletion
+    await page.getByRole('button', { name: /delete account/i }).click();
+    await page.getByRole('button', { name: /delete this account/i }).click();
+
+    // Verify the user is deleted
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /react router saas template/i,
+      }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual('/');
+    const deletedUser = await retrieveUserAccountFromDatabaseById(user.id);
+    expect(deletedUser).toBeNull();
+
+    await deleteOrganizationFromDatabaseById(organization.id);
+    await deleteOrganizationFromDatabaseById(otherOrganization.id);
+    await deleteUserAccountFromDatabaseById(otherUser.id);
+  });
+
+  test('given: a logged in user that is the sole owner (as in the user is both the owner and the only member) of their organization, should: be able to delete their account', async ({
+    page,
+  }) => {
+    const { user, organization } = await setupOrganizationAndLoginAsMember({
+      page,
+      role: OrganizationMembershipRole.owner,
+    });
+
+    // Visit the account settings page
+    await page.goto('/settings/account');
+    await expect(
+      page.getByRole('heading', { name: /danger zone/i, level: 2 }),
+    ).toBeVisible();
+
+    // Open the delete account dialog
+    await page.getByRole('button', { name: /delete account/i }).click();
+
+    // Verify dialog content
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /delete account/i, level: 2 }),
+    ).toBeVisible();
+    await expect(
+      page.getByText(/the following organization will be deleted/i),
+    ).toBeVisible();
+    await expect(page.getByText(organization.name)).toBeVisible();
+    // Cancel the deletion
+    await page.getByRole('button', { name: /cancel/i }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+
+    // Confirm the deletion
+    await page.getByRole('button', { name: /delete account/i }).click();
+    await page.getByRole('button', { name: /delete this account/i }).click();
+
+    // Verify the user is deleted
+    await expect(
+      page.getByRole('heading', {
+        level: 1,
+        name: /react router saas template/i,
+      }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual('/');
+    const deletedUser = await retrieveUserAccountFromDatabaseById(user.id);
+    expect(deletedUser).toBeNull();
+    const deletedOrganization = await retrieveOrganizationFromDatabaseById(
+      organization.id,
+    );
+    expect(deletedOrganization).toBeNull();
+  });
+
+  test('given: a logged in user that is an owner of an organization with more members, should: prohibit the user from deleting their account', async ({
+    page,
+  }) => {
+    const { user, organization } = await setupOrganizationAndLoginAsMember({
+      page,
+      role: OrganizationMembershipRole.owner,
+    });
+    const otherUser = createPopulatedUserAccount();
+    await saveUserAccountToDatabase(otherUser);
+    await addMembersToOrganizationInDatabaseById({
+      id: organization.id,
+      members: [otherUser.id],
+      role: OrganizationMembershipRole.member,
+    });
+
+    await page.goto('/settings/account');
+
+    await expect(
+      page.getByText(
+        new RegExp(
+          `Your account is currently an owner in this organization: ${organization.name}.`,
+        ),
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        /you must remove yourself, transfer ownership, or delete this organization before you can delete your user./i,
+      ),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /delete account/i }),
+    ).toBeDisabled();
+
+    await teardownOrganizationAndMember({ user, organization });
+    await deleteUserAccountFromDatabaseById(otherUser.id);
   });
 });

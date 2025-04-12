@@ -7,7 +7,9 @@ import { Separator } from '~/components/ui/separator';
 import { AccountSettings } from '~/features/user-accounts/settings/account/account-settings';
 import { accountSettingsAction } from '~/features/user-accounts/settings/account/account-settings-action.server';
 import { UPDATE_USER_ACCOUNT_INTENT } from '~/features/user-accounts/settings/account/account-settings-constants';
-import { requireAuthenticatedUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
+import { mapUserAccountWithMembershipsToDangerZoneProps } from '~/features/user-accounts/settings/account/account-settings-helpers.server';
+import { DangerZone } from '~/features/user-accounts/settings/account/danger-zone';
+import { requireAuthenticatedUserWithMembershipsExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
 import i18next from '~/utils/i18next.server';
@@ -18,7 +20,7 @@ export const handle = { i18n: 'user-accounts' };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { auth, t } = await promiseHash({
-    auth: requireAuthenticatedUserExists(request),
+    auth: requireAuthenticatedUserWithMembershipsExists(request),
     t: i18next.getFixedT(request, ['user-accounts', 'common']),
   });
 
@@ -26,6 +28,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     {
       title: getPageTitle(t, 'settings.account.page-title'),
       user: auth.user,
+      dangerZone: mapUserAccountWithMembershipsToDangerZoneProps(auth.user),
     },
     { headers: auth.headers },
   );
@@ -67,6 +70,10 @@ export default function SettingsAccountRoute({
           isUpdatingUserAccount={isUpdatingUserAccount}
           user={loaderData.user}
         />
+
+        <Separator />
+
+        <DangerZone {...loaderData.dangerZone} />
       </div>
     </div>
   );

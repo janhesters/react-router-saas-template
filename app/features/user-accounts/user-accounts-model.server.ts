@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import type { Prisma, UserAccount } from '@prisma/client';
 
 import { prisma } from '~/utils/database.server';
@@ -71,12 +72,59 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
     include: {
       memberships: {
         where: {
-          // eslint-disable-next-line unicorn/no-null
           OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
         },
         select: {
           organization: {
             select: { id: true, name: true, slug: true, imageUrl: true },
+          },
+          role: true,
+          deactivatedAt: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Retrieves a user account, their active organization memberships, and the count
+ * of members in each organization by Supabase ID.
+ *
+ * @param supabaseUserId The Supabase ID of the user account.
+ * @returns The user account with active memberships and member counts or null.
+ * Active memberships are those that are either not deactivated or have a
+ * deactivation date in the future.
+ */
+export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId(
+  supabaseUserId: UserAccount['supabaseUserId'],
+) {
+  return prisma.userAccount.findUnique({
+    where: { supabaseUserId },
+    include: {
+      memberships: {
+        where: {
+          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
+        },
+        select: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              // Count active members in the organization
+              _count: {
+                select: {
+                  memberships: {
+                    where: {
+                      OR: [
+                        { deactivatedAt: null },
+                        { deactivatedAt: { gt: new Date() } },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
           },
           role: true,
           deactivatedAt: true,

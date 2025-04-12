@@ -1,6 +1,22 @@
 {
   "settings": {
     "account": {
+      "danger-zone": {
+        "blocking-organizations-help": "You must remove yourself, transfer ownership, or delete this organization before you can delete your user.",
+        "blocking-organizations_one": "Your account is currently an owner in this organization: <1>{{organizations}}</1>.",
+        "blocking-organizations_other": "Your account is currently an owner in these organizations: <1>{{organizations}}</1>.",
+        "cancel": "Cancel",
+        "delete-button": "Delete Account",
+        "delete-confirm": "Delete this account",
+        "delete-description": "Once you delete your account, there is no going back. Please be certain.",
+        "delete-title": "Delete Account",
+        "deleting": "Deleting account ...",
+        "dialog-description": "Are you sure you want to delete your account? This action cannot be undone.",
+        "dialog-title": "Delete Account",
+        "implicitly-deleted-organizations_one": "The following organization will be deleted: <1>{{organizations}}</1>",
+        "implicitly-deleted-organizations_other": "The following organizations will be deleted: <1>{{organizations}}</1>",
+        "title": "Danger Zone"
+      },
       "description": "Manage your account settings.",
       "form": {
         "avatar-description": "Your avatar will be shown across the application.",

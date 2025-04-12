@@ -30,7 +30,7 @@ export async function requireUserIsAuthenticated(
     });
   }
 
-  return { user, headers };
+  return { user, headers, supabase };
 }
 
 /**
