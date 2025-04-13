@@ -121,7 +121,7 @@ export async function createAuthenticatedRequest({
 
   // Determine the Supabase project reference for the cookie name.
   const projectReference =
-    process.env.SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
+    process.env.VITE_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
   const cookieName = `sb-${projectReference}-auth-token`;
   const cookieValue = encodeURIComponent(JSON.stringify(mockSession));
 

@@ -1,4 +1,9 @@
-// TODO: File uploads for logos & avatars
+// TODO: File uploads for logos during onboarding
+// TODO: File uploads for avatars
+// TODO: When updating an organization, delete the organization logo from storage.
+// TODO: When deleting an organization, delete the organization logo from storage.
+// TODO: When updating an user account, delete the user's avatar from storage.
+// TODO: When deleting an user account, delete the user's avatar from storage.
 // TODO: invite via email
 // TODO: Notifications
 // TODO: billing
@@ -83,6 +88,10 @@ test.describe('account settings', () => {
 
     // Update name
     const newName = createPopulatedUserAccount().name;
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/manage your account settings/i)).toBeVisible();
     await page.getByRole('textbox', { name: /name/i }).fill(newName);
     await page.getByRole('button', { name: /save changes/i }).click();
 
@@ -111,6 +120,10 @@ test.describe('account settings', () => {
     await page.goto('/settings/account');
 
     // Submit invalid name
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/manage your account settings/i)).toBeVisible();
     await page.getByRole('textbox', { name: /name/i }).fill('a');
     await page.getByRole('button', { name: /save changes/i }).click();
 

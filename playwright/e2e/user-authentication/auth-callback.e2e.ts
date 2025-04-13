@@ -26,7 +26,7 @@ const path = '/auth/callback';
  */
 async function setupCodeVerifierCookie({ page }: { page: Page }) {
   const projectReference =
-    process.env.SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
+    process.env.VITE_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
 
   await page.context().addCookies([
     {

@@ -11,18 +11,13 @@ import i18n from '~/utils/i18n';
 
 import { onUnhandledRequest } from './test/mocks/msw-utils';
 
-// @see https://remix.run/docs/en/main/guides/envvars#browser-environment-variables
-export type EnvironmentVariables = {
-  CLIENT_MOCKS?: string;
-};
-
 declare global {
   // eslint-disable-next-line no-var
-  var ENV: EnvironmentVariables;
+  var __ENABLE_MSW__: boolean | undefined;
 }
 
 async function activateMsw() {
-  if (ENV?.CLIENT_MOCKS === 'true') {
+  if (globalThis.__ENABLE_MSW__ === true) {
     const { worker } = await import('./test/mocks/browser');
 
     return worker.start({ onUnhandledRequest });

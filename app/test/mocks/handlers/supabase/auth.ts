@@ -21,7 +21,7 @@ Auth handlers
 // supabase.auth.getUser
 
 const getUserMock = http.get(
-  `${process.env.SUPABASE_URL}/auth/v1/user`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/user`,
   async ({ request }) => {
     // Check for the presence of an Authorization header.
     const authHeader = request.headers.get('Authorization');
@@ -67,7 +67,7 @@ export function createRateLimitedEmail() {
 }
 
 const signInWithOtpMock = http.post(
-  `${process.env.SUPABASE_URL}/auth/v1/otp`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/otp`,
   async ({ request }) => {
     // Parse the request body to determine if it's an email or phone OTP request
     const body = (await request.json()) as Record<string, string>;
@@ -120,7 +120,7 @@ export function stringifyTokenHashData(data: TokenHashData): string {
 }
 
 const verifyOtpMock = http.post(
-  `${process.env.SUPABASE_URL}/auth/v1/verify`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/verify`,
   async ({ request }) => {
     const body = (await request.json()) as Record<string, string>;
 
@@ -191,7 +191,7 @@ export function stringifyAuthCodeData(data: AuthCodeData): string {
 }
 
 const exchangeCodeForSessionMock = http.post(
-  `${process.env.SUPABASE_URL}/auth/v1/token`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/token`,
   async ({ request }) => {
     // Access query parameters dynamically
     const url = new URL(request.url);
@@ -253,7 +253,7 @@ const exchangeCodeForSessionMock = http.post(
 // supabase.auth.logout
 
 const logoutMock = http.post(
-  `${process.env.SUPABASE_URL}/auth/v1/logout`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/logout`,
   async ({ request }) => {
     // Check for the presence of an Authorization header
     const authHeader = request.headers.get('Authorization');
@@ -279,7 +279,7 @@ const logoutMock = http.post(
 // supabase.auth.admin.deleteUser
 
 const deleteUserMock = http.delete(
-  `${process.env.SUPABASE_URL}/auth/v1/admin/users/:id`,
+  `${process.env.VITE_SUPABASE_URL}/auth/v1/admin/users/:id`,
   async ({ request, params }) => {
     // Check for the presence of an Authorization header
     const authHeader = request.headers.get('Authorization');

@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { Organization } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
 import { useRef } from 'react';
 import type { FieldErrors } from 'react-hook-form';
@@ -33,10 +34,7 @@ export type UpdateOrganizationFormErrors =
 export type GeneralOrganizationSettingsProps = {
   errors?: UpdateOrganizationFormErrors;
   isUpdatingOrganization?: boolean;
-  organization: {
-    name: string;
-    logoUrl?: string;
-  };
+  organization: Pick<Organization, 'name' | 'imageUrl'>;
 };
 
 export function GeneralOrganizationSettings({
@@ -174,7 +172,7 @@ export function GeneralOrganizationSettings({
                       <AvatarImage
                         alt={t('logo-label')}
                         className="aspect-square h-full rounded-md object-cover"
-                        src={organization.logoUrl}
+                        src={organization.imageUrl}
                       />
                       <AvatarFallback className="rounded-md text-2xl">
                         {organization.name.slice(0, 2).toUpperCase()}
@@ -193,7 +191,7 @@ export function GeneralOrganizationSettings({
                       <AvatarImage
                         alt={t('logo-label')}
                         className="aspect-square h-full w-full rounded-md object-cover"
-                        src={organization.logoUrl}
+                        src={organization.imageUrl}
                       />
                       <AvatarFallback className="rounded-md text-4xl">
                         {organization.name.slice(0, 2).toUpperCase()}

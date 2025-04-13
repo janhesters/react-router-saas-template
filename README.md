@@ -1,21 +1,29 @@
-# Welcome to React Router!
+# Welcome to the React Router SaaS Template!
 
-
-
-
-A modern, production-ready template for building full-stack React applications using React Router.
+A modern, production-ready template for building full-stack React applications for B2B SaaS applications using React Router.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
 
-## Features
+## Tech Stack
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
+- 📖 [React Router](https://reactrouter.com/)
 - 🔒 TypeScript by default
 - 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+- 🗄️ Postgres with Supabase & Prisma
+- 🧹 ESLint for linting
+- 💅 Prettier for code formatting
+- ⚡️ Vitest for testing
+- 🎭 Playwright for E2E testing
+
+## Features
+
+- 🔒 Authentication with Supabase (Email Magic Link, Google OAuth)
+- 💳 Billing with Stripe
+- 📸 Image upload with Supabase Storage
+- 🎨 Shadcn UI components
+- 👥 Multi-tenant organizations with role-based memberships
+- 🌙 Dark mode
+- 🔔 Notifications
 
 ## Getting Started
 
@@ -186,3 +194,17 @@ Folder structure:
 ---
 
 Give it your own name! Fuzzy search for `React Router SaaS Template` to find all the places you need to change the name.
+
+---
+
+### Supabase Storage
+
+Create a bucket in Supabase Storage.
+
+1. Visit your project in the Supabase UI: https://supabase.com/dashboard/project/[your-project-ref].
+2. Go to the Storage section.
+3. Click on the "New Bucket" button.
+4. Enter a name for the bucket, e.g. `"app-images"` if you want to use a special bucket for images, which we recommend.
+5. Keep the bucket as "Private" to ensure that only authenticated users can access the files.
+6. Click on "Additional configuration", set the maximum upload sizeto 1MB, and set the allowed MIME types to `image/*` to only allow image files.
+7. Click on "Save".

@@ -83,8 +83,8 @@ jobs:
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@localhost:5432/postgres
       APP_URL: http://localhost:3000
       SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
 
     steps:
       - name: ⬇️ Checkout repo
@@ -127,8 +127,8 @@ jobs:
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@localhost:5432/postgres
       APP_URL: http://localhost:3000
       SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
-      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
 
     steps:
       - name: ⬇️ Checkout repo
@@ -147,6 +147,9 @@ jobs:
 
       - name: 🛠 Setup Database
         run: npm run prisma:wipe
+
+      - name: 🏗️ Build Application (with mocks)
+        run: npm run build-with-mocks
 
       - name: 🎭 Playwright Run Chrome
         run: npx playwright test --project=chromium

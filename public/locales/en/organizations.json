@@ -54,9 +54,9 @@
     "form": {
       "card-description": "Tell us about your organization. You'll still remain a member of your current organization, with the ability to switch between them anytime.",
       "card-title": "Create a new organization",
-      "logo-invalid-mime-type": "Invalid file type. Allowed file types are JPG, PNG, and JPEG.",
       "logo-label": "Logo",
-      "logo-must-be-file": "Logo must be a file.",
+      "logo-must-be-string": "Logo must be a string.",
+      "logo-must-be-url": "Logo must be a valid URL.",
       "name-label": "Organization name",
       "name-max-length": "Organization name must be less than 255 characters long.",
       "name-min-length": "Organization name must be at least 3 characters long.",

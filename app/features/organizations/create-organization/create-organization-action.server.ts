@@ -15,12 +15,13 @@ export async function createOrganizationAction({ request }: Route.ActionArgs) {
     const { user, headers } = await requireAuthenticatedUserExists(request);
     const data = await validateFormData(request, createOrganizationFormSchema);
 
-    if (typeof data.name !== 'string') {
-      throw new TypeError('Organization name must be a string');
-    }
-
     const organization = await saveOrganizationWithOwnerToDatabase({
-      organization: { name: data.name, slug: slugify(data.name) },
+      organization: {
+        id: data.organizationId,
+        imageUrl: data.logo,
+        name: data.name,
+        slug: slugify(data.name),
+      },
       userId: user.id,
     });
 

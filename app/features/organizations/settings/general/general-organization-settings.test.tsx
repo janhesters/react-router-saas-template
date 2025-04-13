@@ -12,7 +12,7 @@ const createProps: Factory<GeneralOrganizationSettingsProps> = ({
   isUpdatingOrganization = false,
   organization = {
     name: faker.company.name(),
-    logoUrl: faker.image.url(),
+    imageUrl: faker.image.url(),
   },
 } = {}) => ({ errors, isUpdatingOrganization, organization });
 

@@ -62,6 +62,7 @@ export function OrganizationSwitcher({
               <Avatar className="aspect-square size-8 rounded-lg">
                 <AvatarImage
                   alt={currentOrganization.name}
+                  className="object-cover"
                   src={currentOrganization.logo}
                 />
 
@@ -116,6 +117,7 @@ export function OrganizationSwitcher({
                     <Avatar className="aspect-square size-6 rounded-sm border">
                       <AvatarImage
                         src={organization.logo}
+                        className="object-cover"
                         alt={organization.name}
                       />
 

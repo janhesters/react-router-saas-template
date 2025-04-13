@@ -67,13 +67,11 @@ export async function loader({ request }: Route.LoaderArgs) {
     t: i18next.getFixedT(request),
     toastData: getToast(request),
   });
-  const { CLIENT_MOCKS } = process.env;
   const title = t('app-name');
   const { toast, headers: toastHeaders } = toastData;
   return data(
     {
       colorScheme,
-      ENV: { CLIENT_MOCKS: CLIENT_MOCKS === 'true' },
       locale,
       title,
       toast,
@@ -126,13 +124,6 @@ export function Layout({
         <ScrollRestoration />
         <Toaster position="bottom-right" />
         <Scripts />
-        {data?.ENV && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `window.ENV = ${JSON.stringify(data?.ENV)}`,
-            }}
-          />
-        )}
       </body>
     </html>
   );

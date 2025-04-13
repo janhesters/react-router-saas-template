@@ -1,11 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createId } from '@paralleldrive/cuid2';
 import { Loader2Icon } from 'lucide-react';
+import { useRef } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
 import { Form, href, Link, useSubmit } from 'react-router';
 import type { z } from 'zod';
 
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from '~/components/dropzone';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -15,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
-import { DragAndDrop } from '~/components/ui/drag-and-drop';
 import {
   FormControl,
   FormField,
@@ -25,7 +31,7 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
-import { cn } from '~/lib/utils';
+import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
 import { toFormData } from '~/utils/to-form-data';
 
 import { CREATE_ORGANIZATION_INTENT } from './create-organization-constants';
@@ -47,11 +53,25 @@ export function CreateOrganizationFormCard({
   const { t } = useTranslation('organizations', { keyPrefix: 'new.form' });
   const submit = useSubmit();
 
+  // Since you upload the logo before creating the organization, we need to
+  // generate a unique ID for the organization.
+  const organizationId = useRef(createId());
+  const path = `organization-logos/${organizationId.current}`;
+  const uploadHandler = useSupabaseUpload({
+    bucketName: 'app-images',
+    path,
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000, // 1MB
+    allowedMimeTypes: ['image/*'],
+    upsert: false,
+  });
+
   const form = useForm<CreateOrganizationFormSchema>({
     resolver: zodResolver(createOrganizationFormSchema),
     defaultValues: {
       intent: CREATE_ORGANIZATION_INTENT,
       name: '',
+      organizationId: organizationId.current,
       logo: undefined,
     },
     errors,
@@ -60,8 +80,30 @@ export function CreateOrganizationFormCard({
   const handleSubmit = async (
     values: z.infer<typeof createOrganizationFormSchema>,
   ) => {
-    await submit(toFormData(values), { method: 'POST' });
+    if (uploadHandler.files.length > 0) {
+      const isUploadSuccess = await uploadHandler.onUpload();
+
+      if (isUploadSuccess) {
+        // Get the public URL of the uploaded file
+        const {
+          data: { publicUrl },
+        } = uploadHandler.supabase.storage
+          .from('app-images')
+          .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
+            transform: { width: 128, height: 128, resize: 'cover' },
+          });
+        // Submit the form with the logo URL
+        await submit(toFormData({ ...values, logo: publicUrl }), {
+          method: 'POST',
+        });
+      }
+    } else {
+      // No logo to upload, just submit the form as is
+      await submit(toFormData(values), { method: 'POST' });
+    }
   };
+
+  const isFormDisabled = isCreatingOrganization || uploadHandler.loading;
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,7 +122,7 @@ export function CreateOrganizationFormCard({
             >
               <fieldset
                 className="flex flex-col gap-6"
-                disabled={isCreatingOrganization}
+                disabled={isFormDisabled}
               >
                 <FormField
                   control={form.control}
@@ -107,26 +149,24 @@ export function CreateOrganizationFormCard({
                 <FormField
                   control={form.control}
                   name="logo"
-                  render={({ field: { onChange } }) => (
+                  render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="organizationLogo">
                         {t('logo-label')}
                       </FormLabel>
 
                       <FormControl>
-                        <DragAndDrop
-                          accept="image/jpeg,image/png"
-                          className={cn(
-                            form.formState.errors.logo && 'border-destructive',
-                          )}
-                          id="organizationLogo"
-                          multiple={false}
-                          name="logo"
-                          onFileChosen={file => {
-                            onChange(file);
-                            form.setValue('logo', file);
-                          }}
-                        />
+                        <Dropzone
+                          {...uploadHandler}
+                          getInputProps={props => ({
+                            ...field,
+                            ...uploadHandler.getInputProps(props),
+                            id: 'organizationLogo',
+                          })}
+                        >
+                          <DropzoneEmptyState />
+                          <DropzoneContent />
+                        </Dropzone>
                       </FormControl>
 
                       <FormMessage />
@@ -141,12 +181,12 @@ export function CreateOrganizationFormCard({
         <CardFooter>
           <Button
             className="w-full"
-            disabled={isCreatingOrganization}
+            disabled={isFormDisabled}
             form="create-organization-form"
             name="intent"
             type="submit"
           >
-            {isCreatingOrganization ? (
+            {isFormDisabled ? (
               <>
                 <Loader2Icon className="animate-spin" />
                 {t('saving')}

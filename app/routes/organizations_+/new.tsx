@@ -5,9 +5,9 @@ import { promiseHash } from 'remix-utils/promise';
 
 import { Button } from '~/components/ui/button';
 import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
+import { createOrganizationAction } from '~/features/organizations/create-organization/create-organization-action.server';
 import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-organization/create-organization-constants';
 import { CreateOrganizationFormCard } from '~/features/organizations/create-organization/create-organization-form-card';
-import { createOrganizationAction } from '~/features/organizations/create-organization/creatie-organization-action.server';
 import { requireAuthenticatedUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
@@ -15,7 +15,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/new';
 
-export const handle = { i18n: ['organizations', 'drag-and-drop'] };
+export const handle = { i18n: ['organizations', 'dropzone'] };
 
 export async function loader(args: Route.LoaderArgs) {
   const { t } = await promiseHash({
