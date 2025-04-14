@@ -14,7 +14,7 @@ const createProps: Factory<OnboardingOrganizationFormCardProps> = ({
 } = {}) => ({ errors, isCreatingOrganization });
 
 describe('OnboardingOrganizationFormCard Component', () => {
-  test('given: component renders with default props, should: render a card with a name input and submit button', () => {
+  test('given: component renders with default props, should: render a card with a name input, logo input, and submit button', () => {
     const path = '/onboarding';
     const RouterStub = createRoutesStub([
       { path, Component: () => <OnboardingOrganizationFormCard /> },
@@ -32,6 +32,7 @@ describe('OnboardingOrganizationFormCard Component', () => {
 
     // Verify form elements are present.
     expect(screen.getByLabelText(/organization name/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/logo/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /save/i })).toHaveAttribute(
       'type',
       'submit',

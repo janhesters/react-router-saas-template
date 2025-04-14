@@ -6,6 +6,9 @@
   "organization": {
     "card-description": "You can invite other users to join your organization later through the organization settings.",
     "card-title": "Create your organization",
+    "logo-label": "Logo",
+    "logo-must-be-string": "Logo must be a string.",
+    "logo-must-be-url": "Logo must be a valid URL.",
     "name-max-length": "Your organization name must be at most 255 characters long.",
     "name-min-length": "Your organization name must be at least 3 characters long.",
     "name-must-be-string": "Your organization's name must be a string.",

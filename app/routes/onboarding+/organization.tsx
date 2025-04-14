@@ -14,7 +14,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/organization';
 
-export const handle = { i18n: 'onboarding' };
+export const handle = { i18n: ['onboarding', 'dropzone'] };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { t, auth } = await promiseHash({

@@ -10,6 +10,7 @@ import { deleteUserAccountFromDatabaseById } from '~/features/user-accounts/user
 import { teardownOrganizationAndMember } from '~/test/test-utils';
 
 import {
+  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -68,6 +69,8 @@ test.describe('onboarding organization page', () => {
         page,
       });
 
+      await enableClientMswMocks({ page });
+
       await page.goto(path);
 
       // Verify page content
@@ -92,11 +95,34 @@ test.describe('onboarding organization page', () => {
         page.getByRole('link', { name: /organization/i }),
       ).toHaveAttribute('aria-current', 'step');
 
-      // Create organization
+      // Entery organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);
+
+      // Test image upload via drag and drop
+      const dropzone = page.getByText(
+        /drag and drop or select file to upload/i,
+      );
+      await expect(dropzone).toBeVisible();
+
+      // Perform drag and drop of the image
+      await page.setInputFiles(
+        'input[type="file"]',
+        'playwright/fixtures/200x200.jpg',
+      );
+      await expect(page.getByText('200x200.jpg')).toBeVisible();
+
+      // Enter name again. Sometimes with MSW activated on the server,
+      // it takes time for the fields to become available, so we do it twice
+      // to make sure the test isn't flaky.
+      await page.getByRole('textbox', { name: /organization name/i }).clear();
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill(newName);
+
+      // Create organization
       await page.getByRole('button', { name: /save/i }).click();
 
       // Verify loading state

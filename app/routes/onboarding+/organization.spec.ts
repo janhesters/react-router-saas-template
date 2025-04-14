@@ -258,5 +258,49 @@ describe('/onboarding/organization route action', () => {
         expect(response).toEqual(expected);
       },
     );
+
+    test('given: a valid organization id, name and a logo url, should: create organization with logo url', async () => {
+      const { userAccount } = await setup();
+      const organization = createPopulatedOrganization();
+
+      const formData = toFormData({
+        intent,
+        organizationId: organization.id,
+        name: organization.name,
+        logo: organization.imageUrl,
+      });
+
+      const response = (await sendAuthenticatedRequest({
+        userAccount,
+        formData,
+      })) as Response;
+
+      // Assert redirect
+      expect(response.status).toEqual(302);
+      const slug = slugify(organization.name);
+      expect(response.headers.get('Location')).toEqual(
+        `/organizations/${slug}`,
+      );
+
+      // Verify organization was created with correct data including logo
+      const createdOrganization =
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
+
+      expect(createdOrganization).toBeTruthy();
+      expect(createdOrganization).toMatchObject({
+        id: organization.id,
+        name: organization.name,
+        slug: slug,
+        imageUrl: organization.imageUrl, // Verify the logo URL was saved
+      });
+      expect(createdOrganization!.memberships).toHaveLength(1);
+      expect(createdOrganization!.memberships[0].member.id).toEqual(
+        userAccount.id,
+      );
+      expect(createdOrganization!.memberships[0].role).toEqual('owner');
+
+      // Cleanup
+      await deleteOrganizationFromDatabaseById(createdOrganization!.id);
+    });
   });
 });

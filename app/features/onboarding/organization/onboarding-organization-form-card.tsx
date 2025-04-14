@@ -1,10 +1,17 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { createId } from '@paralleldrive/cuid2';
 import { Loader2Icon } from 'lucide-react';
+import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from 'react-router';
 import type { z } from 'zod';
 
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from '~/components/dropzone';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -24,6 +31,7 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
 
 import { ONBOARDING_ORGANIZATION_INTENT } from './onboarding-organization-consants';
 import type {
@@ -44,11 +52,26 @@ export function OnboardingOrganizationFormCard({
   const { t } = useTranslation('onboarding', { keyPrefix: 'organization' });
   const submit = useSubmit();
 
+  // Since you upload the logo before creating the organization, we need to
+  // generate a unique ID for the organization.
+  const organizationId = useRef(createId());
+  const path = `organization-logos/${organizationId.current}`;
+  const uploadHandler = useSupabaseUpload({
+    bucketName: 'app-images',
+    path,
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000, // 1MB
+    allowedMimeTypes: ['image/*'],
+    upsert: false,
+  });
+
   const form = useForm<OnboardingOrganizationSchema>({
     resolver: zodResolver(onboardingOrganizationSchema),
     defaultValues: {
       intent: ONBOARDING_ORGANIZATION_INTENT,
       name: '',
+      organizationId: organizationId.current,
+      logo: undefined,
     },
     errors,
   });
@@ -56,8 +79,28 @@ export function OnboardingOrganizationFormCard({
   const handleSubmit = async (
     values: z.infer<typeof onboardingOrganizationSchema>,
   ) => {
-    await submit(values, { method: 'POST' });
+    if (uploadHandler.files.length > 0) {
+      const isUploadSuccess = await uploadHandler.onUpload();
+
+      if (isUploadSuccess) {
+        // Get the public URL of the uploaded file
+        const {
+          data: { publicUrl },
+        } = uploadHandler.supabase.storage
+          .from('app-images')
+          .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
+            transform: { width: 128, height: 128, resize: 'cover' },
+          });
+        // Submit the form with the logo URL
+        await submit({ ...values, logo: publicUrl }, { method: 'POST' });
+      }
+    } else {
+      // No logo to upload, just submit the form as is
+      await submit(values, { method: 'POST' });
+    }
   };
+
+  const isFormDisabled = isCreatingOrganization || uploadHandler.loading;
 
   return (
     <Card className="m-auto w-full max-w-md">
@@ -75,7 +118,7 @@ export function OnboardingOrganizationFormCard({
             replace
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            <fieldset disabled={isCreatingOrganization}>
+            <fieldset disabled={isFormDisabled}>
               <FormField
                 control={form.control}
                 name="name"
@@ -101,6 +144,34 @@ export function OnboardingOrganizationFormCard({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="logo"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="organizationLogo">
+                      {t('logo-label')}
+                    </FormLabel>
+
+                    <FormControl>
+                      <Dropzone
+                        {...uploadHandler}
+                        getInputProps={props => ({
+                          ...field,
+                          ...uploadHandler.getInputProps(props),
+                          id: 'organizationLogo',
+                        })}
+                      >
+                        <DropzoneEmptyState />
+                        <DropzoneContent />
+                      </Dropzone>
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </fieldset>
           </Form>
         </FormProvider>
@@ -109,13 +180,13 @@ export function OnboardingOrganizationFormCard({
       <CardFooter>
         <Button
           className="w-full"
-          disabled={isCreatingOrganization}
+          disabled={isFormDisabled}
           form="organization-form"
           name="intent"
           type="submit"
           value={ONBOARDING_ORGANIZATION_INTENT}
         >
-          {isCreatingOrganization ? (
+          {isFormDisabled ? (
             <>
               <Loader2Icon className="mr-2 size-4 animate-spin" />
               {t('saving')}

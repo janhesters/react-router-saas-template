@@ -17,12 +17,13 @@ export async function onboardingOrganizationAction({
     const { user, headers } = await requireUserNeedsOnboarding(request);
     const data = await validateFormData(request, onboardingOrganizationSchema);
 
-    if (typeof data.name !== 'string') {
-      throw new TypeError('Organization name must be a string');
-    }
-
     const organization = await saveOrganizationWithOwnerToDatabase({
-      organization: { name: data.name, slug: slugify(data.name) },
+      organization: {
+        name: data.name,
+        slug: slugify(data.name),
+        imageUrl: data.logo,
+        id: data.organizationId,
+      },
       userId: user.id,
     });
 
