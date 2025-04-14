@@ -13,9 +13,8 @@ export const updateUserAccountFormSchema = z.object({
     .max(128, 'settings:user-account.form.name-max-length'),
   email: z.string().email().optional(),
   avatar: z
-    .instanceof(File, {
-      message: 'settings:user-account.form.avatar-must-be-file',
-    })
+    .string()
+    .url('settings:user-account.form.avatar-must-be-url')
     .optional(),
 });
 

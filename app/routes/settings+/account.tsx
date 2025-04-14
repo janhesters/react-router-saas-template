@@ -16,7 +16,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/account';
 
-export const handle = { i18n: 'settings' };
+export const handle = { i18n: ['settings', 'dropzone'] };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { auth, t } = await promiseHash({

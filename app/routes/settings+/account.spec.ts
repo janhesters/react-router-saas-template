@@ -98,12 +98,74 @@ describe('/settings/account route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         formData,
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-      })) as DataWithResponseInit<{}>;
+      })) as DataWithResponseInit<Record<string, never>>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(newName);
+
+      const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
+      const { toast } = await getToast(
+        new Request(createUrl(), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        id: expect.any(String) as string,
+        title: 'Your account has been updated',
+        type: 'success',
+      });
+    });
+
+    test('given: a valid name and avatar URL, should: update user account name and avatar and return a success toast', async () => {
+      const user = await setup();
+
+      const newName = createPopulatedUserAccount().name;
+      const newAvatar = 'https://example.com/avatar.jpg';
+      const formData = toFormData({ intent, name: newName, avatar: newAvatar });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        formData,
+      })) as DataWithResponseInit<Record<string, never>>;
+
+      // Verify user account was updated in the database
+      const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
+      expect(updatedUser?.name).toEqual(newName);
+      expect(updatedUser?.imageUrl).toEqual(newAvatar);
+
+      const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
+      const { toast } = await getToast(
+        new Request(createUrl(), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        id: expect.any(String) as string,
+        title: 'Your account has been updated',
+        type: 'success',
+      });
+    });
+
+    test('given: only an avatar URL update, should: update just the avatar and return a success toast', async () => {
+      const user = await setup();
+
+      const newAvatar = 'https://example.com/new-avatar.jpg';
+      const formData = toFormData({
+        intent,
+        name: user.name,
+        avatar: newAvatar,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        formData,
+      })) as DataWithResponseInit<Record<string, never>>;
+
+      // Verify only avatar was updated in the database
+      const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
+      expect(updatedUser?.name).toEqual(user.name);
+      expect(updatedUser?.imageUrl).toEqual(newAvatar);
 
       const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
       const { toast } = await getToast(
@@ -164,6 +226,17 @@ describe('/settings/account route action', () => {
           errors: {
             name: {
               message: 'settings:user-account.form.name-min-length',
+            },
+          },
+        }),
+      },
+      {
+        given: 'an invalid avatar URL',
+        body: { intent, name: 'Test User', avatar: 'not-a-url' },
+        expected: badRequest({
+          errors: {
+            avatar: {
+              message: 'settings:user-account.form.avatar-must-be-url',
             },
           },
         }),

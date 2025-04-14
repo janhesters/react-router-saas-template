@@ -11,6 +11,7 @@ const createProps: Factory<AccountSettingsProps> = ({
   errors,
   isUpdatingUserAccount = false,
   user = {
+    id: faker.string.uuid(),
     name: faker.person.fullName(),
     email: faker.internet.email(),
     imageUrl: faker.image.avatar(),
@@ -30,18 +31,18 @@ describe('AccountSettings Component', () => {
     // Verify form elements are present
     const nameInput = screen.getByLabelText(/name/i);
     const emailInput = screen.getByLabelText(/email/i);
-    const avatarInputMobile = screen.getByLabelText(/avatar/i); // Targets the input via label
+    const avatarDropzone = screen.getByLabelText(/avatar/i);
     const saveButton = screen.getByRole('button', { name: /save changes/i });
 
     expect(nameInput).toBeInTheDocument();
     expect(emailInput).toBeInTheDocument();
-    expect(avatarInputMobile).toBeInTheDocument(); // Check if file input exists
+    expect(avatarDropzone).toBeInTheDocument();
     expect(saveButton).toBeInTheDocument();
 
     // Verify initial values and states
     expect(nameInput).toHaveValue(props.user.name);
     expect(emailInput).toHaveValue(props.user.email);
-    expect(emailInput).toBeDisabled(); // Crucial check
+    expect(emailInput).toBeDisabled();
     expect(saveButton).toBeEnabled();
   });
 
@@ -57,11 +58,9 @@ describe('AccountSettings Component', () => {
     // Verify form elements are disabled
     expect(screen.getByLabelText(/name/i)).toBeDisabled();
     expect(screen.getByLabelText(/email/i)).toBeDisabled();
-
-    // Check one of the file inputs for disabled state (use ID for robustness if label is ambiguous)
-    // Note: Finding file inputs reliably can sometimes be tricky. Querying by role/test-id might be better if labels fail.
-    // Let's assume getByLabelText works for the mobile input for now.
-    expect(screen.getByLabelText(/avatar/i)).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /saving changes/i }),
+    ).toBeDisabled();
 
     // Verify loading state in button
     const saveButton = screen.getByRole('button', { name: /saving changes/i });
@@ -69,13 +68,13 @@ describe('AccountSettings Component', () => {
     expect(saveButton).toHaveTextContent(/saving changes/i);
     expect(
       screen.queryByRole('button', { name: /save changes/i }),
-    ).not.toBeInTheDocument(); // Ensure original text isn't there
+    ).not.toBeInTheDocument();
   });
 
   test('given: form has errors, should: display error messages', () => {
     const errors = {
       name: {
-        type: 'manual', // Or 'validation'
+        type: 'manual',
         message: 'settings:user-account.form.name-min-length',
       },
     };

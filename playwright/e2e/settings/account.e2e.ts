@@ -7,6 +7,8 @@
 // TODO: invite via email
 // TODO: Notifications
 // TODO: billing
+// TODO: upgrade packages
+// TODO: move uploading of images to server
 
 // Billing:
 // - Free Tier, Pro Tier, Enterprise Tier
@@ -34,6 +36,7 @@ import {
 } from '~/test/test-utils';
 
 import {
+  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -130,6 +133,52 @@ test.describe('account settings', () => {
     // Verify validation error
     await expect(
       page.getByText(/your name must be at least 2 characters long/i),
+    ).toBeVisible();
+
+    await deleteUserAccountFromDatabaseById(user.id);
+  });
+
+  test('given: a logged in user submitting a new avatar, should: set the avatar and show a success toast', async ({
+    page,
+  }) => {
+    const user = await loginAndSaveUserAccountToDatabase({ page });
+
+    await enableClientMswMocks({ page });
+
+    await page.goto('/settings/account');
+
+    // Some random page assertions to give the JS for the upload time to load.
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/manage your account settings/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /back/i })).toHaveAttribute(
+      'href',
+      '/organizations',
+    );
+    await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
+
+    // Upload new avatar
+    // Test image upload via drag and drop
+    const dropzone = page.getByText(/drag and drop or select file to upload/i);
+    await expect(dropzone).toBeVisible();
+
+    // Perform drag and drop of the image
+    await page.setInputFiles(
+      'input[type="file"]',
+      'playwright/fixtures/200x200.jpg',
+    );
+    await expect(page.getByText('200x200.jpg')).toBeVisible();
+
+    // Save changes
+    await page.getByRole('button', { name: /save changes/i }).click();
+
+    // Verify success toast
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/your account has been updated/i),
     ).toBeVisible();
 
     await deleteUserAccountFromDatabaseById(user.id);

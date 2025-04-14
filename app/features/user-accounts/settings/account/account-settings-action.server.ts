@@ -41,10 +41,20 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
 
     switch (body.intent) {
       case UPDATE_USER_ACCOUNT_INTENT: {
+        const updates: { name?: string; imageUrl?: string } = {};
+
         if (body.name && body.name !== user.name) {
+          updates.name = body.name;
+        }
+
+        if (body.avatar) {
+          updates.imageUrl = body.avatar;
+        }
+
+        if (Object.keys(updates).length > 0) {
           await updateUserAccountInDatabaseById({
             id: user.id,
-            user: { name: body.name },
+            user: updates,
           });
         }
 

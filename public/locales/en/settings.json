@@ -22,8 +22,10 @@
     },
     "description": "Manage your account settings.",
     "form": {
+      "avatar-alt": "Avatar",
       "avatar-description": "Your avatar will be shown across the application.",
       "avatar-label": "Avatar",
+      "avatar-must-be-url": "Avatar must be a valid URL.",
       "email-description": "Your email address is used to identify you and cannot be changed.",
       "email-label": "Email",
       "email-placeholder": "Your email address ...",
