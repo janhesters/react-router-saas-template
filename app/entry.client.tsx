@@ -18,6 +18,7 @@ declare global {
 
 async function activateMsw() {
   if (globalThis.__ENABLE_MSW__ === true) {
+    console.warn('MSW is activated');
     const { worker } = await import('./test/mocks/browser');
 
     return worker.start({ onUnhandledRequest });

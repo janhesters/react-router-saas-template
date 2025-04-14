@@ -32,6 +32,7 @@ import {
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
 import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
+import { toFormData } from '~/utils/to-form-data';
 
 import { ONBOARDING_ORGANIZATION_INTENT } from './onboarding-organization-consants';
 import type {
@@ -92,11 +93,13 @@ export function OnboardingOrganizationFormCard({
             transform: { width: 128, height: 128, resize: 'cover' },
           });
         // Submit the form with the logo URL
-        await submit({ ...values, logo: publicUrl }, { method: 'POST' });
+        await submit(toFormData({ ...values, logo: publicUrl }), {
+          method: 'POST',
+        });
       }
     } else {
       // No logo to upload, just submit the form as is
-      await submit(values, { method: 'POST' });
+      await submit(toFormData(values), { method: 'POST' });
     }
   };
 
@@ -118,7 +121,7 @@ export function OnboardingOrganizationFormCard({
             replace
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            <fieldset disabled={isFormDisabled}>
+            <fieldset className="flex flex-col gap-6" disabled={isFormDisabled}>
               <FormField
                 control={form.control}
                 name="name"

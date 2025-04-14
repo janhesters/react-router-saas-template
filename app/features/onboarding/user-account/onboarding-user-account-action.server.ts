@@ -21,13 +21,9 @@ export async function onboardingUserAccountAction({
     const { headers, user } = await requireUserNeedsOnboarding(request);
     const data = await validateFormData(request, onboardingUserAccountSchema);
 
-    if (typeof data.name !== 'string') {
-      throw new TypeError('User name must be a string');
-    }
-
     await updateUserAccountInDatabaseById({
       id: user.id,
-      user: { name: data.name },
+      user: { name: data.name, imageUrl: data.avatar },
     });
 
     const { inviteLinkInfo, headers: inviteLinkHeaders } =

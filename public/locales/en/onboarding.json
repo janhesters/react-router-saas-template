@@ -20,6 +20,8 @@
     "title": "Organization"
   },
   "user-account": {
+    "avatar-label": "Avatar",
+    "avatar-must-be-url": "Avatar must be a valid URL.",
     "card-description": "Welcome to the React Router SaaS template! Please create your user account to get started.",
     "card-title": "Create your account",
     "name-max-length": "Your name must be at most 128 characters long.",

@@ -16,6 +16,7 @@ import {
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
+  retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
@@ -128,6 +129,36 @@ describe('/onboarding/user-account route action', () => {
       );
     });
 
+    test('given: a valid name and avatar URL for a user without organizations, should: update name and avatar and redirect to organization onboarding', async () => {
+      const userAccount = createPopulatedUserAccount({
+        name: '',
+        imageUrl: '',
+      });
+      await saveUserAccountToDatabase(userAccount);
+      onTestFinished(async () => {
+        await deleteUserAccountFromDatabaseById(userAccount.id);
+      });
+
+      const { name, imageUrl } = createPopulatedUserAccount();
+      const formData = toFormData({ intent, name, avatar: imageUrl });
+
+      const response = (await sendAuthenticatedRequest({
+        userAccount,
+        formData,
+      })) as Response;
+
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual(
+        '/onboarding/organization',
+      );
+
+      // Verify the avatar URL was saved
+      const updatedUser = await retrieveUserAccountFromDatabaseById(
+        userAccount.id,
+      );
+      expect(updatedUser?.imageUrl).toEqual(imageUrl);
+    });
+
     test.each([
       {
         given: 'no name provided',
@@ -167,6 +198,15 @@ describe('/onboarding/user-account route action', () => {
         expected: badRequest({
           errors: {
             name: { message: 'onboarding:user-account.name-min-length' },
+          },
+        }),
+      },
+      {
+        given: 'an invalid avatar URL',
+        body: { intent, name: 'Test User', avatar: 'not-a-url' },
+        expected: badRequest({
+          errors: {
+            avatar: { message: 'onboarding:user-account.avatar-must-be-url' },
           },
         }),
       },

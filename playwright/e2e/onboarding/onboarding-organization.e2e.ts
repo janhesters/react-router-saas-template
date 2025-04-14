@@ -61,7 +61,7 @@ test.describe('onboarding organization page', () => {
   });
 
   test.describe('organization creation', () => {
-    test('given: a logged in user with name but no organization, should: allow organization creation and redirect to organization page', async ({
+    test('given: a logged in user with name but no organization, should: allow organization creation with name and logo and redirect to organization page', async ({
       page,
     }) => {
       const { id } = await loginAndSaveUserAccountToDatabase({
@@ -95,7 +95,7 @@ test.describe('onboarding organization page', () => {
         page.getByRole('link', { name: /organization/i }),
       ).toHaveAttribute('aria-current', 'step');
 
-      // Entery organization name
+      // Enter organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();
       await page
         .getByRole('textbox', { name: /organization name/i })
@@ -118,6 +118,71 @@ test.describe('onboarding organization page', () => {
       // it takes time for the fields to become available, so we do it twice
       // to make sure the test isn't flaky.
       await page.getByRole('textbox', { name: /organization name/i }).clear();
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill(newName);
+
+      // Create organization
+      await page.getByRole('button', { name: /save/i }).click();
+
+      // Verify loading state
+      await expect(page.getByRole('button', { name: /saving/i })).toBeVisible();
+
+      // Verify redirect and database update
+      await expect(
+        page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      ).toBeVisible();
+      expect(getPath(page)).toEqual(`/organizations/${newSlug}/dashboard`);
+      const createdOrganization =
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(newSlug);
+      expect(createdOrganization).toMatchObject({
+        name: newName,
+        slug: newSlug,
+      });
+      expect(createdOrganization!.memberships[0].member.id).toEqual(id);
+      expect(createdOrganization!.memberships[0].role).toEqual(
+        OrganizationMembershipRole.owner,
+      );
+
+      await deleteUserAccountFromDatabaseById(id);
+    });
+
+    test('given: a logged in user with name but no organization, should: allow organization creation with only name and redirect to organization page', async ({
+      page,
+    }) => {
+      const { id } = await loginAndSaveUserAccountToDatabase({
+        user: createPopulatedUserAccount(),
+        page,
+      });
+
+      await enableClientMswMocks({ page });
+
+      await page.goto(path);
+
+      // Verify page content
+      await expect(page).toHaveTitle(
+        /organization | react router saas template/i,
+      );
+      await expect(
+        page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+      ).toBeVisible();
+      await expect(page.getByText(/create your organization/i)).toBeVisible();
+      await expect(
+        page.getByText(
+          /you can invite other users to join your organization later/i,
+        ),
+      ).toBeVisible();
+
+      // Verify onboarding steps
+      await expect(
+        page.getByRole('navigation', { name: /onboarding progress/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /organization/i }),
+      ).toHaveAttribute('aria-current', 'step');
+
+      // Enter organization name
+      const { name: newName, slug: newSlug } = createPopulatedOrganization();
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);

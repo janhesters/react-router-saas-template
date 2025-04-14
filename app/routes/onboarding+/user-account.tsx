@@ -14,7 +14,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/user-account';
 
-export const handle = { i18n: 'onboarding' };
+export const handle = { i18n: ['onboarding', 'dropzone'] };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const { t, auth } = await promiseHash({
@@ -26,6 +26,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     {
       title: getPageTitle(t, 'user-account.title'),
       userNeedsOrganization: auth.user.memberships.length === 0,
+      userId: auth.user.id,
     },
     { headers: auth.headers },
   );
@@ -42,7 +43,7 @@ export default function UserAccountOnboardingRoute({
   loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation('onboarding');
-  const { userNeedsOrganization } = loaderData;
+  const { userNeedsOrganization, userId } = loaderData;
   const navigation = useNavigation();
   const isCreatingUserAccount =
     navigation.formData?.get('intent') === ONBOARDING_USER_ACCOUNT_INTENT;
@@ -81,6 +82,7 @@ export default function UserAccountOnboardingRoute({
           <OnboardingUserAccountFormCard
             errors={errors}
             isCreatingUserAccount={isCreatingUserAccount}
+            userId={userId}
           />
         </div>
       </main>

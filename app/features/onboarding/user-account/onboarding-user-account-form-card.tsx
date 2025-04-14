@@ -5,6 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { Form, useSubmit } from 'react-router';
 import type { z } from 'zod';
 
+import {
+  Dropzone,
+  DropzoneContent,
+  DropzoneEmptyState,
+} from '~/components/dropzone';
 import { Button } from '~/components/ui/button';
 import {
   Card,
@@ -24,6 +29,8 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
+import { toFormData } from '~/utils/to-form-data';
 
 import { ONBOARDING_USER_ACCOUNT_INTENT } from './onboarding-user-account-constants';
 import type {
@@ -35,20 +42,33 @@ import { onboardingUserAccountSchema } from './onboarding-user-account-schemas';
 export type OnboardingUserAccountFormCardProps = {
   errors?: OnboardingUserAccountErrors;
   isCreatingUserAccount?: boolean;
+  userId: string;
 };
 
 export function OnboardingUserAccountFormCard({
   errors,
   isCreatingUserAccount = false,
+  userId,
 }: OnboardingUserAccountFormCardProps) {
   const { t } = useTranslation('onboarding', { keyPrefix: 'user-account' });
   const submit = useSubmit();
+
+  const path = `user-avatars/${userId}`;
+  const uploadHandler = useSupabaseUpload({
+    bucketName: 'app-images',
+    path,
+    maxFiles: 1,
+    maxFileSize: 1000 * 1000, // 1MB
+    allowedMimeTypes: ['image/*'],
+    upsert: false,
+  });
 
   const form = useForm<OnboardingUserAccountSchema>({
     resolver: zodResolver(onboardingUserAccountSchema),
     defaultValues: {
       intent: ONBOARDING_USER_ACCOUNT_INTENT,
       name: '',
+      avatar: undefined,
     },
     errors,
   });
@@ -56,8 +76,30 @@ export function OnboardingUserAccountFormCard({
   const handleSubmit = async (
     values: z.infer<typeof onboardingUserAccountSchema>,
   ) => {
-    await submit(values, { method: 'POST' });
+    if (uploadHandler.files.length > 0) {
+      const isUploadSuccess = await uploadHandler.onUpload();
+
+      if (isUploadSuccess) {
+        // Get the public URL of the uploaded file
+        const {
+          data: { publicUrl },
+        } = uploadHandler.supabase.storage
+          .from('app-images')
+          .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
+            transform: { width: 128, height: 128, resize: 'cover' },
+          });
+        // Submit the form with the avatar URL
+        await submit(toFormData({ ...values, avatar: publicUrl }), {
+          method: 'POST',
+        });
+      }
+    } else {
+      // No avatar to upload, just submit the form as is
+      await submit(toFormData(values), { method: 'POST' });
+    }
   };
+
+  const isFormDisabled = isCreatingUserAccount || uploadHandler.loading;
 
   return (
     <Card className="m-auto w-full max-w-md">
@@ -75,7 +117,7 @@ export function OnboardingUserAccountFormCard({
             replace
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            <fieldset disabled={isCreatingUserAccount}>
+            <fieldset className="flex flex-col gap-6" disabled={isFormDisabled}>
               <FormField
                 control={form.control}
                 name="name"
@@ -101,6 +143,34 @@ export function OnboardingUserAccountFormCard({
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="avatar"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor="userAvatar">
+                      {t('avatar-label')}
+                    </FormLabel>
+
+                    <FormControl>
+                      <Dropzone
+                        {...uploadHandler}
+                        getInputProps={props => ({
+                          ...field,
+                          ...uploadHandler.getInputProps(props),
+                          id: 'userAvatar',
+                        })}
+                      >
+                        <DropzoneEmptyState />
+                        <DropzoneContent />
+                      </Dropzone>
+                    </FormControl>
+
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </fieldset>
           </Form>
         </FormProvider>
@@ -109,15 +179,15 @@ export function OnboardingUserAccountFormCard({
       <CardFooter>
         <Button
           className="w-full"
-          disabled={isCreatingUserAccount}
+          disabled={isFormDisabled}
           form="user-account-form"
           name="intent"
           type="submit"
           value={ONBOARDING_USER_ACCOUNT_INTENT}
         >
-          {isCreatingUserAccount ? (
+          {isFormDisabled ? (
             <>
-              <Loader2Icon className="animate-spin" />
+              <Loader2Icon className="mr-2 size-4 animate-spin" />
               {t('saving')}
             </>
           ) : (

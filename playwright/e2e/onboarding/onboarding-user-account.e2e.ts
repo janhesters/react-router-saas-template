@@ -9,6 +9,7 @@ import {
 import { teardownOrganizationAndMember } from '~/test/test-utils';
 
 import {
+  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -59,13 +60,15 @@ test.describe('onboarding user account page', () => {
   });
 
   test.describe('user profile creation', () => {
-    test('given: a logged in user without name and no organization, should: allow name creation and redirect to organization onboarding', async ({
+    test('given: a logged in user without name and no organization, should: allow name and avatar creation and redirect to organization onboarding', async ({
       page,
     }) => {
       const { id } = await loginAndSaveUserAccountToDatabase({
-        user: createPopulatedUserAccount({ name: '' }),
+        user: createPopulatedUserAccount({ name: '', imageUrl: '' }),
         page,
       });
+
+      await enableClientMswMocks({ page });
 
       await page.goto(path);
 
@@ -94,6 +97,26 @@ test.describe('onboarding user account page', () => {
       // Create profile
       const newName = createPopulatedUserAccount().name;
       await page.getByRole('textbox', { name: /name/i }).fill(newName);
+
+      // Test image upload via drag and drop
+      const dropzone = page.getByText(
+        /drag and drop or select file to upload/i,
+      );
+      await expect(dropzone).toBeVisible();
+
+      // Perform drag and drop of the image
+      await page.setInputFiles(
+        'input[type="file"]',
+        'playwright/fixtures/200x200.jpg',
+      );
+      await expect(page.getByText('200x200.jpg')).toBeVisible();
+
+      // Enter name again. Sometimes with MSW activated on the server,
+      // it takes time for the fields to become available, so we do it twice
+      // to make sure the test isn't flaky.
+      await page.getByRole('textbox', { name: /name/i }).clear();
+      await page.getByRole('textbox', { name: /name/i }).fill(newName);
+
       await page.getByRole('button', { name: /save/i }).click();
 
       // Verify loading state
@@ -103,6 +126,7 @@ test.describe('onboarding user account page', () => {
       await expect(page.getByText(/create your organization/i)).toBeVisible();
       const updatedUser = await retrieveUserAccountFromDatabaseById(id);
       expect(updatedUser?.name).toEqual(newName);
+      expect(updatedUser?.imageUrl).toContain('200x200.jpg');
 
       await deleteUserAccountFromDatabaseById(id);
     });
