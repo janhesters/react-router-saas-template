@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
@@ -26,6 +27,7 @@ import { Input } from '~/components/ui/input';
 import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
 import { toFormData } from '~/utils/to-form-data';
 
+import { AVATAR_PATH_PREFIX, BUCKET_NAME } from '../../user-account-constants';
 import { UPDATE_USER_ACCOUNT_INTENT } from './account-settings-constants';
 import type { UpdateUserAccountFormSchema } from './account-settings-schemas';
 import { updateUserAccountFormSchema } from './account-settings-schemas';
@@ -37,11 +39,32 @@ export type AccountSettingsProps = {
   errors?: UpdateUserAccountFormErrors;
   isUpdatingUserAccount?: boolean;
   user: {
-    name: string;
-    email: string;
-    imageUrl?: string;
-    id: string;
+    name: UserAccount['name'];
+    email: UserAccount['email'];
+    imageUrl?: UserAccount['imageUrl'];
+    id: UserAccount['id'];
   };
+};
+
+export const getStoragePathFromUrl = (
+  imageUrl: string | null | undefined,
+): string => {
+  if (!imageUrl) return '';
+  try {
+    const url = new URL(imageUrl);
+    // Example URL: https://<project-ref>.supabase.co/storage/v1/object/public/app-images/user-avatars/user_id/avatar.png
+    // We need the part after the bucket name: "user-avatars/user_id/avatar.png"
+    const pathSegments = url.pathname.split('/');
+    const bucketIndex = pathSegments.indexOf(BUCKET_NAME);
+    if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
+      console.warn('Could not extract storage path from URL:', imageUrl);
+      return '';
+    }
+    return pathSegments.slice(bucketIndex + 1).join('/');
+  } catch (error) {
+    console.error('Error parsing image URL:', error);
+    return '';
+  }
 };
 
 export function AccountSettings({
@@ -54,14 +77,16 @@ export function AccountSettings({
   });
   const submit = useSubmit();
 
-  const path = `user-avatars/${user.id}`;
+  // Construct the specific path for this user's avatars
+  const userAvatarPath = `${AVATAR_PATH_PREFIX}/${user.id}`;
+
   const uploadHandler = useSupabaseUpload({
-    bucketName: 'app-images',
-    path,
+    bucketName: BUCKET_NAME,
+    path: userAvatarPath,
     maxFiles: 1,
     maxFileSize: 1000 * 1000, // 1MB
     allowedMimeTypes: ['image/*'],
-    upsert: false,
+    upsert: true,
   });
 
   const form = useForm<UpdateUserAccountFormSchema>({
@@ -79,25 +104,60 @@ export function AccountSettings({
     values: z.infer<typeof updateUserAccountFormSchema>,
   ) => {
     if (uploadHandler.files.length > 0) {
-      const isUploadSuccess = await uploadHandler.onUpload();
+      const newFile = uploadHandler.files[0];
 
-      if (isUploadSuccess) {
-        // Get the public URL of the uploaded file
-        const {
-          data: { publicUrl },
-        } = uploadHandler.supabase.storage
-          .from('app-images')
-          .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
-            transform: { width: 128, height: 128, resize: 'cover' },
+      try {
+        // --- 1. Upload the new avatar ---
+        const isUploadSuccess = await uploadHandler.onUpload();
+
+        if (isUploadSuccess) {
+          // --- 2. Get the public URL of the newly uploaded file ---
+          const newFilePath = `${userAvatarPath}/${newFile.name}`;
+          const { data: publicUrlData } = uploadHandler.supabase.storage
+            .from(BUCKET_NAME)
+            .getPublicUrl(newFilePath, {
+              transform: { width: 128, height: 128, resize: 'cover' },
+            });
+
+          const newPublicUrl = publicUrlData.publicUrl;
+
+          // --- 3. Delete the old avatar (if it exists) ---
+          const oldStoragePath = getStoragePathFromUrl(user.imageUrl);
+
+          if (oldStoragePath && oldStoragePath !== newFilePath) {
+            const { error: deleteError } = await uploadHandler.supabase.storage
+              .from(BUCKET_NAME)
+              .remove([oldStoragePath]);
+
+            if (deleteError) {
+              form.setError('avatar', {
+                message: t('errors.delete-old-avatar-failed'),
+              });
+            }
+          } else if (oldStoragePath === newFilePath) {
+            // New avatar path is the same as the old one. Skipping deletion.
+          }
+
+          // --- 4. Submit the form with the NEW avatar URL ---
+          await submit(toFormData({ ...values, avatar: newPublicUrl }), {
+            method: 'POST',
+            replace: true,
           });
-        // Submit the form with the avatar URL
-        await submit(toFormData({ ...values, avatar: publicUrl }), {
-          method: 'POST',
+        } else {
+          // Upload failed (hook's onUpload returned false)
+          form.setError('avatar', {
+            message: t('errors.upload-failed'),
+          });
+        }
+      } catch {
+        // Catch unexpected errors during the process (e.g., network issues)
+        form.setError('avatar', {
+          message: t('errors.unexpected-error'),
         });
       }
     } else {
       // No avatar to upload, just submit the form as is
-      await submit(toFormData(values), { method: 'POST' });
+      await submit(toFormData(values), { method: 'POST', replace: true });
     }
   };
 
@@ -174,7 +234,7 @@ export function AccountSettings({
           <FormField
             control={form.control}
             name="avatar"
-            render={() => (
+            render={({ field }) => (
               <FormItem className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                 <div className="space-y-1">
                   <FormLabel htmlFor="userAvatar">
@@ -189,6 +249,7 @@ export function AccountSettings({
                     <Dropzone
                       {...uploadHandler}
                       getInputProps={props => ({
+                        ...field,
                         ...uploadHandler.getInputProps(props),
                         id: 'userAvatar',
                       })}

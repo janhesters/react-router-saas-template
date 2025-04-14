@@ -55,19 +55,33 @@ export async function generalOrganizationSettingsAction({
 
     switch (body.intent) {
       case UPDATE_ORGANIZATION_INTENT: {
+        const updates: { name?: string; slug?: string; imageUrl?: string } = {};
+
         if (body.name && body.name !== organization.name) {
           const newSlug = slugify(body.name);
+          updates.name = body.name;
+          updates.slug = newSlug;
+        }
+
+        if (body.logo) {
+          updates.imageUrl = body.logo;
+        }
+
+        if (Object.keys(updates).length > 0) {
           await updateOrganizationInDatabaseBySlug({
             slug: params.organizationSlug,
-            organization: { name: body.name, slug: newSlug },
+            organization: updates,
           });
-          return redirectWithToast(
-            href(`/organizations/:organizationSlug/settings/general`, {
-              organizationSlug: newSlug,
-            }),
-            { title: t('organization-profile-updated'), type: 'success' },
-            { headers },
-          );
+
+          if (updates.slug) {
+            return redirectWithToast(
+              href(`/organizations/:organizationSlug/settings/general`, {
+                organizationSlug: updates.slug,
+              }),
+              { title: t('organization-profile-updated'), type: 'success' },
+              { headers },
+            );
+          }
         }
 
         const toastHeaders = await createToastHeaders({

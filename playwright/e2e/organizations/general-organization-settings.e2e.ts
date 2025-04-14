@@ -13,6 +13,7 @@ import {
 } from '~/test/test-utils';
 
 import {
+  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -149,13 +150,15 @@ test.describe('general organization settings', () => {
   });
 
   test.describe('given: a logged in user who is onboarded and an owner', () => {
-    test('given: valid organization name, should: update organization name and logo', async ({
+    test('given: valid organization name and logo, should: update organization name and logo', async ({
       page,
     }) => {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
         role: OrganizationMembershipRole.owner,
       });
+
+      await enableClientMswMocks({ page });
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);
 
@@ -164,20 +167,57 @@ test.describe('general organization settings', () => {
       await expect(
         page.getByText(/general settings for this organization/i),
       ).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('textbox', { name: /organization logo/i }),
+      ).toBeVisible();
 
-      // Update organization name
-      const newName = faker.company.name();
+      // Enter organization name first time
+      const newName = createPopulatedOrganization().name;
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);
+
+      // Test image upload via drag and drop
+      const dropzone = page.getByText(
+        /drag and drop or select file to upload/i,
+      );
+      await expect(dropzone).toBeVisible();
+
+      // Perform drag and drop of the image
+      await page.setInputFiles(
+        'input[type="file"]',
+        'playwright/fixtures/200x200.jpg',
+      );
+      await expect(page.getByText('200x200.jpg')).toBeVisible();
+
+      // Enter name again to ensure form is ready
+      await page.getByRole('textbox', { name: /organization name/i }).clear();
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill(newName);
+
+      // Save changes
       await page.getByRole('button', { name: /save changes/i }).click();
 
       // Verify loading state
       await expect(
         page.getByRole('button', { name: /saving changes/i }),
       ).toBeVisible();
+
+      // Verify success toast
       await expect(
-        page.getByRole('button', { name: /save changes/i }),
+        page
+          .getByRole('region', { name: /notifications/i })
+          .getByText(/organization has been updated/i),
       ).toBeVisible();
 
       // Verify database update
@@ -185,6 +225,7 @@ test.describe('general organization settings', () => {
         organization.id,
       );
       expect(updatedOrganization?.name).toEqual(newName);
+      expect(updatedOrganization?.imageUrl).toContain('200x200.jpg');
 
       await teardownOrganizationAndMember({ organization, user });
     });

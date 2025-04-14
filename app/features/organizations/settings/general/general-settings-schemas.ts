@@ -20,9 +20,8 @@ export const updateOrganizationFormSchema = z.object({
     .min(3, 'organizations:settings.general.form.name-min-length')
     .max(255, 'organizations:settings.general.form.name-max-length'),
   logo: z
-    .instanceof(File, {
-      message: 'organizations:settings.general.form.logo-must-be-file',
-    })
+    .string()
+    .url('organizations:settings.general.form.logo-must-be-url')
     .optional(),
 });
 

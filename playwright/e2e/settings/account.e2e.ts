@@ -138,7 +138,7 @@ test.describe('account settings', () => {
     await deleteUserAccountFromDatabaseById(user.id);
   });
 
-  test('given: a logged in user submitting a new avatar, should: set the avatar and show a success toast', async ({
+  test('given: a logged in user submitting a new name and avatar, should: set the new name and avatar and show a success toast', async ({
     page,
   }) => {
     const user = await loginAndSaveUserAccountToDatabase({ page });
@@ -159,6 +159,10 @@ test.describe('account settings', () => {
     await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
     await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
 
+    // Set new name
+    const newName = createPopulatedUserAccount().name;
+    await page.getByRole('textbox', { name: /name/i }).fill(newName);
+
     // Upload new avatar
     // Test image upload via drag and drop
     const dropzone = page.getByText(/drag and drop or select file to upload/i);
@@ -170,6 +174,11 @@ test.describe('account settings', () => {
       'playwright/fixtures/200x200.jpg',
     );
     await expect(page.getByText('200x200.jpg')).toBeVisible();
+
+    // Set new name again because sometimes the page loads slow because of the
+    // MSW client mocks.
+    await page.getByRole('textbox', { name: /name/i }).clear();
+    await page.getByRole('textbox', { name: /name/i }).fill(newName);
 
     // Save changes
     await page.getByRole('button', { name: /save changes/i }).click();

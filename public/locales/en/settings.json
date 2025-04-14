@@ -36,7 +36,12 @@
       "name-must-be-string": "Your name must be a string.",
       "name-placeholder": "Your name ...",
       "save": "Save changes",
-      "saving": "Saving changes ..."
+      "saving": "Saving changes ...",
+      "errors": {
+        "delete-old-avatar-failed": "Failed to delete old avatar.",
+        "upload-failed": "Avatar upload failed.",
+        "unexpected-error": "An unexpected error occurred."
+      }
     },
     "page-title": "Account",
     "toast": {

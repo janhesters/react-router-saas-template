@@ -1,9 +1,9 @@
-import { faker } from '@faker-js/faker';
 import { describe, expect, test } from 'vitest';
 
 import { createRoutesStub, render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
+import { createPopulatedOrganization } from '../../organizations-factories.server';
 import type { GeneralOrganizationSettingsProps } from './general-organization-settings';
 import { GeneralOrganizationSettings } from './general-organization-settings';
 
@@ -11,8 +11,9 @@ const createProps: Factory<GeneralOrganizationSettingsProps> = ({
   errors,
   isUpdatingOrganization = false,
   organization = {
-    name: faker.company.name(),
-    imageUrl: faker.image.url(),
+    id: createPopulatedOrganization().id,
+    name: createPopulatedOrganization().name,
+    imageUrl: createPopulatedOrganization().imageUrl,
   },
 } = {}) => ({ errors, isUpdatingOrganization, organization });
 
@@ -64,6 +65,10 @@ describe('GeneralOrganizationSettings Component', () => {
         type: 'validation',
         message: 'organizations:settings.general.form.name-min-length',
       },
+      logo: {
+        type: 'validation',
+        message: 'organizations:settings.general.form.logo-must-be-url',
+      },
     };
     const props = createProps({ errors });
     const path = '/organizations/test/settings/general';
@@ -73,11 +78,12 @@ describe('GeneralOrganizationSettings Component', () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
-    // Verify error message is displayed
+    // Verify error messages are displayed
     expect(
       screen.getByText(
         /organization name must be at least 3 characters long./i,
       ),
     ).toBeInTheDocument();
+    expect(screen.getByText(/logo must be a valid url/i)).toBeInTheDocument();
   });
 });

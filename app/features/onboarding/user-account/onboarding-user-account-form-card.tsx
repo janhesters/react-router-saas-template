@@ -29,6 +29,10 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import {
+  AVATAR_PATH_PREFIX,
+  BUCKET_NAME,
+} from '~/features/user-accounts/user-account-constants';
 import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
 import { toFormData } from '~/utils/to-form-data';
 
@@ -53,9 +57,9 @@ export function OnboardingUserAccountFormCard({
   const { t } = useTranslation('onboarding', { keyPrefix: 'user-account' });
   const submit = useSubmit();
 
-  const path = `user-avatars/${userId}`;
+  const path = `${AVATAR_PATH_PREFIX}/${userId}`;
   const uploadHandler = useSupabaseUpload({
-    bucketName: 'app-images',
+    bucketName: BUCKET_NAME,
     path,
     maxFiles: 1,
     maxFileSize: 1000 * 1000, // 1MB
@@ -84,7 +88,7 @@ export function OnboardingUserAccountFormCard({
         const {
           data: { publicUrl },
         } = uploadHandler.supabase.storage
-          .from('app-images')
+          .from(BUCKET_NAME)
           .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
             transform: { width: 128, height: 128, resize: 'cover' },
           });

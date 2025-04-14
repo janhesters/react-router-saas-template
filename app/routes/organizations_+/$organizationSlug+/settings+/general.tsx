@@ -20,7 +20,7 @@ import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/general';
 
-export const handle = { i18n: ['organizations', 'drag-and-drop'] };
+export const handle = { i18n: ['organizations', 'dropzone'] };
 
 export async function loader({ request, params }: Route.LoaderArgs) {
   const {

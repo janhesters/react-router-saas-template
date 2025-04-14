@@ -31,6 +31,10 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
+import {
+  BUCKET_NAME,
+  LOGO_PATH_PREFIX,
+} from '~/features/organizations/organization-constants';
 import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
 import { toFormData } from '~/utils/to-form-data';
 
@@ -56,9 +60,9 @@ export function OnboardingOrganizationFormCard({
   // Since you upload the logo before creating the organization, we need to
   // generate a unique ID for the organization.
   const organizationId = useRef(createId());
-  const path = `organization-logos/${organizationId.current}`;
+  const path = `${LOGO_PATH_PREFIX}/${organizationId.current}`;
   const uploadHandler = useSupabaseUpload({
-    bucketName: 'app-images',
+    bucketName: BUCKET_NAME,
     path,
     maxFiles: 1,
     maxFileSize: 1000 * 1000, // 1MB
@@ -88,7 +92,7 @@ export function OnboardingOrganizationFormCard({
         const {
           data: { publicUrl },
         } = uploadHandler.supabase.storage
-          .from('app-images')
+          .from(BUCKET_NAME)
           .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
             transform: { width: 128, height: 128, resize: 'cover' },
           });

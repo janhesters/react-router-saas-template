@@ -98,9 +98,16 @@
       },
       "description": "General settings for this organization.",
       "form": {
+        "errors": {
+          "delete-old-logo-failed": "Failed to delete old logo.",
+          "unexpected-error": "An unexpected error occurred.",
+          "upload-failed": "Logo upload failed."
+        },
+        "logo-alt": "Organization logo",
+        "logo-description": "Your organization's logo will be shown across the application.",
         "logo-invalid-mime-type": "Invalid file type. Allowed file types are JPG, PNG, and JPEG.",
         "logo-label": "Organization logo",
-        "logo-must-be-file": "Logo must be a file.",
+        "logo-must-be-url": "Logo must be a valid URL.",
         "name-description": "Your organization's public display name. <1>Warning:</1> Changing the name will break all existing links to your organization.",
         "name-label": "Organization name",
         "name-max-length": "Organization name must be less than 255 characters long.",
