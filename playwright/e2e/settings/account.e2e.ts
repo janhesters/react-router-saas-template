@@ -1,14 +1,9 @@
-// TODO: File uploads for logos during onboarding
-// TODO: File uploads for avatars
 // TODO: When updating an organization, delete the organization logo from storage.
-// TODO: When deleting an organization, delete the organization logo from storage.
-// TODO: When updating an user account, delete the user's avatar from storage.
 // TODO: When deleting an user account, delete the user's avatar from storage.
 // TODO: invite via email
 // TODO: Notifications
 // TODO: billing
 // TODO: upgrade packages
-// TODO: move uploading of images to server
 
 // Billing:
 // - Free Tier, Pro Tier, Enterprise Tier
@@ -36,7 +31,6 @@ import {
 } from '~/test/test-utils';
 
 import {
-  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -143,8 +137,6 @@ test.describe('account settings', () => {
   }) => {
     const user = await loginAndSaveUserAccountToDatabase({ page });
 
-    await enableClientMswMocks({ page });
-
     await page.goto('/settings/account');
 
     // Some random page assertions to give the JS for the upload time to load.
@@ -165,14 +157,14 @@ test.describe('account settings', () => {
 
     // Upload new avatar
     // Test image upload via drag and drop
-    const dropzone = page.getByText(/drag and drop or select file to upload/i);
+    const dropzone = page.getByText(/drag and drop or select files to upload/i);
     await expect(dropzone).toBeVisible();
 
     // Perform drag and drop of the image
-    await page.setInputFiles(
-      'input[type="file"]',
-      'playwright/fixtures/200x200.jpg',
-    );
+    // desktop viewport = drag‑and‑drop version is rendered *after* the hidden mobile input
+    const fileInputs = page.locator('input[type="file"]');
+    await expect(fileInputs).toHaveCount(2);
+    await fileInputs.nth(1).setInputFiles('playwright/fixtures/200x200.jpg');
     await expect(page.getByText('200x200.jpg')).toBeVisible();
 
     // Set new name again because sometimes the page loads slow because of the

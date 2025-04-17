@@ -133,7 +133,124 @@ const removeMock = http.delete(
   },
 );
 
+/*
+  Server‐side S3 uploads (AWS SDK v3 / @supabase’s S3 endpoint)
+*/
+const s3UploadMock: RequestHandler = http.put(
+  // Path‐style S3 endpoint under Supabase:
+  //   https://<project>.supabase.co/storage/v1/s3/<bucket>/<key>
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  ({ params, request }) => {
+    const bucket = params.bucketName as string;
+    const url = new URL(request.url);
+    // everything after `/storage/v1/s3/<bucket>/`
+    const objectKey = url.pathname.split(`/storage/v1/s3/${bucket}/`)[1];
+    if (!objectKey) {
+      return new HttpResponse('Missing key', { status: 400 });
+    }
+
+    // S3’s PutObject returns an empty body + an ETag header
+    return new HttpResponse(undefined, {
+      status: 200,
+      headers: { ETag: '"mocked-etag"' },
+    });
+  },
+);
+
+const s3DeleteMock: RequestHandler = http.delete(
+  // Matches DELETE on https://<project>/storage/v1/s3/<bucket>/<key>
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  () => {
+    // You could pull out params.bucketName and the key if you need to assert them
+    return new HttpResponse(undefined, { status: 204 });
+  },
+);
+
+const s3InitMultipartMock: RequestHandler = http.post(
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*?uploads`,
+  ({ params, request }) => {
+    const uploadId = 'mock-upload-id';
+
+    if (!params.bucketName || typeof params.bucketName !== 'string') {
+      return new HttpResponse('Missing bucket name', { status: 400 });
+    }
+
+    const keyPath = new URL(request.url).pathname.split(
+      `/storage/v1/s3/${params.bucketName}/`,
+    )[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<InitiateMultipartUploadResult>
+  <Bucket>${params.bucketName}</Bucket>
+  <Key>${keyPath}</Key>
+  <UploadId>${uploadId}</UploadId>
+</InitiateMultipartUploadResult>`;
+    return new HttpResponse(xml, {
+      status: 200,
+      headers: { 'Content-Type': 'application/xml' },
+    });
+  },
+);
+
+/*
+  Server-side S3 multipart upload: upload part
+*/
+const s3UploadPartMock: RequestHandler = http.put(
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  ({ request }) => {
+    const url = new URL(request.url);
+    const uploadId = url.searchParams.get('uploadId');
+    const partNumber = url.searchParams.get('partNumber');
+    if (!uploadId || !partNumber) {
+      return new HttpResponse('Missing uploadId or partNumber', {
+        status: 400,
+      });
+    }
+    return new HttpResponse(undefined, {
+      status: 200,
+      headers: { ETag: '"mocked-part-etag"' },
+    });
+  },
+);
+
+/*
+  Server-side S3 multipart upload: complete
+*/
+const s3CompleteMultipartMock: RequestHandler = http.post(
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*?uploadId=:uploadId`,
+  ({ params, request }) => {
+    const url = new URL(request.url);
+    const uploadId = url.searchParams.get('uploadId');
+    if (!uploadId) {
+      return new HttpResponse('Missing uploadId', { status: 400 });
+    }
+
+    if (!params.bucketName || typeof params.bucketName !== 'string') {
+      return new HttpResponse('Missing bucket name', { status: 400 });
+    }
+
+    const keyPath = url.pathname.split(
+      `/storage/v1/s3/${params.bucketName}/`,
+    )[1];
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<CompleteMultipartUploadResult>
+  <Location>${request.url.split('?')[0]}</Location>
+  <Bucket>${params.bucketName}</Bucket>
+  <Key>${keyPath}</Key>
+  <ETag>"mocked-complete-etag"</ETag>
+</CompleteMultipartUploadResult>`;
+    return new HttpResponse(xml, {
+      status: 200,
+      headers: { 'Content-Type': 'application/xml' },
+    });
+  },
+);
+
 export const supabaseStorageHandlers: RequestHandler[] = [
   uploadMock,
   removeMock,
+  s3UploadMock,
+  s3DeleteMock,
+  s3InitMultipartMock,
+  s3UploadPartMock,
+  s3CompleteMultipartMock,
 ];

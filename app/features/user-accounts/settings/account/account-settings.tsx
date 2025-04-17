@@ -1,17 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
+import { useRef } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { TbUserFilled } from 'react-icons/tb';
 import { Form, useSubmit } from 'react-router';
-import type { z } from 'zod';
 
 import {
-  Dropzone,
-  DropzoneContent,
-  DropzoneEmptyState,
-} from '~/components/dropzone';
+  DragAndDropContent,
+  DragAndDropDescription,
+  DragAndDropHeading,
+  DragAndDropIcon,
+  DragAndDropProvider,
+  DragAndDropSelectedFiles,
+  DrapAndDropButton,
+} from '~/components/drag-and-drop';
+import { DragAndDrop } from '~/components/drag-and-drop';
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import { Button } from '~/components/ui/button';
 import {
@@ -24,11 +30,14 @@ import {
   FormProvider,
 } from '~/components/ui/form';
 import { Input } from '~/components/ui/input';
-import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
+import { usePreviewUrl } from '~/hooks/use-preview-url';
 import { toFormData } from '~/utils/to-form-data';
 
-import { AVATAR_PATH_PREFIX, BUCKET_NAME } from '../../user-account-constants';
-import { UPDATE_USER_ACCOUNT_INTENT } from './account-settings-constants';
+import {
+  ACCEPTED_IMAGE_TYPES,
+  acceptedFileExtensions,
+  UPDATE_USER_ACCOUNT_INTENT,
+} from './account-settings-constants';
 import type { UpdateUserAccountFormSchema } from './account-settings-schemas';
 import { updateUserAccountFormSchema } from './account-settings-schemas';
 
@@ -39,33 +48,43 @@ export type AccountSettingsProps = {
   errors?: UpdateUserAccountFormErrors;
   isUpdatingUserAccount?: boolean;
   user: {
-    name: UserAccount['name'];
     email: UserAccount['email'];
     imageUrl?: UserAccount['imageUrl'];
-    id: UserAccount['id'];
+    name: UserAccount['name'];
   };
 };
 
-export const getStoragePathFromUrl = (
-  imageUrl: string | null | undefined,
-): string => {
-  if (!imageUrl) return '';
-  try {
-    const url = new URL(imageUrl);
-    // Example URL: https://<project-ref>.supabase.co/storage/v1/object/public/app-images/user-avatars/user_id/avatar.png
-    // We need the part after the bucket name: "user-avatars/user_id/avatar.png"
-    const pathSegments = url.pathname.split('/');
-    const bucketIndex = pathSegments.indexOf(BUCKET_NAME);
-    if (bucketIndex === -1 || bucketIndex + 1 >= pathSegments.length) {
-      console.warn('Could not extract storage path from URL:', imageUrl);
-      return '';
-    }
-    return pathSegments.slice(bucketIndex + 1).join('/');
-  } catch (error) {
-    console.error('Error parsing image URL:', error);
-    return '';
-  }
-};
+function AvatarDragAndDrop({ isInvalid }: { isInvalid: boolean }) {
+  const { t } = useTranslation('drag-and-drop');
+
+  return (
+    // The real input of the form is the hidden input above the drag and drop
+    // component.
+    <DragAndDrop aria-hidden="true" className="flex-grow" isInvalid={isInvalid}>
+      <DragAndDropContent>
+        <div className="mx-auto flex items-center gap-2">
+          <DragAndDropIcon />
+
+          <DragAndDropSelectedFiles />
+        </div>
+
+        <DragAndDropHeading>
+          <Trans
+            components={{ 1: <DrapAndDropButton /> }}
+            i18nKey="drag-and-drop:heading"
+          />
+        </DragAndDropHeading>
+
+        <DragAndDropDescription>
+          {t('extensions', {
+            extensions: acceptedFileExtensions.join(', '),
+            maxFileSize: '1MB',
+          })}
+        </DragAndDropDescription>
+      </DragAndDropContent>
+    </DragAndDrop>
+  );
+}
 
 export function AccountSettings({
   errors,
@@ -77,95 +96,35 @@ export function AccountSettings({
   });
   const submit = useSubmit();
 
-  // Construct the specific path for this user's avatars
-  const userAvatarPath = `${AVATAR_PATH_PREFIX}/${user.id}`;
-
-  const uploadHandler = useSupabaseUpload({
-    bucketName: BUCKET_NAME,
-    path: userAvatarPath,
-    maxFiles: 1,
-    maxFileSize: 1000 * 1000, // 1MB
-    allowedMimeTypes: ['image/*'],
-    upsert: true,
-  });
+  const hiddenInputReference = useRef<HTMLInputElement>(null);
 
   const form = useForm<UpdateUserAccountFormSchema>({
     resolver: zodResolver(updateUserAccountFormSchema),
     defaultValues: {
       intent: UPDATE_USER_ACCOUNT_INTENT,
-      name: user.name,
-      email: user.email,
       avatar: undefined,
+      email: user.email,
+      name: user.name,
     },
-    errors: errors,
+    errors,
   });
 
-  const handleSubmit = async (
-    values: z.infer<typeof updateUserAccountFormSchema>,
-  ) => {
-    if (uploadHandler.files.length > 0) {
-      const newFile = uploadHandler.files[0];
+  const avatarFile = form.watch('avatar');
 
-      try {
-        // --- 1. Upload the new avatar ---
-        const isUploadSuccess = await uploadHandler.onUpload();
+  const previewUrl = usePreviewUrl(avatarFile, user.imageUrl);
 
-        if (isUploadSuccess) {
-          // --- 2. Get the public URL of the newly uploaded file ---
-          const newFilePath = `${userAvatarPath}/${newFile.name}`;
-          const { data: publicUrlData } = uploadHandler.supabase.storage
-            .from(BUCKET_NAME)
-            .getPublicUrl(newFilePath, {
-              transform: { width: 128, height: 128, resize: 'cover' },
-            });
-
-          const newPublicUrl = publicUrlData.publicUrl;
-
-          // --- 3. Delete the old avatar (if it exists) ---
-          const oldStoragePath = getStoragePathFromUrl(user.imageUrl);
-
-          if (oldStoragePath && oldStoragePath !== newFilePath) {
-            const { error: deleteError } = await uploadHandler.supabase.storage
-              .from(BUCKET_NAME)
-              .remove([oldStoragePath]);
-
-            if (deleteError) {
-              form.setError('avatar', {
-                message: t('errors.delete-old-avatar-failed'),
-              });
-            }
-          } else if (oldStoragePath === newFilePath) {
-            // New avatar path is the same as the old one. Skipping deletion.
-          }
-
-          // --- 4. Submit the form with the NEW avatar URL ---
-          await submit(toFormData({ ...values, avatar: newPublicUrl }), {
-            method: 'POST',
-            replace: true,
-          });
-        } else {
-          // Upload failed (hook's onUpload returned false)
-          form.setError('avatar', {
-            message: t('errors.upload-failed'),
-          });
-        }
-      } catch {
-        // Catch unexpected errors during the process (e.g., network issues)
-        form.setError('avatar', {
-          message: t('errors.unexpected-error'),
-        });
-      }
-    } else {
-      // No avatar to upload, just submit the form as is
-      await submit(toFormData(values), { method: 'POST', replace: true });
-    }
+  const handleSubmit = async (values: UpdateUserAccountFormSchema) => {
+    await submit(toFormData(values), {
+      method: 'POST',
+      replace: true,
+      encType: 'multipart/form-data',
+    });
   };
-
-  const isFormDisabled = isUpdatingUserAccount || uploadHandler.loading;
 
   return (
     <FormProvider {...form}>
       <Form
+        encType="multipart/form-data"
         id="update-user-account-form"
         method="POST"
         onSubmit={form.handleSubmit(handleSubmit)}
@@ -173,9 +132,9 @@ export function AccountSettings({
       >
         <fieldset
           className="flex flex-col gap-y-6 sm:gap-y-8"
-          disabled={isFormDisabled}
+          disabled={isUpdatingUserAccount}
         >
-          {/* Name Field - Unchanged */}
+          {/* Name Field */}
           <FormField
             control={form.control}
             name="name"
@@ -196,6 +155,7 @@ export function AccountSettings({
                       {...field}
                     />
                   </FormControl>
+
                   <FormMessage />
                 </div>
               </FormItem>
@@ -224,6 +184,7 @@ export function AccountSettings({
                       value={user.email}
                     />
                   </FormControl>
+
                   <FormMessage />
                 </div>
               </FormItem>
@@ -234,53 +195,108 @@ export function AccountSettings({
           <FormField
             control={form.control}
             name="avatar"
-            render={({ field }) => (
-              <FormItem className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
-                <div className="space-y-1">
-                  <FormLabel htmlFor="userAvatar">
-                    {t('avatar-label')}
-                  </FormLabel>
+            render={({ field }) => {
+              // We only need the ref and other props from field,
+              // onChange is handled manually below to update preview.
+              const { onChange, value: _1, ref: _2, ...rest } = field;
+              return (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-end gap-4">
+                    <FormItem className="grid w-full gap-x-8 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <FormLabel>{t('avatar-label')}</FormLabel>
 
-                  <FormDescription>{t('avatar-description')}</FormDescription>
-                </div>
+                        <FormDescription>
+                          {t('avatar-description')}
+                        </FormDescription>
+                      </div>
 
-                <div className="grid gap-4">
-                  <FormControl>
-                    <Dropzone
-                      {...uploadHandler}
-                      getInputProps={props => ({
-                        ...field,
-                        ...uploadHandler.getInputProps(props),
-                        id: 'userAvatar',
-                      })}
-                    >
-                      <DropzoneEmptyState />
-                      <DropzoneContent />
-                    </Dropzone>
-                  </FormControl>
+                      <div className="w-full">
+                        <FormControl>
+                          <Input
+                            accept={Object.keys(ACCEPTED_IMAGE_TYPES).join(',')}
+                            className="sm:hidden"
+                            multiple={false}
+                            type="file"
+                            {...rest}
+                            onChange={event => {
+                              const file = event.target.files?.[0];
+                              if (file) {
+                                onChange(file);
+                              }
+                            }}
+                            ref={hiddenInputReference}
+                          />
+                        </FormControl>
 
-                  <div className="flex justify-end">
-                    <Avatar className="size-32 rounded-md">
-                      <AvatarImage
-                        alt={t('avatar-alt')}
-                        className="aspect-square h-full w-full rounded-md object-cover"
-                        src={user.imageUrl}
-                      />
-                      <AvatarFallback className="rounded-md text-4xl">
-                        {user.name.slice(0, 2).toUpperCase()}
+                        <div className="hidden flex-grow gap-3 md:flex">
+                          <DragAndDropProvider
+                            accept={ACCEPTED_IMAGE_TYPES}
+                            noClick={true}
+                            onDrop={incomingFiles => {
+                              onChange(incomingFiles[0]);
+                              if (hiddenInputReference.current) {
+                                // Note the specific way we need to munge the
+                                // file into the hidden input
+                                // https://stackoverflow.com/a/68182158/1068446
+                                const dataTransfer = new DataTransfer();
+                                for (const file of incomingFiles) {
+                                  dataTransfer.items.add(file);
+                                }
+                                hiddenInputReference.current.files =
+                                  dataTransfer.files;
+                              }
+                            }}
+                            multiple={false}
+                          >
+                            <AvatarDragAndDrop
+                              isInvalid={!!form.formState.errors.avatar}
+                            />
+                          </DragAndDropProvider>
+
+                          <Avatar className="size-30.5 rounded-md">
+                            <AvatarFallback className="bg-muted-foreground/30 dark:bg-muted md:rounded-md">
+                              <TbUserFilled className="text-background size-full p-0.5" />
+                            </AvatarFallback>
+
+                            <AvatarImage
+                              alt="Avatar"
+                              className="rounded-md object-cover"
+                              src={previewUrl}
+                            />
+                          </Avatar>
+                        </div>
+
+                        <FormMessage className="mt-2 hidden md:block" />
+                      </div>
+                    </FormItem>
+
+                    <Avatar className="size-21 md:hidden">
+                      <AvatarFallback className="bg-muted-foreground/30 dark:bg-muted md:rounded-md">
+                        <TbUserFilled className="text-background size-full p-0.5" />
                       </AvatarFallback>
+
+                      <AvatarImage
+                        alt="Avatar"
+                        className="object-cover md:rounded-md"
+                        src={previewUrl}
+                      />
                     </Avatar>
                   </div>
 
-                  <FormMessage />
+                  <FormMessage className="md:hidden" />
                 </div>
-              </FormItem>
-            )}
+              );
+            }}
           />
 
           <div className="sm:col-start-2">
-            <Button className="w-fit" disabled={isFormDisabled} type="submit">
-              {isFormDisabled ? (
+            <Button
+              className="w-fit"
+              disabled={isUpdatingUserAccount}
+              type="submit"
+            >
+              {isUpdatingUserAccount ? (
                 <>
                   <Loader2Icon className="mr-2 size-4 animate-spin" />
                   {t('saving')}

@@ -1,3 +1,5 @@
+import { parseFormData } from '@mjackson/form-data-parser';
+import type { MultipartParserOptions } from '@mjackson/multipart-parser';
 import type { ZodError, ZodSchema } from 'zod';
 
 import { badRequest } from './http-responses.server';
@@ -32,8 +34,11 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 export async function validateFormData<T>(
   request: Request,
   schema: ZodSchema<T>,
+  parserOptions?: MultipartParserOptions,
 ) {
-  const formData = await request.formData();
+  const formData = parserOptions
+    ? await parseFormData(request, parserOptions)
+    : await parseFormData(request);
   const values = Object.fromEntries(formData);
   const result = schema.safeParse(values);
 

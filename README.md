@@ -199,6 +199,8 @@ Give it your own name! Fuzzy search for `React Router SaaS Template` to find all
 
 ### Supabase Storage
 
+#### Uploading Directly to Supabase From the Client
+
 Create a bucket in Supabase Storage.
 
 1. Visit your project in the Supabase UI: https://supabase.com/dashboard/project/[your-project-ref].
@@ -208,3 +210,16 @@ Create a bucket in Supabase Storage.
 5. Keep the bucket as "Private" to ensure that only authenticated users can access the files.
 6. Click on "Additional configuration", set the maximum upload sizeto 1MB, and set the allowed MIME types to `image/*` to only allow image files.
 7. Click on "Save".
+
+#### Uploading to Supabase From the Server
+
+This approach uses the [S3 compatible API](https://supabase.com/docs/guides/storage/s3/compatibility) of Supabase Storage.
+
+Simply [follow the instructions in the documentation](https://supabase.com/docs/guides/storage/s3/authentication) and set the following environment variables in your `.env` file:
+
+- `STORAGE_ACCESS_KEY_ID`
+- `STORAGE_SECRET_ACCESS_KEY`
+- `STORAGE_REGION`
+- `SUPABASE_PROJECT_ID`
+
+Optinally, comment in the `uploadDate` variable in the `getSignedPutRequestInfo` function in `app/utils/storage.server.ts` if you want to use a service that supports it like AWS S3.

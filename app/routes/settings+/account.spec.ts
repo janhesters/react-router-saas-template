@@ -11,6 +11,8 @@ import {
   DELETE_USER_ACCOUNT_INTENT,
   UPDATE_USER_ACCOUNT_INTENT,
 } from '~/features/user-accounts/settings/account/account-settings-constants';
+import { AVATAR_PATH_PREFIX } from '~/features/user-accounts/user-account-constants';
+import { BUCKET_NAME } from '~/features/user-accounts/user-account-constants';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
@@ -121,8 +123,8 @@ describe('/settings/account route action', () => {
       const user = await setup();
 
       const newName = createPopulatedUserAccount().name;
-      const newAvatar = 'https://example.com/avatar.jpg';
-      const formData = toFormData({ intent, name: newName, avatar: newAvatar });
+      const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+      const formData = toFormData({ intent, name: newName, avatar: file });
 
       const actual = (await sendAuthenticatedRequest({
         user,
@@ -132,7 +134,10 @@ describe('/settings/account route action', () => {
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(newName);
-      expect(updatedUser?.imageUrl).toEqual(newAvatar);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const expectedKey = `${AVATAR_PATH_PREFIX}/${user.id}.png`;
+      const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
+      expect(updatedUser?.imageUrl).toEqual(expectedUrl);
 
       const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
       const { toast } = await getToast(
@@ -150,12 +155,8 @@ describe('/settings/account route action', () => {
     test('given: only an avatar URL update, should: update just the avatar and return a success toast', async () => {
       const user = await setup();
 
-      const newAvatar = 'https://example.com/new-avatar.jpg';
-      const formData = toFormData({
-        intent,
-        name: user.name,
-        avatar: newAvatar,
-      });
+      const file = new File(['dummy'], 'avatar.png', { type: 'image/png' });
+      const formData = toFormData({ intent, name: user.name, avatar: file });
 
       const actual = (await sendAuthenticatedRequest({
         user,
@@ -165,7 +166,10 @@ describe('/settings/account route action', () => {
       // Verify only avatar was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(user.name);
-      expect(updatedUser?.imageUrl).toEqual(newAvatar);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const expectedKey = `${AVATAR_PATH_PREFIX}/${user.id}.png`;
+      const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
+      expect(updatedUser?.imageUrl).toEqual(expectedUrl);
 
       const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
       const { toast } = await getToast(
@@ -231,12 +235,12 @@ describe('/settings/account route action', () => {
         }),
       },
       {
-        given: 'an invalid avatar URL',
-        body: { intent, name: 'Test User', avatar: 'not-a-url' },
+        given: 'an invalid avatar (string instead of file)',
+        body: { intent, name: 'Test User', avatar: 'not-a-file' },
         expected: badRequest({
           errors: {
             avatar: {
-              message: 'settings:user-account.form.avatar-must-be-url',
+              message: 'settings:user-account.form.avatar-must-be-file',
             },
           },
         }),

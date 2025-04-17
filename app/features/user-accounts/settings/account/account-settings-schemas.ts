@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-import { UPDATE_USER_ACCOUNT_INTENT } from './account-settings-constants';
+import {
+  AVATAR_MAX_FILE_SIZE,
+  UPDATE_USER_ACCOUNT_INTENT,
+} from './account-settings-constants';
 
 export const updateUserAccountFormSchema = z.object({
   intent: z.literal(UPDATE_USER_ACCOUNT_INTENT),
@@ -13,8 +16,13 @@ export const updateUserAccountFormSchema = z.object({
     .max(128, 'settings:user-account.form.name-max-length'),
   email: z.string().email().optional(),
   avatar: z
-    .string()
-    .url('settings:user-account.form.avatar-must-be-url')
+    .instanceof(File, {
+      message: 'settings:user-account.form.avatar-must-be-file',
+    })
+    .refine(
+      file => file.size <= AVATAR_MAX_FILE_SIZE,
+      'settings:user-account.form.avatar-max-file-size',
+    )
     .optional(),
 });
 

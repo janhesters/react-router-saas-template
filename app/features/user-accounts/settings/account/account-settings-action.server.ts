@@ -20,6 +20,7 @@ import {
   DELETE_USER_ACCOUNT_INTENT,
   UPDATE_USER_ACCOUNT_INTENT,
 } from './account-settings-constants';
+import { uploadUserAvatar } from './account-settings-helpers.server';
 import { updateUserAccountFormSchema } from './account-settings-schemas';
 import type { Route } from '.react-router/types/app/routes/settings+/+types/account';
 
@@ -37,7 +38,9 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
       }),
     });
     const { user, headers } = auth;
-    const body = await validateFormData(request, schema);
+    const body = await validateFormData(request, schema, {
+      maxFileSize: 1024 * 1024 * 1, // 1MB
+    });
 
     switch (body.intent) {
       case UPDATE_USER_ACCOUNT_INTENT: {
@@ -48,7 +51,12 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
         }
 
         if (body.avatar) {
-          updates.imageUrl = body.avatar;
+          const publicUrl = await uploadUserAvatar({
+            file: body.avatar,
+            supabase: auth.supabase,
+            userId: user.id,
+          });
+          updates.imageUrl = publicUrl;
         }
 
         if (Object.keys(updates).length > 0) {

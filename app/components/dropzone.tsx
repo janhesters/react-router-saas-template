@@ -71,7 +71,7 @@ const Dropzone = ({
             'border border-input rounded-lg p-6 text-center dark:bg-input/30 transition-colors duration-300 text-foreground shadow-xs',
             className,
             isSuccess ? 'border-solid' : 'border-dashed',
-            isActive && 'border-primary bg-primary/10',
+            isActive && 'border-primary bg-primary/10 dark:bg-primary/10',
             isInvalid && 'border-destructive bg-destructive/10',
           ),
         })}

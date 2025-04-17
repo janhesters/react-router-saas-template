@@ -85,6 +85,10 @@ jobs:
       SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
       VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      STORAGE_ACCESS_KEY_ID: ${{ secrets.STORAGE_ACCESS_KEY_ID }}
+      STORAGE_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
+      STORAGE_REGION: ${{ secrets.STORAGE_REGION }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
     steps:
       - name: ⬇️ Checkout repo
@@ -129,6 +133,10 @@ jobs:
       SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
       VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      STORAGE_ACCESS_KEY_ID: ${{ secrets.STORAGE_ACCESS_KEY_ID }}
+      STORAGE_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
+      STORAGE_REGION: ${{ secrets.STORAGE_REGION }}
+      SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
 
     steps:
       - name: ⬇️ Checkout repo

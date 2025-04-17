@@ -1,4 +1,7 @@
-export type Payload = Record<string, string | Blob | string[] | undefined>;
+export type Payload = Record<
+  string,
+  string | Blob | string[] | undefined | File
+>;
 
 /**
  * Converts a payload object into a FormData instance.
