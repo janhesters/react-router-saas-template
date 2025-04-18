@@ -25,8 +25,9 @@ async function initializeMockServer() {
 
   if (process.env.SERVER_MOCKS === 'true') {
     const { supabaseHandlers } = await import('~/test/mocks/handlers/supabase');
+    const { resendHandlers } = await import('~/test/mocks/handlers/resend');
     const { startMockServer } = await import('~/test/mocks/server');
-    startMockServer(supabaseHandlers);
+    startMockServer([...supabaseHandlers, ...resendHandlers]);
   }
 
   mockServerInitialized = true;

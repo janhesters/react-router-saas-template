@@ -9,6 +9,7 @@ import {
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
 } from '~/features/organizations/organization-membership-model.server';
+import { retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId } from '~/features/organizations/organizations-email-invite-link-model.server';
 import {
   createPopulatedOrganization,
   createPopulatedOrganizationInviteLink,
@@ -743,6 +744,159 @@ test.describe('organization settings members page', () => {
         );
       expect(latestLink).toBeNull(); // No active link
 
+      await teardownMultipleMembers(data);
+    });
+  });
+
+  test.describe('Send Email To Invite Users', () => {
+    test('given: an admin, should: allow the admin to invite users as members or admins', async ({
+      page,
+    }) => {
+      const data = await setupMultipleMembers({
+        page,
+        requestingUserRole: OrganizationMembershipRole.admin,
+      });
+      const { organization } = data;
+      const inviteEmail = faker.internet.email();
+
+      await page.goto(getMembersPagePath(organization.slug));
+
+      // Locate elements within the "Invite by Email" card
+      const emailInput = page.getByLabel(/email/i);
+      const roleDropdown = page.getByLabel(/role/i);
+      const submitButton = page.getByRole('button', {
+        name: /send email invitation/i,
+      });
+
+      // Check available roles in dropdown
+      await roleDropdown.click();
+      await expect(page.getByRole('option', { name: /member/i })).toBeVisible();
+      await expect(page.getByRole('option', { name: /admin/i })).toBeVisible();
+      await expect(page.getByRole('option', { name: /owner/i })).toBeHidden();
+
+      // Select the highest available role (Admin)
+      await page.getByRole('option', { name: /admin/i }).click();
+
+      // Enter email and submit
+      await emailInput.fill(inviteEmail);
+      await submitButton.click();
+
+      // Check for success toast
+      await expect(
+        page
+          .getByRole('region', {
+            name: /notifications/i,
+          })
+          .getByText(/email invitation sent/i),
+      ).toBeVisible();
+
+      // Check database for the invite
+      const emailInvites =
+        await retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
+          organization.id,
+        );
+      expect(emailInvites).toHaveLength(1);
+      expect(emailInvites[0].email).toEqual(inviteEmail);
+      expect(emailInvites[0].role).toEqual(OrganizationMembershipRole.admin);
+
+      // Check that the email input is automatically cleared after successful
+      // submission
+      await expect(emailInput).toHaveValue('');
+
+      await teardownMultipleMembers(data);
+    });
+
+    test('given: an owner, should: allow the owner to invite users as members, admins, or owners', async ({
+      page,
+    }) => {
+      const data = await setupMultipleMembers({
+        page,
+        requestingUserRole: OrganizationMembershipRole.owner,
+      });
+      const { organization } = data;
+      const inviteEmail = faker.internet.email();
+
+      await page.goto(getMembersPagePath(organization.slug));
+
+      // Locate elements within the "Invite by Email" card
+      const emailInput = page.getByLabel(/email/i);
+      const roleDropdown = page.getByLabel(/role/i);
+      const submitButton = page.getByRole('button', {
+        name: /send email invitation/i,
+      });
+
+      // Check available roles in dropdown
+      await roleDropdown.click();
+      await expect(page.getByRole('option', { name: /member/i })).toBeVisible();
+      await expect(page.getByRole('option', { name: /admin/i })).toBeVisible();
+      await expect(page.getByRole('option', { name: /owner/i })).toBeVisible();
+
+      // Select the highest available role (Owner)
+      await page.getByRole('option', { name: /owner/i }).click();
+
+      // Enter email and submit
+      await emailInput.fill(inviteEmail);
+      await submitButton.click();
+
+      // Check for success toast
+      await expect(
+        page
+          .getByRole('region', {
+            name: /notifications/i,
+          })
+          .getByText(/email invitation sent/i),
+      ).toBeVisible();
+
+      // Check database for the invite
+      const emailInvites =
+        await retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
+          organization.id,
+        );
+      expect(emailInvites).toHaveLength(1);
+      expect(emailInvites[0].email).toEqual(inviteEmail);
+      expect(emailInvites[0].role).toEqual(OrganizationMembershipRole.owner);
+
+      // Check that the email input is automatically cleared after successful
+      // submission
+      await expect(emailInput).toHaveValue('');
+
+      await teardownMultipleMembers(data);
+    });
+
+    test('given: sending an email to a user who is already a member, should: show an error message', async ({
+      page,
+    }) => {
+      // Setup: Owner and another Member
+      const data = await setupMultipleMembers({
+        page,
+        requestingUserRole: OrganizationMembershipRole.owner,
+        otherMemberRoles: [OrganizationMembershipRole.member], // Need at least one other member
+      });
+      const { organization, otherUsers } = data;
+      const existingMember = otherUsers[0]; // Get the member we just created
+
+      // Navigate to the team members page
+      await page.goto(getMembersPagePath(organization.slug));
+
+      // Locate the email invite form elements
+      const emailInput = page.getByLabel(/email/i);
+      const submitButton = page.getByRole('button', {
+        name: /send email invitation/i,
+      });
+
+      // Attempt to invite the existing member
+      await emailInput.fill(existingMember.email);
+      await submitButton.click();
+
+      // Assert that the error message is shown
+      // Using regex based on the translation string: "{{email}} is already a member"
+      const expectedErrorMessage = new RegExp(
+        `${existingMember.email} is already a member`,
+        'i',
+      );
+      await expect(page.getByText(expectedErrorMessage)).toBeVisible();
+
+      // Teardown
       await teardownMultipleMembers(data);
     });
   });

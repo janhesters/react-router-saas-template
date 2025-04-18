@@ -25,6 +25,7 @@
     "@radix-ui/react-separator": "^1.1.2",
     "@radix-ui/react-slot": "^1.2.0",
     "@radix-ui/react-tooltip": "^1.1.8",
+    "@react-email/components": "0.0.36",
     "@react-router/node": "^7.2.0",
     "@react-router/serve": "^7.2.0",
     "@supabase/ssr": "^0.6.1",

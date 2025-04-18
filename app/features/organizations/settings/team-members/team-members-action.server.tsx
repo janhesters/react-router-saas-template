@@ -3,22 +3,30 @@ import type { Prisma } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { addDays } from 'date-fns';
 import { data } from 'react-router';
+import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
+import { combineHeaders } from '~/utils/combine-headers.server';
+import { sendEmail } from '~/utils/email.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { badRequest, created, forbidden } from '~/utils/http-responses.server';
+import i18next from '~/utils/i18next.server';
+import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import {
+  retrieveActiveOrganizationMembershipByEmailAndOrganizationId,
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
 } from '../../organization-membership-model.server';
+import { saveOrganizationEmailInviteLinkToDatabase } from '../../organizations-email-invite-link-model.server';
 import { requireUserIsMemberOfOrganization } from '../../organizations-helpers.server';
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
   saveOrganizationInviteLinkToDatabase,
   updateOrganizationInviteLinkInDatabaseById,
 } from '../../organizations-invite-link-model.server';
+import { InviteEmail } from './invite-email';
 import {
   CHANGE_ROLE_INTENT,
   CREATE_NEW_INVITE_LINK_INTENT,
@@ -40,7 +48,7 @@ const schema = z.discriminatedUnion('intent', [
 
 export async function teamMembersAction({ request, params }: Route.ActionArgs) {
   try {
-    const { user, organization, role } =
+    const { user, organization, role, headers } =
       await requireUserIsMemberOfOrganization(request, params.organizationSlug);
 
     if (role === OrganizationMembershipRole.member) {
@@ -74,7 +82,7 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           organizationId: organization.id,
         });
 
-        return created();
+        return created({}, { headers });
       }
 
       case DEACTIVATE_INVITE_LINK_INTENT: {
@@ -90,7 +98,7 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           });
         }
 
-        return created();
+        return created({}, { headers });
       }
 
       case CHANGE_ROLE_INTENT: {
@@ -165,11 +173,94 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
         });
 
         // Return success
-        return data({});
+        return data({}, { headers });
       }
 
       case INVITE_BY_EMAIL_INTENT: {
-        throw new Error('Not implemented');
+        if (
+          role !== OrganizationMembershipRole.owner &&
+          body.role === OrganizationMembershipRole.owner
+        ) {
+          return forbidden({
+            errors: {
+              message: 'Only organization owners can invite as owners.',
+            },
+          });
+        }
+
+        const { t, commonT } = await promiseHash({
+          t: i18next.getFixedT(request, 'organizations', {
+            keyPrefix: 'organizations:settings.team-members.invite-by-email',
+          }),
+          commonT: i18next.getFixedT(request, 'common'),
+        });
+
+        const existingMember =
+          await retrieveActiveOrganizationMembershipByEmailAndOrganizationId({
+            email: body.email,
+            organizationId: organization.id,
+          });
+
+        if (existingMember) {
+          return badRequest({
+            errors: {
+              email: {
+                message: t('form.email-already-member', { email: body.email }),
+              },
+            },
+          });
+        }
+
+        const emailInvite = await saveOrganizationEmailInviteLinkToDatabase({
+          email: body.email,
+          expiresAt: addDays(new Date(), 2),
+          invitedById: user.id,
+          organizationId: organization.id,
+          role: body.role,
+        });
+
+        const joinUrl = `${process.env.APP_URL}/email-invite/${emailInvite.token}`;
+
+        const result = await sendEmail({
+          to: body.email,
+          subject: t('invite-email.subject', {
+            inviteName: user.name,
+            appName: commonT('app-name'),
+          }),
+          react: (
+            <InviteEmail
+              title={t('invite-email.title', {
+                appName: commonT('app-name'),
+              })}
+              description={t('invite-email.description', {
+                appName: commonT('app-name'),
+                inviterName: user.name,
+                organizationName: organization.name,
+              })}
+              callToAction={t('invite-email.call-to-action')}
+              buttonText={t('invite-email.button-text', {
+                organizationName: organization.name,
+              })}
+              buttonUrl={joinUrl}
+            />
+          ),
+        });
+
+        if (result.status === 'error') {
+          return badRequest({
+            errors: { email: { message: result.error.message } },
+          });
+        }
+
+        const toastHeaders = await createToastHeaders({
+          title: t('success-toast-title'),
+          type: 'success',
+        });
+
+        return data(
+          { success: body.email },
+          { headers: combineHeaders(headers, toastHeaders) },
+        );
       }
     }
   } catch (error) {

@@ -136,6 +136,7 @@
         "card-title": "Invite by Email",
         "form": {
           "email": "Email",
+          "email-already-member": "{{email}} is already a member",
           "email-invalid": "A valid email consists of characters, '@' and '.'.",
           "email-must-be-string": "A valid email address must be string.",
           "email-placeholder": "Your colleague's email ...",
@@ -147,7 +148,15 @@
           "role-owner": "Owner",
           "role-placeholder": "Select a role ...",
           "submit-button": "Send email invitation"
-        }
+        },
+        "invite-email": {
+          "button-text": "Join {{organizationName}}",
+          "call-to-action": "Join now to collaborate with your colleagues!",
+          "description": "{{inviterName}} has invited you to join {{organizationName}} in {{appName}}. This invite expires in 48 hours.",
+          "subject": "{{inviteName}} invited you to {{appName}}",
+          "title": "You've Been Invited to {{appName}}!"
+        },
+        "success-toast-title": "Email invitation sent"
       },
       "invite-link": {
         "card-description": "After generating the link, it will be valid for 48 hours. Copy and share it with anyone you'd like to join with the role of \"Member\".",

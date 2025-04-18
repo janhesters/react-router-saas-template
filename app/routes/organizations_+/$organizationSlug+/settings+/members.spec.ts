@@ -6,6 +6,7 @@ import { data } from 'react-router';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from '~/features/organizations/organization-membership-model.server';
+import { retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId } from '~/features/organizations/organizations-email-invite-link-model.server';
 import {
   createPopulatedOrganization,
   createPopulatedOrganizationInviteLink,
@@ -20,12 +21,14 @@ import {
   CHANGE_ROLE_INTENT,
   CREATE_NEW_INVITE_LINK_INTENT,
   DEACTIVATE_INVITE_LINK_INTENT,
+  INVITE_BY_EMAIL_INTENT,
 } from '~/features/organizations/settings/team-members/team-members-constants';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
+import { resendHandlers } from '~/test/mocks/handlers/resend';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -33,10 +36,12 @@ import { createAuthenticatedRequest } from '~/test/test-utils';
 import {
   badRequest,
   created,
+  type DataWithResponseInit,
   forbidden,
   notFound,
 } from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
+import { getToast } from '~/utils/toast.server';
 
 import { action } from './members';
 
@@ -62,7 +67,7 @@ async function sendAuthenticatedRequest({
   return await action({ request, context: {}, params: { organizationSlug } });
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...resendHandlers);
 
 describe(`${createUrl(':organizationSlug')} route action`, () => {
   test('given: an authenticated request, should: throw a redirect to the organizations page', async () => {
@@ -178,7 +183,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           expectedExpirationTime.getTime(),
         );
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
       },
     );
 
@@ -205,7 +211,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = created();
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // It creates a new organization invite link.
         const latestLink =
@@ -250,7 +257,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = created();
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify no links exist
         const latestLink =
@@ -285,7 +293,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = created();
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify the link was deactivated
         const updatedLink =
@@ -482,7 +491,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = data({});
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify target user's role is updated
         const membership =
@@ -521,7 +531,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = data({});
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify target user is deactivated
         const membership =
@@ -585,7 +596,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = data({});
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify target user's role is updated
         const membership =
@@ -625,7 +637,8 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
         const expected = data({});
 
-        expect(actual).toEqual(expected);
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
 
         // Verify target user is deactivated
         const membership =
@@ -639,5 +652,233 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         );
       },
     );
-  }); // End CHANGE_ROLE_INTENT describe
+  });
+
+  describe(`${INVITE_BY_EMAIL_INTENT} intent`, () => {
+    const intent = INVITE_BY_EMAIL_INTENT;
+
+    test.each([
+      {
+        given: 'no email',
+        body: {
+          intent,
+          role: OrganizationMembershipRole.member,
+        } as const,
+        expected: badRequest({
+          errors: { email: { message: 'Required' } },
+        }),
+      },
+      {
+        given: 'invalid email format',
+        body: {
+          intent,
+          email: 'not-an-email',
+          role: OrganizationMembershipRole.member,
+        } as const,
+        expected: badRequest({
+          errors: {
+            email: {
+              message:
+                'organizations:settings.team-members.invite-by-email.form.email-invalid',
+            },
+          },
+        }),
+      },
+      {
+        given: 'no role',
+        body: { intent, email: faker.internet.email() } as const,
+        expected: badRequest({ errors: { role: { message: 'Required' } } }),
+      },
+      {
+        given: 'invalid role value',
+        body: {
+          intent,
+          email: faker.internet.email(),
+          role: 'invalid-role',
+        } as const,
+        expected: badRequest({
+          errors: {
+            role: {
+              message:
+                "Invalid enum value. Expected 'owner' | 'admin' | 'member', received 'invalid-role'",
+            },
+          },
+        }),
+      },
+      {
+        given: 'role is "deactivated"', // This shouldn't be possible for invites
+        body: {
+          intent,
+          email: faker.internet.email(),
+          role: 'deactivated',
+        } as const,
+        expected: badRequest({
+          errors: {
+            role: {
+              message:
+                "Invalid enum value. Expected 'owner' | 'admin' | 'member', received 'deactivated'",
+            },
+          },
+        }),
+      },
+    ])(
+      'given: invalid form data ($given), should: return a 400 bad request',
+      async ({ body, expected }) => {
+        // Need an owner/admin to attempt the action, even with bad data,
+        // to get past the initial permission check.
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role: faker.helpers.arrayElement([
+            OrganizationMembershipRole.admin,
+            OrganizationMembershipRole.owner,
+          ]),
+        });
+
+        const actual = await sendAuthenticatedRequest({
+          user,
+          formData: toFormData(body),
+          organizationSlug: organization.slug,
+        });
+
+        expect(actual).toEqual(expected);
+      },
+    );
+
+    test('given: user is admin and tries to invite as owner, should: return 403 forbidden', async () => {
+      const { user: adminUser, organization } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.admin,
+        });
+      const targetEmail = faker.internet.email();
+
+      const actual = await sendAuthenticatedRequest({
+        user: adminUser,
+        formData: toFormData({
+          intent,
+          email: targetEmail,
+          role: OrganizationMembershipRole.owner,
+        }),
+        organizationSlug: organization.slug,
+      });
+
+      const expected = forbidden({
+        errors: {
+          message: 'Only organization owners can invite as owners.',
+        },
+      });
+
+      expect(actual).toEqual(expected);
+
+      // Verify no invite was created
+      const invites =
+        await retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
+          organization.id,
+        );
+      expect(invites).toEqual([]);
+    });
+
+    test('given: inviting a user that is already a member of the organization, should: return a 400 bad request', async () => {
+      const { user: adminUser, organization } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.admin,
+        });
+
+      const targeEmail = adminUser.email;
+
+      const actual = await sendAuthenticatedRequest({
+        user: adminUser,
+        formData: toFormData({
+          intent,
+          email: targeEmail,
+          role: OrganizationMembershipRole.member,
+        }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: { message: `${targeEmail} is already a member` },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+    });
+
+    test.each([
+      {
+        inviterRole: OrganizationMembershipRole.admin,
+        inviteeRole: OrganizationMembershipRole.member,
+      },
+      {
+        inviterRole: OrganizationMembershipRole.admin,
+        inviteeRole: OrganizationMembershipRole.admin,
+      },
+      {
+        inviterRole: OrganizationMembershipRole.owner,
+        inviteeRole: OrganizationMembershipRole.member,
+      },
+      {
+        inviterRole: OrganizationMembershipRole.owner,
+        inviteeRole: OrganizationMembershipRole.admin,
+      },
+      {
+        inviterRole: OrganizationMembershipRole.owner,
+        inviteeRole: OrganizationMembershipRole.owner,
+      },
+    ])(
+      'given: the user is an $inviterRole and invites as $inviteeRole, should: create an email invite, send email (mocked), and return 200 ok with success toast',
+      async ({ inviterRole, inviteeRole }) => {
+        const { user: inviterUser, organization } =
+          await setupUserWithOrgAndAddAsMember({ role: inviterRole });
+        const targetEmail = faker.internet.email();
+
+        const actual = (await sendAuthenticatedRequest({
+          user: inviterUser,
+          formData: toFormData({
+            intent,
+            email: targetEmail,
+            role: inviteeRole,
+          }),
+          organizationSlug: organization.slug,
+        })) as DataWithResponseInit<Record<string, never>>;
+        const expected = data({ success: targetEmail });
+
+        // Check response is OK
+        expect(actual.data).toEqual(expected.data);
+        expect(actual.init?.status).toEqual(expected.init?.status);
+
+        // Verify email invite was created in the database
+        const invites =
+          await retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
+            organization.id,
+          );
+        const createdInvite = invites.find(
+          invite => invite.email === targetEmail,
+        );
+
+        expect(createdInvite).toBeDefined();
+        expect(createdInvite?.role).toEqual(inviteeRole);
+        expect(createdInvite?.organizationId).toEqual(organization.id);
+        expect(createdInvite?.invitedById).toEqual(inviterUser.id);
+        expect(createdInvite?.invitedBy?.name).toEqual(inviterUser.name);
+
+        // Verify expiration date (approx 2 days from now)
+        const expectedExpirationTime = subSeconds(addDays(new Date(), 2), 60);
+        expect(createdInvite?.expiresAt.getTime()).toBeGreaterThanOrEqual(
+          expectedExpirationTime.getTime(),
+        );
+
+        // Verify success toast header
+        const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+        const { toast } = await getToast(
+          new Request(createUrl(organization.slug), {
+            headers: { cookie: maybeToast ?? '' },
+          }),
+        );
+        expect(toast).toMatchObject({
+          id: expect.any(String) as string,
+          title: 'Email invitation sent',
+          type: 'success',
+        });
+      },
+    );
+  });
 });

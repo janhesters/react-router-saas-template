@@ -1,4 +1,10 @@
-import type { OrganizationMembership, UserAccount } from '@prisma/client';
+import type {
+  Organization,
+  OrganizationEmailInviteLink,
+  OrganizationInviteLink,
+  OrganizationMembership,
+  UserAccount,
+} from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 
 import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from '~/features/organizations/organizations-model.server';
@@ -29,11 +35,24 @@ export const requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug =
     throwIfEntityIsMissing,
   );
 
-export type OrganizationWithMembers = Awaited<
-  ReturnType<
-    typeof requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug
-  >
->;
+export type OrganizationWithMembers = Organization & {
+  memberships: (OrganizationMembership & {
+    member: UserAccount;
+  })[];
+  organizationInviteLinks: OrganizationInviteLink[];
+  organizationEmailInviteLink: OrganizationEmailInviteLink[];
+};
+
+type Member = {
+  avatar: string;
+  email: string;
+  id: string;
+  isCurrentUser: boolean;
+  name: string;
+  role: OrganizationMembership['role'];
+  deactivatedAt: Date | undefined;
+  status: 'createdTheOrganization' | 'joinedViaLink' | 'emailInvitePending';
+};
 
 /**
  * Maps organization data to team member settings props.
@@ -74,19 +93,43 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
     },
     teamMemberTable: {
       currentUsersRole,
-      members: organization.memberships.map(membership => {
-        const isCurrentUser = membership.member.id === currentUsersId;
-        return {
-          avatar: membership.member.imageUrl,
-          email: membership.member.email,
-          id: membership.member.id,
-          isCurrentUser,
-          name: membership.member.name,
-          role: membership.role,
-          deactivatedAt: membership.deactivatedAt,
-          status: isCurrentUser ? 'createdTheOrganization' : 'joinedViaLink',
-        };
-      }),
+      members: [
+        // Add email invites first, sorted by most recent
+        ...organization.organizationEmailInviteLink
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          // Filter to only keep the first (most recent) invite for each email
+          .filter(
+            (invite, index, array) =>
+              array.findIndex(index_ => index_.email === invite.email) ===
+              index,
+          )
+          .map(
+            (invite): Member => ({
+              avatar: '',
+              email: invite.email,
+              id: invite.id,
+              isCurrentUser: false,
+              name: '',
+              role: OrganizationMembershipRole.member,
+              deactivatedAt: undefined,
+              status: 'emailInvitePending',
+            }),
+          ),
+        // Then add existing members
+        ...organization.memberships.map((membership): Member => {
+          const isCurrentUser = membership.member.id === currentUsersId;
+          return {
+            avatar: membership.member.imageUrl,
+            email: membership.member.email,
+            id: membership.member.id,
+            isCurrentUser,
+            name: membership.member.name,
+            role: membership.role,
+            deactivatedAt: membership.deactivatedAt ?? undefined,
+            status: isCurrentUser ? 'createdTheOrganization' : 'joinedViaLink',
+          };
+        }),
+      ],
     },
   };
 }

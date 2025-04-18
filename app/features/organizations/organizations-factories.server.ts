@@ -3,9 +3,11 @@ import { createId } from '@paralleldrive/cuid2';
 import type {
   InviteLinkUse,
   Organization,
+  OrganizationEmailInviteLink,
   OrganizationInviteLink,
   OrganizationMembership,
 } from '@prisma/client';
+import { OrganizationMembershipRole } from '@prisma/client';
 import { addDays } from 'date-fns';
 
 import { slugify } from '~/utils/slugify.server';
@@ -91,5 +93,38 @@ export const createPopulatedOrganizationMembership: Factory<
   memberId,
   organizationId,
   role,
+  deactivatedAt,
+});
+
+/**
+ * Creates an organization email invite link with populated values.
+ *
+ * @param emailInviteLinkParams - OrganizationEmailInviteLink params to create email invite link with.
+ * @returns A populated organization email invite link with given params.
+ */
+export const createPopulatedOrganizationEmailInviteLink: Factory<
+  OrganizationEmailInviteLink
+> = ({
+  updatedAt = faker.date.recent({ days: 1 }),
+  createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  id = createId(),
+  organizationId = createId(),
+  invitedById = createId(),
+  email = faker.internet.email(),
+  token = createId(),
+  role = OrganizationMembershipRole.member,
+  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
+  // eslint-disable-next-line unicorn/no-null
+  deactivatedAt = null,
+} = {}) => ({
+  id,
+  createdAt,
+  updatedAt,
+  organizationId,
+  invitedById,
+  email,
+  token,
+  role,
+  expiresAt,
   deactivatedAt,
 });

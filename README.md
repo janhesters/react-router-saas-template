@@ -222,4 +222,12 @@ Simply [follow the instructions in the documentation](https://supabase.com/docs/
 - `STORAGE_REGION`
 - `SUPABASE_PROJECT_ID`
 
-Optinally, comment in the `uploadDate` variable in the `getSignedPutRequestInfo` function in `app/utils/storage.server.ts` if you want to use a service that supports it like AWS S3.
+The upload to Supabase Storage is done using `parseFormData` from [`@mjackson/form-data-parser`](https://github.com/mjackson/form-data-parser). This function is under the hood in `validateFormData` in `app/utils/validate-form-data.server.ts`.
+
+## Check Out the Epic Stack
+
+Some of the code of this starter template was taken from or inspired by the [Epic Stack](https://github.com/epicweb-dev/epic-stack) from [Kent C. Dodds](http://kentcdodds.com/). His template has different defaults, so check it out if you're looking for a different opinionated starter template.
+
+## Built with ❤️ by [ReactSquad](https://reactsquad.io/)
+
+If you want to hire senior React developers to augment your team, or build your entire product from scratch, [schedule a call with us](https://www.reactsquad.io/schedule-a-call).

@@ -1,9 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { Form } from 'react-router';
+import { Form, useSubmit } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import {
@@ -30,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+import { toFormData } from '~/utils/to-form-data';
 
 import { INVITE_BY_EMAIL_INTENT } from './team-members-constants';
 import type {
@@ -42,16 +44,20 @@ export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;
   errors?: InviteByEmailErrors;
   isInvitingByEmail?: boolean;
+  successEmail?: string;
 };
 
 export function EmailInviteCard({
   currentUserIsOwner,
   errors,
   isInvitingByEmail = false,
+  successEmail,
 }: EmailInviteCardProps) {
   const { t } = useTranslation('organizations', {
     keyPrefix: 'settings.team-members.invite-by-email',
   });
+
+  const submit = useSubmit();
 
   const form = useForm<InviteByEmailSchema>({
     resolver: zodResolver(inviteByEmailSchema),
@@ -62,6 +68,17 @@ export function EmailInviteCard({
     },
     errors,
   });
+
+  const handleSubmit = async (values: InviteByEmailSchema) => {
+    await submit(toFormData(values), { method: 'POST' });
+  };
+
+  // If the invite was successful, clear the email input
+  useEffect(() => {
+    if (successEmail) {
+      form.setValue('email', '');
+    }
+  }, [successEmail]);
 
   return (
     <Card>
@@ -76,10 +93,7 @@ export function EmailInviteCard({
           <Form
             method="POST"
             id="invite-by-email-form"
-            onSubmit={event => {
-              event.preventDefault();
-              alert('Not implemented - but coming soon!');
-            }}
+            onSubmit={form.handleSubmit(handleSubmit)}
           >
             <fieldset disabled={isInvitingByEmail}>
               <div className="flex gap-4">
@@ -99,8 +113,6 @@ export function EmailInviteCard({
                           {...field}
                         />
                       </FormControl>
-
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -147,6 +159,12 @@ export function EmailInviteCard({
                   )}
                 />
               </div>
+
+              {form.formState.errors.email && (
+                <FormMessage className="mt-2">
+                  {form.formState.errors.email.message}
+                </FormMessage>
+              )}
             </fieldset>
           </Form>
         </FormProvider>

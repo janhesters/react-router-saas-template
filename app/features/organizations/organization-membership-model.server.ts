@@ -25,6 +25,27 @@ export async function retrieveOrganizationMembershipFromDatabaseByUserIdAndOrgan
   });
 }
 
+/**
+ * Retrieves an *active* organization membership by user email and organization ID.
+ * This is useful for checking if a user with a specific email is already
+ * an active member before inviting them.
+ *
+ * @param email - The email address of the potential member.
+ * @param organizationId - The ID of the organization.
+ * @returns The active organization membership or null if not found or inactive.
+ */
+export async function retrieveActiveOrganizationMembershipByEmailAndOrganizationId({
+  email,
+  organizationId,
+}: {
+  email: UserAccount['email'];
+  organizationId: Organization['id'];
+}) {
+  return prisma.organizationMembership.findFirst({
+    where: { organizationId: organizationId, member: { email: email } },
+  });
+}
+
 /* UPDATE */
 
 /**

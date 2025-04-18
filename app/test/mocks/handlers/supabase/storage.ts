@@ -134,7 +134,7 @@ const removeMock = http.delete(
 );
 
 /*
-  Server‐side S3 uploads (AWS SDK v3 / @supabase’s S3 endpoint)
+  Server‐side S3 uploads (AWS SDK v3 / @supabase's S3 endpoint)
 */
 const s3UploadMock: RequestHandler = http.put(
   // Path‐style S3 endpoint under Supabase:
@@ -149,7 +149,7 @@ const s3UploadMock: RequestHandler = http.put(
       return new HttpResponse('Missing key', { status: 400 });
     }
 
-    // S3’s PutObject returns an empty body + an ETag header
+    // S3's PutObject returns an empty body + an ETag header
     return new HttpResponse(undefined, {
       status: 200,
       headers: { ETag: '"mocked-etag"' },
@@ -167,15 +167,21 @@ const s3DeleteMock: RequestHandler = http.delete(
 );
 
 const s3InitMultipartMock: RequestHandler = http.post(
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*?uploads`,
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ params, request }) => {
     const uploadId = 'mock-upload-id';
+    const url = new URL(request.url);
+
+    // Check if this is an uploads request
+    if (url.searchParams.get('uploads') === null) {
+      return new HttpResponse('Not an uploads request', { status: 400 });
+    }
 
     if (!params.bucketName || typeof params.bucketName !== 'string') {
       return new HttpResponse('Missing bucket name', { status: 400 });
     }
 
-    const keyPath = new URL(request.url).pathname.split(
+    const keyPath = url.pathname.split(
       `/storage/v1/s3/${params.bucketName}/`,
     )[1];
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -216,7 +222,7 @@ const s3UploadPartMock: RequestHandler = http.put(
   Server-side S3 multipart upload: complete
 */
 const s3CompleteMultipartMock: RequestHandler = http.post(
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*?uploadId=:uploadId`,
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ params, request }) => {
     const url = new URL(request.url);
     const uploadId = url.searchParams.get('uploadId');

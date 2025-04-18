@@ -78,15 +78,16 @@ export async function retrieveOrganizationWithMembershipsFromDatabaseBySlug(
 
 /**
  * Retrieves an organization by its slug with memberships and latest active
- * invite link.
+ * invite links (both regular and email invites).
  *
  * @param slug - The slug of the organization to retrieve.
- * @returns The organization with memberships and latest active invite link or
+ * @returns The organization with memberships and latest active invite links or
  * null if not found.
  */
 export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug(
   slug: Organization['slug'],
 ) {
+  const now = new Date();
   return prisma.organization.findUnique({
     where: { slug },
     include: {
@@ -95,9 +96,13 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
         orderBy: { createdAt: 'desc' },
       },
       organizationInviteLinks: {
-        where: { expiresAt: { gt: new Date() }, deactivatedAt: null },
+        where: { expiresAt: { gt: now }, deactivatedAt: null },
         orderBy: { createdAt: 'desc' },
         take: 1,
+      },
+      organizationEmailInviteLink: {
+        where: { expiresAt: { gt: now } },
+        orderBy: { createdAt: 'desc' },
       },
     },
   });

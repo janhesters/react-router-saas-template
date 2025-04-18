@@ -89,6 +89,7 @@ jobs:
       STORAGE_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
       STORAGE_REGION: ${{ secrets.STORAGE_REGION }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
     steps:
       - name: ⬇️ Checkout repo
@@ -137,7 +138,7 @@ jobs:
       STORAGE_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_SECRET_ACCESS_KEY }}
       STORAGE_REGION: ${{ secrets.STORAGE_REGION }}
       SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
-
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v4
