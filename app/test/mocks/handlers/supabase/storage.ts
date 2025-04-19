@@ -62,9 +62,7 @@ type RemoveRequestBody = {
 
 const removeMock = http.delete(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/:bucketId`,
-  async ({ params, request }) => {
-    const bucketId = params.bucketId as string;
-
+  async ({ request }) => {
     try {
       // Use the generic type argument for request.json()
       // This tells TS what shape to expect *if* parsing succeeds.
@@ -89,10 +87,12 @@ const removeMock = http.delete(
         );
       }
 
-      console.log(
-        `MSW Mock: Simulating removal of paths in bucket ${bucketId}:`,
-        prefixes,
-      );
+      // --- Uncomment to log the prefixes ---
+      // const bucketId = params.bucketId as string;
+      // console.log(
+      //   `MSW Mock: Simulating removal of paths in bucket ${bucketId}:`,
+      //   prefixes,
+      // );
 
       // --- Simulate Specific Error Case (Example) ---
       // if (prefixes.includes('path/that/should/fail.txt')) {

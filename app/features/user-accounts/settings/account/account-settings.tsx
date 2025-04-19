@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { UserAccount } from '@prisma/client';
 import { Loader2Icon } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import type { FieldErrors } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
 import { Trans, useTranslation } from 'react-i18next';
@@ -52,6 +52,7 @@ export type AccountSettingsProps = {
     imageUrl?: UserAccount['imageUrl'];
     name: UserAccount['name'];
   };
+  success?: string;
 };
 
 function AvatarDragAndDrop({ isInvalid }: { isInvalid: boolean }) {
@@ -90,6 +91,7 @@ export function AccountSettings({
   errors,
   isUpdatingUserAccount = false,
   user,
+  success,
 }: AccountSettingsProps) {
   const { t } = useTranslation('settings', {
     keyPrefix: 'user-account.form',
@@ -120,6 +122,19 @@ export function AccountSettings({
       encType: 'multipart/form-data',
     });
   };
+
+  // 1️⃣ watch for success
+  useEffect(() => {
+    if (success) {
+      // clear react-hook-form’s avatar field
+      form.resetField('avatar'); // :contentReference[oaicite:0]{index=0}
+
+      // clear the actual file-input DOM element (mobile)
+      if (hiddenInputReference.current) {
+        hiddenInputReference.current.value = '';
+      }
+    }
+  }, [success, form]);
 
   return (
     <FormProvider {...form}>
@@ -232,6 +247,7 @@ export function AccountSettings({
                         <div className="hidden flex-grow gap-3 md:flex">
                           <DragAndDropProvider
                             accept={ACCEPTED_IMAGE_TYPES}
+                            key={String(success ?? 'first-render')} // 2️⃣ remount on success
                             noClick={true}
                             onDrop={incomingFiles => {
                               onChange(incomingFiles[0]);

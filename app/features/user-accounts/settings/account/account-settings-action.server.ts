@@ -8,10 +8,12 @@ import {
   deleteUserAccountFromDatabaseById,
   updateUserAccountInDatabaseById,
 } from '~/features/user-accounts/user-accounts-model.server';
+import { supabaseAdminClient } from '~/features/user-authentication/supabase.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { badRequest } from '~/utils/http-responses.server';
 import i18next from '~/utils/i18next.server';
+import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -51,6 +53,8 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
         }
 
         if (body.avatar) {
+          await removeImageFromStorage(user.imageUrl);
+
           const publicUrl = await uploadUserAvatar({
             file: body.avatar,
             supabase: auth.supabase,
@@ -70,7 +74,10 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
           title: t('user-account-updated'),
           type: 'success',
         });
-        return data({}, { headers: combineHeaders(headers, toastHeaders) });
+        return data(
+          { success: new Date().toISOString() },
+          { headers: combineHeaders(headers, toastHeaders) },
+        );
       }
 
       case DELETE_USER_ACCOUNT_INTENT: {
@@ -88,30 +95,38 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
           });
         }
 
-        // Delete organizations where user is the sole owner (only member)
+        // Find organizations where user is the sole owner (only member)
         const soleOwnerOrgs = user.memberships.filter(
           membership =>
             membership.role === 'owner' &&
             membership.organization._count.memberships === 1,
         );
 
+        // Delete the logos of the organizations
+        await Promise.all(
+          soleOwnerOrgs.map(({ organization }) =>
+            removeImageFromStorage(organization.imageUrl),
+          ),
+        );
+
+        // Delete the organizations
         await Promise.all(
           soleOwnerOrgs.map(membership =>
             deleteOrganizationFromDatabaseById(membership.organization.id),
           ),
         );
 
+        // Delete the user's profile picture
+        await removeImageFromStorage(user.imageUrl);
+
         // Delete the user account (this will cascade delete their memberships)
         await deleteUserAccountFromDatabaseById(user.id);
+        await supabaseAdminClient.auth.admin.deleteUser(user.supabaseUserId);
         await auth.supabase.auth.signOut();
-        await auth.supabase.auth.admin.deleteUser(user.supabaseUserId);
 
         return redirectWithToast(
           '/',
-          {
-            title: t('user-account-deleted'),
-            type: 'success',
-          },
+          { title: t('user-account-deleted'), type: 'success' },
           { headers },
         );
       }

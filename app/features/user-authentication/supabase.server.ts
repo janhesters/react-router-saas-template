@@ -3,12 +3,15 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import invariant from 'tiny-invariant';
 
-const { VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY } = process.env;
+const { VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } =
+  process.env;
 
 invariant(VITE_SUPABASE_URL, 'VITE_SUPABASE_URL is not set');
 invariant(VITE_SUPABASE_ANON_KEY, 'VITE_SUPABASE_ANON_KEY is not set');
+invariant(SUPABASE_SERVICE_ROLE_KEY, 'SUPABASE_SERVICE_ROLE_KEY is not set');
 
 export function createSupabaseServerClient({ request }: { request: Request }) {
   const headers = new Headers();
@@ -38,3 +41,8 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
 
   return { supabase, headers };
 }
+
+export const supabaseAdminClient = createClient(
+  VITE_SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY,
+);

@@ -119,7 +119,7 @@ export default function Landing() {
                   1: (
                     <a
                       className="ring-offset-background hover:text-primary focus-visible:ring-ring text-muted-foreground/80 rounded-sm underline underline-offset-4 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-                      href="https://github.com/janhesters/react-router-saas-template/blob/div/README.md"
+                      href="https://github.com/janhesters/react-router-saas-template/blob/main/README.md"
                     />
                   ),
                   2: (
@@ -137,7 +137,7 @@ export default function Landing() {
 
               <a
                 className={buttonVariants({ variant: 'outline' })}
-                href="https://github.com/janhesters/french-house-stack"
+                href="https://github.com/janhesters/react-router-saas-template"
                 target="_blank"
                 rel="noopener noreferrer"
               >

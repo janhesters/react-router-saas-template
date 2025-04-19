@@ -8,6 +8,7 @@ import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-ini
 import { forbidden } from '~/utils/http-responses.server';
 import i18next from '~/utils/i18next.server';
 import { slugify } from '~/utils/slugify.server';
+import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -64,6 +65,7 @@ export async function generalOrganizationSettingsAction({
         }
 
         if (body.logo) {
+          await removeImageFromStorage(organization.imageUrl);
           updates.imageUrl = body.logo;
         }
 
@@ -92,6 +94,7 @@ export async function generalOrganizationSettingsAction({
       }
 
       case DELETE_ORGANIZATION_INTENT: {
+        await removeImageFromStorage(organization.imageUrl);
         await deleteOrganizationFromDatabaseById(organization.id);
         return redirectWithToast(
           href('/organizations'),

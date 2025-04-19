@@ -6,7 +6,10 @@ import { GeneralErrorBoundary } from '~/components/general-error-boundary';
 import { Separator } from '~/components/ui/separator';
 import { AccountSettings } from '~/features/user-accounts/settings/account/account-settings';
 import { accountSettingsAction } from '~/features/user-accounts/settings/account/account-settings-action.server';
-import { UPDATE_USER_ACCOUNT_INTENT } from '~/features/user-accounts/settings/account/account-settings-constants';
+import {
+  DELETE_USER_ACCOUNT_INTENT,
+  UPDATE_USER_ACCOUNT_INTENT,
+} from '~/features/user-accounts/settings/account/account-settings-constants';
 import { mapUserAccountWithMembershipsToDangerZoneProps } from '~/features/user-accounts/settings/account/account-settings-helpers.server';
 import { DangerZone } from '~/features/user-accounts/settings/account/danger-zone';
 import { requireAuthenticatedUserWithMembershipsExists } from '~/features/user-accounts/user-accounts-helpers.server';
@@ -50,9 +53,9 @@ export default function SettingsAccountRoute({
   const navigation = useNavigation();
   const isUpdatingUserAccount =
     navigation.formData?.get('intent') === UPDATE_USER_ACCOUNT_INTENT;
-  const errors = getFormErrors(
-    actionData as Awaited<ReturnType<typeof action>>,
-  );
+  const isDeletingAccount =
+    navigation.formData?.get('intent') === DELETE_USER_ACCOUNT_INTENT;
+  const errors = getFormErrors(actionData);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -68,12 +71,16 @@ export default function SettingsAccountRoute({
         <AccountSettings
           errors={errors}
           isUpdatingUserAccount={isUpdatingUserAccount}
+          success={(actionData as { success?: string })?.success}
           user={loaderData.user}
         />
 
         <Separator />
 
-        <DangerZone {...loaderData.dangerZone} />
+        <DangerZone
+          {...loaderData.dangerZone}
+          isDeletingAccount={isDeletingAccount}
+        />
       </div>
     </div>
   );

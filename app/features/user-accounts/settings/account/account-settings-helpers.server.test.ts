@@ -6,7 +6,7 @@ import { createPopulatedUserAccount } from '~/features/user-accounts/user-accoun
 
 import { mapUserAccountWithMembershipsToDangerZoneProps } from './account-settings-helpers.server';
 
-describe('mapUserAccountWithMembershipsToDangerZoneProps', () => {
+describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
   test('given: a user account with no memberships, should: return danger zone props with empty arrays', () => {
     const user = createPopulatedUserAccount();
 

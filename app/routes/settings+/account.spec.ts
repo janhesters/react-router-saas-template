@@ -100,7 +100,7 @@ describe('/settings/account route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         formData,
-      })) as DataWithResponseInit<Record<string, never>>;
+      })) as DataWithResponseInit<{ success: string }>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -129,7 +129,7 @@ describe('/settings/account route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         formData,
-      })) as DataWithResponseInit<Record<string, never>>;
+      })) as DataWithResponseInit<{ success: string }>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -141,9 +141,7 @@ describe('/settings/account route action', () => {
 
       const maybeToast = (actual.init?.headers as Headers).get('Set-Cookie');
       const { toast } = await getToast(
-        new Request(createUrl(), {
-          headers: { cookie: maybeToast ?? '' },
-        }),
+        new Request(createUrl(), { headers: { cookie: maybeToast ?? '' } }),
       );
       expect(toast).toMatchObject({
         id: expect.any(String) as string,
@@ -161,7 +159,7 @@ describe('/settings/account route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         formData,
-      })) as DataWithResponseInit<Record<string, never>>;
+      })) as DataWithResponseInit<{ success: string }>;
 
       // Verify only avatar was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -332,6 +330,18 @@ describe('/settings/account route action', () => {
         organization.id,
       );
       expect(deletedOrg).toEqual(null);
+
+      // It displays a toast
+      const maybeToast = response.headers.get('Set-Cookie');
+      const toastCookie = maybeToast?.match(/__toast=[^;]+/)?.[0] ?? '';
+      const { toast } = await getToast(
+        new Request(createUrl(), { headers: { cookie: toastCookie } }),
+      );
+      expect(toast).toMatchObject({
+        id: expect.any(String) as string,
+        title: 'Your account has been deleted',
+        type: 'success',
+      });
     });
 
     test('given: a user who is an owner of an organization with other members, should: return a 400 error indicating they must transfer ownership first', async () => {

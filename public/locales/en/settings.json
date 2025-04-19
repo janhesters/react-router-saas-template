@@ -46,7 +46,8 @@
     },
     "page-title": "Account",
     "toast": {
-      "user-account-updated": "Your account has been updated"
+      "user-account-updated": "Your account has been updated",
+      "user-account-deleted": "Your account has been deleted"
     }
   }
 }

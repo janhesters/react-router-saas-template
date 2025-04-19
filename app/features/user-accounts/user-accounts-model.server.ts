@@ -132,6 +132,7 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatab
               id: true,
               name: true,
               slug: true,
+              imageUrl: true,
               // Count active members in the organization
               _count: {
                 select: {
