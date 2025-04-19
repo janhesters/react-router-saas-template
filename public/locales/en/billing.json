@@ -1,0 +1,62 @@
+{
+  "pricing": {
+    "custom": "Custom",
+    "free": "Free",
+    "monthly": "Monthly",
+    "most-popular": "Most Popular",
+    "plans": {
+      "business": {
+        "cta": "Start a 14-day free trial",
+        "description": "For professionals and businesses who want to grow.",
+        "features": [
+          "SSO",
+          "Up to 25 members",
+          "Priority support"
+        ],
+        "features-title": "Everything in Startup, plus:",
+        "title": "Business"
+      },
+      "enterprise": {
+        "cta": "Contact Sales",
+        "description": "For large organizations who need custom solutions.",
+        "features": [
+          "Custom Integrations",
+          "Unlimited members",
+          "Dedicated support"
+        ],
+        "features-title": "All Business features, plus:",
+        "title": "Enterprise"
+      },
+      "hobby": {
+        "cta": "Get Started",
+        "description": "For hobbyists and beginners who are learning and exploring.",
+        "features": [
+          "Unlimited public projects",
+          "Community support",
+          "1 member"
+        ],
+        "features-title": "Features:",
+        "title": "Hobby"
+      },
+      "startup": {
+        "cta": "Start a 14-day free trial",
+        "description": "Perfect for startups with small teams that need to scale.",
+        "features": [
+          "Unlimited private projects",
+          "Remove branding",
+          "Up to 5 members"
+        ],
+        "features-title": "Everything in Hobby, plus:",
+        "title": "Startup"
+      }
+    },
+    "price": "{{price}} <1>/user per month</1>",
+    "yearly": "Yearly"
+  },
+  "pricing-page": {
+    "page-description": "Choose the plan that fits your needs. All plans come with a 30-day money-back guarantee.",
+    "page-title": "Pricing",
+    "pricing-heading": "Choose your plan",
+    "save-annually": "Save 20% on the annual plan."
+  }
+}

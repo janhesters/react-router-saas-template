@@ -32,7 +32,7 @@ export async function action(actionArguments: Route.ActionArgs) {
   return await acceptInviteLinkAction(actionArguments);
 }
 
-export default function OrganizationInvite({
+export default function OrganizationInviteRoute({
   loaderData,
 }: Route.ComponentProps) {
   return <AcceptInviteLinkPage {...loaderData} />;

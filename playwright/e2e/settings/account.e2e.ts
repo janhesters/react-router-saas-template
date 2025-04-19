@@ -1,5 +1,3 @@
-// TODO: When updating an organization, delete the organization logo from storage.
-// TODO: When deleting an user account, delete the user's avatar from storage.
 // TODO: accept invite via email
 //  - delete all outstanding links for the same email from the same org
 // TODO: Notifications
