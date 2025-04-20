@@ -1,4 +1,68 @@
 {
+  "billing-page": {
+    "cancel-at-period-end-banner": {
+      "button": "Resume subscription",
+      "description": "Your subscription runs out on {{date}}.",
+      "title": "Your subscription is ending soon."
+    },
+    "cancel-subscription-modal": {
+      "cancelling-subscription": "Cancelling subscription ...",
+      "change-plan": "Select a different plan",
+      "confirm": "Cancel subscription",
+      "description": "Canceling your subscription means you will lose access to your benefits at the end of your billing cycle.",
+      "features": [
+        "SSO",
+        "Unlimited members",
+        "Unlimited private projects",
+        "Priority support"
+      ],
+      "title": "Are you sure you want to cancel your subscription?"
+    },
+    "free-trial-banner": {
+      "button": "Add payment information",
+      "description": "Your free trial will end on {{date}}.",
+      "title": "Your organization is currently on a free trial."
+    },
+    "opening-customer-portal": "Opening customer portal ...",
+    "page-description": "Manage your billing information.",
+    "page-title": "Billing",
+    "plan-information": {
+      "amount-format": "${{amount}}",
+      "current-plan": "Current Plan",
+      "heading": "Your Plan",
+      "manage-plan": "Manage plan",
+      "manage-users": "Manage users",
+      "next-billing-date": "Next Billing Date",
+      "projected-total": "Projected Total",
+      "rate-format": "${{amount}} <1>per user billed monthly</1>",
+      "users": "Users",
+      "users-format": "{{current}} / {{max}}",
+      "view-invoices": "View invoices"
+    },
+    "pricing-modal": {
+      "add-payment-information": "Add payment information",
+      "adding-payment-information": "Adding payment information ...",
+      "cancel-subscription-banner": {
+        "button": "Cancel subscription",
+        "description": "After cancelling your subscription, you will be able to use your account until the end of the current billing period.",
+        "title": "Cancel subscription"
+      },
+      "current-plan": "Current Plan",
+      "description": "Pick a plan that fits your needs.",
+      "downgrade-button": "Downgrade",
+      "downgrading": "Downgrading ...",
+      "switch-to-annual-button": "Switch to annual",
+      "switch-to-monthly-button": "Switch to monthly",
+      "title": "Manage plan",
+      "upgrade-button": "Upgrade",
+      "upgrading": "Upgrading ..."
+    },
+    "subscription-cancelled-banner": {
+      "button": "Reactivate subscription",
+      "description": "Your subscription has been cancelled.",
+      "title": "Your subscription is inactive."
+    }
+  },
   "contact-sales": {
     "company": "Company",
     "company-name-label": "Company",
@@ -7,7 +71,7 @@
     "company-name-required": "Please enter your company name (required).",
     "company-name-too-long": "Your company name must not exceed 255 characters.",
     "company-placeholder": "Company name",
-    "contact-sales-description": "We’ll discuss your requirements, demo the product, and set up the right plan and pricing for you.",
+    "contact-sales-description": "We'll discuss your requirements, demo the product, and set up the right plan and pricing for you.",
     "contact-sales-title": "Talk to our sales team about your needs.",
     "enterprise-sales": "Enterprise sales",
     "first-name-label": "First name",
@@ -43,6 +107,7 @@
     "work-email-too-long": "Your work email must not exceed 255 characters."
   },
   "pricing": {
+    "annual": "Annual",
     "custom": "Custom",
     "free": "Free",
     "monthly": "Monthly",
@@ -94,12 +159,11 @@
       }
     },
     "price": "{{price}} <1>/user per month</1>",
-    "yearly": "Yearly"
+    "save-annually": "Save up to 20% on the annual plan."
   },
   "pricing-page": {
     "page-description": "Choose the plan that fits your needs. All plans come with a 30-day money-back guarantee.",
     "page-title": "Pricing",
-    "pricing-heading": "Choose your plan",
-    "save-annually": "Save 20% on the annual plan."
+    "pricing-heading": "Choose your plan"
   }
 }

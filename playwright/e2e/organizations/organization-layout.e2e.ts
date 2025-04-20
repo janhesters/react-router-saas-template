@@ -155,4 +155,42 @@ test.describe('organization layout', () => {
 
     await teardownOrganizationAndMember({ organization, user });
   });
+
+  test.describe('theme toggle', () => {
+    test('given: a logged in user who is onboarded and a member of the organization, should: let the user switch the theme', async ({
+      page,
+    }) => {
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
+        page,
+      });
+
+      await page.goto(`/organizations/${organization.slug}/dashboard`);
+
+      // Check that no dark class is present initially
+      const htmlElement = page.locator('html');
+      await expect(htmlElement).not.toHaveClass('dark');
+
+      await page.getByRole('button', { name: /open theme menu/i }).click();
+      await page.getByRole('menuitem', { name: /dark/i }).click();
+
+      // Check that the dark button is disabled.
+      await page.getByRole('button', { name: /open theme menu/i }).click();
+      await expect(
+        page.getByRole('menuitem', { name: /dark/i }),
+      ).toBeDisabled();
+
+      // Check that dark class is present after switching and the user is
+      // still on the same page.
+      await expect(htmlElement).toHaveClass('dark');
+      await expect(page).toHaveURL(
+        `/organizations/${organization.slug}/dashboard`,
+      );
+
+      // Check that after reloading the page, the dark class is still present.
+      await page.reload();
+      await expect(htmlElement).toHaveClass('dark');
+
+      await teardownOrganizationAndMember({ organization, user });
+    });
+  });
 });

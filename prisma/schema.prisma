@@ -19,6 +19,7 @@ model UserAccount {
   createdInviteLinks  OrganizationInviteLink[]
   usedInviteLinks     InviteLinkUse[]
   createdEmailInvites OrganizationEmailInviteLink[]
+  StripeSubscription  StripeSubscription[]
 }
 
 model Organization {
@@ -33,6 +34,7 @@ model Organization {
   memberships                 OrganizationMembership[]
   organizationInviteLinks     OrganizationInviteLink[]
   organizationEmailInviteLink OrganizationEmailInviteLink[]
+  StripeSubscription          StripeSubscription[]
 }
 
 enum OrganizationMembershipRole {
@@ -113,6 +115,33 @@ model ContactSalesFormSubmission {
   message     String   @default("")
   phoneNumber String   @default("")
   workEmail   String
+}
+
+model StripeSubscription {
+  /// Unique identifier for the object.
+  id                 String       @id @default(cuid(2))
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId     String
+  buyer              UserAccount  @relation(fields: [buyerId], references: [id])
+  buyerId            String
+  /// Time at which the object was created. Stripe measures it in in seconds
+  /// since the Unix epoch, but we convert it to a Date.
+  created            DateTime
+  /// If the subscription has been canceled with the at_period_end flag set to
+  /// true, cancel_at_period_end on the subscription will be true. You can use
+  /// this attribute to determine whether a subscription that has a status of
+  /// active is scheduled to be canceled at the end of the current period.
+  cancelAtPeriodEnd  Boolean
+  /// End of the current period that the subscription has been invoiced for. At
+  /// the end of this period, a new invoice will be created.
+  currentPeriodEnd   DateTime
+  /// Start of the current period that the subscription has been invoiced for.
+  currentPeriodStart DateTime
+  /// Stringified list of subscription items, each with an attached price.
+  items              String
+  /// Possible values are incomplete, incomplete_expired, trialing, active,
+  /// past_due, canceled, or unpaid.
+  status             String
 }
 
 // Test models

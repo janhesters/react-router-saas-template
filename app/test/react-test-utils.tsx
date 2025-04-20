@@ -9,6 +9,31 @@ import { I18nextProvider, initReactI18next } from 'react-i18next';
 
 import i18nConfig from '~/utils/i18n';
 
+type JSONModule = {
+  default: Record<string, unknown>;
+};
+
+// translations is an object like:
+// {
+//   '../public/locales/en/common.json': { default: { /*…*/ } },
+//   '../public/locales/en/billing.json': { default: { /*…*/ } },
+//    …
+// }
+const translations: Record<string, JSONModule> = import.meta.glob(
+  '../../public/locales/en/*.json',
+  { eager: true },
+);
+
+// build the “resources” shape i18next likes:
+const resources = {
+  en: Object.fromEntries(
+    Object.entries(translations).map(([file, module_]) => {
+      const ns = /\/([^/]+)\.json$/.exec(file)![1];
+      return [ns, module_.default];
+    }),
+  ),
+};
+
 // Initialize i18next for tests with actual translations.
 void i18next
   .use(initReactI18next)
@@ -16,6 +41,8 @@ void i18next
   .init({
     ...i18nConfig,
     lng: 'en',
+    resources,
+    ns: Object.keys(resources.en),
     // Use the fs backend to load translations from the file system.
     backend: {
       loadPath: path.resolve('./public/locales/{{lng}}/{{ns}}.json'),

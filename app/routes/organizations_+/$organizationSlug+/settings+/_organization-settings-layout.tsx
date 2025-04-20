@@ -42,6 +42,12 @@ export default function OrganizationSettingsLayout({
         organizationSlug: params.organizationSlug,
       }),
     },
+    {
+      title: t('billing'),
+      url: href('/organizations/:organizationSlug/settings/billing', {
+        organizationSlug: params.organizationSlug,
+      }),
+    },
   ];
 
   return (

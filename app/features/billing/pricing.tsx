@@ -10,11 +10,15 @@ import {
 } from '~/components/ui/card';
 import { cn } from '~/lib/utils';
 
+export function TierContainer({ className, ...props }: ComponentProps<'div'>) {
+  return <div className={cn('@container/tiers', className)} {...props} />;
+}
+
 export function TierGrid({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3',
+        'grid grid-cols-1 gap-8 @xl/tiers:grid-cols-2 @4xl/tiers:grid-cols-3',
         '*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs',
         className,
       )}

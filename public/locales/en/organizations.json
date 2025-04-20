@@ -124,6 +124,7 @@
       }
     },
     "layout": {
+      "billing": "Billing",
       "general": "General",
       "settings-nav": "Settings navigation",
       "team-members": "Team Members"

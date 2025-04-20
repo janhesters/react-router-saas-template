@@ -28,18 +28,18 @@ test.describe('pricing page', () => {
     ).toBeVisible();
   });
 
-  test('given: an anonymous user, should: show monthly/yearly tabs with correct pricing', async ({
+  test('given: an anonymous user, should: show monthly/annual tabs with correct pricing', async ({
     page,
   }) => {
     await page.goto(path);
 
-    // Check initial state (yearly by default)
-    await expect(page.getByRole('tab', { name: /yearly/i })).toHaveAttribute(
+    // Check initial state (annual by default)
+    await expect(page.getByRole('tab', { name: /annual/i })).toHaveAttribute(
       'aria-selected',
       'true',
     );
 
-    // Verify yearly prices
+    // Verify annual prices
     await expect(page.getByText('$25 /user per month')).toBeVisible();
     await expect(page.getByText('$45 /user per month')).toBeVisible();
 
@@ -55,11 +55,13 @@ test.describe('pricing page', () => {
     await expect(page.getByText('$55 /user per month')).toBeVisible();
 
     // Check save annually message appears only on monthly tab
-    const saveAnnuallyText = page.getByText(/save 20% on the annual plan/i);
+    const saveAnnuallyText = page.getByText(
+      /save up to 20% on the annual plan/i,
+    );
     await expect(saveAnnuallyText).toBeVisible();
 
-    // Switch back to yearly and verify message disappears
-    await page.getByRole('tab', { name: /yearly/i }).click();
+    // Switch back to annual and verify message disappears
+    await page.getByRole('tab', { name: /annual/i }).click();
     await expect(saveAnnuallyText).not.toBeVisible();
   });
 

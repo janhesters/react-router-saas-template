@@ -1,12 +1,15 @@
-import { CheckIcon } from 'lucide-react';
+import { CheckIcon, Loader2Icon } from 'lucide-react';
+import type { ComponentProps, MouseEventHandler } from 'react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { href, Link } from 'react-router';
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+
 import {
   FeatureListItem,
   FeaturesList,
@@ -20,48 +23,138 @@ import {
   TierCardTitle,
   TierContainer,
   TierGrid,
-} from '~/features/billing/pricing';
-import i18next from '~/utils/i18next.server';
+} from './pricing';
 
-import type { Route } from './+types/pricing';
+export type BillingModalContentProps = {
+  canCancelSubscription: boolean;
+  currentTier: 'low' | 'mid' | 'high' | 'enterprise';
+  currentTierInterval: 'monthly' | 'annual';
+  isAddingPaymentInformation?: boolean;
+  isSwitchingToHigh?: boolean;
+  isSwitchingToLow?: boolean;
+  isSwitchingToMid?: boolean;
+  lacksPaymentInformation: boolean;
+  onCancelSubscriptionClick?: MouseEventHandler<HTMLButtonElement>;
+};
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const t = await i18next.getFixedT(request, 'billing');
-  return { title: t('pricing-page.page-title') };
-}
-
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
-
-export default function PricingRoute() {
+export function BillingModalContent({
+  canCancelSubscription = false,
+  currentTier,
+  currentTierInterval,
+  isAddingPaymentInformation = false,
+  isSwitchingToHigh = false,
+  isSwitchingToLow = false,
+  isSwitchingToMid = false,
+  lacksPaymentInformation = false,
+  onCancelSubscriptionClick,
+}: BillingModalContentProps) {
   const { t } = useTranslation('billing', { keyPrefix: 'pricing' });
-  const { t: tPage } = useTranslation('billing', { keyPrefix: 'pricing-page' });
+  const { t: tModal } = useTranslation('billing', {
+    keyPrefix: 'billing-page.pricing-modal',
+  });
   const [billingPeriod, setBillingPeriod] = useState('annual');
 
-  const getFeatures = (key: string): string[] => {
-    return t(`plans.${key}.features`, { returnObjects: true }) as string[];
+  const isSubmitting =
+    isAddingPaymentInformation ||
+    isSwitchingToLow ||
+    isSwitchingToMid ||
+    isSwitchingToHigh;
+
+  const getFeatures = (key: string): string[] =>
+    t(`plans.${key}.features`, { returnObjects: true }) as string[];
+
+  const getButtonProps = (
+    interval: 'monthly' | 'annual',
+    tier: 'low' | 'mid' | 'high',
+  ): Partial<ComponentProps<typeof Button>> => {
+    if (tier === currentTier) {
+      if (lacksPaymentInformation) {
+        return {
+          children: isAddingPaymentInformation ? (
+            <>
+              <Loader2Icon className="animate-spin" />
+              {tModal('adding-payment-information')}
+            </>
+          ) : (
+            tModal('add-payment-information')
+          ),
+          disabled: isSubmitting,
+        };
+      }
+
+      if (interval !== currentTierInterval) {
+        if (interval === 'annual') {
+          return {
+            children: tModal('switch-to-annual-button'),
+            disabled: isSubmitting,
+          };
+        }
+
+        if (interval === 'monthly') {
+          return {
+            children: tModal('switch-to-monthly-button'),
+            disabled: isSubmitting,
+            variant: 'outline',
+          };
+        }
+      }
+
+      return {
+        children: tModal('current-plan'),
+        disabled: true,
+        variant: 'outline',
+      };
+    }
+
+    const isUpgrade =
+      (currentTier === 'low' && (tier === 'mid' || tier === 'high')) ||
+      (currentTier === 'mid' && tier === 'high');
+
+    if (
+      (tier === 'low' && isSwitchingToLow) ||
+      (tier === 'mid' && isSwitchingToMid) ||
+      (tier === 'high' && isSwitchingToHigh)
+    ) {
+      return isUpgrade
+        ? {
+            children: isSwitchingToHigh ? (
+              <>
+                <Loader2Icon className="animate-spin" />
+                {tModal('upgrading')}
+              </>
+            ) : (
+              tModal('upgrading')
+            ),
+            disabled: isSubmitting,
+          }
+        : {
+            children: isSwitchingToLow ? (
+              <>
+                <Loader2Icon className="animate-spin" />
+                {tModal('downgrading')}
+              </>
+            ) : (
+              tModal('downgrading')
+            ),
+            disabled: isSubmitting,
+          };
+    }
+
+    return isUpgrade
+      ? { children: tModal('upgrade-button'), disabled: isSubmitting }
+      : {
+          children: tModal('downgrade-button'),
+          variant: 'outline',
+          disabled: isSubmitting,
+        };
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <div className="mx-auto mb-8 max-w-2xl text-center">
-        <h1 className="text-primary">{tPage('page-title')}</h1>
-
-        <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
-          {tPage('pricing-heading')}
-        </h2>
-
-        <p className="text-muted-foreground mt-6 text-lg text-pretty">
-          {tPage('page-description')}
-        </p>
-      </div>
-
+    <>
       <Tabs value={billingPeriod} onValueChange={setBillingPeriod}>
         <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
           <TabsList>
             <TabsTrigger value="monthly">{t('monthly')}</TabsTrigger>
-
             <TabsTrigger value="annual">{t('annual')}</TabsTrigger>
           </TabsList>
 
@@ -73,19 +166,34 @@ export default function PricingRoute() {
         <TabsContent value="monthly">
           <TierContainer>
             <TierGrid>
+              {/* Low Tier */}
               <TierCard>
                 <TierCardHeader>
                   <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
 
-                  <TierCardPrice>{t('free')}</TierCardPrice>
+                  <TierCardPrice>
+                    {
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$17' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
+                    }
+                  </TierCardPrice>
 
                   <TierCardDescription>
                     {t('plans.hobby.description')}
                   </TierCardDescription>
 
-                  <Button asChild className="w-full">
-                    <Link to={href('/register')}>{t('plans.hobby.cta')}</Link>
-                  </Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('monthly', 'low')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -94,7 +202,6 @@ export default function PricingRoute() {
                   <FeaturesListTitle>
                     {t('plans.hobby.features-title')}
                   </FeaturesListTitle>
-
                   <FeaturesList>
                     {getFeatures('hobby').map(feature => (
                       <FeatureListItem key={feature}>
@@ -106,6 +213,7 @@ export default function PricingRoute() {
                 </TierCardContent>
               </TierCard>
 
+              {/* Mid Tier */}
               <TierCard>
                 <TierCardHeader>
                   <TierCardTitle>{t('plans.startup.title')}</TierCardTitle>
@@ -126,7 +234,11 @@ export default function PricingRoute() {
                     {t('plans.startup.description')}
                   </TierCardDescription>
 
-                  <Button className="w-full">{t('plans.startup.cta')}</Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('monthly', 'mid')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -147,7 +259,8 @@ export default function PricingRoute() {
                 </TierCardContent>
               </TierCard>
 
-              <TierCard className="ring-primary ring-2">
+              {/* High Tier */}
+              <TierCard className="ring-primary -mt-1.5 ring-2">
                 <TierCardHeader>
                   <TierCardTitle className="text-primary">
                     {t('plans.business.title')}
@@ -170,7 +283,11 @@ export default function PricingRoute() {
                     {t('plans.business.description')}
                   </TierCardDescription>
 
-                  <Button className="w-full">{t('plans.business.cta')}</Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('monthly', 'high')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -197,19 +314,36 @@ export default function PricingRoute() {
         <TabsContent value="annual">
           <TierContainer>
             <TierGrid className="@6xl/tiers:grid-cols-4">
+              {/* Low Tier */}
               <TierCard>
                 <TierCardHeader>
                   <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
 
-                  <TierCardPrice>{t('free')}</TierCardPrice>
+                  <TierCardPrice>
+                    {
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$15' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
+                    }
+
+                    <OfferBadge>-10%</OfferBadge>
+                  </TierCardPrice>
 
                   <TierCardDescription>
                     {t('plans.hobby.description')}
                   </TierCardDescription>
 
-                  <Button asChild className="w-full">
-                    <Link to={href('/register')}>{t('plans.hobby.cta')}</Link>
-                  </Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('annual', 'low')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -230,6 +364,7 @@ export default function PricingRoute() {
                 </TierCardContent>
               </TierCard>
 
+              {/* Mid Tier */}
               <TierCard>
                 <TierCardHeader>
                   <TierCardTitle>{t('plans.startup.title')}</TierCardTitle>
@@ -252,7 +387,11 @@ export default function PricingRoute() {
                     {t('plans.startup.description')}
                   </TierCardDescription>
 
-                  <Button className="w-full">{t('plans.startup.cta')}</Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('annual', 'mid')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -273,6 +412,7 @@ export default function PricingRoute() {
                 </TierCardContent>
               </TierCard>
 
+              {/* High Tier */}
               <TierCard className="ring-primary -mt-1.5 ring-2">
                 <TierCardHeader>
                   <TierCardTitle className="text-primary">
@@ -298,7 +438,11 @@ export default function PricingRoute() {
                     {t('plans.business.description')}
                   </TierCardDescription>
 
-                  <Button className="w-full">{t('plans.business.cta')}</Button>
+                  <Button
+                    className="w-full"
+                    type="submit"
+                    {...getButtonProps('annual', 'high')}
+                  />
                 </TierCardHeader>
 
                 <Separator />
@@ -319,6 +463,7 @@ export default function PricingRoute() {
                 </TierCardContent>
               </TierCard>
 
+              {/* Enterprise Tier */}
               <TierCard className="@4xl/tiers:col-start-2 @6xl/tiers:col-start-auto">
                 <TierCardHeader>
                   <TierCardTitle>{t('plans.enterprise.title')}</TierCardTitle>
@@ -357,6 +502,34 @@ export default function PricingRoute() {
           </TierContainer>
         </TabsContent>
       </Tabs>
-    </main>
+
+      {canCancelSubscription && (
+        <>
+          <Separator />
+
+          <div className="@container/alert">
+            <Alert className="flex flex-col gap-2 @5xl/alert:block">
+              <AlertTitle>
+                {tModal('cancel-subscription-banner.title')}
+              </AlertTitle>
+
+              <AlertDescription>
+                {tModal('cancel-subscription-banner.description')}
+              </AlertDescription>
+
+              <Button
+                className="shadow-none @5xl/alert:absolute @5xl/alert:top-1/2 @5xl/alert:right-3 @5xl/alert:-translate-y-1/2"
+                disabled={isSubmitting}
+                onClick={onCancelSubscriptionClick}
+                type="button"
+                variant="outline"
+              >
+                {tModal('cancel-subscription-banner.button')}
+              </Button>
+            </Alert>
+          </div>
+        </>
+      )}
+    </>
   );
 }

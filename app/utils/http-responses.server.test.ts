@@ -5,6 +5,7 @@ import {
   conflict,
   created,
   forbidden,
+  methodNotAllowed,
   notFound,
   tooManyRequests,
   unauthorized,
@@ -126,6 +127,41 @@ describe('forbidden()', () => {
     expect(
       (response.init?.headers as Headers).get('X-Forbidden-Reason'),
     ).toEqual('No Access');
+  });
+});
+
+describe('methodNotAllowed()', () => {
+  test('given: no arguments, should: return a 405 status with a message', () => {
+    const response = methodNotAllowed();
+
+    expect(response.init?.status).toEqual(405);
+    expect(response.data).toEqual({ message: 'Method Not Allowed' });
+  });
+
+  test('given: custom error object, should: return a 405 status with the custom error object', () => {
+    const customErrors = { method: 'POST', allowedMethods: 'GET, PUT' };
+    const response = methodNotAllowed(customErrors);
+
+    expect(response.init?.status).toEqual(405);
+    expect(response.data).toEqual({
+      message: 'Method Not Allowed',
+      ...customErrors,
+    });
+  });
+
+  test('given: custom data and headers, should: return a 405 status with the custom data and the headers', () => {
+    const headers = new Headers({ Allow: 'GET, PUT' });
+    const customErrors = { method: 'POST', detail: 'method not supported' };
+    const response = methodNotAllowed(customErrors, { headers });
+
+    expect(response.init?.status).toEqual(405);
+    expect(response.data).toEqual({
+      message: 'Method Not Allowed',
+      ...customErrors,
+    });
+    expect((response.init?.headers as Headers).get('Allow')).toEqual(
+      'GET, PUT',
+    );
   });
 });
 

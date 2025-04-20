@@ -97,6 +97,13 @@ test.describe('contact sales page', () => {
     await deleteContactSalesFormSubmissionFromDatabaseById(savedSubmission!.id);
   });
 
+  test.fixme(
+    'given: an authenticated user who visited the page from their app, should: add the organization name and id in the form submission (so we can know which customer wants to go enterprise',
+    async () => {
+      //
+    },
+  );
+
   test('given: a user, should: lack any automatically detectable accessibility issues', async ({
     page,
   }) => {
