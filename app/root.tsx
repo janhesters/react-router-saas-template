@@ -14,6 +14,7 @@ import {
 } from 'react-router';
 import { useRouteError } from 'react-router';
 import { useChangeLanguage } from 'remix-i18next/react';
+import { HoneypotProvider } from 'remix-utils/honeypot/react';
 import { promiseHash } from 'remix-utils/promise';
 import sonnerStyles from 'sonner/dist/styles.css?url';
 
@@ -26,6 +27,7 @@ import { parseColorScheme } from './features/color-scheme/color-scheme.server';
 import { ColorSchemeScript } from './features/color-scheme/color-scheme-script';
 import { useColorScheme } from './features/color-scheme/use-color-scheme';
 import { useToast } from './hooks/use-toast';
+import { honeypot } from './utils/honeypot.server';
 import { getToast } from './utils/toast.server';
 
 export const links: Route.LinksFunction = () => [
@@ -61,17 +63,20 @@ export const shouldRevalidate = ({
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
-  const { colorScheme, locale, t, toastData } = await promiseHash({
-    colorScheme: parseColorScheme(request),
-    locale: i18next.getLocale(request),
-    t: i18next.getFixedT(request),
-    toastData: getToast(request),
-  });
+  const { colorScheme, honeypotInputProps, locale, t, toastData } =
+    await promiseHash({
+      colorScheme: parseColorScheme(request),
+      honeypotInputProps: honeypot.getInputProps(),
+      locale: i18next.getLocale(request),
+      t: i18next.getFixedT(request),
+      toastData: getToast(request),
+    });
   const title = t('app-name');
   const { toast, headers: toastHeaders } = toastData;
   return data(
     {
       colorScheme,
+      honeypotInputProps,
       locale,
       title,
       toast,
@@ -120,7 +125,9 @@ export function Layout({
       </head>
 
       <body className="min-h-svh">
-        {children}
+        <HoneypotProvider {...data?.honeypotInputProps}>
+          {children}
+        </HoneypotProvider>
         <ScrollRestoration />
         <Toaster position="bottom-right" />
         <Scripts />

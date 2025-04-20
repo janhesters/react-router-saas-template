@@ -103,6 +103,18 @@ model OrganizationEmailInviteLink {
   deactivatedAt  DateTime?
 }
 
+model ContactSalesFormSubmission {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  companyName String
+  firstName   String
+  lastName    String
+  message     String   @default("")
+  phoneNumber String   @default("")
+  workEmail   String
+}
+
 // Test models
 
 /// A mock session table used exclusively for E2E testing.
