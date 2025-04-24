@@ -8,18 +8,20 @@ datasource db {
 }
 
 model UserAccount {
-  id                  String                        @id @default(cuid(2))
-  supabaseUserId      String                        @unique
-  createdAt           DateTime                      @default(now())
-  updatedAt           DateTime                      @updatedAt
-  email               String                        @unique
-  name                String                        @default("")
-  imageUrl            String                        @default("")
-  memberships         OrganizationMembership[]
-  createdInviteLinks  OrganizationInviteLink[]
-  usedInviteLinks     InviteLinkUse[]
-  createdEmailInvites OrganizationEmailInviteLink[]
-  StripeSubscription  StripeSubscription[]
+  id                        String                        @id @default(cuid(2))
+  supabaseUserId            String                        @unique
+  createdAt                 DateTime                      @default(now())
+  updatedAt                 DateTime                      @updatedAt
+  email                     String                        @unique
+  name                      String                        @default("")
+  imageUrl                  String                        @default("")
+  memberships               OrganizationMembership[]
+  createdInviteLinks        OrganizationInviteLink[]
+  usedInviteLinks           InviteLinkUse[]
+  createdEmailInvites       OrganizationEmailInviteLink[]
+  stripeSubscriptionsBought StripeSubscription[]
+  notificationPanels        NotificationPanel[]
+  notificationRecipient     NotificationRecipient[]
 }
 
 model Organization {
@@ -34,7 +36,9 @@ model Organization {
   memberships                 OrganizationMembership[]
   organizationInviteLinks     OrganizationInviteLink[]
   organizationEmailInviteLink OrganizationEmailInviteLink[]
-  StripeSubscription          StripeSubscription[]
+  stripeSubscription          StripeSubscription?
+  notificationPanels          NotificationPanel[]
+  notifications               Notification[]
 }
 
 enum OrganizationMembershipRole {
@@ -119,11 +123,14 @@ model ContactSalesFormSubmission {
 
 model StripeSubscription {
   /// Unique identifier for the object.
-  id                 String       @id @default(cuid(2))
-  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId     String
-  buyer              UserAccount  @relation(fields: [buyerId], references: [id])
-  buyerId            String
+  id             String       @id @default(cuid(2))
+  /// one‐to‐one with Organization
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @unique
+
+  /// who purchased it
+  purchasedBy        UserAccount @relation(fields: [purchasedById], references: [id])
+  purchasedById      String
   /// Time at which the object was created. Stripe measures it in in seconds
   /// since the Unix epoch, but we convert it to a Date.
   created            DateTime
@@ -142,6 +149,44 @@ model StripeSubscription {
   /// Possible values are incomplete, incomplete_expired, trialing, active,
   /// past_due, canceled, or unpaid.
   status             String
+}
+
+model Notification {
+  id             String                  @id @default(cuid(2))
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  organization   Organization            @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  content        Json
+  recipients     NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id             String       @id @default(cuid(2))
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  notificationId String
+  user           UserAccount  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  /// When the user marked it read
+  readAt         DateTime?
+
+  @@unique([notificationId, userId])
+}
+
+model NotificationPanel {
+  id             String       @id @default(cuid(2))
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  user           UserAccount  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  /// When badge was last cleared
+  lastOpenedAt   DateTime     @default(now())
+
+  @@unique([userId, organizationId])
 }
 
 // Test models

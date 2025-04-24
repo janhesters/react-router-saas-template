@@ -146,10 +146,17 @@ export async function addMembersToOrganizationInDatabaseById({
   return prisma.organization.update({
     where: { id },
     data: {
+      // 1) add each member
       memberships: {
         create: members.map(memberId => ({
           member: { connect: { id: memberId } },
           role,
+        })),
+      },
+      // 2) create a NotificationPanel for each new member
+      notificationPanels: {
+        create: members.map(memberId => ({
+          user: { connect: { id: memberId } },
         })),
       },
     },

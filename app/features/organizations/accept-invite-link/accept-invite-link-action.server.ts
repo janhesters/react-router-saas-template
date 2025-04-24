@@ -86,6 +86,9 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
             if (
               message.includes(
                 'Unique constraint failed on the fields: (`memberId`,`organizationId`)',
+              ) ||
+              message.includes(
+                'Unique constraint failed on the fields: (`userId`,`organizationId`)',
               )
             ) {
               return await redirectWithToast(

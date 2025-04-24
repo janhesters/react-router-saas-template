@@ -16,9 +16,6 @@
     "welcome-to-app-name": "Welcome to {{appName}}"
   },
   "layout": {
-    "app-header": {
-      "notifications-button-label": "Open notifications"
-    },
     "app-sidebar": {
       "nav": {
         "app": {

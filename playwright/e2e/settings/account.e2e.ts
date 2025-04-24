@@ -9,6 +9,7 @@
 // - Free Tier, Pro Tier, Enterprise Tier
 // - Hobby Tier, Pro Tier, Enterprise Tier
 //   - Optional: free trial
+// 6 people visit link of 5 people invite
 
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';

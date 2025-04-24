@@ -14,7 +14,7 @@ import { requireUserIsMemberOfOrganization } from '~/features/organizations/orga
 
 import type { Route } from './+types/_sidebar-layout';
 
-export const handle = { i18n: 'organizations' };
+export const handle = { i18n: ['organizations', 'notifications'] };
 
 /**
  * @see https://reactrouter.com/start/framework/route-module#shouldrevalidate
