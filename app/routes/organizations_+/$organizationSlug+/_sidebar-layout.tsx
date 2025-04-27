@@ -1,7 +1,9 @@
 import type { ShouldRevalidateFunctionArgs, UIMatch } from 'react-router';
-import { href, Outlet, redirect } from 'react-router';
+import { data, href, Outlet, redirect } from 'react-router';
 
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar';
+import { mapInitialNotificationsDataToNotificationButtonProps } from '~/features/notifications/notifications-helpers.server';
+import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from '~/features/notifications/notifications-model.server';
 import { AppHeader } from '~/features/organizations/layout/app-header';
 import { AppSidebar } from '~/features/organizations/layout/app-sidebar';
 import { findHeaderTitle } from '~/features/organizations/layout/layout-helpers';
@@ -42,21 +44,28 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     );
   }
 
-  const { user, headers } = await requireUserIsMemberOfOrganization(
-    request,
-    params.organizationSlug,
-  );
+  const { user, organization, headers } =
+    await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+  const notificationData =
+    await retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById(
+      { userId: user.id, organizationId: organization.id },
+    );
   const defaultSidebarOpen = getSidebarState(request);
 
-  return {
-    headers,
-    headerTitle: 'React Router SaaS Template',
-    defaultSidebarOpen,
-    ...mapOnboardingUserToOrganizationLayoutProps({
-      user,
-      organizationSlug: params.organizationSlug,
-    }),
-  };
+  return data(
+    {
+      headerTitle: 'React Router SaaS Template',
+      defaultSidebarOpen,
+      ...mapOnboardingUserToOrganizationLayoutProps({
+        user,
+        organizationSlug: params.organizationSlug,
+      }),
+      ...mapInitialNotificationsDataToNotificationButtonProps(
+        notificationData!,
+      ),
+    },
+    { headers },
+  );
 }
 
 export async function action(args: Route.ActionArgs) {
@@ -68,8 +77,13 @@ export default function OrganizationLayoutRoute({
   params,
   matches,
 }: Route.ComponentProps) {
-  const { currentOrganization, defaultSidebarOpen, organizations, user } =
-    loaderData;
+  const {
+    currentOrganization,
+    defaultSidebarOpen,
+    notificationButtonProps,
+    organizations,
+    user,
+  } = loaderData;
   const headerTitle = findHeaderTitle(
     matches as UIMatch<{ headerTitle?: string }>[],
   );
@@ -85,7 +99,10 @@ export default function OrganizationLayoutRoute({
       />
 
       <SidebarInset>
-        <AppHeader title={headerTitle} />
+        <AppHeader
+          notificationsButtonProps={notificationButtonProps}
+          title={headerTitle}
+        />
 
         <Outlet />
       </SidebarInset>

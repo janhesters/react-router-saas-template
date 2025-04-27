@@ -7,7 +7,14 @@ import type { Factory } from '~/utils/types';
 import type { AppHeaderProps } from './app-header';
 import { AppHeader } from './app-header';
 
-const createProps: Factory<AppHeaderProps> = ({ title } = {}) => ({ title });
+const createProps: Factory<AppHeaderProps> = ({
+  title,
+  notificationsButtonProps = {
+    allNotifications: [],
+    showBadge: false,
+    unreadNotifications: [],
+  },
+} = {}) => ({ title, notificationsButtonProps });
 
 describe('AppHeader Component', () => {
   test('given: a title, should: render header with title and notification button', () => {

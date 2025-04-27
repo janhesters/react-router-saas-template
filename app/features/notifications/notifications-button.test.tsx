@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import {
   createRoutesStub,
@@ -16,27 +16,25 @@ import type { NotificationsButtonProps } from './notifications-button';
 import { NotificationsButton } from './notifications-button';
 
 const createLinkNotification: Factory<LinkNotificationProps> = ({
-  id = createId(),
-  text = faker.lorem.sentence(),
   href = faker.internet.url(),
   isRead = false,
-  onMarkAsRead = vi.fn(),
+  recipientId = createId(),
+  text = faker.lorem.sentence(),
 } = {}) => ({
-  id,
-  type: LINK_NOTIFICATION_TYPE,
-  text,
   href,
   isRead,
-  onMarkAsRead,
+  recipientId,
+  text,
+  type: LINK_NOTIFICATION_TYPE,
 });
 
 const createProps: Factory<NotificationsButtonProps> = ({
   allNotifications = [],
-  hasUnreadNotifications = false,
+  showBadge = false,
   unreadNotifications = [],
 } = {}) => ({
   allNotifications,
-  hasUnreadNotifications,
+  showBadge,
   unreadNotifications,
 });
 
@@ -53,8 +51,8 @@ describe('NotificationsButton component', () => {
     expect(button).toBeInTheDocument();
   });
 
-  test('given: unread notifications, should: render button with unread notifications aria label', () => {
-    const props = createProps({ hasUnreadNotifications: true });
+  test('given: should show badge (= unread notifications), should: render button with unread notifications aria label', () => {
+    const props = createProps({ showBadge: true });
     const RouterStub = createRoutesStub([
       { path: '/', Component: () => <NotificationsButton {...props} /> },
     ]);
@@ -76,7 +74,11 @@ describe('NotificationsButton component', () => {
       ],
     });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <NotificationsButton {...props} /> },
+      {
+        action: () => ({}),
+        Component: () => <NotificationsButton {...props} />,
+        path: '/',
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -109,7 +111,11 @@ describe('NotificationsButton component', () => {
       unreadNotifications: [unreadNotification],
     });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <NotificationsButton {...props} /> },
+      {
+        action: () => ({}),
+        Component: () => <NotificationsButton {...props} />,
+        path: '/',
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -137,17 +143,19 @@ describe('NotificationsButton component', () => {
 
   test('given: notifications panel open, should: show mark all as read button', async () => {
     const user = userEvent.setup();
-    const onMarkAllAsRead = vi.fn();
     const props = createProps({
       allNotifications: [createLinkNotification({ text: 'All notification' })],
       unreadNotifications: [
         createLinkNotification({ text: 'Unread notification' }),
       ],
-      hasUnreadNotifications: true,
-      onMarkAllAsRead,
+      showBadge: true,
     });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <NotificationsButton {...props} /> },
+      {
+        action: () => ({}),
+        Component: () => <NotificationsButton {...props} />,
+        path: '/',
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);

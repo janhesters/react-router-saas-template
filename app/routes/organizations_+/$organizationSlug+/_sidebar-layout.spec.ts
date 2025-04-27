@@ -1,7 +1,21 @@
 import type { Organization, UserAccount } from '@prisma/client';
-import { href } from 'react-router';
+import { data, href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
+import {
+  MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
+  MARK_ONE_NOTIFICATION_AS_READ_INTENT,
+  NOTIFICATION_PANEL_OPENED_INTENT,
+} from '~/features/notifications/notification-constants';
+import {
+  createPopulatedNotification,
+  createPopulatedNotificationRecipient,
+} from '~/features/notifications/notifications-factories.server';
+import {
+  retrieveNotificationPanelForUserAndOrganizationFromDatabaseById,
+  retrieveNotificationRecipientsForUserAndOrganizationFromDatabase,
+  saveNotificationWithRecipientForUserAndOrganizationInDatabaseById,
+} from '~/features/notifications/notifications-model.server';
 import { SWITCH_ORGANIZATION_INTENT } from '~/features/organizations/layout/sidebar-layout-constants';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
@@ -12,6 +26,7 @@ import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
+import type { DataWithResponseInit } from '~/utils/http-responses.server';
 import { badRequest, notFound } from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
 
@@ -40,6 +55,46 @@ async function sendAuthenticatedRequest({
 }
 
 setupMockServerLifecycle(...supabaseHandlers);
+
+/**
+ * Seed `count` notifications (each with one recipient) into the test database
+ * for the given user and organization.
+ */
+export async function setupNotificationsForUserAndOrganization({
+  user,
+  organization,
+  count = 1,
+}: {
+  user: UserAccount;
+  organization: Organization;
+  count?: number;
+}) {
+  const notifications = Array.from({ length: count }).map(() =>
+    createPopulatedNotification({ organizationId: organization.id }),
+  );
+  const notificationsWithRecipients = await Promise.all(
+    notifications.map(notification => {
+      const { notificationId: _, ...recipient } =
+        createPopulatedNotificationRecipient({
+          notificationId: notification.id,
+          userId: user.id,
+          readAt: null,
+        });
+
+      return saveNotificationWithRecipientForUserAndOrganizationInDatabaseById({
+        notification,
+        recipient,
+      });
+    }),
+  );
+
+  return {
+    notifications,
+    recipients: notificationsWithRecipients.map(
+      ({ recipients }) => recipients[0],
+    ),
+  };
+}
 
 describe('/organizations/:organizationSlug route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
@@ -192,7 +247,8 @@ describe('/organizations/:organizationSlug route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "switchOrganization"',
+            message:
+              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization'",
           },
         },
       });
@@ -220,7 +276,8 @@ describe('/organizations/:organizationSlug route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "switchOrganization"',
+            message:
+              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization'",
           },
         },
       });
@@ -262,6 +319,158 @@ describe('/organizations/:organizationSlug route action', () => {
       });
 
       expect(actual).toEqual(expected);
+    });
+  });
+
+  describe(`${MARK_ALL_NOTIFICATIONS_AS_READ_INTENT} intent`, () => {
+    const intent = MARK_ALL_NOTIFICATIONS_AS_READ_INTENT;
+
+    test('given: a valid request, should: mark all notifications as read', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      await setupNotificationsForUserAndOrganization({
+        user,
+        organization,
+        count: 3,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        formData: toFormData({ intent }),
+        organizationSlug: organization.slug,
+      })) as DataWithResponseInit<object>;
+      const expected = data({});
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      const updatedRecipients =
+        await retrieveNotificationRecipientsForUserAndOrganizationFromDatabase({
+          userId: user.id,
+          organizationId: organization.id,
+        });
+
+      expect(updatedRecipients.length).toEqual(3);
+      expect(
+        updatedRecipients.every(recipient => recipient.readAt !== null),
+      ).toEqual(true);
+    });
+  });
+
+  describe(`${MARK_ONE_NOTIFICATION_AS_READ_INTENT} intent`, () => {
+    const intent = MARK_ONE_NOTIFICATION_AS_READ_INTENT;
+
+    test('given: a valid request, should: mark the specified notification as read', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { recipients } = await setupNotificationsForUserAndOrganization({
+        user,
+        organization,
+        count: 2,
+      });
+      const [recipient] = recipients;
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent, recipientId: recipient.id }),
+      })) as DataWithResponseInit<object>;
+      const expected = data({});
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      const updatedRecipients =
+        await retrieveNotificationRecipientsForUserAndOrganizationFromDatabase({
+          userId: user.id,
+          organizationId: organization.id,
+        });
+
+      expect(updatedRecipients.length).toEqual(2);
+      expect(
+        updatedRecipients.find(r => r.id === recipient.id)?.readAt,
+      ).not.toBeNull();
+    });
+
+    test('given: no recipientId, should: return a 400 with validation errors', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      await setupNotificationsForUserAndOrganization({
+        user,
+        organization,
+        count: 1,
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent }),
+      });
+      const expected = badRequest({
+        errors: { recipientId: { message: 'Required' } },
+      });
+
+      expect(actual).toEqual(expected);
+    });
+
+    test('given: a recipient belonging to another user, should: return a 404', async () => {
+      const { user: userA, organization } =
+        await setupUserWithOrgAndAddAsMember();
+      // seed one for A
+      await setupNotificationsForUserAndOrganization({
+        user: userA,
+        organization,
+        count: 1,
+      });
+
+      // create B in same org
+      const { user: userB } = await setupUserWithOrgAndAddAsMember();
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [userB.id],
+      });
+      // seed one for B
+      const { recipients: recipientsB } =
+        await setupNotificationsForUserAndOrganization({
+          user: userB,
+          organization,
+          count: 1,
+        });
+      const [recipientB] = recipientsB;
+
+      const actual = (await sendAuthenticatedRequest({
+        user: userA,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent, recipientId: recipientB.id }),
+      })) as DataWithResponseInit<{ message: string }>;
+      const expected = notFound();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+  });
+
+  describe(`${NOTIFICATION_PANEL_OPENED_INTENT} intent`, () => {
+    const intent = NOTIFICATION_PANEL_OPENED_INTENT;
+
+    test('given: a valid request, should: return a 200 and mark the notification panel as opened', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+
+      const panelBefore =
+        await retrieveNotificationPanelForUserAndOrganizationFromDatabaseById({
+          userId: user.id,
+          organizationId: organization.id,
+        });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent }),
+      })) as DataWithResponseInit<object>;
+      const expected = data({});
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      const panelAfter =
+        await retrieveNotificationPanelForUserAndOrganizationFromDatabaseById({
+          userId: user.id,
+          organizationId: organization.id,
+        });
+      expect(panelAfter?.lastOpenedAt).not.toEqual(panelBefore?.lastOpenedAt);
     });
   });
 });

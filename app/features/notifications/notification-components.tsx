@@ -1,9 +1,9 @@
-import type { Notification } from '@prisma/client';
+import type { NotificationRecipient } from '@prisma/client';
 import { MoreVerticalIcon } from 'lucide-react';
-import type { ComponentProps, MouseEventHandler } from 'react';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useFetcher } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import {
@@ -13,7 +13,9 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 import { cn } from '~/lib/utils';
+import { toFormData } from '~/utils/to-form-data';
 
+import { MARK_ONE_NOTIFICATION_AS_READ_INTENT } from './notification-constants';
 import type { LinkNotificationData } from './notifications-schemas';
 
 /**
@@ -55,14 +57,15 @@ export function NotificationsDot({
 }
 
 type NotificationMenuProps = {
-  onMarkAsRead: MouseEventHandler<HTMLDivElement>;
+  recipientId: NotificationRecipient['id'];
 };
 
-export function NotificationMenu({ onMarkAsRead }: NotificationMenuProps) {
+export function NotificationMenu({ recipientId }: NotificationMenuProps) {
   const { t } = useTranslation('notifications', {
     keyPrefix: 'notification-menu',
   });
   const [isOpen, setIsOpen] = useState(false);
+  const notificationMenuFetcher = useFetcher();
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -74,14 +77,24 @@ export function NotificationMenu({ onMarkAsRead }: NotificationMenuProps) {
             isOpen && 'opacity-100',
           )}
           size="icon"
-          variant="ghost"
+          variant="outline"
         >
           <MoreVerticalIcon className="size-4" />
         </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="center" side="left">
-        <DropdownMenuItem onClick={onMarkAsRead}>
+        <DropdownMenuItem
+          onClick={() => {
+            void notificationMenuFetcher.submit(
+              toFormData({
+                intent: MARK_ONE_NOTIFICATION_AS_READ_INTENT,
+                recipientId,
+              }),
+              { method: 'post' },
+            );
+          }}
+        >
           {t('mark-as-read')}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -90,9 +103,9 @@ export function NotificationMenu({ onMarkAsRead }: NotificationMenuProps) {
 }
 
 type BaseNotificationProps = {
-  id: Notification['id'];
+  recipientId: NotificationRecipient['id'];
   isRead: boolean;
-} & NotificationMenuProps;
+};
 
 /**
  * Link notification
@@ -102,10 +115,10 @@ export type LinkNotificationProps = BaseNotificationProps &
   LinkNotificationData;
 
 export function LinkNotification({
-  text,
   href,
   isRead,
-  onMarkAsRead,
+  recipientId,
+  text,
 }: LinkNotificationProps) {
   return (
     <Button
@@ -118,10 +131,12 @@ export function LinkNotification({
         {text}
 
         {isRead ? (
-          <div className="flex min-w-15" />
+          <div className="flex h-9 min-w-15">
+            {/* Fake offset to prevent layout shift when the notification is read */}
+          </div>
         ) : (
           <div className="flex items-center gap-2">
-            <NotificationMenu onMarkAsRead={onMarkAsRead} />
+            <NotificationMenu recipientId={recipientId} />
             <NotificationsDot blinking={false} />
           </div>
         )}

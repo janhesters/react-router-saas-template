@@ -38,6 +38,7 @@ export function NotificationsPanelContent({
         <p className="text-foreground text-lg font-semibold">
           {t('no-notifications-title')}
         </p>
+
         <p className="text-muted-foreground text-sm font-normal">
           {t('no-notifications-description')}
         </p>
@@ -46,10 +47,10 @@ export function NotificationsPanelContent({
   }
 
   return (
-    <div className="flex flex-col">
+    <div className="-m-2 flex flex-col overflow-y-auto p-2 sm:max-h-96">
       {notifications.map(notification => (
         <NotificationContent
-          key={notification.id}
+          key={notification.recipientId}
           notification={notification}
         />
       ))}

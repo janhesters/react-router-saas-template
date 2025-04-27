@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
-import { describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 
 import { createRoutesStub, render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
@@ -11,18 +11,16 @@ import type { NotificationsPanelContentProps } from './notifications-panel-conte
 import { NotificationsPanelContent } from './notifications-panel-content';
 
 const createLinkNotificationProps: Factory<LinkNotificationProps> = ({
-  id = createId(),
-  text = faker.lorem.sentence(),
   href = faker.internet.url(),
   isRead = false,
-  onMarkAsRead = vi.fn(),
+  recipientId = createId(),
+  text = faker.lorem.sentence(),
 } = {}) => ({
-  id,
-  type: LINK_NOTIFICATION_TYPE,
-  text,
   href,
   isRead,
-  onMarkAsRead,
+  recipientId,
+  text,
+  type: LINK_NOTIFICATION_TYPE,
 });
 
 const createPanelProps: Factory<NotificationsPanelContentProps> = ({
