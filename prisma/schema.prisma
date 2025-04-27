@@ -33,6 +33,7 @@ model Organization {
   /// `app/utils/database.server.ts`.
   slug                        String                        @unique
   imageUrl                    String                        @default("")
+  billingEmail                String                        @default("")
   memberships                 OrganizationMembership[]
   organizationInviteLinks     OrganizationInviteLink[]
   organizationEmailInviteLink OrganizationEmailInviteLink[]

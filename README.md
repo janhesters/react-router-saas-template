@@ -224,6 +224,47 @@ Simply [follow the instructions in the documentation](https://supabase.com/docs/
 
 The upload to Supabase Storage is done using `parseFormData` from [`@mjackson/form-data-parser`](https://github.com/mjackson/form-data-parser). This function is under the hood in `validateFormData` in `app/utils/validate-form-data.server.ts`.
 
+## Stripe
+
+Install the Stripe CLI:
+
+```bash
+brew install stripe/stripe-cli/stripe
+```
+
+or 
+
+```bash
+npm install -g stripe/stripe-cli
+```
+
+Confirm the installation:
+
+```bash
+stripe --version
+```
+
+Learn more about Stripe testing [here](https://docs.stripe.com/testing).
+
+Forward webhooks to your local server:
+
+```bash
+stripe listen --forward-to http://localhost:3000/api/stripe/webhooks
+```
+
+### Pricing
+
+This project comes with a specific pricing pre-configured:
+
+3 paid tiers, and one enterprise (custom) tier. All paid tiers have a free trial. The free trial is 14 days and always for the highest plan.
+
+If you need different pricing structures (e.g. freemium, one-time payments, etc.) you'll have to write that code yourself. But this template's structure makes it easy to customize the pricing page, the web hook handlers, etc.
+
+#### Set Up The Dashboard
+
+1. Go to the [Stripe Dashboard](https://dashboard.stripe.com/test/settings/billing_portal).
+
+
 ## Check Out the Epic Stack
 
 Some of the code of this starter template was taken from or inspired by the [Epic Stack](https://github.com/epicweb-dev/epic-stack) from [Kent C. Dodds](http://kentcdodds.com/). His template has different defaults, so check it out if you're looking for a different opinionated starter template.

@@ -64,10 +64,7 @@ test.describe('onboarding organization page', () => {
     test('given: a logged in user with name but no organization, should: allow organization creation with name and logo and redirect to organization page', async ({
       page,
     }) => {
-      const { id } = await loginAndSaveUserAccountToDatabase({
-        user: createPopulatedUserAccount(),
-        page,
-      });
+      const user = await loginAndSaveUserAccountToDatabase({ page });
 
       await enableClientMswMocks({ page });
 
@@ -138,22 +135,20 @@ test.describe('onboarding organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
+        billingEmail: user.email,
       });
-      expect(createdOrganization!.memberships[0].member.id).toEqual(id);
+      expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
       expect(createdOrganization!.memberships[0].role).toEqual(
         OrganizationMembershipRole.owner,
       );
 
-      await deleteUserAccountFromDatabaseById(id);
+      await deleteUserAccountFromDatabaseById(user.id);
     });
 
     test('given: a logged in user with name but no organization, should: allow organization creation with only name and redirect to organization page', async ({
       page,
     }) => {
-      const { id } = await loginAndSaveUserAccountToDatabase({
-        user: createPopulatedUserAccount(),
-        page,
-      });
+      const user = await loginAndSaveUserAccountToDatabase({ page });
 
       await enableClientMswMocks({ page });
 
@@ -203,22 +198,20 @@ test.describe('onboarding organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
+        billingEmail: user.email,
       });
-      expect(createdOrganization!.memberships[0].member.id).toEqual(id);
+      expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
       expect(createdOrganization!.memberships[0].role).toEqual(
         OrganizationMembershipRole.owner,
       );
 
-      await deleteUserAccountFromDatabaseById(id);
+      await deleteUserAccountFromDatabaseById(user.id);
     });
 
     test('given: a logged in user with name but no organization, should: show validation errors for invalid input', async ({
       page,
     }) => {
-      const { id } = await loginAndSaveUserAccountToDatabase({
-        user: createPopulatedUserAccount(),
-        page,
-      });
+      const { id } = await loginAndSaveUserAccountToDatabase({ page });
 
       await page.goto(path);
 
@@ -266,10 +259,7 @@ test.describe('onboarding organization page', () => {
   test('given: an authenticated user that has not completed onboarding, should: lack any automatically detectable accessibility issues', async ({
     page,
   }) => {
-    const { id } = await loginAndSaveUserAccountToDatabase({
-      user: createPopulatedUserAccount(),
-      page,
-    });
+    const { id } = await loginAndSaveUserAccountToDatabase({ page });
 
     await page.goto(path);
 

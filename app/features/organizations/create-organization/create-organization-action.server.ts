@@ -21,6 +21,7 @@ export async function createOrganizationAction({ request }: Route.ActionArgs) {
         imageUrl: data.logo,
         name: data.name,
         slug: slugify(data.name),
+        billingEmail: user.email,
       },
       userId: user.id,
     });

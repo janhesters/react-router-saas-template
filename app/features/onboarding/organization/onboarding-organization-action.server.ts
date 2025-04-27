@@ -23,6 +23,7 @@ export async function onboardingOrganizationAction({
         slug: slugify(data.name),
         imageUrl: data.logo,
         id: data.organizationId,
+        billingEmail: user.email,
       },
       userId: user.id,
     });

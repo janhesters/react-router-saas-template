@@ -124,6 +124,7 @@ describe('/onboarding/organization route action', () => {
         await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(createdOrganization).toMatchObject({
         name: organization.name,
+        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships[0].member.id).toEqual(
         userAccount.id,
@@ -292,6 +293,7 @@ describe('/onboarding/organization route action', () => {
         name: organization.name,
         slug: slug,
         imageUrl: organization.imageUrl, // Verify the logo URL was saved
+        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships).toHaveLength(1);
       expect(createdOrganization!.memberships[0].member.id).toEqual(
