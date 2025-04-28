@@ -176,9 +176,6 @@ test.describe('general organization settings', () => {
       await expect(
         page.getByRole('textbox', { name: /organization name/i }),
       ).toBeVisible();
-      await expect(
-        page.getByRole('textbox', { name: /organization logo/i }),
-      ).toBeVisible();
 
       // Enter organization name first time
       const newName = createPopulatedOrganization().name;

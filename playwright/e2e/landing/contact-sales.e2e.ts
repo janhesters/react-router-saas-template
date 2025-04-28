@@ -79,6 +79,12 @@ test.describe('contact sales page', () => {
     await page.getByLabel(/first name/i).fill(validData.firstName);
     await page.getByLabel(/last name/i).clear();
     await page.getByLabel(/last name/i).fill(validData.lastName);
+    await page.getByLabel(/company/i).clear();
+    await page.getByLabel(/company/i).fill(validData.companyName);
+    await page.getByLabel(/work email/i).clear();
+    await page.getByLabel(/work email/i).fill(validData.workEmail);
+    await page.getByLabel(/phone number/i).clear();
+    await page.getByLabel(/phone number/i).fill(validData.phoneNumber);
 
     // Submit the form
     await page.getByRole('button', { name: /contact sales/i }).click();
