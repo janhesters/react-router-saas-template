@@ -165,6 +165,12 @@ test.describe('notifications', () => {
       await page
         .getByRole('button', { name: /open unread notifications/i })
         .click();
+      // Delay a little bit to let JavaScript load
+      await expect(
+        page.getByRole('button', { name: /mark all as read/i }),
+      ).toBeVisible();
+      await expect(page.getByRole('tab', { name: /unread/i })).toBeVisible();
+      await expect(page.getByRole('tab', { name: /all/i })).toBeVisible();
 
       // Check that all notifications are visible in the unread tab
       for (const notification of notifications) {

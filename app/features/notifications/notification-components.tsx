@@ -85,7 +85,8 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
 
       <DropdownMenuContent align="center" side="left">
         <DropdownMenuItem
-          onClick={() => {
+          onClick={event => {
+            event.stopPropagation();
             void notificationMenuFetcher.submit(
               toFormData({
                 intent: MARK_ONE_NOTIFICATION_AS_READ_INTENT,

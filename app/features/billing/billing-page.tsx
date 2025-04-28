@@ -46,7 +46,7 @@ export type BillingPageProps = {
   maxSeats: number;
   organizationSlug: string;
   projectedTotal: number;
-  subscriptionStatus: 'active' | 'inactive';
+  subscriptionStatus: 'active' | 'inactive' | 'paused';
 };
 
 export function BillingPage({
