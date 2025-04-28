@@ -249,7 +249,7 @@ Learn more about Stripe testing [here](https://docs.stripe.com/testing).
 Forward webhooks to your local server:
 
 ```bash
-stripe listen --forward-to http://localhost:3000/api/stripe/webhooks
+stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks
 ```
 
 ### Pricing

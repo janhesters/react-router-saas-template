@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import type { Route } from '../../routes/organizations_+/$organizationSlug+/settings+/+types/billing';
-import { OPEN_CUSTOMER_PORTAL_INTENT } from './billing-constanst';
+import { OPEN_CUSTOMER_PORTAL_INTENT } from './billing-constants';
 import { openCustomerPortalSchema } from './billing-schemas';
 import { createStripeCustomerPortalSession } from './stripe-helpers.server';
 

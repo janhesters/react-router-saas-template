@@ -35,10 +35,11 @@ model Organization {
   slug                        String                        @unique
   imageUrl                    String                        @default("")
   billingEmail                String                        @default("")
+  stripeCustomerId            String?
   memberships                 OrganizationMembership[]
   organizationInviteLinks     OrganizationInviteLink[]
   organizationEmailInviteLink OrganizationEmailInviteLink[]
-  stripeSubscription          StripeSubscription?
+  stripeSubscriptions         StripeSubscription[]
   notificationPanels          NotificationPanel[]
   notifications               Notification[]
 }
@@ -124,33 +125,52 @@ model ContactSalesFormSubmission {
 }
 
 model StripeSubscription {
-  /// Unique identifier for the object.
-  id             String       @id @default(cuid(2))
-  /// one‐to‐one with Organization
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId String       @unique
-
-  /// who purchased it
-  purchasedBy        UserAccount @relation(fields: [purchasedById], references: [id])
-  purchasedById      String
+  /// One‐to‐many with Organization
+  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    String                   @unique
+  /// Who purchased it
+  purchasedBy       UserAccount?             @relation(fields: [purchasedById], references: [id], onDelete: SetNull)
+  purchasedById     String?
+  /// The Stripe subscription's real ID
+  stripeId          String                   @id
   /// Time at which the object was created. Stripe measures it in in seconds
   /// since the Unix epoch, but we convert it to a Date.
-  created            DateTime
+  created           DateTime
   /// If the subscription has been canceled with the at_period_end flag set to
   /// true, cancel_at_period_end on the subscription will be true. You can use
   /// this attribute to determine whether a subscription that has a status of
   /// active is scheduled to be canceled at the end of the current period.
-  cancelAtPeriodEnd  Boolean
-  /// End of the current period that the subscription has been invoiced for. At
-  /// the end of this period, a new invoice will be created.
-  currentPeriodEnd   DateTime
-  /// Start of the current period that the subscription has been invoiced for.
-  currentPeriodStart DateTime
-  /// Stringified list of subscription items, each with an attached price.
-  items              String
+  cancelAtPeriodEnd Boolean
+  /// If the subscription has a trial, the end of that trial. At the end of
+  /// this period, a new invoice will be created.
+  trialEnd          DateTime?
+  /// List of subscription items, each with an attached price.
+  items             StripeSubscriptionItem[]
   /// Possible values are incomplete, incomplete_expired, trialing, active,
-  /// past_due, canceled, or unpaid.
-  status             String
+  /// past_due, canceled, unpaid, or paused.
+  status            String
+}
+
+model StripeSubscriptionItem {
+  stripeId             String             @id
+  stripeSubscription   StripeSubscription @relation(fields: [stripeSubscriptionId], references: [stripeId], onDelete: Cascade)
+  stripeSubscriptionId String
+  /// End of the current period that the subscription item has been invoiced for.
+  /// At the end of this period, a new invoice will be created.
+  currentPeriodEnd     DateTime
+  /// Start of the current period that the subscription item has been invoiced for.
+  currentPeriodStart   DateTime
+  price                StripePrice        @relation(fields: [priceId], references: [stripeId])
+  priceId              String             @unique
+}
+
+model StripePrice {
+  stripeId               String                  @id
+  stripeSubscriptionItem StripeSubscriptionItem? @relation
+  lookupKey              String                  @unique
+  currency               String
+  unitAmount             Int
+  metadata               Json
 }
 
 model Notification {

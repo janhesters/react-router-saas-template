@@ -19,4 +19,5 @@ test.describe('billing page', () => {
   // resume
   // view invoices
   // manage users
+  // change billing email
 });

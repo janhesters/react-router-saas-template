@@ -1,10 +1,11 @@
 import { describe, expect, onTestFinished, test } from 'vitest';
 
+import { deleteStripePriceFromDatabaseById } from '~/features/billing/stripe-prices-model.server';
 import { ONBOARDING_ORGANIZATION_INTENT } from '~/features/onboarding/organization/onboarding-organization-consants';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   deleteOrganizationFromDatabaseById,
-  retrieveOrganizationWithMembershipsFromDatabaseBySlug,
+  retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug,
   saveOrganizationToDatabase,
   saveOrganizationWithOwnerToDatabase,
 } from '~/features/organizations/organizations-model.server';
@@ -13,6 +14,7 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
@@ -50,7 +52,7 @@ async function setup(userAccount = createPopulatedUserAccount()) {
   return { userAccount };
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe('/onboarding/organization route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
@@ -121,7 +123,9 @@ describe('/onboarding/organization route action', () => {
 
       // Verify organization was created with correct data
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
+        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
+          slug,
+        );
       expect(createdOrganization).toMatchObject({
         name: organization.name,
         billingEmail: userAccount.email,
@@ -132,6 +136,13 @@ describe('/onboarding/organization route action', () => {
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
+
+      // Delete prices last to avoid foreign key constraint errors
+      await Promise.all(
+        createdOrganization!.stripeSubscriptions[0].items.map(async item => {
+          await deleteStripePriceFromDatabaseById(item.priceId);
+        }),
+      );
     });
 
     test('given: an organization name that already exists, should: create organization with unique slug', async () => {
@@ -161,7 +172,9 @@ describe('/onboarding/organization route action', () => {
       // Extract slug from redirect URL and verify organization
       const slug = locationHeader!.split('/').pop()!;
       const secondOrg =
-        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
+        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
+          slug,
+        );
       expect(secondOrg).toBeTruthy();
       expect(secondOrg!.name).toEqual(firstOrg.name);
       expect(secondOrg!.slug).not.toEqual(firstOrg.slug);
@@ -170,6 +183,13 @@ describe('/onboarding/organization route action', () => {
       expect(secondOrg!.memberships[0].role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
+
+      // Delete prices last to avoid foreign key constraint errors
+      await Promise.all(
+        secondOrg!.stripeSubscriptions[0].items.map(async item => {
+          await deleteStripePriceFromDatabaseById(item.priceId);
+        }),
+      );
     });
 
     test('given: an organization name that would create a reserved slug, should: create organization with unique slug', async () => {
@@ -192,7 +212,9 @@ describe('/onboarding/organization route action', () => {
       // Extract slug from redirect URL and verify organization.
       const slug = locationHeader!.split('/').pop()!;
       const organization =
-        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
+        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
+          slug,
+        );
       expect(organization).toBeTruthy();
       expect(organization!.name).toEqual('New');
       expect(organization!.slug).not.toEqual('new');
@@ -201,6 +223,13 @@ describe('/onboarding/organization route action', () => {
       expect(organization!.memberships[0].role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(organization!.id);
+
+      // Delete prices last to avoid foreign key constraint errors
+      await Promise.all(
+        organization!.stripeSubscriptions[0].items.map(async item => {
+          await deleteStripePriceFromDatabaseById(item.priceId);
+        }),
+      );
     });
 
     test.each([
@@ -285,7 +314,9 @@ describe('/onboarding/organization route action', () => {
 
       // Verify organization was created with correct data including logo
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
+        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
+          slug,
+        );
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
@@ -303,6 +334,13 @@ describe('/onboarding/organization route action', () => {
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
+
+      // Delete prices last to avoid foreign key constraint errors
+      await Promise.all(
+        createdOrganization!.stripeSubscriptions[0].items.map(async item => {
+          await deleteStripePriceFromDatabaseById(item.priceId);
+        }),
+      );
     });
   });
 });

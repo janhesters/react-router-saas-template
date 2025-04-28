@@ -27,7 +27,17 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   createdAt = faker.date.past({ years: 1, refDate: updatedAt }),
   imageUrl = faker.image.url(),
   billingEmail = faker.internet.email(),
-} = {}) => ({ id, name, slug, createdAt, updatedAt, imageUrl, billingEmail });
+  stripeCustomerId = `cus_${createId()}`,
+} = {}) => ({
+  id,
+  name,
+  slug,
+  createdAt,
+  updatedAt,
+  imageUrl,
+  billingEmail,
+  stripeCustomerId,
+});
 
 /**
  * Creates an organization invite link with populated values.

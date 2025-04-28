@@ -1,10 +1,6 @@
 import invariant from 'tiny-invariant';
 
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
-import {
-  handleStripeCustomerCreatedEvent,
-  handleStripeCustomerSubscriptionCreatedEvent,
-} from '~/features/billing/stripe-event-handlers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 
 import type { Route } from './+types/stripe.webhooks';
@@ -41,6 +37,7 @@ export async function action({ request }: Route.ActionArgs) {
     process.env.STRIPE_WEBHOOK_SECRET,
     'STRIPE_WEBHOOK_SECRET environment variable is not set',
   );
+
   const payload = await request.text();
 
   try {
@@ -51,11 +48,15 @@ export async function action({ request }: Route.ActionArgs) {
     );
 
     switch (event.type) {
-      case 'customer.created': {
-        return handleStripeCustomerCreatedEvent(event);
-      }
-      case 'customer.subscription.created': {
-        return handleStripeCustomerSubscriptionCreatedEvent(event);
+      case 'customer.created':
+      case 'setup_intent.created':
+      case 'customer.updated':
+      case 'customer.subscription.created':
+      case 'invoice.created':
+      case 'invoice.finalized':
+      case 'invoice.paid':
+      case 'invoice.payment_succeeded': {
+        return json({ message: 'OK' });
       }
       default: {
         console.log('Stripe webhook unhandled event type:', event.type);

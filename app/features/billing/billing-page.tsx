@@ -20,7 +20,7 @@ import { Separator } from '~/components/ui/separator';
 import {
   CANCEL_SUBSCRIPTION_INTENT,
   OPEN_CUSTOMER_PORTAL_INTENT,
-} from './billing-constanst';
+} from './billing-constants';
 import { BillingModalContent } from './billing-modal-content';
 import {
   DescriptionDetail,

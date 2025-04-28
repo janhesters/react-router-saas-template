@@ -1,11 +1,12 @@
 /* eslint-disable unicorn/no-null */
-import {
-  type Organization,
-  type OrganizationMembership,
-  OrganizationMembershipRole,
-  type Prisma,
-  type UserAccount,
+import type {
+  Organization,
+  OrganizationMembership,
+  Prisma,
+  UserAccount,
 } from '@prisma/client';
+import { OrganizationMembershipRole } from '@prisma/client';
+import type Stripe from 'stripe';
 
 import { prisma } from '~/utils/database.server';
 
@@ -73,6 +74,24 @@ export async function retrieveOrganizationWithMembershipsFromDatabaseBySlug(
   return prisma.organization.findUnique({
     where: { slug },
     include: { memberships: { include: { member: true } } },
+  });
+}
+
+/**
+ * Retrieves an organization by its slug with memberships.
+ *
+ * @param slug - The slug of the organization to retrieve.
+ * @returns The organization with memberships and subscriptions or null if not found.
+ */
+export async function retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
+  slug: Organization['slug'],
+) {
+  return prisma.organization.findUnique({
+    where: { slug },
+    include: {
+      memberships: { include: { member: true } },
+      stripeSubscriptions: { include: { items: { include: { price: true } } } },
+    },
   });
 }
 
@@ -158,6 +177,98 @@ export async function addMembersToOrganizationInDatabaseById({
         create: members.map(memberId => ({
           user: { connect: { id: memberId } },
         })),
+      },
+    },
+  });
+}
+
+/**
+ * Upserts a Stripe subscription (with items and prices) into an organization.
+ *
+ * @param organizationId - The id of the organization.
+ * @param purchasedById - The id of the user who bought the subscription.
+ * @param stripeCustomerId - The id of the Stripe customer.
+ * @param stripeSubscription - The subscription object from Stripe.
+ * @returns The updated organization.
+ */
+export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
+  organizationId,
+  purchasedById,
+  stripeCustomerId,
+  stripeSubscription,
+}: {
+  organizationId: Organization['id'];
+  purchasedById: UserAccount['id'];
+  stripeCustomerId: Stripe.Customer['id'];
+  stripeSubscription: Stripe.Subscription;
+}) {
+  return await prisma.organization.update({
+    where: { id: organizationId },
+    data: {
+      stripeCustomerId,
+      stripeSubscriptions: {
+        upsert: {
+          where: { organizationId }, // because StripeSubscription has `organizationId` as `@unique`
+          create: {
+            stripeId: stripeSubscription.id,
+            purchasedById,
+            created: new Date(stripeSubscription.created * 1000),
+            cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+            trialEnd: stripeSubscription.trial_end
+              ? new Date(stripeSubscription.trial_end * 1000)
+              : undefined,
+            status: stripeSubscription.status,
+            items: {
+              create: stripeSubscription.items.data.map(item => ({
+                stripeId: item.id,
+                currentPeriodStart: new Date(item.current_period_start * 1000),
+                currentPeriodEnd: new Date(item.current_period_end * 1000),
+                price: {
+                  connectOrCreate: {
+                    where: { stripeId: item.price.id },
+                    create: {
+                      stripeId: item.price.id,
+                      lookupKey: item.price.lookup_key ?? '',
+                      currency: item.price.currency,
+                      unitAmount: item.price.unit_amount ?? 0,
+                      metadata: item.price.metadata ?? {},
+                    },
+                  },
+                },
+              })),
+            },
+          },
+          update: {
+            stripeId: stripeSubscription.id,
+            purchasedById,
+            created: new Date(stripeSubscription.created * 1000),
+            cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+            trialEnd: stripeSubscription.trial_end
+              ? new Date(stripeSubscription.trial_end * 1000)
+              : undefined,
+            status: stripeSubscription.status,
+            items: {
+              deleteMany: {}, // Delete existing items first (to prevent duplicates)
+              create: stripeSubscription.items.data.map(item => ({
+                stripeId: item.id,
+                currentPeriodStart: new Date(item.current_period_start * 1000),
+                currentPeriodEnd: new Date(item.current_period_end * 1000),
+                price: {
+                  connectOrCreate: {
+                    where: { stripeId: item.price.id },
+                    create: {
+                      stripeId: item.price.id,
+                      lookupKey: item.price.lookup_key ?? '',
+                      currency: item.price.currency,
+                      unitAmount: item.price.unit_amount ?? 0,
+                      metadata: item.price.metadata ?? {},
+                    },
+                  },
+                },
+              })),
+            },
+          },
+        },
       },
     },
   });
