@@ -57,7 +57,7 @@ export async function createStripeTrialSubscription({
 }) {
   const subscription = await stripeAdmin.subscriptions.create({
     customer: customerId,
-    items: [{ price: pricesByLookupKey.businessAnnual.id, quantity: 1 }],
+    items: [{ price: pricesByLookupKey.business_annual.id, quantity: 1 }],
     metadata: { organizationId, purchasedById },
     trial_period_days: 14,
     trial_settings: { end_behavior: { missing_payment_method: 'pause' } },

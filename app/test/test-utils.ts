@@ -1,13 +1,18 @@
 /* eslint-disable unicorn/no-null */
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
+import type Stripe from 'stripe';
 
+import { createSubscriptionWithItems } from '~/features/billing/billing-factories.server';
+import { createStripeCustomer } from '~/features/billing/stripe-factories.server';
+import { createStripeSubscription } from '~/features/billing/stripe-factories.server';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
+  upsertStripeSubscriptionForOrganizationInDatabaseById,
 } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import {
@@ -18,36 +23,119 @@ import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from '~/features/user-authentication/user-authentication-factories';
-import type { Factory } from '~/utils/types';
 
 import { setMockSession } from './mocks/handlers/supabase/mock-sessions';
+
+/**
+ * Recursive partial type for deep overrides, preserving Date instances.
+ */
+type DeepPartial<T> = T extends Date
+  ? T
+  : T extends (infer U)[]
+    ? DeepPartial<U>[]
+    : T extends object
+      ? { [P in keyof T]?: DeepPartial<T[P]> }
+      : T;
 
 /**
  * A factory function for creating an onboarded user with their memberships.
  *
  * @param props - The properties of the onboarding user.
  * @returns An onboarding user.
+ *
+ * @example // Default user with 3 memberships
+ * const user = createOnboardingUser();
+ *
+ * @example // Override the user's name and email
+ * const customUser = createOnboardingUser({
+ *   name: 'Jane Doe',
+ *   email: 'jane@example.com',
+ * });
+ *
+ * @example // Override first membership role and organization name
+ * const customMembershipUser = createOnboardingUser({
+ *   memberships: [
+ *     {
+ *       role: OrganizationMembershipRole.admin,
+ *       organization: { name: 'Acme Corporation' },
+ *     },
+ *   ],
+ * });
+ *
+ * @example // Provide custom subscriptions for second membership
+ * const customSubUser = createOnboardingUser({
+ *   memberships: [
+ *     {},
+ *     {
+ *       organization: {
+ *         stripeSubscriptions: [
+ *           createSubscriptionWithItems({ status: 'canceled' }),
+ *         ],
+ *       },
+ *     },
+ *   ],
+ * });
  */
-export const createOnboardingUser: Factory<OnboardingUser> = ({
-  memberships = [
-    {
+export const createOnboardingUser = (
+  overrides: DeepPartial<OnboardingUser> = {},
+): OnboardingUser => {
+  // Base user account
+  const baseUser = createPopulatedUserAccount();
+
+  // Prepare up to three default memberships
+  const defaultMemberships: OnboardingUser['memberships'] = Array.from({
+    length: overrides.memberships?.length ?? 3,
+  }).map(() => {
+    const organization = createPopulatedOrganization();
+    return {
       role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
       deactivatedAt: null,
+      organization: {
+        ...organization,
+        // Each org gets at least one subscription with items
+        stripeSubscriptions: [
+          createSubscriptionWithItems({ organizationId: organization.id }),
+        ],
+      },
+    };
+  });
+
+  // Merge overrides for memberships
+  type Membership = OnboardingUser['memberships'][number];
+  type OrgWithSubscriptions = Membership['organization'];
+  const finalMemberships: Membership[] = defaultMemberships.map(
+    (base, index) => {
+      const overrideM =
+        (overrides.memberships?.[index] as Partial<Membership>) || {};
+      const baseOrg = base.organization;
+      const overrideOrg =
+        (overrideM.organization as Partial<OrgWithSubscriptions>) || {};
+
+      // Merge subscriptions array explicitly, fallback to base
+      const subscriptions =
+        overrideOrg.stripeSubscriptions ?? baseOrg.stripeSubscriptions;
+
+      const mergedOrg: OrgWithSubscriptions = {
+        ...baseOrg,
+        ...overrideOrg,
+        stripeSubscriptions: subscriptions,
+      };
+
+      return {
+        role: overrideM.role ?? base.role,
+        deactivatedAt: overrideM.deactivatedAt ?? base.deactivatedAt,
+        organization: mergedOrg,
+      };
     },
-    {
-      role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
-      deactivatedAt: null,
-    },
-    {
-      role: OrganizationMembershipRole.member,
-      organization: createPopulatedOrganization(),
-      deactivatedAt: null,
-    },
-  ],
-  ...props
-} = {}) => ({ ...createPopulatedUserAccount(), ...props, memberships });
+  );
+
+  return {
+    ...baseUser,
+    // User-level overrides (e.g. name, email)
+    ...overrides,
+    memberships: finalMemberships,
+  };
+};
 
 function createMockJWT(payload: object): string {
   const header = { alg: 'HS256', typ: 'JWT' };
@@ -147,6 +235,37 @@ export async function createAuthenticatedRequest({
 }
 
 /**
+ * Creates a test Stripe subscription for a user and organization.
+ *
+ * This helper function creates a Stripe customer and subscription, then associates them
+ * with the provided organization and user in the database.
+ *
+ * @param options - An object containing the user and organization
+ * @param options.user - The user account that will be set as the subscription purchaser
+ * @param options.organization - The organization that will own the subscription
+ * @returns The updated organization with the new subscription data
+ */
+export async function createTestSubscriptionForUserAndOrganization({
+  user,
+  organization,
+  subscription = createStripeSubscription(),
+}: {
+  user: UserAccount;
+  organization: Organization;
+  subscription?: Stripe.Subscription;
+}) {
+  const customer = createStripeCustomer();
+  const organizationWithSubscription =
+    await upsertStripeSubscriptionForOrganizationInDatabaseById({
+      organizationId: organization.id,
+      purchasedById: user.id,
+      stripeCustomerId: customer.id,
+      stripeSubscription: { ...subscription, customer: customer.id },
+    });
+  return organizationWithSubscription;
+}
+
+/**
  * Saves the user account and organization to the database and adds the user as
  * a member of the organization.
  *
@@ -168,6 +287,10 @@ export async function createUserWithOrgAndAddAsMember({
     id: organization.id,
     members: [user.id],
     role,
+  });
+  await createTestSubscriptionForUserAndOrganization({
+    user,
+    organization,
   });
 
   return { organization, user };

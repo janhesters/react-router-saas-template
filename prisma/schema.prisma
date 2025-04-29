@@ -124,6 +124,37 @@ model ContactSalesFormSubmission {
   workEmail   String
 }
 
+enum StripeSubscriptionStatus {
+  /// The subscription is paid and active.
+  active
+  /// The subscription is canceled. This status is terminal. The user will
+  /// need to resubscribe from scratch again.
+  canceled
+  /// The initial payment for the subscription failed. Stripe is waiting for
+  /// the first invoice to be paid. Only metadata and default_source can be
+  /// updated.
+  incomplete
+  /// The subscription's first invoice wasn't paid within 23 hours. The
+  /// subscription has expired without ever becoming active. This status is
+  /// terminal.
+  incomplete_expired
+  /// A recurring invoice payment failed after a previously active subscription.
+  /// Stripe automatically retries the payment (up to 4 times over about 3–4
+  /// weeks by default, using Smart Retries). If all retries fail, the
+  /// subscription moves to canceled or unpaid, depending on your subscription
+  /// settings.
+  past_due
+  /// The subscription is temporarily paused. No invoices are generated during
+  /// the pause.
+  paused
+  /// The subscription is in a free trial period before the first payment is due.
+  trialing
+  /// Payment has failed and all retry attempts have been exhausted. The
+  /// subscription remains technically active but is marked as unpaid. New
+  /// invoices are not generated.
+  unpaid
+}
+
 model StripeSubscription {
   /// One‐to‐many with Organization
   organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
@@ -148,7 +179,7 @@ model StripeSubscription {
   items             StripeSubscriptionItem[]
   /// Possible values are incomplete, incomplete_expired, trialing, active,
   /// past_due, canceled, unpaid, or paused.
-  status            String
+  status            StripeSubscriptionStatus
 }
 
 model StripeSubscriptionItem {
@@ -161,16 +192,16 @@ model StripeSubscriptionItem {
   /// Start of the current period that the subscription item has been invoiced for.
   currentPeriodStart   DateTime
   price                StripePrice        @relation(fields: [priceId], references: [stripeId])
-  priceId              String             @unique
+  priceId              String
 }
 
 model StripePrice {
-  stripeId               String                  @id
-  stripeSubscriptionItem StripeSubscriptionItem? @relation
-  lookupKey              String                  @unique
-  currency               String
-  unitAmount             Int
-  metadata               Json
+  stripeId          String                   @id
+  lookupKey         String                   @unique
+  currency          String
+  unitAmount        Int
+  metadata          Json
+  subscriptionItems StripeSubscriptionItem[]
 }
 
 model Notification {

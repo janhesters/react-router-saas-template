@@ -77,7 +77,9 @@ export function OrganizationSwitcher({
                 </span>
 
                 <span className="truncate text-xs">
-                  {currentOrganization.plan}
+                  {t(`plan.${currentOrganization.plan}`, {
+                    defaultValue: 'Enterprise',
+                  })}
                 </span>
               </div>
 

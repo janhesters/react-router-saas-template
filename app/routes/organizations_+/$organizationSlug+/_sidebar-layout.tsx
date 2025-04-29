@@ -9,6 +9,7 @@ import { AppSidebar } from '~/features/organizations/layout/app-sidebar';
 import { findHeaderTitle } from '~/features/organizations/layout/layout-helpers';
 import {
   getSidebarState,
+  mapOnboardingUserToBillingSidebarCardProps,
   mapOnboardingUserToOrganizationLayoutProps,
 } from '~/features/organizations/layout/layout-helpers.server';
 import { sidebarLayoutAction } from '~/features/organizations/layout/sidebar-layout-action.server';
@@ -63,6 +64,11 @@ export async function loader({ request, params }: Route.LoaderArgs) {
       ...mapInitialNotificationsDataToNotificationButtonProps(
         notificationData!,
       ),
+      ...mapOnboardingUserToBillingSidebarCardProps({
+        now: new Date(),
+        user,
+        organizationSlug: params.organizationSlug,
+      }),
     },
     { headers },
   );
@@ -78,11 +84,11 @@ export default function OrganizationLayoutRoute({
   matches,
 }: Route.ComponentProps) {
   const {
-    currentOrganization,
+    billingSidebarCardProps,
     defaultSidebarOpen,
+    navUserProps,
     notificationButtonProps,
-    organizations,
-    user,
+    organizationSwitcherProps,
   } = loaderData;
   const headerTitle = findHeaderTitle(
     matches as UIMatch<{ headerTitle?: string }>[],
@@ -91,10 +97,10 @@ export default function OrganizationLayoutRoute({
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar
-        currentOrganization={currentOrganization}
-        organizations={organizations}
+        billingSidebarCardProps={billingSidebarCardProps}
+        navUserProps={navUserProps}
+        organizationSwitcherProps={organizationSwitcherProps}
         organizationSlug={params.organizationSlug}
-        user={user}
         variant="inset"
       />
 

@@ -7,7 +7,9 @@ invariant(STRIPE_SECRET_KEY, 'STRIPE_SECRET_KEY is not set');
 
 // Why is this needed?
 // See: https://github.com/nock/nock/issues/2785#issuecomment-2427076034
-const isTestEnvironment = Boolean(process.env.CI ?? process.env.VITEST);
+const isTestEnvironment = Boolean(
+  process.env.SERVER_MOCKS ?? process.env.VITEST,
+);
 
 /**
  * A passthrough wrapper around the global `fetch` function.

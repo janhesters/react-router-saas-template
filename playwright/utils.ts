@@ -16,7 +16,10 @@ import {
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
 import { setMockSession } from '~/test/mocks/handlers/supabase/mock-sessions';
-import { createMockSupabaseSession } from '~/test/test-utils';
+import {
+  createMockSupabaseSession,
+  createTestSubscriptionForUserAndOrganization,
+} from '~/test/test-utils';
 
 dotenv.config();
 
@@ -159,6 +162,10 @@ export async function setupOrganizationAndLoginAsMember({
     id: data.organization.id,
     members: [data.user.id],
     role,
+  });
+  await createTestSubscriptionForUserAndOrganization({
+    user: data.user,
+    organization: data.organization,
   });
 
   return data;

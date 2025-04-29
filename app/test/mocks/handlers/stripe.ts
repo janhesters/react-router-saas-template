@@ -96,6 +96,7 @@ const createSubscriptionMock = http.post(
     const subscription = createStripeSubscriptionFactory({
       customer,
       metadata,
+      status: 'trialing',
       items: {
         object: 'list',
         data: subscriptionItems,

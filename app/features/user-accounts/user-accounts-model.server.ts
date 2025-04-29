@@ -97,7 +97,15 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
         },
         select: {
           organization: {
-            select: { id: true, name: true, slug: true, imageUrl: true },
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              imageUrl: true,
+              stripeSubscriptions: {
+                include: { items: { include: { price: true } } },
+              },
+            },
           },
           role: true,
           deactivatedAt: true,

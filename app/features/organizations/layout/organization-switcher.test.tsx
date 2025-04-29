@@ -1,9 +1,9 @@
-import { faker } from '@faker-js/faker';
 import userEvent from '@testing-library/user-event';
 import { createRoutesStub } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
 import { SidebarProvider } from '~/components/ui/sidebar';
+import { getRandomLookupKey } from '~/features/billing/billing-factories.server';
 import { render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
@@ -18,7 +18,7 @@ const createOrganization: Factory<
   slug = createPopulatedOrganization().slug,
   name = createPopulatedOrganization().name,
   logo = createPopulatedOrganization().imageUrl,
-  plan = faker.helpers.arrayElement(['Free', 'Pro', 'Enterprise']),
+  plan = getRandomLookupKey(),
 } = {}) => ({ id, slug, name, logo, plan });
 
 const createProps: Factory<OrganizationSwitcherProps> = ({
@@ -31,7 +31,7 @@ const createProps: Factory<OrganizationSwitcherProps> = ({
 
 describe('OrganizationSwitcher Component', () => {
   test('given: organizations data, should: render current organization in the button', () => {
-    const currentOrganization = createOrganization();
+    const currentOrganization = createOrganization({ plan: 'hobby_monthly' });
     const props = createProps({ currentOrganization });
     const path = '/test';
     const RouterStub = createRoutesStub([
@@ -46,7 +46,7 @@ describe('OrganizationSwitcher Component', () => {
 
     // Verify current organization is displayed.
     expect(screen.getByText(currentOrganization.name)).toBeInTheDocument();
-    expect(screen.getByText(currentOrganization.plan)).toBeInTheDocument();
+    expect(screen.getByText(/hobby/i)).toBeInTheDocument();
   });
 
   test('given: organizations data, should: handle dropdown menu interactions', async () => {

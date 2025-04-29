@@ -1,6 +1,5 @@
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { deleteStripePriceFromDatabaseById } from '~/features/billing/stripe-prices-model.server';
 import { ONBOARDING_ORGANIZATION_INTENT } from '~/features/onboarding/organization/onboarding-organization-consants';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
@@ -134,15 +133,11 @@ describe('/onboarding/organization route action', () => {
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
+      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
+        'trialing',
+      );
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
-
-      // Delete prices last to avoid foreign key constraint errors
-      await Promise.all(
-        createdOrganization!.stripeSubscriptions[0].items.map(async item => {
-          await deleteStripePriceFromDatabaseById(item.priceId);
-        }),
-      );
     });
 
     test('given: an organization name that already exists, should: create organization with unique slug', async () => {
@@ -181,15 +176,9 @@ describe('/onboarding/organization route action', () => {
       expect(secondOrg!.memberships).toHaveLength(1);
       expect(secondOrg!.memberships[0].member.id).toEqual(userAccount.id);
       expect(secondOrg!.memberships[0].role).toEqual('owner');
+      expect(secondOrg!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
-
-      // Delete prices last to avoid foreign key constraint errors
-      await Promise.all(
-        secondOrg!.stripeSubscriptions[0].items.map(async item => {
-          await deleteStripePriceFromDatabaseById(item.priceId);
-        }),
-      );
     });
 
     test('given: an organization name that would create a reserved slug, should: create organization with unique slug', async () => {
@@ -221,15 +210,9 @@ describe('/onboarding/organization route action', () => {
       expect(organization!.memberships).toHaveLength(1);
       expect(organization!.memberships[0].member.id).toEqual(userAccount.id);
       expect(organization!.memberships[0].role).toEqual('owner');
+      expect(organization!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(organization!.id);
-
-      // Delete prices last to avoid foreign key constraint errors
-      await Promise.all(
-        organization!.stripeSubscriptions[0].items.map(async item => {
-          await deleteStripePriceFromDatabaseById(item.priceId);
-        }),
-      );
     });
 
     test.each([
@@ -331,16 +314,12 @@ describe('/onboarding/organization route action', () => {
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
+      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
+        'trialing',
+      );
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
-
-      // Delete prices last to avoid foreign key constraint errors
-      await Promise.all(
-        createdOrganization!.stripeSubscriptions[0].items.map(async item => {
-          await deleteStripePriceFromDatabaseById(item.priceId);
-        }),
-      );
     });
   });
 });

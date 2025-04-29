@@ -349,3 +349,12 @@ test.describe('account settings', () => {
     await deleteUserAccountFromDatabaseById(otherUser.id);
   });
 });
+
+// States:
+// - trialing
+// - paused (= no payment info added after trial ran out)
+// - incomplete (= payment info was added after trial, but the initial payment failed)
+// - incomplete_expired (= payment info was added after trial, but the first invoice was not paid within 23 hours - terminal => user needs to subscribe again => check if creating a checkout session lets them enter a free trial or not)
+//  - important: if the user resubscribes, it needs to PREVENT them from using a trial.
+// - past_due (= invoice is not paid by the due date)
+// - canceled (= user canceled the subscription, or payment failed and subscription was auto cancelled)

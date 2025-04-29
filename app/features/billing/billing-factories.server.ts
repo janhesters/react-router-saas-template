@@ -8,6 +8,16 @@ import type {
 
 import type { Factory } from '~/utils/types';
 
+import type { PriceLookupKey } from './billing-constants';
+import { pricesByLookupKey } from './billing-constants';
+
+export const getRandomLookupKey = () =>
+  faker.helpers.arrayElement(
+    Object.keys(pricesByLookupKey) as PriceLookupKey[],
+  );
+
+/* Base factories */
+
 /**
  * Creates a Stripe price with populated values.
  *
@@ -15,8 +25,8 @@ import type { Factory } from '~/utils/types';
  * @returns A populated Stripe price with given params.
  */
 export const createPopulatedStripePrice: Factory<StripePrice> = ({
-  stripeId = `price_${createId()}`,
-  lookupKey = `price_${faker.string.alphanumeric(8)}`,
+  lookupKey = getRandomLookupKey(),
+  stripeId = pricesByLookupKey[lookupKey as PriceLookupKey].id,
   currency = 'usd',
   unitAmount = faker.number.int({ min: 500, max: 50_000 }),
   metadata = {},
@@ -72,4 +82,71 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
   cancelAtPeriodEnd,
   trialEnd,
   status,
+});
+
+/* Compound factories */
+
+export type SubscriptionItemWithPrice = StripeSubscriptionItem & {
+  price: StripePrice;
+};
+
+/**
+ * Creates a Stripe subscription item with its associated price relation.
+ *
+ * @param subscriptionItemWithPriceParams - Parameters to create the
+ * subscription item and price with.
+ * @returns A populated Stripe subscription item with its associated price.
+ */
+export const createSubscriptionItemWithPrice: Factory<
+  SubscriptionItemWithPrice
+> = ({ price = createPopulatedStripePrice(), ...rest } = {}) => ({
+  price,
+  ...createPopulatedStripeSubscriptionItem({
+    priceId: price.stripeId,
+    ...rest,
+  }),
+});
+
+export type SubscriptionWithItems = StripeSubscription & {
+  items: SubscriptionItemWithPrice[];
+};
+
+/**
+ * Creates a Stripe subscription with its associated subscription items and
+ * prices.
+ *
+ * @param subscriptionWithItemsParams - Parameters to create the subscription,
+ * items and prices with.
+ * @returns A populated Stripe subscription with its associated items and
+ * prices.
+ */
+export const createSubscriptionWithItems: Factory<SubscriptionWithItems> = ({
+  stripeId = createPopulatedStripeSubscription().stripeId,
+  items = [createSubscriptionItemWithPrice({ stripeSubscriptionId: stripeId })],
+  ...rest
+} = {}) => ({
+  ...createPopulatedStripeSubscription({ stripeId, ...rest }),
+  items: items.map(item => ({ ...item, stripeSubscriptionId: stripeId })),
+});
+
+/**
+ * Creates a Stripe subscription with a populated price.
+ *
+ * @param subscriptionWithPriceParams - Parameters to create the subscription with.
+ * @returns A populated Stripe subscription with a populated price.
+ */
+export const createSubscriptionWithPrice = ({
+  lookupKey = getRandomLookupKey(),
+  ...rest
+}: Partial<
+  StripeSubscription & { lookupKey: PriceLookupKey }
+> = {}): SubscriptionWithItems => ({
+  ...createSubscriptionWithItems({
+    items: [
+      createSubscriptionItemWithPrice({
+        price: createPopulatedStripePrice({ lookupKey }),
+      }),
+    ],
+    ...rest,
+  }),
 });

@@ -16,6 +16,9 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '~/components/ui/sidebar';
+import type { BillingSidebarCardProps } from '~/features/billing/billing-sidebar-card';
+import { BillingSidebarCard } from '~/features/billing/billing-sidebar-card';
+import { cn } from '~/lib/utils';
 
 import { NavGroup } from './nav-group';
 import type { NavUserProps } from './nav-user';
@@ -26,15 +29,16 @@ import type { Route } from '.react-router/types/app/routes/organizations_+/$orga
 
 type AppSidebarProps = {
   organizationSlug: Route.ComponentProps['params']['organizationSlug'];
-} & ComponentProps<typeof Sidebar> &
-  OrganizationSwitcherProps &
-  NavUserProps;
+  billingSidebarCardProps?: BillingSidebarCardProps;
+  organizationSwitcherProps: OrganizationSwitcherProps;
+  navUserProps: NavUserProps;
+} & ComponentProps<typeof Sidebar>;
 
 export function AppSidebar({
-  currentOrganization,
-  organizations,
+  billingSidebarCardProps,
+  navUserProps,
   organizationSlug,
-  user,
+  organizationSwitcherProps,
   ...props
 }: AppSidebarProps) {
   const { t } = useTranslation('organizations', {
@@ -44,10 +48,7 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <OrganizationSwitcher
-          currentOrganization={currentOrganization}
-          organizations={organizations}
-        />
+        <OrganizationSwitcher {...organizationSwitcherProps} />
       </SidebarHeader>
 
       <SidebarContent>
@@ -92,8 +93,19 @@ export function AppSidebar({
           title={t('app.title')}
         />
 
+        {billingSidebarCardProps && (
+          <BillingSidebarCard
+            className={cn(
+              'mt-auto overflow-hidden transition-[opacity,transform,max-height] ease-in-out',
+              'max-h-[500px] scale-100 opacity-100 delay-200 duration-500',
+              'group-data-[state=collapsed]:max-h-0 group-data-[state=collapsed]:scale-95 group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:delay-0 group-data-[state=collapsed]:duration-200',
+            )}
+            {...billingSidebarCardProps}
+          />
+        )}
+
         <NavGroup
-          className="mt-auto"
+          className={cn(!billingSidebarCardProps && 'mt-auto')}
           items={[
             {
               title: t('settings.organization-settings'),
@@ -115,7 +127,7 @@ export function AppSidebar({
       </SidebarContent>
 
       <SidebarFooter>
-        <NavUser user={user} />
+        <NavUser {...navUserProps} />
       </SidebarFooter>
 
       <SidebarRail />

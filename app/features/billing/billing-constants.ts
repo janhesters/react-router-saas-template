@@ -17,28 +17,30 @@ export const CANCEL_SUBSCRIPTION_INTENT = 'cancelSubscription';
  */
 
 export const pricesByLookupKey = {
-  hobbyMonthly: {
+  hobby_monthly: {
     id: 'price_1RGetVPti3AuUdaNtTABSlP3',
     lookupKey: 'hobby_monthly',
   },
-  hobbyAnnual: {
+  hobby_annual: {
     id: 'price_1RGetVPti3AuUdaN3GlBQBY6',
     lookupKey: 'hobby_annual',
   },
-  startupMonthly: {
+  startup_monthly: {
     id: 'price_1RGetVPti3AuUdaN4RCP21pJ',
     lookupKey: 'startup_monthly',
   },
-  startupAnnual: {
+  startup_annual: {
     id: 'price_1RGetVPti3AuUdaNzCYSZMi7',
     lookupKey: 'startup_annual',
   },
-  businessMonthly: {
+  business_monthly: {
     id: 'price_1RGetVPti3AuUdaN7MPTxiEe',
     lookupKey: 'business_monthly',
   },
-  businessAnnual: {
+  business_annual: {
     id: 'price_1RGetVPti3AuUdaNTfflLuNP',
     lookupKey: 'business_annual',
   },
 } as const;
+
+export type PriceLookupKey = keyof typeof pricesByLookupKey;

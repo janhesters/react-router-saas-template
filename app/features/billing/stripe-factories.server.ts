@@ -5,6 +5,10 @@ import type { Stripe } from 'stripe';
 
 import type { Factory } from '~/utils/types';
 
+import type { PriceLookupKey } from './billing-constants';
+import { pricesByLookupKey } from './billing-constants';
+import { getRandomLookupKey } from './billing-factories.server';
+
 /**
  * Creates a Stripe Customer object with populated values.
  */
@@ -64,7 +68,8 @@ export const createStripeCustomer: Factory<Stripe.Customer> = ({
  * Creates a Stripe Price object with populated values.
  */
 export const createStripePrice: Factory<Stripe.Price> = ({
-  id = `price_${createId()}`,
+  lookup_key = getRandomLookupKey(),
+  id = pricesByLookupKey[lookup_key as PriceLookupKey].id,
   object = 'price',
   active = true,
   billing_scheme = 'per_unit',
@@ -73,7 +78,6 @@ export const createStripePrice: Factory<Stripe.Price> = ({
   currency = 'usd',
   custom_unit_amount = null,
   livemode = false,
-  lookup_key = null,
   metadata = {},
   nickname = null,
   product = `prod_${createId()}`,

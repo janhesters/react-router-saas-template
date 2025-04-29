@@ -9,7 +9,10 @@ import {
 } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 import { deleteUserAccountFromDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
-import { teardownOrganizationAndMember } from '~/test/test-utils';
+import {
+  createTestSubscriptionForUserAndOrganization,
+  teardownOrganizationAndMember,
+} from '~/test/test-utils';
 
 import {
   getPath,
@@ -101,6 +104,10 @@ test.describe('organization settings layout', () => {
         id: otherOrganization.id,
         members: [user.id],
         role: 'member',
+      });
+      await createTestSubscriptionForUserAndOrganization({
+        user,
+        organization: otherOrganization,
       });
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);

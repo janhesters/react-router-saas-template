@@ -1,5 +1,6 @@
-import type { Organization } from '@prisma/client';
+import { type Organization, OrganizationMembershipRole } from '@prisma/client';
 
+import type { BillingSidebarCardProps } from '~/features/billing/billing-sidebar-card';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 
 import type { NavUserProps } from './nav-user';
@@ -38,23 +39,75 @@ export function mapOnboardingUserToOrganizationLayoutProps({
 }: {
   user: OnboardingUser;
   organizationSlug: Organization['slug'];
-}): OrganizationSwitcherProps & NavUserProps {
+}): {
+  navUserProps: NavUserProps;
+  organizationSwitcherProps: OrganizationSwitcherProps;
+} {
   const mappedOrganizations = user.memberships.map(membership => ({
     id: membership.organization.id,
     name: membership.organization.name,
     logo: membership.organization.imageUrl,
     slug: membership.organization.slug,
-    plan: 'Free',
+    plan: membership.organization.stripeSubscriptions[0].items[0].price
+      .lookupKey,
   }));
+
   return {
-    currentOrganization: mappedOrganizations.find(
-      organization => organization.slug === organizationSlug,
-    ),
-    organizations: mappedOrganizations,
-    user: {
-      name: user.name,
-      email: user.email,
-      avatar: user.imageUrl,
+    navUserProps: {
+      user: {
+        avatar: user.imageUrl,
+        email: user.email,
+        name: user.name,
+      },
+    },
+    organizationSwitcherProps: {
+      currentOrganization: mappedOrganizations.find(
+        organization => organization.slug === organizationSlug,
+      ),
+      organizations: mappedOrganizations,
+    },
+  };
+}
+
+export function mapOnboardingUserToBillingSidebarCardProps({
+  now,
+  organizationSlug,
+  user,
+}: {
+  now: Date;
+  organizationSlug: Organization['slug'];
+  user: OnboardingUser;
+}): { billingSidebarCardProps?: BillingSidebarCardProps } {
+  const currentMembership = user.memberships.find(
+    membership => membership.organization.slug === organizationSlug,
+  );
+
+  if (!currentMembership) {
+    return {};
+  }
+
+  const currentOrganization = currentMembership?.organization;
+
+  if (!currentOrganization) {
+    return {};
+  }
+
+  const subscription = currentOrganization.stripeSubscriptions[0];
+
+  if (!['trialing', 'paused'].includes(subscription.status)) {
+    return {};
+  }
+
+  const showButton =
+    currentMembership.role === OrganizationMembershipRole.admin ||
+    currentMembership.role === OrganizationMembershipRole.owner;
+
+  return {
+    billingSidebarCardProps: {
+      freeTrialIsActive: now < subscription.trialEnd!,
+      showButton,
+      // We checked earlier that the subscription is trialing.
+      trialEndDate: subscription.trialEnd!,
     },
   };
 }

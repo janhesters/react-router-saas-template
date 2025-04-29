@@ -17,6 +17,19 @@
   },
   "layout": {
     "app-sidebar": {
+      "billing-sidebar-card": {
+        "active-trial": {
+          "button": "Add payment information",
+          "description": "Trial ends on {{date}}.",
+          "title": "Business Plan (Trial)"
+        },
+        "loading": "Loading ...",
+        "trial-ended": {
+          "button": "Resume subscription",
+          "description": "Trial ended on {{date}}.",
+          "title": "Business Plan (Trial)"
+        }
+      },
       "nav": {
         "app": {
           "analytics": "Analytics",
@@ -43,7 +56,15 @@
     },
     "organization-switcher": {
       "new-organization": "New organization",
-      "organizations": "Organizations"
+      "organizations": "Organizations",
+      "plan": {
+        "business_annual": "Business",
+        "business_monthly": "Business",
+        "hobby_annual": "Hobby",
+        "hobby_monthly": "Hobby",
+        "starter_annual": "Starter",
+        "starter_monthly": "Starter"
+      }
     }
   },
   "new": {
