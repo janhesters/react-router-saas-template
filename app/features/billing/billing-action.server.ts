@@ -15,13 +15,13 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
 
   switch (body.intent) {
     case OPEN_CUSTOMER_PORTAL_INTENT: {
-      const url = await createStripeCustomerPortalSession({
+      const portalSession = await createStripeCustomerPortalSession({
         baseUrl: request.url,
         customerId: '', // USER_ID
         organizationSlug: params.organizationSlug,
       });
 
-      return redirect(url);
+      return redirect(portalSession.url);
     }
   }
 }

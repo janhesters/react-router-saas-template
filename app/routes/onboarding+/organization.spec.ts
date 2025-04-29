@@ -4,7 +4,7 @@ import { ONBOARDING_ORGANIZATION_INTENT } from '~/features/onboarding/organizati
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   deleteOrganizationFromDatabaseById,
-  retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug,
+  retrieveOrganizationWithMembershipsFromDatabaseBySlug,
   saveOrganizationToDatabase,
   saveOrganizationWithOwnerToDatabase,
 } from '~/features/organizations/organizations-model.server';
@@ -13,7 +13,6 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
-import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
@@ -51,7 +50,7 @@ async function setup(userAccount = createPopulatedUserAccount()) {
   return { userAccount };
 }
 
-setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
+setupMockServerLifecycle(...supabaseHandlers);
 
 describe('/onboarding/organization route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
@@ -122,20 +121,14 @@ describe('/onboarding/organization route action', () => {
 
       // Verify organization was created with correct data
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(createdOrganization).toMatchObject({
         name: organization.name,
-        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships[0].member.id).toEqual(
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
-      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
-        'trialing',
-      );
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
     });
@@ -167,16 +160,13 @@ describe('/onboarding/organization route action', () => {
       // Extract slug from redirect URL and verify organization
       const slug = locationHeader!.split('/').pop()!;
       const secondOrg =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(secondOrg).toBeTruthy();
       expect(secondOrg!.name).toEqual(firstOrg.name);
       expect(secondOrg!.slug).not.toEqual(firstOrg.slug);
       expect(secondOrg!.memberships).toHaveLength(1);
       expect(secondOrg!.memberships[0].member.id).toEqual(userAccount.id);
       expect(secondOrg!.memberships[0].role).toEqual('owner');
-      expect(secondOrg!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
     });
@@ -201,16 +191,13 @@ describe('/onboarding/organization route action', () => {
       // Extract slug from redirect URL and verify organization.
       const slug = locationHeader!.split('/').pop()!;
       const organization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(organization).toBeTruthy();
       expect(organization!.name).toEqual('New');
       expect(organization!.slug).not.toEqual('new');
       expect(organization!.memberships).toHaveLength(1);
       expect(organization!.memberships[0].member.id).toEqual(userAccount.id);
       expect(organization!.memberships[0].role).toEqual('owner');
-      expect(organization!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(organization!.id);
     });
@@ -297,9 +284,7 @@ describe('/onboarding/organization route action', () => {
 
       // Verify organization was created with correct data including logo
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
@@ -307,16 +292,12 @@ describe('/onboarding/organization route action', () => {
         name: organization.name,
         slug: slug,
         imageUrl: organization.imageUrl, // Verify the logo URL was saved
-        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships).toHaveLength(1);
       expect(createdOrganization!.memberships[0].member.id).toEqual(
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
-      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
-        'trialing',
-      );
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);

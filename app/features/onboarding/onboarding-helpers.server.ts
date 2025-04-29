@@ -24,12 +24,18 @@ async function requireOnboardingUserExists(request: Request) {
 }
 
 /**
- * The user for the onboarding helper functions. Should only be scoped to this
- * file.
+ * The user for the onboarding helper functions.
  */
 export type OnboardingUser = Awaited<
   ReturnType<typeof requireOnboardingUserExists>
 >['user'];
+
+/**
+ * The organization with memberships and subscriptions for the onboarding helper
+ * functions.
+ */
+export type OrganizationWithMembershipsAndSubscriptions =
+  OnboardingUser['memberships'][number]['organization'];
 
 /**
  * Checks if the user is onboarded, which means they have a name and are a

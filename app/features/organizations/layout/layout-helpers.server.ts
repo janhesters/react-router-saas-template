@@ -1,5 +1,7 @@
 import { type Organization, OrganizationMembershipRole } from '@prisma/client';
 
+import { pricesByTierAndInterval } from '~/features/billing/billing-constants';
+import { getTierAndIntervalForPriceId } from '~/features/billing/billing-helpers';
 import type { BillingSidebarCardProps } from '~/features/billing/billing-sidebar-card';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 
@@ -48,8 +50,13 @@ export function mapOnboardingUserToOrganizationLayoutProps({
     name: membership.organization.name,
     logo: membership.organization.imageUrl,
     slug: membership.organization.slug,
-    plan: membership.organization.stripeSubscriptions[0].items[0].price
-      .lookupKey,
+    tier: getTierAndIntervalForPriceId(
+      // Actual plan if the organization has a subscription.
+      membership.organization.stripeSubscriptions.length > 0
+        ? membership.organization.stripeSubscriptions[0].items[0].price.stripeId
+        : // Default plan during the trial period.
+          pricesByTierAndInterval.high_annual.id,
+    ).tier,
   }));
 
   return {
@@ -92,9 +99,7 @@ export function mapOnboardingUserToBillingSidebarCardProps({
     return {};
   }
 
-  const subscription = currentOrganization.stripeSubscriptions[0];
-
-  if (!['trialing', 'paused'].includes(subscription.status)) {
+  if (currentOrganization.stripeSubscriptions.length > 0) {
     return {};
   }
 
@@ -104,10 +109,9 @@ export function mapOnboardingUserToBillingSidebarCardProps({
 
   return {
     billingSidebarCardProps: {
-      freeTrialIsActive: now < subscription.trialEnd!,
+      freeTrialIsActive: now < currentOrganization.trialEnd,
       showButton,
-      // We checked earlier that the subscription is trialing.
-      trialEndDate: subscription.trialEnd!,
+      trialEndDate: currentOrganization.trialEnd,
     },
   };
 }

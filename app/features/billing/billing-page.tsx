@@ -1,3 +1,4 @@
+import type { Organization } from '@prisma/client';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { CircleXIcon, Loader2Icon } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -30,8 +31,13 @@ import {
 } from './description-list';
 
 export type BillingPageProps = {
+  billingEmail: Organization['billingEmail'];
   cancelAtPeriodEnd: boolean;
   currentMonthlyRatePerUser: number;
+  /**
+   * During trial, this is the trial end date.
+   * Otherwise, this is the end of the current period.
+   */
   currentPeriodEnd: Date;
   currentSeats: number;
   currentTierName: string;
@@ -50,6 +56,7 @@ export type BillingPageProps = {
 };
 
 export function BillingPage({
+  billingEmail,
   cancelAtPeriodEnd,
   currentMonthlyRatePerUser,
   currentPeriodEnd,
@@ -326,6 +333,37 @@ export function BillingPage({
             </fieldset>
           </Form>
         </div>
+
+        {billingEmail && (
+          <div>
+            <h3 className="text-base font-medium">
+              {t('payment-information.heading')}
+            </h3>
+
+            <Form method="POST" replace>
+              <fieldset className="@container/form" disabled={isSubmitting}>
+                <Card className="mt-2 py-4 md:py-3">
+                  <DescriptionList>
+                    {/* Billing Email */}
+                    <DescriptionListRow className="items-center justify-between @xl/form:h-10">
+                      <div className="flex flex-col gap-2 @xl/form:flex-row">
+                        <DescriptionTerm className="@xl/form:w-36">
+                          {t('payment-information.billing-email')}
+                        </DescriptionTerm>
+
+                        <DescriptionDetail>{billingEmail}</DescriptionDetail>
+                      </div>
+
+                      <Button variant="outline" size="sm">
+                        {t('payment-information.edit-button')}
+                      </Button>
+                    </DescriptionListRow>
+                  </DescriptionList>
+                </Card>
+              </fieldset>
+            </Form>
+          </div>
+        )}
 
         <Dialog
           open={isPlanManagementModalOpen}

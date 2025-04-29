@@ -23,7 +23,10 @@
           "description": "Trial ends on {{date}}.",
           "title": "Business Plan (Trial)"
         },
-        "loading": "Loading ...",
+        "billing-modal": {
+          "description": "Pick a plan that fits your needs.",
+          "title": "Choose your plan"
+        },
         "trial-ended": {
           "button": "Resume subscription",
           "description": "Trial ended on {{date}}.",
@@ -58,12 +61,9 @@
       "new-organization": "New organization",
       "organizations": "Organizations",
       "plan": {
-        "business_annual": "Business",
-        "business_monthly": "Business",
-        "hobby_annual": "Hobby",
-        "hobby_monthly": "Hobby",
-        "starter_annual": "Starter",
-        "starter_monthly": "Starter"
+        "high": "Business",
+        "low": "Hobby",
+        "mid": "Hobby"
       }
     }
   },

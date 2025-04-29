@@ -1,7 +1,11 @@
+import { OrganizationMembershipRole } from '@prisma/client';
 import { data, redirect } from 'react-router';
 import { safeRedirect } from 'remix-utils/safe-redirect';
 import { z } from 'zod';
 
+import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constants';
+import { extractBaseUrl } from '~/features/billing/billing-helpers.server';
+import { createStripeCheckoutSession } from '~/features/billing/stripe-helpers.server';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
@@ -19,7 +23,8 @@ import {
 } from '~/features/notifications/notifications-schemas';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { notFound } from '~/utils/http-responses.server';
+import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
+import { forbidden, notFound } from '~/utils/http-responses.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import {
@@ -29,7 +34,10 @@ import {
 import { switchSlugInRoute } from './layout-helpers.server';
 import { createCookieForOrganizationSwitcherSession } from './organization-switcher-session.server';
 import { SWITCH_ORGANIZATION_INTENT } from './sidebar-layout-constants';
-import { switchOrganizationSchema } from './sidebar-layout-schemas';
+import {
+  openCustomerCheckoutSessionSchema,
+  switchOrganizationSchema,
+} from './sidebar-layout-schemas';
 import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/+types/_sidebar-layout';
 
 const schema = z.discriminatedUnion('intent', [
@@ -37,6 +45,7 @@ const schema = z.discriminatedUnion('intent', [
   markOneAsReadSchema,
   notificationPanelOpenedSchema,
   switchOrganizationSchema,
+  openCustomerCheckoutSessionSchema,
 ]);
 
 export async function sidebarLayoutAction({
@@ -44,7 +53,7 @@ export async function sidebarLayoutAction({
   params,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, headers } =
+    const { user, organization, headers, role } =
       await requireUserIsMemberOfOrganization(request, params.organizationSlug);
     const body = await validateFormData(request, schema);
 
@@ -91,6 +100,27 @@ export async function sidebarLayoutAction({
           { userId: user.id, organizationId: organization.id },
         );
         return data({}, { headers });
+      }
+
+      case OPEN_CHECKOUT_SESSION_INTENT: {
+        if (role === OrganizationMembershipRole.member) {
+          return forbidden();
+        }
+
+        const baseUrl = extractBaseUrl(requestToUrl(request));
+
+        const customerPortalSession = await createStripeCheckoutSession({
+          baseUrl,
+          customerEmail: organization.billingEmail,
+          customerId: organization.stripeCustomerId,
+          organizationId: organization.id,
+          organizationSlug: organization.slug,
+          priceId: body.priceId,
+          purchasedById: user.id,
+          seatsUsed: organization._count.memberships,
+        });
+
+        return redirect(customerPortalSession.url!);
       }
     }
   } catch (error) {

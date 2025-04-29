@@ -13,6 +13,11 @@ import { addDays } from 'date-fns';
 import { slugify } from '~/utils/slugify.server';
 import type { Factory } from '~/utils/types';
 
+import { createSubscriptionWithItems } from '../billing/billing-factories.server';
+import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
+
+/* BASE */
+
 /**
  * Creates an organization with populated values.
  *
@@ -28,6 +33,7 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   imageUrl = faker.image.url(),
   billingEmail = faker.internet.email(),
   stripeCustomerId = `cus_${createId()}`,
+  trialEnd = addDays(createdAt, 14),
 } = {}) => ({
   id,
   name,
@@ -37,6 +43,7 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   imageUrl,
   billingEmail,
   stripeCustomerId,
+  trialEnd,
 });
 
 /**
@@ -138,4 +145,26 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
   role,
   expiresAt,
   deactivatedAt,
+});
+
+/* COMPOUND */
+
+/**
+ * Creates an organization with membership count and stripe subscriptions.
+ * This matches the shape needed for the OnboardingUser type's organization field.
+ *
+ * @param params - Parameters to create the organization with
+ * @param params.organization - Base organization object to extend
+ * @param params.memberCount - Number of members in the organization
+ * @param params.stripeSubscriptions - Array of stripe subscriptions for the organization
+ * @returns An organization with membership count and subscriptions
+ */
+export const createOrganizationWithMembershipsAndSubscriptions = ({
+  organization = createPopulatedOrganization(),
+  memberCount = faker.number.int({ min: 1, max: 10 }),
+  stripeSubscriptions = [createSubscriptionWithItems()],
+} = {}): OrganizationWithMembershipsAndSubscriptions => ({
+  ...organization,
+  _count: { memberships: memberCount },
+  stripeSubscriptions,
 });

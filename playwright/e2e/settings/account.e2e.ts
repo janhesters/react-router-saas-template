@@ -358,3 +358,13 @@ test.describe('account settings', () => {
 //  - important: if the user resubscribes, it needs to PREVENT them from using a trial.
 // - past_due (= invoice is not paid by the due date)
 // - canceled (= user canceled the subscription, or payment failed and subscription was auto cancelled)
+//   - subscription is cancelled, but still ongoing.
+//   - subscriptino is cancelled, and after the current period.
+
+// All Stripe helper functions have TSDoc.
+// Allow users to change their billing address, and name. (in stripe)
+
+// TODO: contact sales enterprise flow
+// TODO: UI tests for when trial ran out (e.g. side bar card has correct text,
+// etc.)
+// TODO: When updating the organization name, also update the Stripe customer.

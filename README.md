@@ -252,6 +252,23 @@ Forward webhooks to your local server:
 stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks
 ```
 
+### Configuration
+
+#### Checkout Session
+
+```
+StripeInvalidRequestError: You must have a valid origin address to enable automatic tax calculation in test mode.  Visit https://dashboard.stripe.com/test/settings/tax to update it.
+```
+
+#### Customer Portal
+
+```
+StripeInvalidRequestError: No configuration provided and your test mode default configuration has not been created. Provide a configuration or create your default by saving your customer portal settings in test mode at https://dashboard.stripe.com/test/settings/billing/portal.
+```
+
+
+
+
 ### Pricing
 
 This project comes with a specific pricing pre-configured:
@@ -259,6 +276,8 @@ This project comes with a specific pricing pre-configured:
 3 paid tiers, and one enterprise (custom) tier. All paid tiers have a free trial. The free trial is 14 days and always for the highest plan.
 
 If you need different pricing structures (e.g. freemium, one-time payments, etc.) you'll have to write that code yourself. But this template's structure makes it easy to customize the pricing page, the web hook handlers, etc.
+
+For each price, set the "Product tax code" to "SaaS" and the "Unit label" to "seat".
 
 #### Set Up The Dashboard
 
@@ -272,3 +291,8 @@ Some of the code of this starter template was taken from or inspired by the [Epi
 ## Built with ❤️ by [ReactSquad](https://reactsquad.io/)
 
 If you want to hire senior React developers to augment your team, or build your entire product from scratch, [schedule a call with us](https://www.reactsquad.io/schedule-a-call).
+
+
+---
+
+Why is good test coverage important for a template? Same reason why it's good for your own code base. You want to avoid accidentally breaking something when you update use the template and change and ammend its code.

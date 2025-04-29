@@ -1,6 +1,11 @@
 import invariant from 'tiny-invariant';
 
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
+import {
+  handleStripeCheckoutSessionCompletedEvent,
+  handleStripeCustomerSubscriptionCreatedEvent,
+  handleStripeCustomerSubscriptionUpdatedEvent,
+} from '~/features/billing/stripe-event-handlers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 
 import type { Route } from './+types/stripe.webhooks';
@@ -48,10 +53,18 @@ export async function action({ request }: Route.ActionArgs) {
     );
 
     switch (event.type) {
+      case 'checkout.session.completed': {
+        return handleStripeCheckoutSessionCompletedEvent(event);
+      }
+      case 'customer.subscription.created': {
+        return handleStripeCustomerSubscriptionCreatedEvent(event);
+      }
+      case 'customer.subscription.updated': {
+        return handleStripeCustomerSubscriptionUpdatedEvent(event);
+      }
       case 'customer.created':
       case 'setup_intent.created':
       case 'customer.updated':
-      case 'customer.subscription.created':
       case 'invoice.created':
       case 'invoice.finalized':
       case 'invoice.paid':
@@ -60,7 +73,11 @@ export async function action({ request }: Route.ActionArgs) {
       }
       default: {
         console.log('Stripe webhook unhandled event type:', event.type);
-        console.log('Stripe webhook payload:', JSON.stringify(payload));
+        console.log(
+          'Stripe webhook payload:',
+          // eslint-disable-next-line unicorn/no-null
+          JSON.stringify(payload, null, 2),
+        );
 
         return json({ message: `Unhandled event type: ${event.type}` });
       }

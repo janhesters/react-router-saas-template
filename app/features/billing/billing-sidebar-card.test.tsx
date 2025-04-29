@@ -14,7 +14,7 @@ const createProps: Factory<BillingSidebarCardProps> = ({
 } = {}) => ({ freeTrialIsActive, showButton, trialEndDate });
 
 describe('BillingSidebarCard component', () => {
-  test('given: free trial is active, should: show active trial message with end date', () => {
+  test('given: free trial is active, should: show active trial message with end date and correct button text', () => {
     const props = createProps({
       freeTrialIsActive: true,
       trialEndDate: new Date('2024-12-31'),
@@ -26,17 +26,22 @@ describe('BillingSidebarCard component', () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
+    // Title and date
     expect(screen.getByText(/business plan \(trial\)/i)).toBeInTheDocument();
     expect(
       screen.getByText(
         new RegExp(formatDate(props.trialEndDate, 'MMMM dd, yyyy'), 'i'),
       ),
     ).toBeInTheDocument();
-    const button = screen.getByRole('button');
+
+    // Button text for active trial
+    const button = screen.getByRole('button', {
+      name: /add payment information/i,
+    });
     expect(button).toBeInTheDocument();
   });
 
-  test('given: free trial has ended, should: show trial ended message with end date', () => {
+  test('given: free trial has ended, should: show trial ended message with end date and correct button text', () => {
     const props = createProps({
       freeTrialIsActive: false,
       trialEndDate: new Date('2024-12-31'),
@@ -48,13 +53,16 @@ describe('BillingSidebarCard component', () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
+    // Title and date
     expect(screen.getByText(/business plan \(trial\)/i)).toBeInTheDocument();
     expect(
       screen.getByText(
         new RegExp(formatDate(props.trialEndDate, 'MMMM dd, yyyy'), 'i'),
       ),
     ).toBeInTheDocument();
-    const button = screen.getByRole('button');
+
+    // Button text for ended trial
+    const button = screen.getByRole('button', { name: /resume subscription/i });
     expect(button).toBeInTheDocument();
   });
 

@@ -172,17 +172,15 @@ export function BillingModalContent({
                   <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
 
                   <TierCardPrice>
-                    {
-                      <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$17' }}
-                        components={{
-                          1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
-                          ),
-                        }}
-                      />
-                    }
+                    <Trans
+                      i18nKey="billing:pricing.price"
+                      values={{ price: '$17' }}
+                      components={{
+                        1: (
+                          <span className="text-muted-foreground text-sm font-normal" />
+                        ),
+                      }}
+                    />
                   </TierCardPrice>
 
                   <TierCardDescription>
@@ -320,17 +318,15 @@ export function BillingModalContent({
                   <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
 
                   <TierCardPrice>
-                    {
-                      <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$15' }}
-                        components={{
-                          1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
-                          ),
-                        }}
-                      />
-                    }
+                    <Trans
+                      i18nKey="billing:pricing.price"
+                      values={{ price: '$15' }}
+                      components={{
+                        1: (
+                          <span className="text-muted-foreground text-sm font-normal" />
+                        ),
+                      }}
+                    />
 
                     <OfferBadge>-10%</OfferBadge>
                   </TierCardPrice>

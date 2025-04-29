@@ -16,6 +16,7 @@ import { BillingPage } from './billing-page';
 const path = '/organizations/:organizationSlug/settings/billing';
 
 const createProps: Factory<BillingPageProps> = ({
+  billingEmail = faker.internet.email(),
   cancelAtPeriodEnd = false,
   currentMonthlyRatePerUser = faker.number.int({ min: 5, max: 50 }),
   currentPeriodEnd = faker.date.future(),
@@ -34,6 +35,7 @@ const createProps: Factory<BillingPageProps> = ({
   projectedTotal = currentMonthlyRatePerUser * maxSeats,
   subscriptionStatus = 'active',
 } = {}) => ({
+  billingEmail,
   cancelAtPeriodEnd,
   currentMonthlyRatePerUser,
   currentPeriodEnd,
@@ -373,6 +375,35 @@ describe('BillingPage component', () => {
     expect(
       screen.getByRole('heading', { name: /manage plan/i, level: 2 }),
     ).toBeInTheDocument();
+  });
+
+  test('given: a billing email, should: show it in the billing email field', () => {
+    const props = createProps();
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <BillingPage {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    expect(
+      screen.getByRole('heading', { name: /payment information/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/billing email/i)).toBeInTheDocument();
+    expect(screen.getByText(props.billingEmail)).toBeInTheDocument();
+  });
+
+  test('given: no billing email, should: not show the billing email field', () => {
+    const props = createProps({ billingEmail: '' });
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <BillingPage {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    expect(
+      screen.queryByRole('heading', { name: /payment information/i }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/billing email/i)).not.toBeInTheDocument();
   });
 
   test.todo(

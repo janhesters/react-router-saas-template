@@ -8,13 +8,24 @@ import type {
 
 import type { Factory } from '~/utils/types';
 
-import type { PriceLookupKey } from './billing-constants';
-import { pricesByLookupKey } from './billing-constants';
+import type { PriceLookupKey, Tier } from './billing-constants';
+import { lookupKeys, pricesByTierAndInterval } from './billing-constants';
 
-export const getRandomLookupKey = () =>
-  faker.helpers.arrayElement(
-    Object.keys(pricesByLookupKey) as PriceLookupKey[],
+export const getRandomLookupKey = () => faker.helpers.arrayElement(lookupKeys);
+export const getRandomTier = (): Tier =>
+  faker.helpers.arrayElement(['low', 'mid', 'high']);
+
+export function getStripeIdByLookupKey(lookupKey: PriceLookupKey): string {
+  const entry = Object.values(pricesByTierAndInterval).find(
+    price => price.lookupKey === lookupKey,
   );
+
+  if (!entry) {
+    throw new Error(`Unknown lookupKey "${lookupKey}"`);
+  }
+
+  return entry.id;
+}
 
 /* Base factories */
 
@@ -26,7 +37,7 @@ export const getRandomLookupKey = () =>
  */
 export const createPopulatedStripePrice: Factory<StripePrice> = ({
   lookupKey = getRandomLookupKey(),
-  stripeId = pricesByLookupKey[lookupKey as PriceLookupKey].id,
+  stripeId = getStripeIdByLookupKey(lookupKey as PriceLookupKey),
   currency = 'usd',
   unitAmount = faker.number.int({ min: 500, max: 50_000 }),
   metadata = {},
@@ -72,7 +83,6 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
   purchasedById = createId(),
   created = faker.date.past({ years: 1 }),
   cancelAtPeriodEnd = false,
-  trialEnd = faker.date.future({ years: 0.038, refDate: created }), // ~14 days in years
   status = 'active',
 } = {}) => ({
   stripeId,
@@ -80,7 +90,6 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
   purchasedById,
   created,
   cancelAtPeriodEnd,
-  trialEnd,
   status,
 });
 

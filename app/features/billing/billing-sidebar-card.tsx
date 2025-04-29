@@ -1,7 +1,6 @@
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { formatDate } from 'date-fns';
-import { Loader2Icon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Form, useNavigation } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import {
@@ -11,9 +10,17 @@ import {
   CardHeader,
   CardTitle,
 } from '~/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '~/components/ui/dialog';
 import { cn } from '~/lib/utils';
 
-import { OPEN_CUSTOMER_PORTAL_INTENT } from './billing-constants';
+import { NoCurrentPlanModalContent } from './no-current-plan-modal-content';
 
 export type BillingSidebarCardProps = {
   className?: string;
@@ -23,25 +30,22 @@ export type BillingSidebarCardProps = {
 };
 
 export function BillingSidebarCard({
+  className,
   freeTrialIsActive,
   showButton,
   trialEndDate,
-  ...props
 }: BillingSidebarCardProps) {
   const { t } = useTranslation('organizations', {
     keyPrefix: 'layout.app-sidebar.billing-sidebar-card',
   });
 
-  const navigation = useNavigation();
-  const isSubmitting =
-    navigation.formData?.get('intent') === OPEN_CUSTOMER_PORTAL_INTENT;
-
   return (
-    <Form method="post" replace {...props}>
+    <Dialog>
       <Card
         className={cn(
           'gap-4 py-4 shadow-none',
           'from-primary/5 to-card bg-gradient-to-t',
+          className,
         )}
       >
         <CardHeader className="px-4">
@@ -64,29 +68,35 @@ export function BillingSidebarCard({
 
         {showButton && (
           <CardContent className="px-4">
-            <Button
-              className="w-full shadow-none"
-              disabled={isSubmitting}
-              name="intent"
-              variant="outline"
-              size="sm"
-              type="submit"
-              value={OPEN_CUSTOMER_PORTAL_INTENT}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2Icon className="animate-spin" />
-                  {t('loading')}
-                </>
-              ) : freeTrialIsActive ? (
-                t('active-trial.button')
-              ) : (
-                t('trial-ended.button')
-              )}
-            </Button>
+            <DialogTrigger asChild>
+              <Button
+                className="w-full shadow-none"
+                variant="outline"
+                size="sm"
+                type="button"
+              >
+                {freeTrialIsActive
+                  ? t('active-trial.button')
+                  : t('trial-ended.button')}
+              </Button>
+            </DialogTrigger>
           </CardContent>
         )}
       </Card>
-    </Form>
+
+      <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+        <DialogHeader>
+          <DialogTitle>{t('billing-modal.title')}</DialogTitle>
+
+          <VisuallyHidden>
+            <DialogDescription>
+              {t('billing-modal.description')}
+            </DialogDescription>
+          </VisuallyHidden>
+        </DialogHeader>
+
+        <NoCurrentPlanModalContent />
+      </DialogContent>
+    </Dialog>
   );
 }

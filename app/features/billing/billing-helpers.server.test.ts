@@ -4,12 +4,20 @@ import { describe, expect, test } from 'vitest';
 import type { Factory } from '~/utils/types';
 
 import {
+  createOrganizationWithMembershipsAndSubscriptions,
+  createPopulatedOrganization,
+} from '../organizations/organizations-factories.server';
+import { pricesByTierAndInterval } from './billing-constants';
+import {
   createPopulatedStripePrice,
   createPopulatedStripeSubscription,
   createPopulatedStripeSubscriptionItem,
 } from './billing-factories.server';
 import type { StripeSubscriptionData } from './billing-helpers.server';
-import { mapStripeSubscriptionDataToBillingPageProps } from './billing-helpers.server';
+import {
+  extractBaseUrl,
+  mapStripeSubscriptionDataToBillingPageProps,
+} from './billing-helpers.server';
 import type { BillingPageProps } from './billing-page';
 
 type ItemOverride = Partial<StripeSubscriptionItem> & {
@@ -50,20 +58,19 @@ export const createStripeSubscriptionData: Factory<StripeSubscriptionData> = (
 };
 
 describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
-  test('given an active paid monthly plan, returns correct billing props', () => {
+  test('given: an active paid monthly plan, should: return correct billing props', () => {
     const now = new Date('2025-06-01T00:00:00.000Z');
     const subscription = createStripeSubscriptionData({
       organizationId: 'org-123',
       cancelAtPeriodEnd: false,
       status: 'active',
-      trialEnd: new Date('2025-05-01T00:00:00.000Z'),
       items: [
         {
           // top-level price override
           price: createPopulatedStripePrice({
             lookupKey: 'startup_monthly',
             unitAmount: 2000,
-            metadata: { max_seats: 3 },
+            metadata: { max_seats: 10 },
           }),
           // spread in a base subscription item for dates & IDs
           ...createPopulatedStripeSubscriptionItem({
@@ -73,40 +80,45 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
         },
       ],
     });
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      stripeSubscriptions: [subscription],
+      memberCount: 4,
+    });
 
     const actual = mapStripeSubscriptionDataToBillingPageProps({
-      subscription,
+      organization,
       now,
     });
-    const expected: Omit<BillingPageProps, 'organizationSlug'> = {
+    const expected: BillingPageProps = {
+      billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
       currentMonthlyRatePerUser: 20,
       currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
-      currentSeats: 3,
+      currentSeats: 4,
       currentTierName: 'Startup',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
-      maxSeats: 3,
-      projectedTotal: 60,
+      maxSeats: 10,
+      organizationSlug: organization.slug,
+      projectedTotal: 80,
       subscriptionStatus: 'active',
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given a subscription cancelled at period end, marks status “paused”', () => {
+  test('given: a subscription cancelled at period end, should: mark status “paused”', () => {
     const now = new Date('2025-06-10T00:00:00.000Z');
     const subscription = createStripeSubscriptionData({
       organizationId: 'org-456',
       cancelAtPeriodEnd: true,
       status: 'active',
-      trialEnd: new Date('2025-01-01T00:00:00.000Z'),
       items: [
         {
           price: createPopulatedStripePrice({
-            lookupKey: 'business_monthly',
+            lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
             unitAmount: 5000,
-            metadata: { max_seats: 5 },
+            metadata: { max_seats: 25 },
           }),
           ...createPopulatedStripeSubscriptionItem({
             currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
@@ -115,67 +127,73 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
         },
       ],
     });
-
-    const actual = mapStripeSubscriptionDataToBillingPageProps({
-      subscription,
-      now,
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      stripeSubscriptions: [subscription],
+      memberCount: 8,
     });
 
-    const expected: Omit<BillingPageProps, 'organizationSlug'> = {
+    const actual = mapStripeSubscriptionDataToBillingPageProps({
+      organization,
+      now,
+    });
+    const expected: BillingPageProps = {
+      billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: true,
       currentMonthlyRatePerUser: 50,
       currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
-      currentSeats: 5,
+      currentSeats: 8,
       currentTierName: 'Business',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
-      maxSeats: 5,
-      projectedTotal: 250,
+      maxSeats: 25,
+      organizationSlug: organization.slug,
+      projectedTotal: 400,
       subscriptionStatus: 'paused',
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given a subscription still in free trial, flags isOnFreeTrial true', () => {
+  test('given: a subscription still in free trial, should: flag isOnFreeTrial true', () => {
     const now = new Date('2025-01-10T00:00:00.000Z');
-    const subscription = createStripeSubscriptionData({
-      organizationId: 'org-789',
-      cancelAtPeriodEnd: false,
-      status: 'trialing',
-      trialEnd: new Date('2025-01-15T00:00:00.000Z'),
-      items: [
-        {
-          price: createPopulatedStripePrice({
-            lookupKey: 'hobby_monthly',
-            unitAmount: 1000,
-            metadata: { max_seats: 1 },
-          }),
-          ...createPopulatedStripeSubscriptionItem({
-            currentPeriodStart: new Date('2025-01-01T00:00:00.000Z'),
-            currentPeriodEnd: new Date('2025-01-31T00:00:00.000Z'),
-          }),
-        },
-      ],
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      organization: createPopulatedOrganization({
+        createdAt: new Date('2024-12-29T00:00:00.000Z'),
+      }),
+      memberCount: 2,
+      stripeSubscriptions: [],
     });
 
     const actual = mapStripeSubscriptionDataToBillingPageProps({
-      subscription,
+      organization,
       now,
     });
 
-    const expected: Omit<BillingPageProps, 'organizationSlug'> = {
+    const expected: BillingPageProps = {
+      billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
-      currentMonthlyRatePerUser: 10,
-      currentPeriodEnd: new Date('2025-01-31T00:00:00.000Z'),
-      currentSeats: 1,
-      currentTierName: 'Hobby',
+      currentMonthlyRatePerUser: 85,
+      currentPeriodEnd: organization.trialEnd,
+      currentSeats: 2,
+      currentTierName: 'Business (Trial)',
       isEnterprisePlan: false,
       isOnFreeTrial: true,
-      maxSeats: 1,
-      projectedTotal: 10,
+      maxSeats: 25,
+      organizationSlug: organization.slug,
+      projectedTotal: 170,
       subscriptionStatus: 'active',
     };
+
+    expect(actual).toEqual(expected);
+  });
+});
+
+describe('extractBaseUrl()', () => {
+  test('given: a request URL, should: return the base URL', () => {
+    const url = new URL('https://example.com/some/path?query=param');
+
+    const actual = extractBaseUrl(url);
+    const expected = 'http://example.com';
 
     expect(actual).toEqual(expected);
   });

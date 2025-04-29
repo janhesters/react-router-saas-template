@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-null */
+import { faker } from '@faker-js/faker';
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import type Stripe from 'stripe';
@@ -92,6 +93,7 @@ export const createOnboardingUser = (
       deactivatedAt: null,
       organization: {
         ...organization,
+        _count: { memberships: faker.number.int({ min: 1, max: 10 }) },
         // Each org gets at least one subscription with items
         stripeSubscriptions: [
           createSubscriptionWithItems({ organizationId: organization.id }),

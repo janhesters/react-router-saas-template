@@ -1,3 +1,4 @@
+export const OPEN_CHECKOUT_SESSION_INTENT = 'openCheckoutSession';
 export const OPEN_CUSTOMER_PORTAL_INTENT = 'openCustomerPortal';
 export const CANCEL_SUBSCRIPTION_INTENT = 'cancelSubscription';
 
@@ -15,32 +16,39 @@ export const CANCEL_SUBSCRIPTION_INTENT = 'cancelSubscription';
  * - If you have separate Stripe environments (dev, staging, prod),
  *   ensure you set the correct IDs for each environment.
  */
-
-export const pricesByLookupKey = {
-  hobby_monthly: {
-    id: 'price_1RGetVPti3AuUdaNtTABSlP3',
-    lookupKey: 'hobby_monthly',
+export const pricesByTierAndInterval = {
+  low_monthly: {
+    id: 'price_1RJetbPti3AuUdaNOPzymzNN',
+    lookupKey: 'hobby_monthly_new',
   },
-  hobby_annual: {
-    id: 'price_1RGetVPti3AuUdaN3GlBQBY6',
-    lookupKey: 'hobby_annual',
+  low_annual: {
+    id: 'price_1RJevnPti3AuUdaNPCCAIEYE',
+    lookupKey: 'hobby_monthly_new_two',
   },
-  startup_monthly: {
+  mid_monthly: {
     id: 'price_1RGetVPti3AuUdaN4RCP21pJ',
     lookupKey: 'startup_monthly',
   },
-  startup_annual: {
+  mid_annual: {
     id: 'price_1RGetVPti3AuUdaNzCYSZMi7',
     lookupKey: 'startup_annual',
   },
-  business_monthly: {
-    id: 'price_1RGetVPti3AuUdaN7MPTxiEe',
-    lookupKey: 'business_monthly',
+  high_monthly: {
+    id: 'price_1RKJ8SPti3AuUdaNYJwZeeyX',
+    lookupKey: 'business_monthly_new',
   },
-  business_annual: {
-    id: 'price_1RGetVPti3AuUdaNTfflLuNP',
-    lookupKey: 'business_annual',
+  high_annual: {
+    id: 'price_1RKJ8SPti3AuUdaNWQziByvX',
+    lookupKey: 'business_annual_new',
   },
 } as const;
 
-export type PriceLookupKey = keyof typeof pricesByLookupKey;
+type PriceKey = keyof typeof pricesByTierAndInterval;
+export type PriceLookupKey =
+  (typeof pricesByTierAndInterval)[PriceKey]['lookupKey'];
+export type Tier = PriceKey extends `${infer T}_${string}` ? T : never;
+export type Interval = PriceKey extends `${string}_${infer I}` ? I : never;
+
+export const lookupKeys: readonly PriceLookupKey[] = Object.values(
+  pricesByTierAndInterval,
+).map(({ lookupKey }) => lookupKey);

@@ -35,10 +35,13 @@ export async function saveOrganizationWithOwnerToDatabase({
   organization,
   userId,
 }: {
-  organization: Prisma.OrganizationCreateInput;
+  organization: Omit<Prisma.OrganizationCreateInput, 'trialEnd'> & {
+    trialEnd?: Date;
+  };
   userId: UserAccount['id'];
 }) {
   return prisma.organization.create({
+    // @ts-expect-error - trialEnd will be set in the Prisma middleware.
     data: {
       ...organization,
       memberships: {
@@ -130,6 +133,23 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
 /* UPDATE */
 
 /**
+ * Updates an organization by its id.
+ *
+ * @param id - The id of the organization to update.
+ * @param organization - The new data for the organization.
+ * @returns The updated organization.
+ */
+export async function updateOrganizationInDatabaseById({
+  id,
+  organization,
+}: {
+  id: Organization['id'];
+  organization: Omit<Prisma.OrganizationUpdateInput, 'id'>;
+}) {
+  return prisma.organization.update({ where: { id }, data: organization });
+}
+
+/**
  * Updates an organization by its slug.
  *
  * @param slug - The slug of the organization to update.
@@ -214,9 +234,6 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
             purchasedById,
             created: new Date(stripeSubscription.created * 1000),
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            trialEnd: stripeSubscription.trial_end
-              ? new Date(stripeSubscription.trial_end * 1000)
-              : undefined,
             status: stripeSubscription.status,
             items: {
               create: stripeSubscription.items.data.map(item => ({
@@ -243,9 +260,6 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
             purchasedById,
             created: new Date(stripeSubscription.created * 1000),
             cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            trialEnd: stripeSubscription.trial_end
-              ? new Date(stripeSubscription.trial_end * 1000)
-              : undefined,
             status: stripeSubscription.status,
             items: {
               deleteMany: {}, // Delete existing items first (to prevent duplicates)

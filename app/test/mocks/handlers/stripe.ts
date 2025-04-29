@@ -1,13 +1,67 @@
 // src/mocks/stripe-mocks.ts
-import { createId } from '@paralleldrive/cuid2';
 import { http, HttpResponse } from 'msw';
+import type Stripe from 'stripe';
 
 import {
+  createStripeCheckoutSession,
   createStripeCustomer as createStripeCustomerFactory,
+  createStripeCustomerPortalSession,
   createStripePrice as createStripePriceFactory,
   createStripeSubscription as createStripeSubscriptionFactory,
   createStripeSubscriptionItem as createStripeSubscriptionItemFactory,
 } from '~/features/billing/stripe-factories.server';
+
+const createCheckoutSessionMock = http.post(
+  'https://api.stripe.com/v1/checkout/sessions',
+  async ({ request }) => {
+    const body = await request.text();
+    const params = new URLSearchParams(body);
+
+    // Top-level params
+    const customer = params.get('customer') ?? undefined;
+    const mode =
+      (params.get('mode') as Stripe.Checkout.Session.Mode) ?? undefined;
+    const success_url = params.get('success_url') ?? undefined;
+    const cancel_url = params.get('cancel_url') ?? undefined;
+
+    // extract metadata[...] entries
+    const metadata: Record<string, string> = {};
+    for (const [key, value] of params.entries()) {
+      const m = /^metadata\[(.+)]$/.exec(key);
+      if (m) metadata[m[1]] = value;
+    }
+
+    // parse line_items[0][price] & line_items[0][quantity], etc.
+    const itemsMap: Record<number, { price?: string; quantity?: number }> = {};
+    for (const [key, value] of params.entries()) {
+      const m = /^line_items\[(\d+)]\[(price|quantity)]$/.exec(key);
+      if (m) {
+        const index = Number(m[1]);
+        itemsMap[index] = itemsMap[index] || {};
+        if (m[2] === 'price') itemsMap[index].price = value;
+        else itemsMap[index].quantity = Number(value);
+      }
+    }
+    const line_items = Object.values(itemsMap).map(it => ({
+      price: it.price!,
+      quantity: it.quantity!,
+    }));
+
+    const session = createStripeCheckoutSession({
+      customer,
+      mode,
+      success_url,
+      cancel_url,
+      metadata,
+      // @ts-expect-error - TODO: fix this
+      line_items,
+      // if your tests inspect the items list, you can override:
+      // line_items: { object: 'list', data: line_items, has_more: false, url: '/v1/checkout/sessions/…' }
+    });
+
+    return HttpResponse.json(session);
+  },
+);
 
 const createBillingPortalSessionMock = http.post(
   'https://api.stripe.com/v1/billing_portal/sessions',
@@ -17,14 +71,10 @@ const createBillingPortalSessionMock = http.post(
     const customer = params.get('customer')!;
     const return_url = params.get('return_url')!;
 
-    const sessionId = `bps_${createId()}`;
-    const session = {
-      id: sessionId,
-      object: 'billing_portal.session',
+    const session = createStripeCustomerPortalSession({
       customer,
       return_url,
-      url: `https://billing.stripe.test/${sessionId}`,
-    };
+    });
 
     return HttpResponse.json(session);
   },
@@ -111,6 +161,7 @@ const createSubscriptionMock = http.post(
 
 export const stripeHandlers = [
   createBillingPortalSessionMock,
+  createCheckoutSessionMock,
   createCustomerMock,
   createSubscriptionMock,
 ];

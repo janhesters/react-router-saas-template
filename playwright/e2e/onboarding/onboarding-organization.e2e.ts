@@ -135,7 +135,6 @@ test.describe('onboarding organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
       expect(createdOrganization!.memberships[0].role).toEqual(
@@ -198,7 +197,6 @@ test.describe('onboarding organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
       expect(createdOrganization!.memberships[0].role).toEqual(

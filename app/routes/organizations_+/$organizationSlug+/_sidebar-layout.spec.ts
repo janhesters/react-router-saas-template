@@ -1,7 +1,12 @@
-import type { Organization, UserAccount } from '@prisma/client';
+import {
+  type Organization,
+  OrganizationMembershipRole,
+  type UserAccount,
+} from '@prisma/client';
 import { data, href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
+import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constants';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
@@ -22,12 +27,13 @@ import {
   addMembersToOrganizationInDatabaseById,
   saveOrganizationToDatabase,
 } from '~/features/organizations/organizations-model.server';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
 import type { DataWithResponseInit } from '~/utils/http-responses.server';
-import { badRequest, notFound } from '~/utils/http-responses.server';
+import { badRequest, forbidden, notFound } from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
 
 import { action } from './_sidebar-layout';
@@ -54,7 +60,7 @@ async function sendAuthenticatedRequest({
   return await action({ request, context: {}, params: { organizationSlug } });
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 /**
  * Seed `count` notifications (each with one recipient) into the test database
@@ -248,7 +254,7 @@ describe('/organizations/:organizationSlug route action', () => {
         errors: {
           intent: {
             message:
-              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization'",
+              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
           },
         },
       });
@@ -277,7 +283,7 @@ describe('/organizations/:organizationSlug route action', () => {
         errors: {
           intent: {
             message:
-              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization'",
+              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
           },
         },
       });
@@ -472,5 +478,47 @@ describe('/organizations/:organizationSlug route action', () => {
         });
       expect(panelAfter?.lastOpenedAt).not.toEqual(panelBefore?.lastOpenedAt);
     });
+  });
+
+  describe(`${OPEN_CHECKOUT_SESSION_INTENT} intent`, () => {
+    const intent = OPEN_CHECKOUT_SESSION_INTENT;
+
+    test('given: a valid request from a member, should: return a 403', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.member,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent, priceId: 'price_123' }),
+      })) as DataWithResponseInit<object>;
+      const expected = forbidden();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
+      async role => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+        });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({ intent, priceId: 'price_123' }),
+        })) as Response;
+
+        expect(response.status).toEqual(302);
+        expect(response.headers.get('Location')).toMatch(
+          /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
+        );
+      },
+    );
   });
 });

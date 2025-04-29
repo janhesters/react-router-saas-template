@@ -130,7 +130,6 @@ test.describe('new organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member).toEqual(user);
       expect(createdOrganization!.memberships[0].role).toEqual(
@@ -202,7 +201,6 @@ test.describe('new organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member).toEqual(user);
       expect(createdOrganization!.memberships[0].role).toEqual(
@@ -258,7 +256,6 @@ test.describe('new organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member).toEqual(user);
       expect(createdOrganization!.memberships[0].role).toEqual(
@@ -319,7 +316,6 @@ test.describe('new organization page', () => {
       expect(createdOrganization).toMatchObject({
         name: newName,
         slug: newSlug,
-        billingEmail: user.email,
       });
       expect(createdOrganization!.memberships[0].member).toEqual(user);
       expect(createdOrganization!.memberships[0].role).toEqual(

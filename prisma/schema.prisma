@@ -36,6 +36,8 @@ model Organization {
   imageUrl                    String                        @default("")
   billingEmail                String                        @default("")
   stripeCustomerId            String?
+  /// We set this to 14 days from now by default in the Prisma middleware.
+  trialEnd                    DateTime
   memberships                 OrganizationMembership[]
   organizationInviteLinks     OrganizationInviteLink[]
   organizationEmailInviteLink OrganizationEmailInviteLink[]
@@ -156,14 +158,15 @@ enum StripeSubscriptionStatus {
 }
 
 model StripeSubscription {
-  /// One‐to‐many with Organization
-  organization      Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  organizationId    String                   @unique
-  /// Who purchased it
-  purchasedBy       UserAccount?             @relation(fields: [purchasedById], references: [id], onDelete: SetNull)
-  purchasedById     String?
   /// The Stripe subscription's real ID
-  stripeId          String                   @id
+  stripeId       String       @id
+  /// One‐to‐many with Organization
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @unique
+  /// Who purchased it
+  purchasedBy    UserAccount? @relation(fields: [purchasedById], references: [id], onDelete: SetNull)
+  purchasedById  String?
+
   /// Time at which the object was created. Stripe measures it in in seconds
   /// since the Unix epoch, but we convert it to a Date.
   created           DateTime
@@ -172,9 +175,6 @@ model StripeSubscription {
   /// this attribute to determine whether a subscription that has a status of
   /// active is scheduled to be canceled at the end of the current period.
   cancelAtPeriodEnd Boolean
-  /// If the subscription has a trial, the end of that trial. At the end of
-  /// this period, a new invoice will be created.
-  trialEnd          DateTime?
   /// List of subscription items, each with an attached price.
   items             StripeSubscriptionItem[]
   /// Possible values are incomplete, incomplete_expired, trialing, active,

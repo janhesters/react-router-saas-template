@@ -98,13 +98,28 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
         select: {
           organization: {
             select: {
+              _count: {
+                select: {
+                  memberships: {
+                    where: {
+                      OR: [
+                        { deactivatedAt: null },
+                        { deactivatedAt: { gt: new Date() } },
+                      ],
+                    },
+                  },
+                },
+              },
+              billingEmail: true,
               id: true,
+              imageUrl: true,
               name: true,
               slug: true,
-              imageUrl: true,
+              stripeCustomerId: true,
               stripeSubscriptions: {
                 include: { items: { include: { price: true } } },
               },
+              trialEnd: true,
             },
           },
           role: true,

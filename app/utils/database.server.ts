@@ -48,9 +48,31 @@ const slugExtension = Prisma.defineExtension({
   },
 });
 
+const trialEndExtension = Prisma.defineExtension({
+  name: 'trialEndExtension',
+  query: {
+    organization: {
+      async create({ args, query }) {
+        const { data } = args;
+        // only set it if the user/code didn’t explicitly pass trialEnd
+        if (!('trialEnd' in data)) {
+          const twoWeeksFromNow = new Date(
+            Date.now() + 14 * 24 * 60 * 60 * 1000,
+          );
+          // @ts-expect-error - trialEnd is a field on the organization model
+          data.trialEnd = twoWeeksFromNow;
+        }
+        return query(args);
+      },
+    },
+  },
+});
+
 // Create a dummy extended client to infer the correct type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const dummyClient = new PrismaClient().$extends(slugExtension);
+const dummyClient = new PrismaClient()
+  .$extends(slugExtension)
+  .$extends(trialEndExtension);
 type ExtendedPrismaClient = typeof dummyClient;
 
 // Use the extended type for the prisma variable.
@@ -71,10 +93,14 @@ const reservedSlugs = new Set([
 // create a new connection to the DB with every change either.
 // In production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === 'production') {
-  prisma = new PrismaClient().$extends(slugExtension);
+  prisma = new PrismaClient()
+    .$extends(slugExtension)
+    .$extends(trialEndExtension);
 } else {
   if (!globalThis.__database__) {
-    globalThis.__database__ = new PrismaClient().$extends(slugExtension);
+    globalThis.__database__ = new PrismaClient()
+      .$extends(slugExtension)
+      .$extends(trialEndExtension);
   }
   prisma = globalThis.__database__;
   void prisma.$connect();

@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '~/components/ui/sidebar';
+import type { Tier } from '~/features/billing/billing-constants';
 
 import { SWITCH_ORGANIZATION_INTENT } from './sidebar-layout-constants';
 
@@ -26,7 +27,7 @@ type OrganizationSwitcherOrganization = {
   name: Organization['name'];
   logo: Organization['imageUrl'];
   slug: Organization['slug'];
-  plan: string;
+  tier: Tier;
 };
 
 export type OrganizationSwitcherProps = {
@@ -77,7 +78,7 @@ export function OrganizationSwitcher({
                 </span>
 
                 <span className="truncate text-xs">
-                  {t(`plan.${currentOrganization.plan}`, {
+                  {t(`plan.${currentOrganization.tier}`, {
                     defaultValue: 'Enterprise',
                   })}
                 </span>

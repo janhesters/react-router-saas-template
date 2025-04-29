@@ -4,7 +4,7 @@ import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-orga
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   deleteOrganizationFromDatabaseById,
-  retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug,
+  retrieveOrganizationWithMembershipsFromDatabaseBySlug,
   saveOrganizationToDatabase,
 } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
@@ -98,20 +98,14 @@ describe('/organizations/new route action', () => {
 
       // Verify organization was created with correct data
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(createdOrganization).toMatchObject({
         name: organization.name,
-        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships[0].member.id).toEqual(
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
-      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
-        'trialing',
-      );
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
     });
@@ -146,16 +140,13 @@ describe('/organizations/new route action', () => {
       // Extract slug from redirect URL and verify organization
       const slug = locationHeader!.split('/').pop()!;
       const secondOrg =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(secondOrg).toBeTruthy();
       expect(secondOrg!.name).toEqual(firstOrg.name);
       expect(secondOrg!.slug).not.toEqual(firstOrg.slug);
       expect(secondOrg!.memberships).toHaveLength(1);
       expect(secondOrg!.memberships[0].member.id).toEqual(userAccount.id);
       expect(secondOrg!.memberships[0].role).toEqual('owner');
-      expect(secondOrg!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
     });
@@ -180,16 +171,13 @@ describe('/organizations/new route action', () => {
       // Extract slug from redirect URL and verify organization.
       const slug = locationHeader!.split('/').pop()!;
       const organization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(organization).toBeTruthy();
       expect(organization!.name).toEqual('New');
       expect(organization!.slug).not.toEqual('new');
       expect(organization!.memberships).toHaveLength(1);
       expect(organization!.memberships[0].member.id).toEqual(userAccount.id);
       expect(organization!.memberships[0].role).toEqual('owner');
-      expect(organization!.stripeSubscriptions[0].status).toEqual('trialing');
 
       await deleteOrganizationFromDatabaseById(organization!.id);
     });
@@ -219,9 +207,7 @@ describe('/organizations/new route action', () => {
 
       // Verify organization was created with correct data including logo
       const createdOrganization =
-        await retrieveOrganizationWithMembershipsAndSubscriptionsFromDatabaseBySlug(
-          slug,
-        );
+        await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
@@ -229,16 +215,12 @@ describe('/organizations/new route action', () => {
         name: organization.name,
         slug: slug,
         imageUrl: organization.imageUrl, // Verify the logo URL was saved
-        billingEmail: userAccount.email,
       });
       expect(createdOrganization!.memberships).toHaveLength(1);
       expect(createdOrganization!.memberships[0].member.id).toEqual(
         userAccount.id,
       );
       expect(createdOrganization!.memberships[0].role).toEqual('owner');
-      expect(createdOrganization!.stripeSubscriptions[0].status).toEqual(
-        'trialing',
-      );
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);

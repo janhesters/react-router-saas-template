@@ -26,6 +26,11 @@
     "opening-customer-portal": "Opening customer portal ...",
     "page-description": "Manage your billing information.",
     "page-title": "Billing",
+    "payment-information": {
+      "billing-email": "Billing Email",
+      "edit-button": "Edit",
+      "heading": "Payment Information"
+    },
     "plan-information": {
       "amount-format": "${{amount}}",
       "current-plan": "Current Plan",
@@ -105,6 +110,12 @@
     "work-email-placeholder": "name@company.com",
     "work-email-required": "Please enter your work email (required).",
     "work-email-too-long": "Your work email must not exceed 255 characters."
+  },
+  "no-current-plan-modal": {
+    "annual": "Annual",
+    "monthly": "Monthly",
+    "tier-card-busy": "Subscribing ...",
+    "tier-card-cta": "Subscribe Now"
   },
   "pricing": {
     "annual": "Annual",

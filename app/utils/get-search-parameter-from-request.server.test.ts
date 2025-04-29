@@ -1,6 +1,20 @@
 import { describe, expect, test } from 'vitest';
 
-import { getSearchParameterFromRequest } from './get-search-parameter-from-request.server';
+import {
+  getSearchParameterFromRequest,
+  requestToUrl,
+} from './get-search-parameter-from-request.server';
+
+describe('requestToUrl()', () => {
+  test('given: a request with a url, should: return a URL object for it', () => {
+    const url = 'https://www.mozilla.org/favicon.ico';
+
+    const actual = requestToUrl(new Request(url));
+    const expected = new URL(url);
+
+    expect(actual).toEqual(expected);
+  });
+});
 
 describe('getSearchParameterFromRequest()', () => {
   test('given: a request and a search parameter that is in the request url, should: return the value of the search parameter', () => {

@@ -2,6 +2,7 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import { href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
+import { pricesByTierAndInterval } from '~/features/billing/billing-constants';
 import { createSubscriptionWithPrice } from '~/features/billing/billing-factories.server';
 import { createOnboardingUser } from '~/test/test-utils';
 
@@ -63,7 +64,86 @@ describe('getSidebarState', () => {
 });
 
 describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
-  test('given: onboarding user with organizations, should: map to organization layout props', () => {
+  test('given: onboarding user with organizations where the current organization has no subscription, should: map to organization layout props', () => {
+    const user = createOnboardingUser({
+      name: 'John Doe',
+      email: 'john@example.com',
+      imageUrl: 'https://example.com/avatar.jpg',
+      memberships: [
+        {
+          role: 'member',
+          organization: {
+            id: 'org1',
+            name: 'Organization 1',
+            imageUrl: 'https://example.com/org1.jpg',
+            slug: 'org-1',
+            stripeSubscriptions: [],
+          },
+          deactivatedAt: null,
+        },
+        {
+          role: 'member',
+          organization: {
+            id: 'org2',
+            name: 'Organization 2',
+            imageUrl: 'https://example.com/org2.jpg',
+            slug: 'org-2',
+            stripeSubscriptions: [
+              createSubscriptionWithPrice({
+                lookupKey: pricesByTierAndInterval.low_annual.lookupKey,
+              }),
+            ],
+          },
+          deactivatedAt: null,
+        },
+      ],
+    });
+
+    const organizationSlug = 'org-1';
+
+    const actual = mapOnboardingUserToOrganizationLayoutProps({
+      user,
+      organizationSlug,
+    });
+    const expected = {
+      organizationSwitcherProps: {
+        currentOrganization: {
+          id: 'org1',
+          name: 'Organization 1',
+          logo: 'https://example.com/org1.jpg',
+          slug: 'org-1',
+          tier: 'high',
+        },
+        organizations: [
+          {
+            id: 'org1',
+            name: 'Organization 1',
+            logo: 'https://example.com/org1.jpg',
+            slug: 'org-1',
+            tier: 'high',
+          },
+          {
+            id: 'org2',
+            name: 'Organization 2',
+            logo: 'https://example.com/org2.jpg',
+            slug: 'org-2',
+            tier: 'low',
+          },
+        ],
+      },
+      navUserProps: {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          avatar: 'https://example.com/avatar.jpg',
+        },
+      },
+    };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test('given: onboarding user with organizations where the current organization has a subscription, should: map to organization layout props', () => {
     const user = createOnboardingUser({
       name: 'John Doe',
       email: 'john@example.com',
@@ -77,7 +157,9 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             imageUrl: 'https://example.com/org1.jpg',
             slug: 'org-1',
             stripeSubscriptions: [
-              createSubscriptionWithPrice({ lookupKey: 'business_monthly' }),
+              createSubscriptionWithPrice({
+                lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
+              }),
             ],
           },
           deactivatedAt: null,
@@ -90,7 +172,9 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             imageUrl: 'https://example.com/org2.jpg',
             slug: 'org-2',
             stripeSubscriptions: [
-              createSubscriptionWithPrice({ lookupKey: 'hobby_annual' }),
+              createSubscriptionWithPrice({
+                lookupKey: pricesByTierAndInterval.low_monthly.lookupKey,
+              }),
             ],
           },
           deactivatedAt: null,
@@ -110,7 +194,7 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
           name: 'Organization 2',
           logo: 'https://example.com/org2.jpg',
           slug: 'org-2',
-          plan: 'hobby_annual',
+          tier: 'low',
         },
         organizations: [
           {
@@ -118,14 +202,14 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             name: 'Organization 1',
             logo: 'https://example.com/org1.jpg',
             slug: 'org-1',
-            plan: 'business_monthly',
+            tier: 'high',
           },
           {
             id: 'org2',
             name: 'Organization 2',
             logo: 'https://example.com/org2.jpg',
             slug: 'org-2',
-            plan: 'hobby_annual',
+            tier: 'low',
           },
         ],
       },
@@ -223,20 +307,15 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
 
   test('given: an onboarded member user with a free trial, should: show the billing sidebar card without the button', () => {
     const now = new Date();
-    const trialEnd = new Date(now.getTime() + 1000 * 60 * 60 * 24); // tomorrow
-    const subscription = createSubscriptionWithPrice({
-      status: 'trialing',
-      trialEnd,
+    const organization = createPopulatedOrganization({
+      // 1 day ago
+      createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
     });
-    const organization = createPopulatedOrganization();
     const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
-          organization: {
-            ...organization,
-            stripeSubscriptions: [subscription],
-          },
+          organization: { ...organization, stripeSubscriptions: [] },
           deactivatedAt: null,
         },
       ],
@@ -251,7 +330,7 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
       billingSidebarCardProps: {
         freeTrialIsActive: true,
         showButton: false,
-        trialEndDate: trialEnd,
+        trialEndDate: organization.trialEnd,
       },
     };
 
@@ -265,20 +344,15 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
     'given: an onboarded %s user with a free trial, should: show the billing sidebar card with the button',
     role => {
       const now = new Date();
-      const trialEnd = new Date(now.getTime() + 1000 * 60 * 60);
-      const subscription = createSubscriptionWithPrice({
-        status: 'trialing',
-        trialEnd,
+      const organization = createPopulatedOrganization({
+        // 1 day ago
+        createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
       });
-      const organization = createPopulatedOrganization();
       const user = createOnboardingUser({
         memberships: [
           {
             role,
-            organization: {
-              ...organization,
-              stripeSubscriptions: [subscription],
-            },
+            organization: { ...organization, stripeSubscriptions: [] },
             deactivatedAt: null,
           },
         ],
@@ -294,7 +368,7 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
         billingSidebarCardProps: {
           freeTrialIsActive: true,
           showButton: true,
-          trialEndDate: trialEnd,
+          trialEndDate: organization.trialEnd,
         },
       };
 
@@ -304,20 +378,15 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
 
   test('given: any onboarded user with a free trial that has run out, should: show the billing sidebar card with the correct content', () => {
     const now = new Date();
-    const trialEnd = new Date(now.getTime() - 1000 * 60 * 60); // yesterday
-    const subscription = createSubscriptionWithPrice({
-      status: 'trialing',
-      trialEnd,
+    const organization = createPopulatedOrganization({
+      // 30 days ago
+      createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30),
     });
-    const organization = createPopulatedOrganization();
     const user = createOnboardingUser({
       memberships: [
         {
           role: OrganizationMembershipRole.member,
-          organization: {
-            ...organization,
-            stripeSubscriptions: [subscription],
-          },
+          organization: { ...organization, stripeSubscriptions: [] },
           deactivatedAt: null,
         },
       ],
@@ -333,7 +402,7 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
       billingSidebarCardProps: {
         freeTrialIsActive: false,
         showButton: false,
-        trialEndDate: trialEnd,
+        trialEndDate: organization.trialEnd,
       },
     };
 

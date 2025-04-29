@@ -5,9 +5,13 @@ import type { Stripe } from 'stripe';
 
 import type { Factory } from '~/utils/types';
 
+import { createPopulatedOrganization } from '../organizations/organizations-factories.server';
+import { createPopulatedUserAccount } from '../user-accounts/user-accounts-factories.server';
 import type { PriceLookupKey } from './billing-constants';
-import { pricesByLookupKey } from './billing-constants';
-import { getRandomLookupKey } from './billing-factories.server';
+import {
+  getRandomLookupKey,
+  getStripeIdByLookupKey,
+} from './billing-factories.server';
 
 /**
  * Creates a Stripe Customer object with populated values.
@@ -65,11 +69,45 @@ export const createStripeCustomer: Factory<Stripe.Customer> = ({
 });
 
 /**
+ * Creates a Stripe Customer Portal Session object with populated values.
+ */
+export const createStripeCustomerPortalSession: Factory<
+  Stripe.BillingPortal.Session
+> = ({
+  id = `bps_${createId()}`,
+  object = 'billing_portal.session',
+  configuration = `bpc_${createId()}`,
+  // realistic created timestamp within last 10 days
+  created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
+  customer = createStripeCustomer().id,
+  flow = null,
+  livemode = false,
+  locale = null,
+  on_behalf_of = null,
+  // default to a random URL, overrideable in tests
+  return_url = faker.internet.url(),
+  // Stripe-hosted portal URL
+  url = `https://billing.stripe.com/p/session/test_${createId()}`,
+} = {}) => ({
+  id,
+  object,
+  configuration,
+  created,
+  customer,
+  flow,
+  livemode,
+  locale,
+  on_behalf_of,
+  return_url,
+  url,
+});
+
+/**
  * Creates a Stripe Price object with populated values.
  */
 export const createStripePrice: Factory<Stripe.Price> = ({
   lookup_key = getRandomLookupKey(),
-  id = pricesByLookupKey[lookup_key as PriceLookupKey].id,
+  id = getStripeIdByLookupKey(lookup_key as PriceLookupKey),
   object = 'price',
   active = true,
   billing_scheme = 'per_unit',
@@ -173,7 +211,7 @@ export const createStripeSubscription: Factory<Stripe.Subscription> = ({
   cancellation_details = { comment: null, feedback: null, reason: null },
   collection_method = 'charge_automatically',
   currency = 'usd',
-  customer = `cus_${createId()}`,
+  customer = createStripeCustomer().id,
   days_until_due = null,
   default_payment_method = null,
   default_source = null,
@@ -274,3 +312,166 @@ export const createStripeSubscription: Factory<Stripe.Subscription> = ({
     trial_start,
   };
 };
+
+/**
+ * Creates a Stripe Checkout Session object with populated values.
+ */
+export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
+  id = `cs_${createId()}`,
+  object = 'checkout.session',
+  adaptive_pricing = null,
+  after_expiration = null,
+  allow_promotion_codes = null,
+  amount_subtotal = faker.number.int({ min: 1000, max: 100_000 }),
+  amount_total = amount_subtotal,
+  automatic_tax = {
+    enabled: true,
+    liability: { type: 'self' as const },
+    provider: 'stripe' as const,
+    status: 'complete' as const,
+  },
+  billing_address_collection = 'auto',
+  cancel_url = faker.internet.url(),
+  client_reference_id = null,
+  client_secret = null,
+  collected_information = { shipping_details: null },
+  consent = null,
+  consent_collection = null,
+  created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
+  currency = 'usd',
+  currency_conversion = null,
+  custom_fields = [],
+  custom_text = {
+    after_submit: null,
+    shipping_address: null,
+    submit: null,
+    terms_of_service_acceptance: null,
+  },
+  customer = createStripeCustomer().id,
+  customer_creation = 'always',
+  customer_details = {
+    address: {
+      city: null,
+      country: 'CH',
+      line1: null,
+      line2: null,
+      postal_code: null,
+      state: null,
+    },
+    email: faker.internet.email(),
+    name: faker.person.fullName(),
+    phone: null,
+    tax_exempt: 'none' as Stripe.Checkout.Session.CustomerDetails.TaxExempt,
+    tax_ids: [],
+  },
+  customer_email = null,
+  discounts = [],
+  expires_at = created + 86_400, // 24 hours from creation
+  invoice = `in_${createId()}`,
+  invoice_creation = null,
+  livemode = false,
+  locale = null,
+  metadata = {
+    organizationSlug: createPopulatedOrganization().slug,
+    organizationId: createPopulatedOrganization().id,
+    purchasedById: createPopulatedUserAccount().email,
+    customerEmail: createPopulatedOrganization().billingEmail,
+  },
+  mode = 'subscription',
+  payment_intent = null,
+  payment_link = null,
+  payment_method_collection = 'always',
+  payment_method_configuration_details = {
+    id: `pmc_${createId()}`,
+    parent: null,
+  },
+  payment_method_options = {
+    card: {
+      request_three_d_secure: 'automatic' as const,
+    },
+  },
+  payment_method_types = ['card', 'link'],
+  payment_status = 'paid',
+  permissions = null,
+  phone_number_collection = {
+    enabled: false,
+  },
+  recovered_from = null,
+  saved_payment_method_options = {
+    allow_redisplay_filters: [
+      'always',
+    ] as Stripe.Checkout.Session.SavedPaymentMethodOptions.AllowRedisplayFilter[],
+    payment_method_remove: null,
+    payment_method_save: 'enabled' as const,
+  },
+  setup_intent = null,
+  shipping_address_collection = null,
+  shipping_cost = null,
+  shipping_options = [],
+  status = 'complete',
+  submit_type = null,
+  subscription = createStripeSubscription().id,
+  success_url = faker.internet.url(),
+  total_details = {
+    amount_discount: 0,
+    amount_shipping: 0,
+    amount_tax: 0,
+  },
+  ui_mode = 'hosted',
+  url = `https://checkout.stripe.com/pay/${id}`,
+} = {}) => ({
+  id,
+  object,
+  adaptive_pricing,
+  after_expiration,
+  allow_promotion_codes,
+  amount_subtotal,
+  amount_total,
+  automatic_tax,
+  billing_address_collection,
+  cancel_url,
+  client_reference_id,
+  client_secret,
+  collected_information,
+  consent,
+  consent_collection,
+  created,
+  currency,
+  currency_conversion,
+  custom_fields,
+  custom_text,
+  customer,
+  customer_creation,
+  customer_details,
+  customer_email,
+  discounts,
+  expires_at,
+  invoice,
+  invoice_creation,
+  livemode,
+  locale,
+  metadata,
+  mode,
+  payment_intent,
+  payment_link,
+  payment_method_collection,
+  payment_method_configuration_details,
+  payment_method_options,
+  payment_method_types,
+  payment_status,
+  permissions,
+  phone_number_collection,
+  recovered_from,
+  saved_payment_method_options,
+  setup_intent,
+  shipping_address_collection,
+  shipping_cost,
+  shipping_options,
+  status,
+  submit_type,
+  subscription,
+  success_url,
+  total_details,
+  ui_mode,
+  url,
+});

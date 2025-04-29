@@ -3,7 +3,7 @@ import { createRoutesStub } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
 import { SidebarProvider } from '~/components/ui/sidebar';
-import { getRandomLookupKey } from '~/features/billing/billing-factories.server';
+import { getRandomTier } from '~/features/billing/billing-factories.server';
 import { render, screen } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
@@ -18,8 +18,8 @@ const createOrganization: Factory<
   slug = createPopulatedOrganization().slug,
   name = createPopulatedOrganization().name,
   logo = createPopulatedOrganization().imageUrl,
-  plan = getRandomLookupKey(),
-} = {}) => ({ id, slug, name, logo, plan });
+  tier = getRandomTier(),
+} = {}) => ({ id, slug, name, logo, tier });
 
 const createProps: Factory<OrganizationSwitcherProps> = ({
   organizations = [
@@ -31,7 +31,7 @@ const createProps: Factory<OrganizationSwitcherProps> = ({
 
 describe('OrganizationSwitcher Component', () => {
   test('given: organizations data, should: render current organization in the button', () => {
-    const currentOrganization = createOrganization({ plan: 'hobby_monthly' });
+    const currentOrganization = createOrganization({ tier: 'low' });
     const props = createProps({ currentOrganization });
     const path = '/test';
     const RouterStub = createRoutesStub([

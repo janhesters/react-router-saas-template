@@ -1,3 +1,4 @@
+import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
 import type { BillingPageProps } from './billing-page';
 import type { retrieveLatestStripeSubscriptionByOrganizationId } from './stripe-subscription-model.server';
 
@@ -6,14 +7,31 @@ export type StripeSubscriptionData = NonNullable<
 >;
 
 export function mapStripeSubscriptionDataToBillingPageProps({
-  subscription,
+  organization,
   now,
 }: {
-  subscription: StripeSubscriptionData;
+  organization: OrganizationWithMembershipsAndSubscriptions;
   now: Date;
-}): Omit<BillingPageProps, 'organizationSlug'> {
-  console.log('subscription', subscription);
-  console.log('now', now);
+}): BillingPageProps {
+  const subscription = organization.stripeSubscriptions[0];
+
+  if (!subscription) {
+    return {
+      billingEmail: organization.billingEmail,
+      cancelAtPeriodEnd: false,
+      currentMonthlyRatePerUser: 85,
+      currentPeriodEnd: organization.trialEnd,
+      currentSeats: organization._count.memberships,
+      currentTierName: 'Business (Trial)',
+      isEnterprisePlan: false,
+      isOnFreeTrial: true,
+      maxSeats: 25,
+      organizationSlug: organization.slug,
+      projectedTotal: 85 * organization._count.memberships,
+      subscriptionStatus: 'active',
+    };
+  }
+
   const items = subscription.items;
 
   // 1. Determine the end of the current billing period by taking the max timestamp
@@ -32,7 +50,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
       : typeof rawMaxSeats === 'number'
         ? rawMaxSeats
         : 1;
-  const currentSeats = maxSeats;
+  const currentSeats = organization._count.memberships;
 
   // 4. Compute the per-user monthly rate (divide annual by 12 if needed)
   let cents = price.unitAmount;
@@ -58,23 +76,31 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     subscriptionStatus = 'inactive';
   }
 
-  // 7. Check free trial
-  const isOnFreeTrial =
-    subscription.trialEnd !== null && now < subscription.trialEnd;
-
-  // 8. Projected total = per-user rate × seats
-  const projectedTotal = currentMonthlyRatePerUser * currentSeats;
+  // 7. Projected total = per-user rate × seats
+  const projectedTotal =
+    currentMonthlyRatePerUser * organization._count.memberships;
 
   return {
+    billingEmail: organization.billingEmail,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
     currentMonthlyRatePerUser,
     currentPeriodEnd,
     currentSeats,
     currentTierName,
     isEnterprisePlan: false,
-    isOnFreeTrial,
+    isOnFreeTrial: false,
     maxSeats,
+    organizationSlug: organization.slug,
     projectedTotal,
     subscriptionStatus,
   };
 }
+
+/**
+ * Extracts the base URL from a request URL.
+ *
+ * @param requestUrl - The request URL.
+ * @returns The base URL.
+ */
+export const extractBaseUrl = (url: URL) =>
+  `${process.env.NODE_ENV === 'production' ? 'https:' : 'http:'}//${url.host}`;
