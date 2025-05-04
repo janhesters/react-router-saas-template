@@ -1,6 +1,9 @@
-export const OPEN_CHECKOUT_SESSION_INTENT = 'openCheckoutSession';
-export const OPEN_CUSTOMER_PORTAL_INTENT = 'openCustomerPortal';
 export const CANCEL_SUBSCRIPTION_INTENT = 'cancelSubscription';
+export const OPEN_CHECKOUT_SESSION_INTENT = 'openCheckoutSession';
+export const RESUME_SUBSCRIPTION_INTENT = 'resumeSubscription';
+export const SWITCH_SUBSCRIPTION_INTENT = 'switchSubscription';
+export const UPDATE_BILLING_EMAIL_INTENT = 'updateBillingEmail';
+export const VIEW_INVOICES_INTENT = 'viewInvoices';
 
 /**
  * Hardcoded price IDs for Stripe products.

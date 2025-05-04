@@ -66,13 +66,11 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       status: 'active',
       items: [
         {
-          // top-level price override
           price: createPopulatedStripePrice({
             lookupKey: 'startup_monthly',
             unitAmount: 2000,
             metadata: { max_seats: 10 },
           }),
-          // spread in a base subscription item for dates & IDs
           ...createPopulatedStripeSubscriptionItem({
             currentPeriodStart: new Date('2025-05-15T00:00:00.000Z'),
             currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
@@ -92,6 +90,11 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
     const expected: BillingPageProps = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
+      cancelOrModifySubscriptionModalProps: {
+        canCancelSubscription: true,
+        currentTier: 'mid',
+        currentTierInterval: 'monthly',
+      },
       currentMonthlyRatePerUser: 20,
       currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
       currentSeats: 4,
@@ -107,7 +110,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a subscription cancelled at period end, should: mark status “paused”', () => {
+  test('given: a subscription cancelled at period end but still ongoing, should: mark status “active”', () => {
     const now = new Date('2025-06-10T00:00:00.000Z');
     const subscription = createStripeSubscriptionData({
       organizationId: 'org-456',
@@ -139,8 +142,65 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
     const expected: BillingPageProps = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: true,
+      cancelOrModifySubscriptionModalProps: {
+        canCancelSubscription: false,
+        currentTier: 'high',
+        currentTierInterval: 'monthly',
+      },
       currentMonthlyRatePerUser: 50,
       currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
+      currentSeats: 8,
+      currentTierName: 'Business',
+      isEnterprisePlan: false,
+      isOnFreeTrial: false,
+      maxSeats: 25,
+      organizationSlug: organization.slug,
+      projectedTotal: 400,
+      subscriptionStatus: 'active',
+    };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test('given: a subscription cancelled at period end and it ran out, should: mark status “paused”', () => {
+    const now = new Date('2025-06-10T00:00:00.000Z');
+    const subscription = createStripeSubscriptionData({
+      organizationId: 'org-456',
+      cancelAtPeriodEnd: true,
+      status: 'active',
+      items: [
+        {
+          price: createPopulatedStripePrice({
+            lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
+            unitAmount: 5000,
+            metadata: { max_seats: 25 },
+          }),
+          ...createPopulatedStripeSubscriptionItem({
+            currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
+            currentPeriodEnd: new Date('2025-06-09T00:00:00.000Z'),
+          }),
+        },
+      ],
+    });
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      stripeSubscriptions: [subscription],
+      memberCount: 8,
+    });
+
+    const actual = mapStripeSubscriptionDataToBillingPageProps({
+      organization,
+      now,
+    });
+    const expected: BillingPageProps = {
+      billingEmail: organization.billingEmail,
+      cancelAtPeriodEnd: true,
+      cancelOrModifySubscriptionModalProps: {
+        canCancelSubscription: false,
+        currentTier: 'high',
+        currentTierInterval: 'monthly',
+      },
+      currentMonthlyRatePerUser: 50,
+      currentPeriodEnd: new Date('2025-06-09T00:00:00.000Z'),
       currentSeats: 8,
       currentTierName: 'Business',
       isEnterprisePlan: false,
@@ -172,6 +232,11 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
     const expected: BillingPageProps = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
+      cancelOrModifySubscriptionModalProps: {
+        canCancelSubscription: false,
+        currentTier: 'high',
+        currentTierInterval: 'annual',
+      },
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
       currentSeats: 2,

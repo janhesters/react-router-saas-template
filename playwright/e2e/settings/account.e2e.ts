@@ -368,3 +368,5 @@ test.describe('account settings', () => {
 // TODO: UI tests for when trial ran out (e.g. side bar card has correct text,
 // etc.)
 // TODO: When updating the organization name, also update the Stripe customer.
+// TODO: add a notification 3 days before the trial ends.
+// TODO: prevent downgrade when they have more seats than the new plan would allow.

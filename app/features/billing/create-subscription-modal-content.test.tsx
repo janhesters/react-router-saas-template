@@ -9,7 +9,7 @@ import {
 } from '~/test/react-test-utils';
 
 import { pricesByTierAndInterval } from './billing-constants';
-import { CreateSubscriptionModalContent } from './no-current-plan-modal-content';
+import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 
 describe('CreateSubscriptionModalContent component', () => {
   test('given: default state, should: render annual plans then switch to monthly correctly', async () => {

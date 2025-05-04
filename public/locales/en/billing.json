@@ -3,6 +3,8 @@
     "cancel-at-period-end-banner": {
       "button": "Resume subscription",
       "description": "Your subscription runs out on {{date}}.",
+      "resume-success-title": "Subscription resumed",
+      "resuming-subscription": "Resuming subscription ...",
       "title": "Your subscription is ending soon."
     },
     "cancel-subscription-modal": {
@@ -74,6 +76,18 @@
         "title": "Choose your plan to reactivate your subscription"
       },
       "title": "Your subscription is inactive."
+    },
+    "update-billing-email-modal": {
+      "description": "Your invoices will be sent to this email address.",
+      "email-invalid": "A valid email consists of characters, '@' and '.'.",
+      "email-label": "Email",
+      "email-must-be-string": "A valid email address must be string.",
+      "email-placeholder": "billing@company.com",
+      "email-required": "Please enter a valid email (required).",
+      "saving-changes": "Saving changes ...",
+      "submit-button": "Save changes",
+      "success-title": "Billing email updated",
+      "title": "Edit your billing email"
     }
   },
   "billing-success-page": {

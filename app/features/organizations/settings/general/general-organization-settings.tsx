@@ -253,7 +253,7 @@ export function GeneralOrganizationSettings({
             <Button className="w-fit" disabled={isFormDisabled} type="submit">
               {isFormDisabled ? (
                 <>
-                  <Loader2Icon className="mr-2 size-4 animate-spin" />
+                  <Loader2Icon className="animate-spin" />
                   {t('saving')}
                 </>
               ) : (

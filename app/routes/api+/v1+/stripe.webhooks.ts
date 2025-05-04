@@ -62,13 +62,19 @@ export async function action({ request }: Route.ActionArgs) {
       case 'customer.subscription.updated': {
         return handleStripeCustomerSubscriptionUpdatedEvent(event);
       }
+      case 'billing_portal.configuration.updated':
+      case 'billing_portal.session.created':
+      case 'charge.succeeded':
       case 'customer.created':
-      case 'setup_intent.created':
       case 'customer.updated':
       case 'invoice.created':
       case 'invoice.finalized':
       case 'invoice.paid':
-      case 'invoice.payment_succeeded': {
+      case 'invoice.payment_succeeded':
+      case 'invoiceitem.created':
+      case 'payment_intent.created':
+      case 'payment_intent.succeeded':
+      case 'setup_intent.created': {
         return json({ message: 'OK' });
       }
       default: {

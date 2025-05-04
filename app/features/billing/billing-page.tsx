@@ -3,7 +3,7 @@ import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { CircleXIcon, Loader2Icon } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Form, href, Link } from 'react-router';
+import { Form, href, Link, useNavigation } from 'react-router';
 
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
@@ -21,8 +21,13 @@ import { Separator } from '~/components/ui/separator';
 
 import {
   CANCEL_SUBSCRIPTION_INTENT,
-  OPEN_CUSTOMER_PORTAL_INTENT,
+  pricesByTierAndInterval,
+  RESUME_SUBSCRIPTION_INTENT,
+  SWITCH_SUBSCRIPTION_INTENT,
+  UPDATE_BILLING_EMAIL_INTENT,
+  VIEW_INVOICES_INTENT,
 } from './billing-constants';
+import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
 import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
 import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 import {
@@ -31,9 +36,11 @@ import {
   DescriptionListRow,
   DescriptionTerm,
 } from './description-list';
+import { EditBillingEmailModalContent } from './edit-billing-email-modal-content';
 
 export type BillingPageProps = {
   billingEmail: Organization['billingEmail'];
+  cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps;
   cancelAtPeriodEnd: boolean;
   currentMonthlyRatePerUser: number;
   /**
@@ -45,7 +52,6 @@ export type BillingPageProps = {
   currentTierName: string;
   isCancellingSubscription?: boolean;
   isEnterprisePlan: boolean;
-  isManagingPlan?: boolean;
   isOnFreeTrial: boolean;
   isResumingSubscription?: boolean;
   isViewingInvoices?: boolean;
@@ -58,12 +64,12 @@ export type BillingPageProps = {
 export function BillingPage({
   billingEmail,
   cancelAtPeriodEnd,
+  cancelOrModifySubscriptionModalProps,
   currentMonthlyRatePerUser,
   currentPeriodEnd,
   currentSeats,
   currentTierName,
   isCancellingSubscription = false,
-  isManagingPlan = false,
   isOnFreeTrial,
   isResumingSubscription = false,
   isViewingInvoices = false,
@@ -86,10 +92,38 @@ export function BillingPage({
   }, [currentPeriodEnd, i18n.language]);
 
   const isSubmitting =
-    isCancellingSubscription ||
-    isManagingPlan ||
-    isResumingSubscription ||
-    isViewingInvoices;
+    isCancellingSubscription || isResumingSubscription || isViewingInvoices;
+
+  /* Switch subscription */
+  const navigation = useNavigation();
+  const isSwitchingToHigh =
+    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    (
+      [
+        pricesByTierAndInterval.high_annual.id,
+        pricesByTierAndInterval.high_monthly.id,
+      ] as string[]
+    ).includes(navigation.formData?.get('priceId') as string);
+  const isSwitchingToLow =
+    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    (
+      [
+        pricesByTierAndInterval.low_annual.id,
+        pricesByTierAndInterval.low_monthly.id,
+      ] as string[]
+    ).includes(navigation.formData?.get('priceId') as string);
+  const isSwitchingToMid =
+    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    (
+      [
+        pricesByTierAndInterval.mid_annual.id,
+        pricesByTierAndInterval.mid_monthly.id,
+      ] as string[]
+    ).includes(navigation.formData?.get('priceId') as string);
+
+  /* Update billing email */
+  const isUpdatingBillingEmail =
+    navigation.formData?.get('intent') === UPDATE_BILLING_EMAIL_INTENT;
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
@@ -166,12 +200,12 @@ export function BillingPage({
                 name="intent"
                 size="sm"
                 type="submit"
-                value={OPEN_CUSTOMER_PORTAL_INTENT}
+                value={RESUME_SUBSCRIPTION_INTENT}
               >
                 {isResumingSubscription ? (
                   <>
                     <Loader2Icon className="animate-spin" />
-                    {t('opening-customer-portal')}
+                    {t('cancel-at-period-end-banner.resuming-subscription')}
                   </>
                 ) : (
                   t('cancel-at-period-end-banner.button')
@@ -333,13 +367,22 @@ export function BillingPage({
                     </div>
 
                     <Button
+                      // TODO: test this edge case in E2E tests, too
+                      disabled={isOnFreeTrial}
                       name="intent"
                       size="sm"
                       type="submit"
-                      value={OPEN_CUSTOMER_PORTAL_INTENT}
+                      value={VIEW_INVOICES_INTENT}
                       variant="outline"
                     >
-                      {t('plan-information.view-invoices')}
+                      {isViewingInvoices ? (
+                        <>
+                          <Loader2Icon className="animate-spin" />
+                          {t('opening-customer-portal')}
+                        </>
+                      ) : (
+                        t('plan-information.view-invoices')
+                      )}
                     </Button>
                   </DescriptionListRow>
                 </DescriptionList>
@@ -354,28 +397,35 @@ export function BillingPage({
               {t('payment-information.heading')}
             </h3>
 
-            <Form method="POST" replace>
-              <fieldset className="@container/form" disabled={isSubmitting}>
-                <Card className="mt-2 py-4 md:py-3">
-                  <DescriptionList>
-                    {/* Billing Email */}
-                    <DescriptionListRow className="items-center justify-between @xl/form:h-10">
-                      <div className="flex flex-col gap-2 @xl/form:flex-row">
-                        <DescriptionTerm className="@xl/form:w-36">
-                          {t('payment-information.billing-email')}
-                        </DescriptionTerm>
+            <div className="@container/form">
+              <Card className="mt-2 py-4 md:py-3">
+                <DescriptionList>
+                  {/* Billing Email */}
+                  <DescriptionListRow className="items-center justify-between @xl/form:h-10">
+                    <div className="flex flex-col gap-2 @xl/form:flex-row">
+                      <DescriptionTerm className="@xl/form:w-36">
+                        {t('payment-information.billing-email')}
+                      </DescriptionTerm>
 
-                        <DescriptionDetail>{billingEmail}</DescriptionDetail>
-                      </div>
+                      <DescriptionDetail>{billingEmail}</DescriptionDetail>
+                    </div>
 
-                      <Button variant="outline" size="sm">
-                        {t('payment-information.edit-button')}
-                      </Button>
-                    </DescriptionListRow>
-                  </DescriptionList>
-                </Card>
-              </fieldset>
-            </Form>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          {t('payment-information.edit-button')}
+                        </Button>
+                      </DialogTrigger>
+
+                      <EditBillingEmailModalContent
+                        billingEmail={billingEmail}
+                        isUpdatingBillingEmail={isUpdatingBillingEmail}
+                      />
+                    </Dialog>
+                  </DescriptionListRow>
+                </DescriptionList>
+              </Card>
+            </div>
           </div>
         )}
 
@@ -396,13 +446,10 @@ export function BillingPage({
 
             {subscriptionStatus === 'active' && !isOnFreeTrial ? (
               <CancelOrModifySubscriptionModalContent
-                canCancelSubscription={true}
-                currentTier="high"
-                currentTierInterval="annual"
-                isSwitchingToHigh={false}
-                isSwitchingToLow={false}
-                isSwitchingToMid={false}
-                lacksPaymentInformation={isOnFreeTrial}
+                {...cancelOrModifySubscriptionModalProps}
+                isSwitchingToHigh={isSwitchingToHigh}
+                isSwitchingToLow={isSwitchingToLow}
+                isSwitchingToMid={isSwitchingToMid}
                 onCancelSubscriptionClick={() => {
                   setIsPlanManagementModalOpen(false);
                   setIsCancelModalOpen(true);
@@ -414,6 +461,7 @@ export function BillingPage({
           </DialogContent>
         </Dialog>
 
+        {/* Cancel subscription */}
         <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
           <DialogContent>
             <DialogHeader>

@@ -18,13 +18,17 @@ const path = '/organizations/:organizationSlug/settings/billing';
 const createProps: Factory<BillingPageProps> = ({
   billingEmail = faker.internet.email(),
   cancelAtPeriodEnd = false,
+  cancelOrModifySubscriptionModalProps = {
+    canCancelSubscription: true,
+    currentTier: 'high' as const,
+    currentTierInterval: 'annual' as const,
+  },
   currentMonthlyRatePerUser = faker.number.int({ min: 5, max: 50 }),
   currentPeriodEnd = faker.date.future(),
   currentSeats = faker.number.int({ min: 1, max: 50 }),
   currentTierName = faker.helpers.arrayElement(['Free', 'Pro', 'Enterprise']),
   isCancellingSubscription = false,
   isEnterprisePlan = false,
-  isManagingPlan = false,
   isOnFreeTrial = false,
   isResumingSubscription = false,
   isViewingInvoices = false,
@@ -35,13 +39,13 @@ const createProps: Factory<BillingPageProps> = ({
 } = {}) => ({
   billingEmail,
   cancelAtPeriodEnd,
+  cancelOrModifySubscriptionModalProps,
   currentMonthlyRatePerUser,
   currentPeriodEnd,
   currentSeats,
   currentTierName,
   isCancellingSubscription,
   isEnterprisePlan,
-  isManagingPlan,
   isOnFreeTrial,
   isResumingSubscription,
   isViewingInvoices,
@@ -268,7 +272,7 @@ describe('BillingPage component', () => {
 
     // It shows the loading state on the clicked button
     expect(
-      screen.getByRole('button', { name: /opening customer portal/i }),
+      screen.getByRole('button', { name: /resuming subscription/i }),
     ).toBeDisabled();
 
     // It disables all other buttons

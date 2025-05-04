@@ -19,7 +19,6 @@ const createProps: Factory<CancelOrModifySubscriptionModalContentProps> = ({
   isSwitchingToHigh = false,
   isSwitchingToLow = false,
   isSwitchingToMid = false,
-  lacksPaymentInformation = false,
   onCancelSubscriptionClick = vi.fn(),
 } = {}) => ({
   canCancelSubscription,
@@ -28,7 +27,6 @@ const createProps: Factory<CancelOrModifySubscriptionModalContentProps> = ({
   isSwitchingToHigh,
   isSwitchingToLow,
   isSwitchingToMid,
-  lacksPaymentInformation,
   onCancelSubscriptionClick,
 });
 
@@ -201,7 +199,11 @@ describe('CancelOrModifySubscriptionModalContent component', () => {
 
     render(<RouterStub initialEntries={['/']} />);
 
-    expect(screen.getByRole('button', { name: /downgrading/i })).toBeDisabled();
+    const downgradingButton = screen.getByRole('button', {
+      name: /downgrading/i,
+    });
+    expect(downgradingButton).toBeInTheDocument();
+    expect(downgradingButton).toBeDisabled();
   });
 
   test.each(['low', 'mid'] as const)(
@@ -222,35 +224,6 @@ describe('CancelOrModifySubscriptionModalContent component', () => {
       expect(screen.getByRole('button', { name: /upgrading/i })).toBeDisabled();
     },
   );
-
-  test.each(['low', 'mid', 'high'] as const)(
-    'given: user lacks payment information (= is on free trial), should: show add payment information button',
-    currentTier => {
-      const props = createProps({ currentTier, lacksPaymentInformation: true });
-      const RouterStub = createRoutesStub([
-        {
-          path: '/',
-          Component: () => (
-            <CancelOrModifySubscriptionModalContent {...props} />
-          ),
-        },
-      ]);
-
-      render(<RouterStub initialEntries={['/']} />);
-
-      // Should show "Add payment information" on current tier
-      expect(
-        screen.getByRole('button', { name: /add payment information/i }),
-      ).toBeInTheDocument();
-
-      // Enterprise should still be a link to contact sales
-      expect(
-        screen.getByRole('link', { name: /contact sales/i }),
-      ).toHaveAttribute('href', href('/contact-sales'));
-    },
-  );
-
-  test.todo('show adding payment information button');
 
   test('given: the user has a subscription they can cancel, should: show cancellation option', () => {
     const props = createProps({ canCancelSubscription: true });

@@ -1,6 +1,17 @@
+import { StripeSubscriptionStatus } from '@prisma/client';
+
 import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
+import { getTierAndIntervalForPriceId } from './billing-helpers';
 import type { BillingPageProps } from './billing-page';
+import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
 import type { retrieveLatestStripeSubscriptionByOrganizationId } from './stripe-subscription-model.server';
+
+const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
+  StripeSubscriptionStatus.active,
+  StripeSubscriptionStatus.trialing,
+  StripeSubscriptionStatus.past_due,
+  StripeSubscriptionStatus.paused,
+] as const;
 
 export type StripeSubscriptionData = NonNullable<
   Awaited<ReturnType<typeof retrieveLatestStripeSubscriptionByOrganizationId>>
@@ -19,6 +30,11 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     return {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
+      cancelOrModifySubscriptionModalProps: {
+        canCancelSubscription: false,
+        currentTier: 'high',
+        currentTierInterval: 'annual',
+      },
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
       currentSeats: organization._count.memberships,
@@ -65,7 +81,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
 
   // 6. Determine subscriptionStatus
   let subscriptionStatus: 'active' | 'inactive' | 'paused';
-  if (subscription.cancelAtPeriodEnd && now < currentPeriodEnd) {
+  if (subscription.cancelAtPeriodEnd && now > currentPeriodEnd) {
     subscriptionStatus = 'paused';
   } else if (
     subscription.status === 'active' ||
@@ -80,9 +96,21 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   const projectedTotal =
     currentMonthlyRatePerUser * organization._count.memberships;
 
+  // 8. Cancel or modify subscription modal props
+  const { tier, interval } = getTierAndIntervalForPriceId(price.stripeId);
+  const cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps =
+    {
+      canCancelSubscription:
+        !subscription.cancelAtPeriodEnd &&
+        cancellableSubscriptionStatuses.includes(subscription.status),
+      currentTier: tier,
+      currentTierInterval: interval,
+    };
+
   return {
     billingEmail: organization.billingEmail,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+    cancelOrModifySubscriptionModalProps,
     currentMonthlyRatePerUser,
     currentPeriodEnd,
     currentSeats,

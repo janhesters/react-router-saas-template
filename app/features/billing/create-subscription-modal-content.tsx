@@ -90,7 +90,7 @@ export function CreateSubscriptionModalContent() {
   };
 
   return (
-    <Form method="post">
+    <Form method="post" replace>
       <fieldset disabled={isSubmitting}>
         <input
           type="hidden"

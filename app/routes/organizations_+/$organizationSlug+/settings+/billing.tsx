@@ -1,9 +1,14 @@
 import { OrganizationMembershipRole } from '@prisma/client';
-import { data } from 'react-router';
+import { data, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
 import { billingAction } from '~/features/billing/billing-action.server';
+import {
+  CANCEL_SUBSCRIPTION_INTENT,
+  RESUME_SUBSCRIPTION_INTENT,
+  VIEW_INVOICES_INTENT,
+} from '~/features/billing/billing-constants';
 import { mapStripeSubscriptionDataToBillingPageProps } from '~/features/billing/billing-helpers.server';
 import { BillingPage } from '~/features/billing/billing-page';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
@@ -50,7 +55,23 @@ export default function OrganizationBillingSettingsRoute({
   loaderData,
 }: Route.ComponentProps) {
   const { billingPageProps } = loaderData;
-  return <BillingPage {...billingPageProps} />;
+
+  const navigation = useNavigation();
+  const isCancellingSubscription =
+    navigation.formData?.get('intent') === CANCEL_SUBSCRIPTION_INTENT;
+  const isResumingSubscription =
+    navigation.formData?.get('intent') === RESUME_SUBSCRIPTION_INTENT;
+  const isViewingInvoices =
+    navigation.formData?.get('intent') === VIEW_INVOICES_INTENT;
+
+  return (
+    <BillingPage
+      {...billingPageProps}
+      isCancellingSubscription={isCancellingSubscription}
+      isResumingSubscription={isResumingSubscription}
+      isViewingInvoices={isViewingInvoices}
+    />
+  );
 }
 
 export function ErrorBoundary() {

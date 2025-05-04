@@ -129,13 +129,67 @@ export async function createStripeSwitchPlanSession({
 export async function updateStripeCustomer({
   customerId,
   customerName,
+  customerEmail,
 }: {
   customerId: string;
-  customerName: string;
+  customerName?: string;
+  customerEmail?: string;
 }) {
   const customer = await stripeAdmin.customers.update(customerId, {
-    name: customerName,
+    ...(customerEmail ? { email: customerEmail } : {}),
+    ...(customerName ? { name: customerName } : {}),
   });
 
   return customer;
+}
+
+export async function createStripeCancelSubscriptionSession({
+  baseUrl,
+  customerId,
+  organizationSlug,
+  subscriptionId,
+}: {
+  /** Your app’s public URL (e.g. https://app.example.com) */
+  baseUrl: string;
+  /** Stripe Customer ID */
+  customerId: string;
+  /** Org slug for building return_url path */
+  organizationSlug: Organization['slug'];
+  /** The Stripe Subscription ID you want to let them cancel */
+  subscriptionId: string;
+}) {
+  const session = await stripeAdmin.billingPortal.sessions.create({
+    customer: customerId,
+    return_url: `${baseUrl}${href(
+      '/organizations/:organizationSlug/settings/billing',
+      { organizationSlug },
+    )}`,
+    flow_data: {
+      // This invokes the “cancel subscription” deep‐link
+      type: 'subscription_cancel',
+      subscription_cancel: {
+        subscription: subscriptionId,
+        // you can also configure a retention strategy here if desired:
+        // retention: { type: 'coupon_offer', coupon: '25OFF' },
+      },
+    },
+  });
+
+  return session;
+}
+
+export async function resumeStripeSubscription(subscriptionId: string) {
+  // 1) Retrieve current subscription
+  const subscription = await stripeAdmin.subscriptions.retrieve(subscriptionId);
+
+  // 2) If it's scheduled to cancel at period end, clear that flag
+  if (subscription.cancel_at_period_end) {
+    const renewed = await stripeAdmin.subscriptions.update(subscriptionId, {
+      cancel_at_period_end: false,
+    });
+    return renewed;
+  }
+
+  // 3) Otherwise, it's already active/not scheduled to cancel
+  return subscription;
 }
