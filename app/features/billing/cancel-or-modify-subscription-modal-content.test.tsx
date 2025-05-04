@@ -9,14 +9,13 @@ import {
 } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
-import type { BillingModalContentProps } from './billing-modal-content';
-import { BillingModalContent } from './billing-modal-content';
+import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
+import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
 
-const createProps: Factory<BillingModalContentProps> = ({
+const createProps: Factory<CancelOrModifySubscriptionModalContentProps> = ({
   canCancelSubscription = false,
   currentTier = 'low',
   currentTierInterval = 'annual' as const,
-  isAddingPaymentInformation = false,
   isSwitchingToHigh = false,
   isSwitchingToLow = false,
   isSwitchingToMid = false,
@@ -26,7 +25,6 @@ const createProps: Factory<BillingModalContentProps> = ({
   canCancelSubscription,
   currentTier,
   currentTierInterval,
-  isAddingPaymentInformation,
   isSwitchingToHigh,
   isSwitchingToLow,
   isSwitchingToMid,
@@ -34,12 +32,15 @@ const createProps: Factory<BillingModalContentProps> = ({
   onCancelSubscriptionClick,
 });
 
-describe('BillingModalContent component', () => {
+describe('CancelOrModifySubscriptionModalContent component', () => {
   test('given: any props, should: render tab buttons to switch between monthly and annual', async () => {
     const user = userEvent.setup();
     const props = createProps();
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -73,7 +74,10 @@ describe('BillingModalContent component', () => {
   test('given: user is on low tier, should: show current plan and upgrade buttons', () => {
     const props = createProps({ currentTier: 'low' });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -95,7 +99,10 @@ describe('BillingModalContent component', () => {
   test('given: user is on mid tier, should: show current plan, upgrade and downgrade buttons', () => {
     const props = createProps({ currentTier: 'mid' });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -124,7 +131,10 @@ describe('BillingModalContent component', () => {
   test('given: user is on high tier, should: show current plan and downgrade buttons', () => {
     const props = createProps({ currentTier: 'high' });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -150,7 +160,12 @@ describe('BillingModalContent component', () => {
     currentTier => {
       const props = createProps({ currentTier, isSwitchingToLow: true });
       const RouterStub = createRoutesStub([
-        { path: '/', Component: () => <BillingModalContent {...props} /> },
+        {
+          path: '/',
+          Component: () => (
+            <CancelOrModifySubscriptionModalContent {...props} />
+          ),
+        },
       ]);
 
       render(<RouterStub initialEntries={['/']} />);
@@ -164,7 +179,10 @@ describe('BillingModalContent component', () => {
   test('given: user is switching to mid tier from low tier, should: show upgrading status', () => {
     const props = createProps({ currentTier: 'low', isSwitchingToMid: true });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -175,7 +193,10 @@ describe('BillingModalContent component', () => {
   test('given: user is switching to mid tier from high tier, should: show downgrading status', () => {
     const props = createProps({ currentTier: 'high', isSwitchingToMid: true });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -188,7 +209,12 @@ describe('BillingModalContent component', () => {
     currentTier => {
       const props = createProps({ currentTier, isSwitchingToHigh: true });
       const RouterStub = createRoutesStub([
-        { path: '/', Component: () => <BillingModalContent {...props} /> },
+        {
+          path: '/',
+          Component: () => (
+            <CancelOrModifySubscriptionModalContent {...props} />
+          ),
+        },
       ]);
 
       render(<RouterStub initialEntries={['/']} />);
@@ -202,7 +228,12 @@ describe('BillingModalContent component', () => {
     currentTier => {
       const props = createProps({ currentTier, lacksPaymentInformation: true });
       const RouterStub = createRoutesStub([
-        { path: '/', Component: () => <BillingModalContent {...props} /> },
+        {
+          path: '/',
+          Component: () => (
+            <CancelOrModifySubscriptionModalContent {...props} />
+          ),
+        },
       ]);
 
       render(<RouterStub initialEntries={['/']} />);
@@ -224,7 +255,10 @@ describe('BillingModalContent component', () => {
   test('given: the user has a subscription they can cancel, should: show cancellation option', () => {
     const props = createProps({ canCancelSubscription: true });
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <BillingModalContent {...props} /> },
+      {
+        path: '/',
+        Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+      },
     ]);
 
     render(<RouterStub initialEntries={['/']} />);
@@ -242,7 +276,12 @@ describe('BillingModalContent component', () => {
         currentTierInterval: 'monthly',
       });
       const RouterStub = createRoutesStub([
-        { path: '/', Component: () => <BillingModalContent {...props} /> },
+        {
+          path: '/',
+          Component: () => (
+            <CancelOrModifySubscriptionModalContent {...props} />
+          ),
+        },
       ]);
 
       render(<RouterStub initialEntries={['/']} />);
@@ -268,7 +307,12 @@ describe('BillingModalContent component', () => {
         currentTierInterval: 'annual',
       });
       const RouterStub = createRoutesStub([
-        { path: '/', Component: () => <BillingModalContent {...props} /> },
+        {
+          path: '/',
+          Component: () => (
+            <CancelOrModifySubscriptionModalContent {...props} />
+          ),
+        },
       ]);
 
       render(<RouterStub initialEntries={['/']} />);

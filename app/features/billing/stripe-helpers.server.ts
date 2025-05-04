@@ -56,7 +56,7 @@ export async function createStripeCheckoutSession({
       },
     },
     success_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing',
+      '/organizations/:organizationSlug/settings/billing/success',
       { organizationSlug },
     )}?session_id={CHECKOUT_SESSION_ID}`,
     // Show check box to allow purchasing as a business.

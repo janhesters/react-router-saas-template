@@ -9,13 +9,13 @@ import {
 } from '~/test/react-test-utils';
 
 import { pricesByTierAndInterval } from './billing-constants';
-import { NoCurrentPlanModalContent } from './no-current-plan-modal-content';
+import { CreateSubscriptionModalContent } from './no-current-plan-modal-content';
 
-describe('NoCurrentPlanModalContent component', () => {
+describe('CreateSubscriptionModalContent component', () => {
   test('given: default state, should: render annual plans then switch to monthly correctly', async () => {
     const user = userEvent.setup();
     const RouterStub = createRoutesStub([
-      { path: '/', Component: () => <NoCurrentPlanModalContent /> },
+      { path: '/', Component: () => <CreateSubscriptionModalContent /> },
     ]);
     render(<RouterStub initialEntries={['/']} />);
 

@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '~/components/ui/dialog';
 import { Separator } from '~/components/ui/separator';
 
@@ -22,7 +23,8 @@ import {
   CANCEL_SUBSCRIPTION_INTENT,
   OPEN_CUSTOMER_PORTAL_INTENT,
 } from './billing-constants';
-import { BillingModalContent } from './billing-modal-content';
+import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
+import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 import {
   DescriptionDetail,
   DescriptionList,
@@ -41,12 +43,10 @@ export type BillingPageProps = {
   currentPeriodEnd: Date;
   currentSeats: number;
   currentTierName: string;
-  isAddingPaymentInformation?: boolean;
   isCancellingSubscription?: boolean;
   isEnterprisePlan: boolean;
   isManagingPlan?: boolean;
   isOnFreeTrial: boolean;
-  isReactivatingSubscription?: boolean;
   isResumingSubscription?: boolean;
   isViewingInvoices?: boolean;
   maxSeats: number;
@@ -62,11 +62,9 @@ export function BillingPage({
   currentPeriodEnd,
   currentSeats,
   currentTierName,
-  isAddingPaymentInformation = false,
   isCancellingSubscription = false,
   isManagingPlan = false,
   isOnFreeTrial,
-  isReactivatingSubscription = false,
   isResumingSubscription = false,
   isViewingInvoices = false,
   maxSeats,
@@ -88,10 +86,8 @@ export function BillingPage({
   }, [currentPeriodEnd, i18n.language]);
 
   const isSubmitting =
-    isAddingPaymentInformation ||
     isCancellingSubscription ||
     isManagingPlan ||
-    isReactivatingSubscription ||
     isResumingSubscription ||
     isViewingInvoices;
 
@@ -109,38 +105,47 @@ export function BillingPage({
         <Separator />
 
         {subscriptionStatus === 'inactive' ? (
-          <Form className="@container/alert" method="POST" replace>
-            <Alert
-              className="flex flex-col gap-2 @xl/alert:block"
-              variant="destructive"
-            >
-              <AlertTitle>
-                {t('subscription-cancelled-banner.title')}
-              </AlertTitle>
-
-              <AlertDescription>
-                {t('subscription-cancelled-banner.description')}
-              </AlertDescription>
-
-              <Button
-                className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
-                disabled={isSubmitting}
-                name="intent"
-                size="sm"
-                type="submit"
-                value={OPEN_CUSTOMER_PORTAL_INTENT}
+          <Dialog>
+            <div className="@container/alert">
+              <Alert
+                className="flex flex-col gap-2 @xl/alert:block"
+                variant="destructive"
               >
-                {isReactivatingSubscription ? (
-                  <>
-                    <Loader2Icon className="animate-spin" />
-                    {t('opening-customer-portal')}
-                  </>
-                ) : (
-                  t('subscription-cancelled-banner.button')
-                )}
-              </Button>
-            </Alert>
-          </Form>
+                <AlertTitle>
+                  {t('subscription-cancelled-banner.title')}
+                </AlertTitle>
+
+                <AlertDescription>
+                  {t('subscription-cancelled-banner.description')}
+                </AlertDescription>
+
+                <DialogTrigger asChild>
+                  <Button
+                    className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
+                    size="sm"
+                  >
+                    {t('subscription-cancelled-banner.button')}
+                  </Button>
+                </DialogTrigger>
+              </Alert>
+            </div>
+
+            <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+              <DialogHeader>
+                <DialogTitle>
+                  {t('subscription-cancelled-banner.modal.title')}
+                </DialogTitle>
+
+                <VisuallyHidden>
+                  <DialogDescription>
+                    {t('subscription-cancelled-banner.modal.description')}
+                  </DialogDescription>
+                </VisuallyHidden>
+              </DialogHeader>
+
+              <CreateSubscriptionModalContent />
+            </DialogContent>
+          </Dialog>
         ) : cancelAtPeriodEnd ? (
           <Form className="@container/alert" method="POST" replace>
             <Alert
@@ -176,35 +181,44 @@ export function BillingPage({
           </Form>
         ) : (
           isOnFreeTrial && (
-            <Form className="@container/alert" method="POST" replace>
-              <Alert className="flex flex-col gap-2 @xl/alert:block">
-                <AlertTitle>{t('free-trial-banner.title')}</AlertTitle>
+            <Dialog>
+              <div className="@container/alert">
+                <Alert className="flex flex-col gap-2 @xl/alert:block">
+                  <AlertTitle>{t('free-trial-banner.title')}</AlertTitle>
 
-                <AlertDescription>
-                  {t('free-trial-banner.description', {
-                    date: formattedDate,
-                  })}
-                </AlertDescription>
+                  <AlertDescription>
+                    {t('free-trial-banner.description', {
+                      date: formattedDate,
+                    })}
+                  </AlertDescription>
 
-                <Button
-                  className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
-                  disabled={isSubmitting}
-                  name="intent"
-                  size="sm"
-                  type="submit"
-                  value={OPEN_CUSTOMER_PORTAL_INTENT}
-                >
-                  {isAddingPaymentInformation ? (
-                    <>
-                      <Loader2Icon className="animate-spin" />
-                      {t('opening-customer-portal')}
-                    </>
-                  ) : (
-                    t('free-trial-banner.button')
-                  )}
-                </Button>
-              </Alert>
-            </Form>
+                  <DialogTrigger asChild>
+                    <Button
+                      className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
+                      size="sm"
+                    >
+                      {t('free-trial-banner.button')}
+                    </Button>
+                  </DialogTrigger>
+                </Alert>
+              </div>
+
+              <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {t('free-trial-banner.modal.title')}
+                  </DialogTitle>
+
+                  <VisuallyHidden>
+                    <DialogDescription>
+                      {t('free-trial-banner.modal.description')}
+                    </DialogDescription>
+                  </VisuallyHidden>
+                </DialogHeader>
+
+                <CreateSubscriptionModalContent />
+              </DialogContent>
+            </Dialog>
           )
         )}
 
@@ -380,19 +394,23 @@ export function BillingPage({
               </VisuallyHidden>
             </DialogHeader>
 
-            <BillingModalContent
-              canCancelSubscription={true}
-              currentTier="high"
-              currentTierInterval="annual"
-              isSwitchingToHigh={false}
-              isSwitchingToLow={false}
-              isSwitchingToMid={false}
-              lacksPaymentInformation={isOnFreeTrial}
-              onCancelSubscriptionClick={() => {
-                setIsPlanManagementModalOpen(false);
-                setIsCancelModalOpen(true);
-              }}
-            />
+            {subscriptionStatus === 'active' && !isOnFreeTrial ? (
+              <CancelOrModifySubscriptionModalContent
+                canCancelSubscription={true}
+                currentTier="high"
+                currentTierInterval="annual"
+                isSwitchingToHigh={false}
+                isSwitchingToLow={false}
+                isSwitchingToMid={false}
+                lacksPaymentInformation={isOnFreeTrial}
+                onCancelSubscriptionClick={() => {
+                  setIsPlanManagementModalOpen(false);
+                  setIsCancelModalOpen(true);
+                }}
+              />
+            ) : (
+              <CreateSubscriptionModalContent />
+            )}
           </DialogContent>
         </Dialog>
 

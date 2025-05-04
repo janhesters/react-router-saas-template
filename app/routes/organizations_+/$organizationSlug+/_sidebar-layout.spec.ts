@@ -1,8 +1,5 @@
-import {
-  type Organization,
-  OrganizationMembershipRole,
-  type UserAccount,
-} from '@prisma/client';
+import type { Organization, UserAccount } from '@prisma/client';
+import { OrganizationMembershipRole } from '@prisma/client';
 import { data, href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 

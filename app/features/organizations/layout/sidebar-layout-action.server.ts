@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constants';
 import { extractBaseUrl } from '~/features/billing/billing-helpers.server';
+import { openCustomerCheckoutSessionSchema } from '~/features/billing/billing-schemas';
 import { createStripeCheckoutSession } from '~/features/billing/stripe-helpers.server';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
@@ -34,10 +35,7 @@ import {
 import { switchSlugInRoute } from './layout-helpers.server';
 import { createCookieForOrganizationSwitcherSession } from './organization-switcher-session.server';
 import { SWITCH_ORGANIZATION_INTENT } from './sidebar-layout-constants';
-import {
-  openCustomerCheckoutSessionSchema,
-  switchOrganizationSchema,
-} from './sidebar-layout-schemas';
+import { switchOrganizationSchema } from './sidebar-layout-schemas';
 import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/+types/_sidebar-layout';
 
 const schema = z.discriminatedUnion('intent', [
@@ -109,7 +107,7 @@ export async function sidebarLayoutAction({
 
         const baseUrl = extractBaseUrl(requestToUrl(request));
 
-        const customerPortalSession = await createStripeCheckoutSession({
+        const checkoutSession = await createStripeCheckoutSession({
           baseUrl,
           customerEmail: organization.billingEmail,
           customerId: organization.stripeCustomerId,
@@ -120,7 +118,7 @@ export async function sidebarLayoutAction({
           seatsUsed: organization._count.memberships,
         });
 
-        return redirect(customerPortalSession.url!);
+        return redirect(checkoutSession.url!);
       }
     }
   } catch (error) {

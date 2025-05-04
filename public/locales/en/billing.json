@@ -21,6 +21,10 @@
     "free-trial-banner": {
       "button": "Add payment information",
       "description": "Your free trial will end on {{date}}.",
+      "modal": {
+        "description": "Pick a plan that fits your needs.",
+        "title": "Choose your plan"
+      },
       "title": "Your organization is currently on a free trial."
     },
     "opening-customer-portal": "Opening customer portal ...",
@@ -65,8 +69,19 @@
     "subscription-cancelled-banner": {
       "button": "Reactivate subscription",
       "description": "Your subscription has been cancelled.",
+      "modal": {
+        "description": "Pick a plan that fits your needs.",
+        "title": "Choose your plan to reactivate your subscription"
+      },
       "title": "Your subscription is inactive."
     }
+  },
+  "billing-success-page": {
+    "go-to-dashboard": "Go to your dashboard",
+    "page-title": "Successfully subscribed!",
+    "payment-successful": "Payment successful",
+    "product-ready": "Your SaaS product is ready and eager to help you maximize the usage of your time and serve your customers. Say goodbye to tedious set up and hello to just building.",
+    "thank-you": "Thank you for trusting React Router SaaS Template. Your successful journey towards building and maintaining a SaaS product starts now!"
   },
   "contact-sales": {
     "company": "Company",

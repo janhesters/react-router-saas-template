@@ -25,11 +25,10 @@ import {
   TierGrid,
 } from './pricing';
 
-export type BillingModalContentProps = {
+export type CancelOrModifySubscriptionModalContentProps = {
   canCancelSubscription: boolean;
   currentTier: 'low' | 'mid' | 'high' | 'enterprise';
   currentTierInterval: 'monthly' | 'annual';
-  isAddingPaymentInformation?: boolean;
   isSwitchingToHigh?: boolean;
   isSwitchingToLow?: boolean;
   isSwitchingToMid?: boolean;
@@ -37,17 +36,17 @@ export type BillingModalContentProps = {
   onCancelSubscriptionClick?: MouseEventHandler<HTMLButtonElement>;
 };
 
-export function BillingModalContent({
+export function CancelOrModifySubscriptionModalContent({
   canCancelSubscription = false,
   currentTier,
   currentTierInterval,
-  isAddingPaymentInformation = false,
   isSwitchingToHigh = false,
   isSwitchingToLow = false,
   isSwitchingToMid = false,
   lacksPaymentInformation = false,
   onCancelSubscriptionClick,
-}: BillingModalContentProps) {
+}: CancelOrModifySubscriptionModalContentProps) {
+  const isAddingPaymentInformation = false; // TODO: remove
   const { t } = useTranslation('billing', { keyPrefix: 'pricing' });
   const { t: tModal } = useTranslation('billing', {
     keyPrefix: 'billing-page.pricing-modal',

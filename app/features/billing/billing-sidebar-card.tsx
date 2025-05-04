@@ -20,7 +20,7 @@ import {
 } from '~/components/ui/dialog';
 import { cn } from '~/lib/utils';
 
-import { NoCurrentPlanModalContent } from './no-current-plan-modal-content';
+import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 
 export type BillingSidebarCardProps = {
   className?: string;
@@ -95,7 +95,7 @@ export function BillingSidebarCard({
           </VisuallyHidden>
         </DialogHeader>
 
-        <NoCurrentPlanModalContent />
+        <CreateSubscriptionModalContent />
       </DialogContent>
     </Dialog>
   );
