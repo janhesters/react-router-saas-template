@@ -19,14 +19,13 @@ import {
 } from '~/components/ui/dialog';
 import { Separator } from '~/components/ui/separator';
 
+import type { Interval, Tier } from './billing-constants';
 import {
   CANCEL_SUBSCRIPTION_INTENT,
-  type Interval,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
   pricesByTierAndInterval,
   RESUME_SUBSCRIPTION_INTENT,
   SWITCH_SUBSCRIPTION_INTENT,
-  type Tier,
   UPDATE_BILLING_EMAIL_INTENT,
   VIEW_INVOICES_INTENT,
 } from './billing-constants';

@@ -29,6 +29,7 @@ import {
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
 import { resendHandlers } from '~/test/mocks/handlers/resend';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -67,7 +68,11 @@ async function sendAuthenticatedRequest({
   return await action({ request, context: {}, params: { organizationSlug } });
 }
 
-setupMockServerLifecycle(...supabaseHandlers, ...resendHandlers);
+setupMockServerLifecycle(
+  ...supabaseHandlers,
+  ...resendHandlers,
+  ...stripeHandlers,
+);
 
 describe(`${createUrl(':organizationSlug')} route action`, () => {
   test('given: an authenticated request, should: throw a redirect to the organizations page', async () => {

@@ -8,6 +8,7 @@ import {
   DELETE_ORGANIZATION_INTENT,
   UPDATE_ORGANIZATION_INTENT,
 } from '~/features/organizations/settings/general/general-settings-constants';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -44,7 +45,7 @@ async function sendAuthenticatedRequest({
   return await action({ request, context: {}, params: { organizationSlug } });
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe('/organizations/:organizationSlug/settings/general route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {

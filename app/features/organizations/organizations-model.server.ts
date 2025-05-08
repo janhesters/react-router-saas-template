@@ -80,6 +80,19 @@ export async function retrieveOrganizationWithMembershipsFromDatabaseBySlug(
   });
 }
 
+export async function retrieveOrganizationWithSubscriptionsFromDatabaseById(
+  id: Organization['id'],
+) {
+  return prisma.organization.findUnique({
+    where: { id },
+    include: {
+      stripeSubscriptions: {
+        include: { items: { include: { price: true } } },
+      },
+    },
+  });
+}
+
 /**
  * Retrieves an organization by its slug with memberships.
  *
@@ -125,6 +138,52 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
       organizationEmailInviteLink: {
         where: { expiresAt: { gt: now } },
         orderBy: { createdAt: 'desc' },
+      },
+    },
+  });
+}
+
+/**
+ * Retrieves a count of members and the latest Stripe subscription for an
+ * organization.
+ *
+ * @param organizationId - The id of the organization to retrieve.
+ * @returns The count of members and the latest Stripe subscription.
+ */
+export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
+  organizationId: Organization['id'],
+) {
+  return prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      _count: {
+        select: {
+          memberships: {
+            where: {
+              OR: [
+                { deactivatedAt: null },
+                { deactivatedAt: { gt: new Date() } },
+              ],
+            },
+          },
+        },
+      },
+      stripeSubscriptions: {
+        orderBy: { created: 'desc' },
+        take: 1,
+        include: {
+          items: { include: { price: true } },
+          schedules: {
+            orderBy: { created: 'desc' },
+            take: 1, // only the latest schedule
+            include: {
+              phases: {
+                orderBy: { startDate: 'asc' },
+                include: { price: true },
+              },
+            },
+          },
+        },
       },
     },
   });

@@ -419,6 +419,7 @@ export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
   },
   ui_mode = 'hosted',
   url = `https://checkout.stripe.com/pay/${id}`,
+  wallet_options = null,
 } = {}) => ({
   id,
   object,
@@ -474,6 +475,7 @@ export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
   total_details,
   ui_mode,
   url,
+  wallet_options,
 });
 
 /**

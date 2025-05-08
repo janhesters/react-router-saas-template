@@ -19,6 +19,7 @@ import {
   retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from '~/features/user-accounts/user-accounts-model.server';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -62,7 +63,7 @@ async function setup() {
   return user;
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe('/settings/account route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {

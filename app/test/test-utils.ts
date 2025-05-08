@@ -239,6 +239,28 @@ export async function createAuthenticatedRequest({
   return request;
 }
 
+export async function createUserWithTrialOrgAndAddAsMember({
+  organization = createPopulatedOrganization({
+    // This automatically sets the trial end to 14 days from the creation date.
+    createdAt: faker.date.recent({ days: 3 }),
+  }),
+  user = createPopulatedUserAccount(),
+  role = OrganizationMembershipRole.member as OrganizationMembershipRole,
+} = {}) {
+  // Save user account and organization and add user as a member.
+  await Promise.all([
+    saveUserAccountToDatabase(user),
+    saveOrganizationToDatabase(organization),
+  ]);
+  await addMembersToOrganizationInDatabaseById({
+    id: organization.id,
+    members: [user.id],
+    role,
+  });
+
+  return { organization, user };
+}
+
 /**
  * Creates a test Stripe subscription for a user and organization.
  *
@@ -283,19 +305,21 @@ export async function createUserWithOrgAndAddAsMember({
   user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member as OrganizationMembershipRole,
 } = {}) {
+  const createdAt = faker.date.recent({ days: 3 });
+  const subscription = createStripeSubscription({
+    created: Math.floor(createdAt.getTime() / 1000),
+  });
   // Save user account and organization and add user as a member.
-  await Promise.all([
-    saveUserAccountToDatabase(user),
-    saveOrganizationToDatabase(organization),
-  ]);
-  await addMembersToOrganizationInDatabaseById({
-    id: organization.id,
-    members: [user.id],
+  await createUserWithTrialOrgAndAddAsMember({
+    // When the user subscribes, it ends the trial.
+    organization: { ...organization, trialEnd: createdAt },
+    user,
     role,
   });
   await createTestSubscriptionForUserAndOrganization({
     user,
     organization,
+    subscription,
   });
 
   return { organization, user };

@@ -1,9 +1,7 @@
-import { OrganizationMembershipRole } from '@prisma/client';
 import { href, redirect } from 'react-router';
 
 import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
-import { saveInviteLinkUseToDatabase } from '~/features/organizations/accept-invite-link/invite-link-use-model.server';
-import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
+import { acceptInviteLink } from '~/features/organizations/organizations-helpers.server';
 import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
@@ -36,20 +34,16 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   try {
-    const userProfile = await saveUserAccountToDatabase({
+    const userAccount = await saveUserAccountToDatabase({
       email: user.email,
       supabaseUserId: user.id,
     });
 
     if (inviteLinkInfo) {
-      await addMembersToOrganizationInDatabaseById({
-        id: inviteLinkInfo.organizationId,
-        members: [userProfile.id],
-        role: OrganizationMembershipRole.member,
-      });
-      await saveInviteLinkUseToDatabase({
+      await acceptInviteLink({
+        userAccountId: userAccount.id,
+        organizationId: inviteLinkInfo.organizationId,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
-        userId: userProfile.id,
       });
     }
   } catch (error) {

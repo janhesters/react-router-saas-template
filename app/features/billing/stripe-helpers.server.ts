@@ -203,3 +203,61 @@ export async function keepCurrentSubscription(
 ) {
   return await stripeAdmin.subscriptionSchedules.release(scheduleId);
 }
+
+export async function adjustSeats({
+  subscriptionId,
+  subscriptionItemId,
+  stripeScheduleId,
+  newQuantity,
+}: {
+  subscriptionId: Stripe.Subscription['id'];
+  subscriptionItemId: Stripe.SubscriptionItem['id'];
+  stripeScheduleId?: Stripe.SubscriptionSchedule['id'];
+  newQuantity: number;
+}) {
+  const updatedSub = await stripeAdmin.subscriptions.update(subscriptionId, {
+    items: [{ id: subscriptionItemId, quantity: newQuantity }],
+  });
+
+  if (stripeScheduleId) {
+    const sched =
+      await stripeAdmin.subscriptionSchedules.retrieve(stripeScheduleId);
+
+    const now = Math.floor(Date.now() / 1000);
+    const updatedPhases = sched.phases.map(phase => ({
+      start_date: phase.start_date,
+      end_date: phase.end_date,
+      items: phase.items.map(item => ({
+        quantity:
+          phase.start_date > now
+            ? newQuantity // bump only future phases
+            : item.quantity,
+      })),
+    }));
+
+    const updatedSched = await stripeAdmin.subscriptionSchedules.update(
+      stripeScheduleId,
+      { phases: updatedPhases },
+    );
+
+    return { updatedSub, updatedSched };
+  }
+
+  return { updatedSub };
+}
+
+export async function deactivateStripeCustomer(customerId: string) {
+  const subscriptions = await stripeAdmin.subscriptions.list({
+    customer: customerId,
+    status: 'active',
+  });
+
+  const cancelledSubscriptions = [];
+
+  for (const subscription of subscriptions.data) {
+    const cancelled = await stripeAdmin.subscriptions.cancel(subscription.id);
+    cancelledSubscriptions.push(cancelled);
+  }
+
+  return { cancelledSubscriptions };
+}

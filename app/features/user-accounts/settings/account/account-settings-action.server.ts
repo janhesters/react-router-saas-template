@@ -2,8 +2,9 @@ import { data } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
-import { deleteOrganizationFromDatabaseById } from '~/features/organizations/organizations-model.server';
-import { requireAuthenticatedUserWithMembershipsExists } from '~/features/user-accounts/user-accounts-helpers.server';
+import { adjustSeats } from '~/features/billing/stripe-helpers.server';
+import { deleteOrganization } from '~/features/organizations/organizations-helpers.server';
+import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import {
   deleteUserAccountFromDatabaseById,
   updateUserAccountInDatabaseById,
@@ -34,7 +35,9 @@ const schema = z.discriminatedUnion('intent', [
 export async function accountSettingsAction({ request }: Route.ActionArgs) {
   try {
     const { auth, t } = await promiseHash({
-      auth: requireAuthenticatedUserWithMembershipsExists(request),
+      auth: requireAuthenticatedUserWithMembershipsAndSubscriptionsExists(
+        request,
+      ),
       t: i18next.getFixedT(request, 'settings', {
         keyPrefix: 'user-account.toast',
       }),
@@ -102,22 +105,38 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
             membership.organization._count.memberships === 1,
         );
 
-        // Delete the logos of the organizations
-        await Promise.all(
-          soleOwnerOrgs.map(({ organization }) =>
-            removeImageFromStorage(organization.imageUrl),
-          ),
-        );
-
         // Delete the organizations
         await Promise.all(
-          soleOwnerOrgs.map(membership =>
-            deleteOrganizationFromDatabaseById(membership.organization.id),
+          soleOwnerOrgs.map(({ organization }) =>
+            deleteOrganization(organization.id),
           ),
         );
 
         // Delete the user's profile picture
         await removeImageFromStorage(user.imageUrl);
+
+        // Adjust the seats for the other user's memberships
+        await Promise.all(
+          user.memberships
+            .filter(
+              membership =>
+                !soleOwnerOrgs
+                  .map(({ organization }) => organization.id)
+                  .includes(membership.organization.id),
+            )
+            .filter(
+              membership => membership.organization.stripeSubscriptions[0],
+            )
+            .map(membership => {
+              const subscription =
+                membership.organization.stripeSubscriptions[0];
+              return adjustSeats({
+                subscriptionId: subscription.stripeId,
+                subscriptionItemId: subscription.items[0].price.stripeId,
+                newQuantity: membership.organization._count.memberships - 1,
+              });
+            }),
+        );
 
         // Delete the user account (this will cascade delete their memberships)
         await deleteUserAccountFromDatabaseById(user.id);

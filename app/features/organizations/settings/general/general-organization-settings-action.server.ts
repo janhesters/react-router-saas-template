@@ -12,11 +12,11 @@ import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import { requireUserIsMemberOfOrganization } from '../../organizations-helpers.server';
 import {
-  deleteOrganizationFromDatabaseById,
-  updateOrganizationInDatabaseBySlug,
-} from '../../organizations-model.server';
+  deleteOrganization,
+  requireUserIsMemberOfOrganization,
+} from '../../organizations-helpers.server';
+import { updateOrganizationInDatabaseBySlug } from '../../organizations-model.server';
 import type { UpdateOrganizationFormErrors } from './general-organization-settings';
 import {
   DELETE_ORGANIZATION_INTENT,
@@ -94,8 +94,7 @@ export async function generalOrganizationSettingsAction({
       }
 
       case DELETE_ORGANIZATION_INTENT: {
-        await removeImageFromStorage(organization.imageUrl);
-        await deleteOrganizationFromDatabaseById(organization.id);
+        await deleteOrganization(organization.id);
         return redirectWithToast(
           href('/organizations'),
           { title: t('organization-deleted'), type: 'success' },

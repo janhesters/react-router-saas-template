@@ -29,11 +29,13 @@ const createProps: Factory<BillingPageProps> = ({
   currentTierName = faker.helpers.arrayElement(['Free', 'Pro', 'Enterprise']),
   isCancellingSubscription = false,
   isEnterprisePlan = false,
+  isKeepingCurrentSubscription = false,
   isOnFreeTrial = false,
   isResumingSubscription = false,
   isViewingInvoices = false,
   maxSeats = faker.number.int({ min: currentSeats, max: 200 }),
   organizationSlug = faker.string.uuid(),
+  pendingChange,
   projectedTotal = currentMonthlyRatePerUser * maxSeats,
   subscriptionStatus = 'active',
 } = {}) => ({
@@ -46,11 +48,13 @@ const createProps: Factory<BillingPageProps> = ({
   currentTierName,
   isCancellingSubscription,
   isEnterprisePlan,
+  isKeepingCurrentSubscription,
   isOnFreeTrial,
   isResumingSubscription,
   isViewingInvoices,
   maxSeats,
   organizationSlug,
+  pendingChange,
   projectedTotal,
   subscriptionStatus,
 });
@@ -424,7 +428,7 @@ describe('BillingPage component', () => {
     expect(screen.getByText(/downgrade scheduled/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /your subscription will downgrade to the mid monthly plan on february 12, 2025/i,
+        /your subscription will downgrade to the mid \(monthly\) plan on february 12, 2025/i,
       ),
     ).toBeInTheDocument();
     expect(
@@ -451,7 +455,7 @@ describe('BillingPage component', () => {
     expect(screen.getByText(/downgrade scheduled/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /your subscription will downgrade to the mid monthly plan on february 12, 2025/i,
+        /your subscription will downgrade to the mid \(monthly\) plan on february 12, 2025/i,
       ),
     ).toBeInTheDocument();
     expect(

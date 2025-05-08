@@ -117,6 +117,8 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
               slug: true,
               stripeCustomerId: true,
               stripeSubscriptions: {
+                orderBy: { created: 'desc' },
+                take: 1,
                 include: {
                   items: { include: { price: true } },
                   schedules: {
@@ -177,6 +179,73 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatab
                         { deactivatedAt: null },
                         { deactivatedAt: { gt: new Date() } },
                       ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+          role: true,
+          deactivatedAt: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Retrieves a user account, their active organization memberships, and the
+ * count of members in each organization by Supabase ID. Also includes the
+ * organization's subscription.
+ *
+ * @param supabaseUserId The Supabase ID of the user account.
+ * @returns The user account with active memberships and member counts or null.
+ * Active memberships are those that are either not deactivated or have a
+ * deactivation date in the future.
+ */
+export async function retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId(
+  supabaseUserId: UserAccount['supabaseUserId'],
+) {
+  return prisma.userAccount.findUnique({
+    where: { supabaseUserId },
+    include: {
+      memberships: {
+        where: {
+          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
+        },
+        select: {
+          organization: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              imageUrl: true,
+              // Count active members in the organization
+              _count: {
+                select: {
+                  memberships: {
+                    where: {
+                      OR: [
+                        { deactivatedAt: null },
+                        { deactivatedAt: { gt: new Date() } },
+                      ],
+                    },
+                  },
+                },
+              },
+              stripeSubscriptions: {
+                orderBy: { created: 'desc' },
+                take: 1,
+                include: {
+                  items: { include: { price: true } },
+                  schedules: {
+                    orderBy: { created: 'desc' },
+                    take: 1, // only the latest schedule
+                    include: {
+                      phases: {
+                        orderBy: { startDate: 'asc' },
+                        include: { price: true },
+                      },
                     },
                   },
                 },

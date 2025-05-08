@@ -141,6 +141,20 @@ export const handleStripeSubscriptionScheduleCreatedEvent = async (
   return ok();
 };
 
+export const handleStripeSubscriptionScheduleExpiringEvent = async (
+  event: Stripe.SubscriptionScheduleExpiringEvent,
+) => {
+  try {
+    await upsertStripeSubscriptionScheduleInDatabase(event.data.object);
+  } catch (error) {
+    const message = getErrorMessage(error);
+    prettyPrint(event);
+    console.error('Error upserting Stripe subscription schedule', message);
+  }
+
+  return ok();
+};
+
 export const handleStripeSubscriptionScheduleUpdatedEvent = async (
   event: Stripe.SubscriptionScheduleUpdatedEvent,
 ) => {

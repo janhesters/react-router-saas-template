@@ -8,6 +8,7 @@ import {
   handleStripeCustomerSubscriptionDeletedEvent,
   handleStripeCustomerSubscriptionUpdatedEvent,
   handleStripeSubscriptionScheduleCreatedEvent,
+  handleStripeSubscriptionScheduleExpiringEvent,
   handleStripeSubscriptionScheduleUpdatedEvent,
 } from '~/features/billing/stripe-event-handlers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
@@ -75,6 +76,9 @@ export async function action({ request }: Route.ActionArgs) {
       case 'subscription_schedule.created': {
         return handleStripeSubscriptionScheduleCreatedEvent(event);
       }
+      case 'subscription_schedule.expiring': {
+        return handleStripeSubscriptionScheduleExpiringEvent(event);
+      }
       case 'subscription_schedule.updated': {
         return handleStripeSubscriptionScheduleUpdatedEvent(event);
       }
@@ -83,16 +87,21 @@ export async function action({ request }: Route.ActionArgs) {
       case 'charge.succeeded':
       case 'customer.created':
       case 'customer.updated':
+      case 'invoice.marked_uncollectible':
       case 'invoice.created':
       case 'invoice.finalized':
       case 'invoice.paid':
       case 'invoice.payment_succeeded':
+      case 'invoice.upcoming':
+      case 'invoice.updated':
       case 'invoiceitem.created':
       case 'payment_intent.created':
       case 'payment_intent.succeeded':
       case 'payment_method.attached':
       case 'setup_intent.created':
-      case 'subscription_schedule.released': {
+      case 'subscription_schedule.released':
+      case 'test_helpers.test_clock.advancing':
+      case 'test_helpers.test_clock.ready': {
         return json({ message: 'OK' });
       }
       default: {

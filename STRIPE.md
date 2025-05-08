@@ -1,0 +1,9 @@
+# User Journeys
+
+- Given an **unauthenticated new user**, when the user creates a new account and a new organization, it should start the organization with a free trial of 14 days on the highest plan.
+- Given an **authenticated user for a trialing organization**, when the trial of the organization runs out, it should show a warning banner on the billing dashboard as well as a card in the sidebar that tell the user that the trial ran out with a CTA to allow the user to subscribe.
+  - Given the user clicks the CTA, it opens a modal with the plans, and the user can pick a plan to subscribe to that plan, which ends the trial immediately and marks the trial end date to the date of the subscription's creation.
+- Given an **authenticated user for a trialing organization**, when the trial is still ongoing, it should show a banner on the billing dashboard as well as a card in the sidebar to nudge the user to add their payment information.
+  - Given the user clicks the CTA, it opens a modal with the plans, and the user can pick a plan to subscribe to that plan, which ends the trial immediately and marks the trial end date to the date of the subscription's creation.
+- Given an **authenticated user for a trialing organization**, when the user pays for the subscription (using the card in the sidebar, the button for the banner in the billing page, or the button to manage plans on the billing page), the user should see a modal to pick a plan and be able to click a plan to subscribe to that plan, which ends the trial immediately and marks the trial end date to the date of the subscription's creation.
+<!-- - Given an **authenticated user for a  -->

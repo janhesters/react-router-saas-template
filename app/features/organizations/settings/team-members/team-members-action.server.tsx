@@ -6,6 +6,7 @@ import { data } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
+import { adjustSeats } from '~/features/billing/stripe-helpers.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { sendEmail } from '~/utils/email.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
@@ -151,11 +152,21 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
         }
         // Owners have full permissions (already checked for self-modification)
 
+        /// Get the subscription of the organization, if it exists.
+        const subscription = organization.stripeSubscriptions[0];
         // Prepare the data for the database update
         let updateData: Prisma.OrganizationMembershipUpdateInput;
         if (requestedRoleOrStatus === 'deactivated') {
           // Set deactivatedAt timestamp
           updateData = { deactivatedAt: new Date() };
+
+          if (subscription) {
+            await adjustSeats({
+              subscriptionId: subscription.stripeId,
+              subscriptionItemId: subscription.items[0].stripeId,
+              newQuantity: organization._count.memberships - 1,
+            });
+          }
         } else {
           // Update role and ensure deactivatedAt is null
           // `requestedRoleOrStatus` here is guaranteed by zod schema to be
@@ -163,6 +174,16 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           const newRole = requestedRoleOrStatus;
           // eslint-disable-next-line unicorn/no-null
           updateData = { role: newRole, deactivatedAt: null };
+
+          // If the user was deactivated, and there is a subscription,
+          // they will now take up a seat again.
+          if (targetMembership.deactivatedAt && subscription) {
+            await adjustSeats({
+              subscriptionId: subscription.stripeId,
+              subscriptionItemId: subscription.items[0].stripeId,
+              newQuantity: organization._count.memberships + 1,
+            });
+          }
         }
 
         // Perform the database update

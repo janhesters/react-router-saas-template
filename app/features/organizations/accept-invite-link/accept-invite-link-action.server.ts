@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from '@prisma/client';
 import { href } from 'react-router';
 import { z } from 'zod';
 
@@ -12,12 +11,11 @@ import i18next from '~/utils/i18next.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
+import { acceptInviteLink } from '../organizations-helpers.server';
 import { retrieveActiveInviteLinkFromDatabaseByToken } from '../organizations-invite-link-model.server';
-import { addMembersToOrganizationInDatabaseById } from '../organizations-model.server';
 import { ACCEPT_INVITE_LINK_INTENT } from './accept-invite-link-constants';
 import { getInviteLinkToken } from './accept-invite-link-helpers.server';
 import { createInviteLinkInfoHeaders } from './accept-invite-link-session.server';
-import { saveInviteLinkUseToDatabase } from './invite-link-use-model.server';
 import type { Route } from '.react-router/types/app/routes/organizations_+/+types/invite-link';
 
 const acceptInviteLinkSchema = z.object({
@@ -58,15 +56,12 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
           const userAccount = await requireSupabaseUserExists(request, user.id);
 
           try {
-            await addMembersToOrganizationInDatabaseById({
-              id: link.organization.id,
-              members: [userAccount.id],
-              role: OrganizationMembershipRole.member,
-            });
-            await saveInviteLinkUseToDatabase({
+            await acceptInviteLink({
+              userAccountId: userAccount.id,
+              organizationId: link.organization.id,
               inviteLinkId: link.id,
-              userId: userAccount.id,
             });
+
             return redirectWithToast(
               href('/organizations/:organizationSlug/dashboard', {
                 organizationSlug: link.organization.slug,

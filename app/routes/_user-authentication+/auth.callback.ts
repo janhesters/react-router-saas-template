@@ -1,10 +1,8 @@
-import { OrganizationMembershipRole } from '@prisma/client';
 import { href, redirect } from 'react-router';
 
 import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
 import { destroyInviteLinkInfoSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
-import { saveInviteLinkUseToDatabase } from '~/features/organizations/accept-invite-link/invite-link-use-model.server';
-import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
+import { acceptInviteLink } from '~/features/organizations/organizations-helpers.server';
 import {
   retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail,
   saveUserAccountToDatabase,
@@ -86,14 +84,10 @@ export async function loader({ request }: Route.LoaderArgs) {
 
         // If the user is not a member of the organization, add them to the
         // organization and save the invite link use.
-        await addMembersToOrganizationInDatabaseById({
-          id: inviteLinkInfo.organizationId,
-          members: [maybeUser.id],
-          role: OrganizationMembershipRole.member,
-        });
-        await saveInviteLinkUseToDatabase({
+        await acceptInviteLink({
+          userAccountId: maybeUser.id,
+          organizationId: inviteLinkInfo.organizationId,
           inviteLinkId: inviteLinkInfo.inviteLinkId,
-          userId: maybeUser.id,
         });
 
         return redirectWithToast(
@@ -127,14 +121,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     });
 
     if (inviteLinkInfo) {
-      await addMembersToOrganizationInDatabaseById({
-        id: inviteLinkInfo.organizationId,
-        members: [userProfile.id],
-        role: OrganizationMembershipRole.member,
-      });
-      await saveInviteLinkUseToDatabase({
+      await acceptInviteLink({
+        userAccountId: userProfile.id,
+        organizationId: inviteLinkInfo.organizationId,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
-        userId: userProfile.id,
       });
     }
 

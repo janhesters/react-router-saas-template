@@ -6,6 +6,7 @@ import { getInviteLinkInfoFromSession } from '~/features/organizations/accept-in
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from '~/features/organizations/organization-membership-model.server';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
+import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
@@ -68,7 +69,7 @@ async function setup() {
   return { inviteLink, organization, otherOrganization, otherUser, user };
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe('/organizations/invite-link route action', () => {
   describe('given: an unauthenticated request', () => {

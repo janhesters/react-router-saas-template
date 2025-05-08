@@ -101,7 +101,7 @@ export default function OrganizationLayoutRoute({
         navUserProps={navUserProps}
         organizationSwitcherProps={organizationSwitcherProps}
         organizationSlug={params.organizationSlug}
-        // variant="inset"
+        variant="inset"
       />
 
       <SidebarInset>
