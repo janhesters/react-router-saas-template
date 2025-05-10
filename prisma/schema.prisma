@@ -126,6 +126,15 @@ model ContactSalesFormSubmission {
   workEmail   String
 }
 
+model StripeProduct {
+  stripeId String        @id
+  name     String
+  /// Max seats is set via the `metadata` field of the product as `max_seats`.
+  maxSeats Int
+  prices   StripePrice[]
+  active   Boolean
+}
+
 enum StripeSubscriptionStatus {
   /// The subscription is paid and active.
   active
@@ -197,12 +206,22 @@ model StripeSubscriptionItem {
   priceId              String
 }
 
+enum StripePriceInterval {
+  day
+  week
+  month
+  year
+}
+
 model StripePrice {
   stripeId          String                            @id
   lookupKey         String                            @unique
+  product           StripeProduct                     @relation(fields: [productId], references: [stripeId])
+  productId         String
   currency          String
+  active            Boolean
   unitAmount        Int
-  metadata          Json
+  interval          StripePriceInterval
   subscriptionItems StripeSubscriptionItem[]
   schedulePhases    StripeSubscriptionSchedulePhase[]
 }

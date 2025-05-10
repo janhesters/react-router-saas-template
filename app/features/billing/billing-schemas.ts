@@ -17,7 +17,7 @@ export const cancelSubscriptionSchema = z.object({
 
 export const openCustomerCheckoutSessionSchema = z.object({
   intent: z.literal(OPEN_CHECKOUT_SESSION_INTENT),
-  priceId: z.string(),
+  lookupKey: z.string(),
 });
 
 export const keepCurrentSubscriptionSchema = z.object({
@@ -30,7 +30,7 @@ export const resumeSubscriptionSchema = z.object({
 
 export const switchSubscriptionSchema = z.object({
   intent: z.literal(SWITCH_SUBSCRIPTION_INTENT),
-  priceId: z.string(),
+  lookupKey: z.string(),
 });
 
 export const updateBillingEmailSchema = z.object({

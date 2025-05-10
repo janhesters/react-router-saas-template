@@ -1,9 +1,9 @@
-import type { StripeSubscriptionSchedulePhase } from '@prisma/client';
 import { StripeSubscriptionStatus } from '@prisma/client';
 
 import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
 import type { Interval, Tier } from './billing-constants';
-import { getTierAndIntervalForPriceId } from './billing-helpers';
+import type { StripeSubscriptionSchedulePhaseWithPrice } from './billing-factories.server';
+import { getTierAndIntervalForLookupKey } from './billing-helpers';
 import type { BillingPageProps } from './billing-page';
 import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
 import type { retrieveLatestStripeSubscriptionByOrganizationId } from './stripe-subscription-model.server';
@@ -40,7 +40,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
       currentSeats: organization._count.memberships,
-      currentTierName: 'Business (Trial)',
+      currentTier: 'high',
       isEnterprisePlan: false,
       isOnFreeTrial: true,
       maxSeats: 25,
@@ -61,7 +61,8 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   const { price } = items[0];
 
   // 3. Parse max seats from metadata.max_seats (string or number)
-  const rawMaxSeats = (price.metadata as Record<string, string>)?.max_seats;
+  // TODO: get the real max seats
+  const rawMaxSeats = price.product.maxSeats;
   const maxSeats =
     typeof rawMaxSeats === 'string'
       ? Number.parseInt(rawMaxSeats, 10)
@@ -78,8 +79,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   const currentMonthlyRatePerUser = cents / 100;
 
   // 5. Humanize the tier name (capitalize lookupKey prefix)
-  const tierKey = price.lookupKey.split('_')[0] || '';
-  const currentTierName = tierKey.charAt(0).toUpperCase() + tierKey.slice(1);
+  const currentTier = getTierAndIntervalForLookupKey(price.lookupKey).tier;
 
   // 6. Determine subscriptionStatus
   let subscriptionStatus: 'active' | 'inactive' | 'paused';
@@ -99,7 +99,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     currentMonthlyRatePerUser * organization._count.memberships;
 
   // 8. Cancel or modify subscription modal props
-  const { tier, interval } = getTierAndIntervalForPriceId(price.stripeId);
+  const { tier, interval } = getTierAndIntervalForLookupKey(price.lookupKey);
   const cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps =
     {
       canCancelSubscription:
@@ -112,7 +112,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   // 9. Pending change
   // 9.1) Grab the upcoming schedule (if any)
   const schedule = subscription.schedules?.[0];
-  let nextPhase: StripeSubscriptionSchedulePhase | undefined;
+  let nextPhase: StripeSubscriptionSchedulePhaseWithPrice | undefined;
   if (schedule) {
     nextPhase = schedule.phases.find(
       p => p.startDate.getTime() > now.getTime(),
@@ -123,7 +123,9 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   let pendingTier: Tier | undefined;
   let pendingInterval: Interval | undefined;
   if (nextPhase) {
-    const { tier, interval } = getTierAndIntervalForPriceId(nextPhase.priceId);
+    const { tier, interval } = getTierAndIntervalForLookupKey(
+      nextPhase.price.lookupKey,
+    );
     pendingTier = tier;
     pendingInterval = interval;
   }
@@ -135,7 +137,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     currentMonthlyRatePerUser,
     currentPeriodEnd,
     currentSeats,
-    currentTierName,
+    currentTier,
     isEnterprisePlan: false,
     isOnFreeTrial: false,
     maxSeats,

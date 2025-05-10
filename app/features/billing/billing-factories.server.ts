@@ -2,34 +2,30 @@ import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
 import type {
   StripePrice,
+  StripeProduct,
   StripeSubscription,
   StripeSubscriptionItem,
   StripeSubscriptionSchedule,
   StripeSubscriptionSchedulePhase,
 } from '@prisma/client';
+import { StripePriceInterval } from '@prisma/client';
 
-import type { Factory } from '~/utils/types';
+import type { DeepPartial, Factory } from '~/utils/types';
 
-import type { PriceLookupKey, Tier } from './billing-constants';
-import { lookupKeys, pricesByTierAndInterval } from './billing-constants';
+import { allLookupKeys, allTiers } from './billing-constants';
 
-export const getRandomLookupKey = () => faker.helpers.arrayElement(lookupKeys);
-export const getRandomTier = (): Tier =>
-  faker.helpers.arrayElement(['low', 'mid', 'high']);
-
-export function getStripeIdByLookupKey(lookupKey: PriceLookupKey): string {
-  const entry = Object.values(pricesByTierAndInterval).find(
-    price => price.lookupKey === lookupKey,
-  );
-
-  if (!entry) {
-    throw new Error(`Unknown lookupKey "${lookupKey}"`);
-  }
-
-  return entry.id;
-}
+export const getRandomTier = () => faker.helpers.arrayElement(allTiers);
+export const getRandomLookupKey = () =>
+  faker.helpers.arrayElement(allLookupKeys);
 
 /* Base factories */
+
+export const createPopulatedStripeProduct: Factory<StripeProduct> = ({
+  stripeId = `prod_${createId()}`,
+  active = true,
+  name = faker.commerce.productName(),
+  maxSeats = faker.number.int({ min: 1, max: 100 }),
+} = {}) => ({ stripeId, active, name, maxSeats });
 
 /**
  * Creates a Stripe price with populated values.
@@ -38,17 +34,24 @@ export function getStripeIdByLookupKey(lookupKey: PriceLookupKey): string {
  * @returns A populated Stripe price with given params.
  */
 export const createPopulatedStripePrice: Factory<StripePrice> = ({
-  lookupKey = getRandomLookupKey(),
-  stripeId = getStripeIdByLookupKey(lookupKey as PriceLookupKey),
+  lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}`,
+  stripeId = `price_${createId()}`,
+  active = true,
   currency = 'usd',
+  productId = `prod_${createId()}`,
   unitAmount = faker.number.int({ min: 500, max: 50_000 }),
-  metadata = {},
+  interval = faker.helpers.arrayElement([
+    StripePriceInterval.month,
+    StripePriceInterval.year,
+  ]),
 } = {}) => ({
   stripeId,
-  lookupKey,
+  active,
   currency,
+  lookupKey,
+  productId,
   unitAmount,
-  metadata,
+  interval,
 });
 
 /**
@@ -141,115 +144,211 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
   status,
 });
 
-/* Compound factories */
+/* Compound Factories */
 
-export type SubscriptionItemWithPrice = StripeSubscriptionItem & {
-  price: StripePrice;
+export type StripePriceWithProduct = StripePrice & {
+  product: StripeProduct;
 };
 
 /**
- * Creates a Stripe subscription item with its associated price relation.
+ * Creates a Stripe price with its associated product.
  *
- * @param subscriptionItemWithPriceParams - Parameters to create the
- * subscription item and price with.
- * @returns A populated Stripe subscription item with its associated price.
+ * @param params - Optional parameters to customize the price and product.
+ * @param params.product - Optional product override values.
+ * @param params.priceOverrides - Optional price override values.
+ * @returns A populated Stripe price with its associated product.
  */
-export const createSubscriptionItemWithPrice: Factory<
-  SubscriptionItemWithPrice
-> = ({ price = createPopulatedStripePrice(), ...rest } = {}) => ({
-  price,
-  ...createPopulatedStripeSubscriptionItem({
-    priceId: price.stripeId,
-    ...rest,
-  }),
-});
+export function createPopulatedStripePriceWithProduct(
+  overrides: DeepPartial<StripePriceWithProduct> = {},
+): StripePriceWithProduct {
+  const product = createPopulatedStripeProduct(overrides.product);
+  const base = createPopulatedStripePrice({
+    lookupKey: getRandomLookupKey(),
+    ...overrides,
+    productId: product.stripeId,
+  });
+  return { ...base, ...overrides, product };
+}
 
-export type SubscriptionSchedulePhaseWithPrice =
+export type StripeSubscriptionItemWithPriceAndProduct =
+  StripeSubscriptionItem & {
+    price: StripePriceWithProduct;
+  };
+
+/**
+ * Creates a Stripe subscription item with its associated price and product.
+ *
+ * @param params - Optional parameters to customize the subscription item.
+ * @param params.price - Optional price (with product) override values.
+ * @param params.itemOverrides - Optional subscription item override values.
+ * @returns A populated Stripe subscription item with its associated price and product.
+ */
+export function createPopulatedStripeSubscriptionItemWithPriceAndProduct(
+  overrides: DeepPartial<StripeSubscriptionItemWithPriceAndProduct> = {},
+): StripeSubscriptionItemWithPriceAndProduct {
+  const price = createPopulatedStripePriceWithProduct(overrides.price);
+  const base = createPopulatedStripeSubscriptionItem({
+    ...overrides,
+    priceId: price.stripeId,
+  });
+  return { ...base, ...overrides, price };
+}
+
+export type StripeSubscriptionSchedulePhaseWithPrice =
   StripeSubscriptionSchedulePhase & {
     price: StripePrice;
   };
 
-export type SubscriptionScheduleWithPhases = StripeSubscriptionSchedule & {
-  phases: SubscriptionSchedulePhaseWithPrice[];
-};
-
-export type SubscriptionWithItems = StripeSubscription & {
-  items: SubscriptionItemWithPrice[];
-  schedules: SubscriptionScheduleWithPhases[];
-};
-
-/**
- * Creates a Stripe subscription with its associated subscription items and
- * prices.
- *
- * @param subscriptionWithItemsParams - Parameters to create the subscription,
- * items and prices with.
- * @returns A populated Stripe subscription with its associated items and
- * prices.
- */
-export const createSubscriptionWithItems: Factory<SubscriptionWithItems> = ({
-  stripeId = createPopulatedStripeSubscription().stripeId,
-  items = [createSubscriptionItemWithPrice({ stripeSubscriptionId: stripeId })],
-  ...rest
-} = {}) => ({
-  ...createPopulatedStripeSubscription({ stripeId, ...rest }),
-  schedules: [],
-  items: items.map(item => ({ ...item, stripeSubscriptionId: stripeId })),
-});
-
-/**
- * Creates a Stripe subscription with a populated price.
- *
- * @param subscriptionWithPriceParams - Parameters to create the subscription with.
- * @returns A populated Stripe subscription with a populated price.
- */
-export const createSubscriptionWithPrice = ({
-  lookupKey = getRandomLookupKey(),
-  ...rest
-}: Partial<
-  StripeSubscription & { lookupKey: PriceLookupKey }
-> = {}): SubscriptionWithItems => ({
-  ...createSubscriptionWithItems({
-    items: [
-      createSubscriptionItemWithPrice({
-        price: createPopulatedStripePrice({ lookupKey }),
-      }),
-    ],
-    ...rest,
-  }),
-});
-/**
- * Creates a Stripe subscription schedule phase with its associated price relation.
- *
- * @param params - Parameters to create the schedule phase and price with.
- * @returns A populated schedule phase with its associated price.
- */
-export const createSubscriptionSchedulePhaseWithPrice: Factory<
-  SubscriptionSchedulePhaseWithPrice
-> = ({ price = createPopulatedStripePrice(), ...rest } = {}) => ({
-  price,
-  ...createPopulatedStripeSubscriptionSchedulePhase({
+export function createPopulatedStripeSubscriptionSchedulePhaseWithPrice(
+  overrides: DeepPartial<StripeSubscriptionSchedulePhaseWithPrice> = {},
+): StripeSubscriptionSchedulePhaseWithPrice {
+  // generate the full price (no product)
+  const price = createPopulatedStripePrice(overrides.price);
+  // then build the "base" phase, syncing priceId
+  const base = createPopulatedStripeSubscriptionSchedulePhase({
+    ...overrides,
     priceId: price.stripeId,
-    ...rest,
-  }),
-});
+  });
+  return { ...base, ...overrides, price };
+}
+
+export type StripeSubscriptionScheduleWithPhasesAndPrice =
+  StripeSubscriptionSchedule & {
+    phases: StripeSubscriptionSchedulePhaseWithPrice[];
+  };
 
 /**
- * Creates a Stripe subscription schedule with its associated phases and prices.
+ * Creates a Stripe subscription schedule with its associated phases.
  *
- * @param params - Parameters to create the schedule and phases with.
- * @returns A populated schedule with its associated phases and prices.
+ * @param params - Optional parameters to customize the subscription schedule.
+ * @param params.stripeId - Optional stripe ID for the schedule.
+ * @param params.phases - Optional array of phase override values.
+ * @param params.scheduleOverrides - Optional schedule override values.
+ * @returns A populated Stripe subscription schedule with its associated phases.
  */
-export const createSubscriptionScheduleWithPhases: Factory<
-  SubscriptionScheduleWithPhases
-> = ({
-  stripeId = createPopulatedStripeSubscriptionSchedule().stripeId,
-  phases = [createSubscriptionSchedulePhaseWithPrice({ scheduleId: stripeId })],
-  ...rest
-} = {}) => {
-  const base = createPopulatedStripeSubscriptionSchedule({ stripeId, ...rest });
-  return {
-    ...base,
-    phases: phases.map(phase => ({ ...phase, scheduleId: stripeId })),
-  };
+export function createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice(
+  overrides: DeepPartial<StripeSubscriptionScheduleWithPhasesAndPrice> = {},
+): StripeSubscriptionScheduleWithPhasesAndPrice {
+  const base = createPopulatedStripeSubscriptionSchedule({
+    ...overrides,
+    stripeId: overrides.stripeId ?? undefined,
+  });
+
+  // if caller passed phases (even empty), map overrides; otherwise default one
+  const phasesOverride = overrides.phases;
+  const phases = Array.isArray(phasesOverride)
+    ? phasesOverride.map(phOvr =>
+        createPopulatedStripeSubscriptionSchedulePhaseWithPrice({
+          ...phOvr,
+          scheduleId: base.stripeId,
+        }),
+      )
+    : [
+        createPopulatedStripeSubscriptionSchedulePhaseWithPrice({
+          scheduleId: base.stripeId,
+        }),
+      ];
+
+  return { ...base, ...overrides, phases };
+}
+
+export type StripeSubscriptionItemWithPrice = StripeSubscriptionItem & {
+  price: StripePrice;
 };
+
+export type StripeSubscriptionWithItemsAndPrice = StripeSubscription & {
+  items: StripeSubscriptionItemWithPrice[];
+};
+
+/**
+ * Creates a Stripe subscription with its associated subscription items and their prices.
+ *
+ * @param params - Optional parameters to customize the subscription.
+ * @param params.items - Optional array of subscription items with prices.
+ * @param params.subscriptionOverrides - Optional subscription override values.
+ * @returns A populated Stripe subscription with its associated items and their prices.
+ */
+export function createPopulatedStripeSubscriptionWithItemsAndPrice(
+  overrides: DeepPartial<StripeSubscriptionWithItemsAndPrice> = {},
+): StripeSubscriptionWithItemsAndPrice {
+  const { items: itemsOverride, ...subscriptionBaseOverride } = overrides;
+
+  const baseSubscription = createPopulatedStripeSubscription(
+    subscriptionBaseOverride,
+  );
+
+  const items = Array.isArray(itemsOverride)
+    ? itemsOverride.map(itemOverride => {
+        const price = createPopulatedStripePrice({
+          lookupKey: getRandomLookupKey(),
+          ...itemOverride?.price,
+        });
+        const base = createPopulatedStripeSubscriptionItem({
+          ...itemOverride,
+          priceId: price.stripeId,
+        });
+        return { ...base, ...itemOverride, price };
+      })
+    : [
+        (() => {
+          const price = createPopulatedStripePrice({
+            lookupKey: getRandomLookupKey(),
+          });
+          const base = createPopulatedStripeSubscriptionItem({
+            priceId: price.stripeId,
+          });
+          return { ...base, price };
+        })(),
+      ];
+
+  return { ...baseSubscription, ...overrides, items };
+}
+
+export type StripeSubscriptionWithScheduleAndItemsWithPriceAndProduct =
+  StripeSubscription & {
+    schedules: StripeSubscriptionScheduleWithPhasesAndPrice[];
+    items: StripeSubscriptionItemWithPriceAndProduct[];
+  };
+
+/**
+ * Creates a complete Stripe subscription with schedules, items, prices and products.
+ *
+ * @param params - Optional parameters to customize the subscription.
+ * @param params.items - Optional array of subscription items with prices and products.
+ * @param params.schedules - Optional array of subscription schedules with phases.
+ * @param params.subscriptionOverrides - Optional subscription override values.
+ * @returns A populated Stripe subscription with all associated data.
+ */
+export function createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+  overrides: DeepPartial<StripeSubscriptionWithScheduleAndItemsWithPriceAndProduct> = {},
+): StripeSubscriptionWithScheduleAndItemsWithPriceAndProduct {
+  // Pull out array overrides so they don't go to the base subscription factory
+  const {
+    items: itemsOverride,
+    schedules: schedulesOverride,
+    ...subscriptionBaseOverride
+  } = overrides;
+
+  // Base subscription (just top-level fields)
+  const baseSubscription = createPopulatedStripeSubscription(
+    subscriptionBaseOverride,
+  );
+
+  // Items: if provided (even empty), map overrides; else default one
+  const items = Array.isArray(itemsOverride)
+    ? itemsOverride.map(itemOverride =>
+        createPopulatedStripeSubscriptionItemWithPriceAndProduct(itemOverride),
+      )
+    : [createPopulatedStripeSubscriptionItemWithPriceAndProduct()];
+
+  // Schedules: same logic as items
+  const schedules = Array.isArray(schedulesOverride)
+    ? schedulesOverride.map(scheduleOverride =>
+        createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice(
+          scheduleOverride,
+        ),
+      )
+    : [createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice()];
+
+  return { ...baseSubscription, ...overrides, items, schedules };
+}

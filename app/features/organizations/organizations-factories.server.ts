@@ -13,7 +13,7 @@ import { addDays } from 'date-fns';
 import { slugify } from '~/utils/slugify.server';
 import type { Factory } from '~/utils/types';
 
-import { createSubscriptionWithItems } from '../billing/billing-factories.server';
+import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from '../billing/billing-factories.server';
 import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
 
 /* BASE */
@@ -162,7 +162,9 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
 export const createOrganizationWithMembershipsAndSubscriptions = ({
   organization = createPopulatedOrganization(),
   memberCount = faker.number.int({ min: 1, max: 10 }),
-  stripeSubscriptions = [createSubscriptionWithItems()],
+  stripeSubscriptions = [
+    createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(),
+  ],
 } = {}): OrganizationWithMembershipsAndSubscriptions => ({
   ...organization,
   _count: { memberships: memberCount },

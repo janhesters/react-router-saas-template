@@ -120,7 +120,7 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
                 orderBy: { created: 'desc' },
                 take: 1,
                 include: {
-                  items: { include: { price: true } },
+                  items: { include: { price: { include: { product: true } } } },
                   schedules: {
                     orderBy: { created: 'desc' },
                     take: 1, // only the latest schedule

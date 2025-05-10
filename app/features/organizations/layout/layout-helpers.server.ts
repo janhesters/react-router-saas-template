@@ -1,7 +1,7 @@
 import { type Organization, OrganizationMembershipRole } from '@prisma/client';
 
-import { pricesByTierAndInterval } from '~/features/billing/billing-constants';
-import { getTierAndIntervalForPriceId } from '~/features/billing/billing-helpers';
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import { getTierAndIntervalForLookupKey } from '~/features/billing/billing-helpers';
 import type { BillingSidebarCardProps } from '~/features/billing/billing-sidebar-card';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 
@@ -50,12 +50,13 @@ export function mapOnboardingUserToOrganizationLayoutProps({
     name: membership.organization.name,
     logo: membership.organization.imageUrl,
     slug: membership.organization.slug,
-    tier: getTierAndIntervalForPriceId(
+    tier: getTierAndIntervalForLookupKey(
       // Actual plan if the organization has a subscription.
       membership.organization.stripeSubscriptions.length > 0
-        ? membership.organization.stripeSubscriptions[0].items[0].price.stripeId
+        ? membership.organization.stripeSubscriptions[0].items[0].price
+            .lookupKey
         : // Default plan during the trial period.
-          pricesByTierAndInterval.high_annual.id,
+          priceLookupKeysByTierAndInterval.high.annual,
     ).tier,
   }));
 

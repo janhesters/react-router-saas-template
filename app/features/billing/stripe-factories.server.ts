@@ -7,16 +7,58 @@ import type { Factory } from '~/utils/types';
 
 import { createPopulatedOrganization } from '../organizations/organizations-factories.server';
 import { createPopulatedUserAccount } from '../user-accounts/user-accounts-factories.server';
-import type { PriceLookupKey } from './billing-constants';
-import {
-  getRandomLookupKey,
-  getStripeIdByLookupKey,
-} from './billing-factories.server';
+
+/**
+ * Creates a Stripe Product object with populated values.
+ */
+export const createStripeProductFactory: Factory<Stripe.Product> = ({
+  id = `prod_${createId()}`,
+  object = 'product',
+  active = true,
+  created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
+  default_price = null,
+  description = null,
+  images = [],
+  livemode = false,
+  marketing_features = [],
+  metadata = {
+    max_seats: '1',
+  },
+  name = 'Hobby Plan',
+  package_dimensions = null,
+  shippable = null,
+  statement_descriptor = null,
+  tax_code = 'txcd_10103001',
+  type = 'service',
+  unit_label = 'seat',
+  updated = created,
+  url = null,
+} = {}) => ({
+  id,
+  object,
+  active,
+  created,
+  default_price,
+  description,
+  images,
+  livemode,
+  marketing_features,
+  metadata,
+  name,
+  package_dimensions,
+  shippable,
+  statement_descriptor,
+  tax_code,
+  type,
+  unit_label,
+  updated,
+  url,
+});
 
 /**
  * Creates a Stripe Customer object with populated values.
  */
-export const createStripeCustomer: Factory<Stripe.Customer> = ({
+export const createStripeCustomerFactory: Factory<Stripe.Customer> = ({
   id = `cus_${createId()}`,
   object = 'customer',
   address = null,
@@ -71,7 +113,7 @@ export const createStripeCustomer: Factory<Stripe.Customer> = ({
 /**
  * Creates a Stripe Customer Portal Session object with populated values.
  */
-export const createStripeCustomerPortalSession: Factory<
+export const createStripeCustomerPortalSessionFactory: Factory<
   Stripe.BillingPortal.Session
 > = ({
   id = `bps_${createId()}`,
@@ -79,7 +121,7 @@ export const createStripeCustomerPortalSession: Factory<
   configuration = `bpc_${createId()}`,
   // realistic created timestamp within last 10 days
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
-  customer = createStripeCustomer().id,
+  customer = createStripeCustomerFactory().id,
   flow = null,
   livemode = false,
   locale = null,
@@ -105,9 +147,9 @@ export const createStripeCustomerPortalSession: Factory<
 /**
  * Creates a Stripe Price object with populated values.
  */
-export const createStripePrice: Factory<Stripe.Price> = ({
-  lookup_key = getRandomLookupKey(),
-  id = getStripeIdByLookupKey(lookup_key as PriceLookupKey),
+export const createStripePriceFactory: Factory<Stripe.Price> = ({
+  lookup_key = `${faker.word.noun()}-${faker.word.noun()}-${faker.word.noun()}`,
+  id = `price_${createId()}`,
   object = 'price',
   active = true,
   billing_scheme = 'per_unit',
@@ -120,7 +162,10 @@ export const createStripePrice: Factory<Stripe.Price> = ({
   nickname = null,
   product = `prod_${createId()}`,
   recurring = {
-    interval: 'month' as Stripe.Price.Recurring.Interval,
+    interval: faker.helpers.arrayElement([
+      'month',
+      'year',
+    ]) as Stripe.Price.Recurring.Interval,
     interval_count: 1,
     trial_period_days: null,
     usage_type: 'licensed' as Stripe.Price.Recurring.UsageType,
@@ -159,7 +204,9 @@ export const createStripePrice: Factory<Stripe.Price> = ({
 /**
  * Creates a Stripe SubscriptionItem object with populated values.
  */
-export const createStripeSubscriptionItem: Factory<Stripe.SubscriptionItem> = ({
+export const createStripeSubscriptionItemFactory: Factory<
+  Stripe.SubscriptionItem
+> = ({
   id = `si_${createId()}`,
   object = 'subscription_item',
   // realistic created within last 5 days
@@ -167,7 +214,7 @@ export const createStripeSubscriptionItem: Factory<Stripe.SubscriptionItem> = ({
   discounts = [],
   metadata = {},
   plan = {} as Stripe.Plan, // deprecated in favor of price
-  price = createStripePrice(),
+  price = createStripePriceFactory(),
   quantity = faker.number.int({ min: 1, max: 5 }),
   subscription = `sub_${createId()}`,
   current_period_start = created,
@@ -195,7 +242,7 @@ export const createStripeSubscriptionItem: Factory<Stripe.SubscriptionItem> = ({
 /**
  * Creates a Stripe Subscription object with populated values.
  */
-export const createStripeSubscription: Factory<Stripe.Subscription> = ({
+export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   id = `sub_${createId()}`,
   object = 'subscription',
   application = null,
@@ -211,7 +258,7 @@ export const createStripeSubscription: Factory<Stripe.Subscription> = ({
   cancellation_details = { comment: null, feedback: null, reason: null },
   collection_method = 'charge_automatically',
   currency = 'usd',
-  customer = createStripeCustomer().id,
+  customer = createStripeCustomerFactory().id,
   days_until_due = null,
   default_payment_method = null,
   default_source = null,
@@ -253,7 +300,7 @@ export const createStripeSubscription: Factory<Stripe.Subscription> = ({
   },
   trial_start = null,
 } = {}) => {
-  const defaultItem = createStripeSubscriptionItem({
+  const defaultItem = createStripeSubscriptionItemFactory({
     subscription: id,
     // align periods with subscription dates
     created,
@@ -316,7 +363,9 @@ export const createStripeSubscription: Factory<Stripe.Subscription> = ({
 /**
  * Creates a Stripe Checkout Session object with populated values.
  */
-export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
+export const createStripeCheckoutSessionFactory: Factory<
+  Stripe.Checkout.Session
+> = ({
   id = `cs_${createId()}`,
   object = 'checkout.session',
   adaptive_pricing = null,
@@ -347,7 +396,7 @@ export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
     submit: null,
     terms_of_service_acceptance: null,
   },
-  customer = createStripeCustomer().id,
+  customer = createStripeCustomerFactory().id,
   customer_creation = 'always',
   customer_details = {
     address: {
@@ -410,7 +459,7 @@ export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
   shipping_options = [],
   status = 'complete',
   submit_type = null,
-  subscription = createStripeSubscription().id,
+  subscription = createStripeSubscriptionFactory().id,
   success_url = faker.internet.url(),
   total_details = {
     amount_discount: 0,
@@ -481,7 +530,7 @@ export const createStripeCheckoutSession: Factory<Stripe.Checkout.Session> = ({
 /**
  * Creates a Stripe SubscriptionSchedulePhase object with populated values.
  */
-export const createStripeSubscriptionSchedulePhase: Factory<
+export const createStripeSubscriptionSchedulePhaseFactory: Factory<
   Stripe.SubscriptionSchedule.Phase
 > = ({
   add_invoice_items = [],
@@ -541,7 +590,7 @@ export const createStripeSubscriptionSchedulePhase: Factory<
 /**
  * Creates a Stripe SubscriptionSchedule object with populated values.
  */
-export const createStripeSubscriptionSchedule: Factory<
+export const createStripeSubscriptionScheduleFactory: Factory<
   Stripe.SubscriptionSchedule
 > = ({
   id = `sub_sched_${createId()}`,
@@ -554,7 +603,7 @@ export const createStripeSubscriptionSchedule: Factory<
     end_date: Math.floor(faker.date.future().getTime() / 1000),
     start_date: Math.floor(faker.date.recent().getTime() / 1000),
   },
-  customer = createStripeCustomer().id,
+  customer = createStripeCustomerFactory().id,
   default_settings = {
     application_fee_percent: null,
     automatic_tax: {
@@ -582,11 +631,11 @@ export const createStripeSubscriptionSchedule: Factory<
   end_behavior = 'release' as const,
   livemode = false,
   metadata = {},
-  phases = [createStripeSubscriptionSchedulePhase()],
+  phases = [createStripeSubscriptionSchedulePhaseFactory()],
   released_at = null,
   released_subscription = null,
   status = 'active' as const,
-  subscription = createStripeSubscription().id,
+  subscription = createStripeSubscriptionFactory().id,
   test_clock = null,
 } = {}) => ({
   id,

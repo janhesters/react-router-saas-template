@@ -10,6 +10,7 @@ import {
 } from '~/test/react-test-utils';
 import type { Factory } from '~/utils/types';
 
+import { getRandomTier } from './billing-factories.server';
 import type { BillingPageProps } from './billing-page';
 import { BillingPage } from './billing-page';
 
@@ -26,7 +27,7 @@ const createProps: Factory<BillingPageProps> = ({
   currentMonthlyRatePerUser = faker.number.int({ min: 5, max: 50 }),
   currentPeriodEnd = faker.date.future(),
   currentSeats = faker.number.int({ min: 1, max: 50 }),
-  currentTierName = faker.helpers.arrayElement(['Free', 'Pro', 'Enterprise']),
+  currentTier = getRandomTier(),
   isCancellingSubscription = false,
   isEnterprisePlan = false,
   isKeepingCurrentSubscription = false,
@@ -45,7 +46,7 @@ const createProps: Factory<BillingPageProps> = ({
   currentMonthlyRatePerUser,
   currentPeriodEnd,
   currentSeats,
-  currentTierName,
+  currentTier,
   isCancellingSubscription,
   isEnterprisePlan,
   isKeepingCurrentSubscription,
@@ -103,7 +104,7 @@ describe('BillingPage component', () => {
       currentMonthlyRatePerUser: 10,
       currentSeats: 3,
       maxSeats: 5,
-      currentTierName: 'Pro',
+      currentTier: 'mid',
       projectedTotal: 10 * 5,
       currentPeriodEnd: new Date('2025-03-15T00:00:00.000Z'),
     });
@@ -120,7 +121,7 @@ describe('BillingPage component', () => {
 
     // Tier name and rate
     expect(screen.getByText(/current plan/i)).toBeInTheDocument();
-    expect(screen.getByText(/^pro$/i)).toBeInTheDocument();
+    expect(screen.getByText(/^startup$/i)).toBeInTheDocument();
     expect(screen.getByText(/\$10/i)).toBeInTheDocument();
     expect(screen.getByText(/per user billed monthly/i)).toBeInTheDocument();
     // One button for mobile and one for desktop. In a real browser, one of
@@ -417,7 +418,7 @@ describe('BillingPage component', () => {
         pendingInterval: 'monthly' as const,
         pendingChangeDate: new Date('2025-02-12T00:00:00.000Z'),
       },
-      currentTierName: 'high',
+      currentTier: 'high',
     });
     const RouterStub = createRoutesStub([
       { path, Component: () => <BillingPage {...props} /> },
@@ -444,7 +445,7 @@ describe('BillingPage component', () => {
         pendingInterval: 'monthly' as const,
         pendingChangeDate: new Date('2025-02-12T00:00:00.000Z'),
       },
-      currentTierName: 'high',
+      currentTier: 'high',
     });
     const RouterStub = createRoutesStub([
       { path, Component: () => <BillingPage {...props} /> },

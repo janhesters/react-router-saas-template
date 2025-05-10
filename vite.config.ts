@@ -30,6 +30,7 @@ const testConfig = defineConfig({
         test: {
           include: ['app/**/*.spec.ts'],
           name: 'integration-tests',
+          globalSetup: 'app/test/vitest.global-setup.ts',
           setupFiles: ['app/test/setup-server-test-environment.ts'],
         },
       },

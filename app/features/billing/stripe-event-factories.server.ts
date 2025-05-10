@@ -8,9 +8,9 @@ import type { Factory } from '~/utils/types';
 import { createPopulatedOrganization } from '../organizations/organizations-factories.server';
 import { createPopulatedUserAccount } from '../user-accounts/user-accounts-factories.server';
 import {
-  createStripeCheckoutSession,
-  createStripeSubscription,
-  createStripeSubscriptionSchedule,
+  createStripeCheckoutSessionFactory,
+  createStripeSubscriptionFactory,
+  createStripeSubscriptionScheduleFactory,
 } from './stripe-factories.server';
 
 export const createStripeCheckoutSessionCompletedEvent: Factory<
@@ -20,7 +20,7 @@ export const createStripeCheckoutSessionCompletedEvent: Factory<
   object = 'event',
   api_version = '2025-03-31.basil',
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
-  data = { object: createStripeCheckoutSession() },
+  data = { object: createStripeCheckoutSessionFactory() },
   livemode = false,
   pending_webhooks = faker.number.int({ min: 1, max: 5 }),
   request = {
@@ -48,7 +48,7 @@ export const createStripeCustomerSubscriptionCreatedEvent: Factory<
   api_version = '2025-03-31.basil',
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
   data = {
-    object: createStripeSubscription({
+    object: createStripeSubscriptionFactory({
       automatic_tax: {
         enabled: true,
         liability: { type: 'self' as const },
@@ -105,7 +105,7 @@ export const createStripeSubscriptionScheduleCreatedEvent: Factory<
   object = 'event',
   api_version = '2025-03-31.basil',
   created = Math.floor(faker.date.recent().getTime() / 1000),
-  data = { object: createStripeSubscriptionSchedule() },
+  data = { object: createStripeSubscriptionScheduleFactory() },
   livemode = false,
   pending_webhooks = faker.number.int({ min: 1, max: 5 }),
   request = {

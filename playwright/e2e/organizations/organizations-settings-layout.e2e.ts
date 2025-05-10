@@ -108,6 +108,7 @@ test.describe('organization settings layout', () => {
       await createTestSubscriptionForUserAndOrganization({
         user,
         organization: otherOrganization,
+        stripeCustomerId: otherOrganization.stripeCustomerId!,
       });
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);

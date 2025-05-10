@@ -166,6 +166,7 @@ export async function setupOrganizationAndLoginAsMember({
   await createTestSubscriptionForUserAndOrganization({
     user: data.user,
     organization: data.organization,
+    stripeCustomerId: data.organization.stripeCustomerId!,
   });
 
   return data;

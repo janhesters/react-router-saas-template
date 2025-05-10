@@ -296,3 +296,92 @@ If you want to hire senior React developers to augment your team, or build your 
 ---
 
 Why is good test coverage important for a template? Same reason why it's good for your own code base. You want to avoid accidentally breaking something when you update use the template and change and ammend its code.
+
+---
+
+### 1. Create your products & prices
+
+The React Router SaaS Template is set up to listen to product & prices webhooks. This also allows your account managers to create and manage products & prices in the Stripe Dashboard, and have them automatically reflected in your app.
+
+For local development, run your app with `npm run dev` and forward webhooks to your local server with `stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks`.
+
+For production, follow the same instructions, but us the production URL of your
+app and make sure your app is deployed so it will accept the webhooks of the product creation. If you messed this up, you can always retrigger the webhooks using the Stripe CLI.
+
+1. Go to the [Stripe Dashboard for products](https://dashboard.stripe.com/test/products)
+2. Click on "Create Product" (or "Add a product" if you have none).
+3. In the modal:
+  - Enter the name of the product, e.g.: "Hobby Plan"
+  - (Optional) Enter a description of the product, e.g.: "Hobby Plan for 1 user", and upload an image.
+  - In the "Product Tax Code" dropdown, select "Software as a Service (SaaS) - business use".
+  - Click on "More Options" and set the "Unit label" to "seat".
+  - Enter a monhtly recurring price, e.g.: "$17". Make sure you set the currenty to USD in case its NOT the default.
+  - Click on "More pricing options" and enter a lookup key, e.g.: "monthly_hobby_plan".
+  - Click on "Next".
+4. Click on "Add another price" and this time choose "Yearly" as the billing period. Make sure you enter the correct yearly price, e.g.: "$180". And remember to set the lookup key to "annual_hobby_plan".
+5. **Important:** Now enter the value: "max_seats" in the metadata field and set it to "1". This app is set up to handle ALL limits via metadata. This allows you to easily change the limits for a product without having to change the code.
+6. Finally, click "Add Product".
+7. Now write your lookup keys in the `priceLookupKeysByTierAndInterval` object in `app/features/billing/billing-constants.ts`.
+
+#### For Local Development: Replay the Events
+
+After you’ve created your products and prices locally (with `npm run dev` and `stripe listen` forwarding to your webhook endpoint), you’ll see lines in your terminal like:
+
+```
+2025-05-10 17:58:56   --> product.created \[evt\_XXXXXXXXXXXXXXXXXXXXXXXX]
+2025-05-10 17:58:58   --> price.created   \[evt\_YYYYYYYYYYYYYYYYYYYYYYYY]
+2025-05-10 17:59:00   --> price.created   \[evt\_ZZZZZZZZZZZZZZZZZZZZZZZZ]
+…etc.
+```
+
+1. **Copy the event IDs**  
+   Whenever you see a line ending with `[evt_…]`, copy that ID (everything inside the brackets, for example `evt_XXXXXXXXXXXXXXXXXXXXXXXX`).
+
+2. **Save them for later**  
+   Put all your event IDs into a file (e.g. `stripe-events.txt`) or an environment variable. For example, in a Unix-style shell you might do:
+   ```bash
+   # stripe-events.txt
+   evt_XXXXXXXXXXXXXXXXXXXXXXXX
+   evt_YYYYYYYYYYYYYYYYYYYYYYYY
+   evt_ZZZZZZZZZZZZZZZZZZZZZZZZ
+   # …etc.
+   ```
+
+3. **Replay (resend) the events**
+   When you need to wipe your local database and re-seed via webhooks, you can replay all those events at once. For example, if you saved them in `stripe-events.txt`:
+
+   ```bash
+   xargs -n1 stripe events resend < stripe-events.txt
+   ```
+
+> **Tip:** Keep `stripe-events.txt` checked into your repo (or in a safe place) so you can easily replay your entire setup whenever you rebuild your local database.
+
+### 2. Seed Stripe Data for Tests (Local vs. CI)
+
+Your test suite relies on having Stripe products & prices in your database. Here’s how it works in each environment:
+
+#### Local
+
+1. **Replay your real events** (see “For Local Development: Replay the Events” above) so your DB contains the exact products, prices, metadata, and lookup keys you configured in Stripe.
+2. **Run Vitest**:
+   ```bash
+   npm test
+   ```
+
+The global setup (`app/test/vitest.global-setup.ts`) will detect your existing products/prices and simply verify they’re present.
+
+#### CI
+
+In CI you won’t have webhook events or a populated database, so we automatically seed dummy data:
+
+* **Global setup file**: `app/test/vitest.global-setup.ts`
+* **Seeding helper**: `ensureStripeProductsAndPricesExist()` in `app/test/server-test-utils.ts`
+
+What it does before your tests run:
+
+1. Looks up each lookup key defined in `priceLookupKeysByTierAndInterval`.
+2. If no product exists yet, creates one via `createPopulatedStripeProduct()` + `saveStripeProductToDatabase()`.
+3. Creates both monthly & annual prices for that product with the right lookup keys & intervals.
+4. Logs success or exits on error, ensuring your tests always see exactly the pricing rows they expect.
+
+You don’t need to replay webhooks or manage `stripe-events.txt` in CI—this script handles everything. Just push your code and let your CI pipeline run `npm test`.

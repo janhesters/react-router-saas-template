@@ -2,13 +2,13 @@ import { http, HttpResponse } from 'msw';
 import type Stripe from 'stripe';
 
 import {
-  createStripeCheckoutSession,
-  createStripeCustomer as createStripeCustomerFactory,
-  createStripeCustomerPortalSession,
-  createStripePrice as createStripePriceFactory,
-  createStripeSubscription as createStripeSubscriptionFactory,
-  createStripeSubscriptionItem as createStripeSubscriptionItemFactory,
-  createStripeSubscriptionSchedule as createStripeSubscriptionScheduleFactory,
+  createStripeCheckoutSessionFactory,
+  createStripeCustomerFactory,
+  createStripeCustomerPortalSessionFactory,
+  createStripePriceFactory,
+  createStripeSubscriptionFactory,
+  createStripeSubscriptionItemFactory,
+  createStripeSubscriptionScheduleFactory,
 } from '~/features/billing/stripe-factories.server';
 
 const cancelSubscriptionMock = http.post(
@@ -34,7 +34,7 @@ const createBillingPortalSessionMock = http.post(
     const customer = params.get('customer')!;
     const return_url = params.get('return_url')!;
 
-    const session = createStripeCustomerPortalSession({
+    const session = createStripeCustomerPortalSessionFactory({
       customer,
       return_url,
     });
@@ -79,7 +79,7 @@ const createCheckoutSessionMock = http.post(
       quantity: it.quantity!,
     }));
 
-    const session = createStripeCheckoutSession({
+    const session = createStripeCheckoutSessionFactory({
       customer,
       mode,
       success_url,

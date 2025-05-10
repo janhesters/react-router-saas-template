@@ -2,8 +2,11 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import { href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
-import { pricesByTierAndInterval } from '~/features/billing/billing-constants';
-import { createSubscriptionWithPrice } from '~/features/billing/billing-factories.server';
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import {
+  createPopulatedStripeSubscriptionItemWithPriceAndProduct,
+  createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct,
+} from '~/features/billing/billing-factories.server';
 import { createOnboardingUser } from '~/test/test-utils';
 
 import { createPopulatedOrganization } from '../organizations-factories.server';
@@ -89,9 +92,17 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             imageUrl: 'https://example.com/org2.jpg',
             slug: 'org-2',
             stripeSubscriptions: [
-              createSubscriptionWithPrice({
-                lookupKey: pricesByTierAndInterval.low_annual.lookupKey,
-              }),
+              createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+                {
+                  items: [
+                    createPopulatedStripeSubscriptionItemWithPriceAndProduct({
+                      price: {
+                        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+                      },
+                    }),
+                  ],
+                },
+              ),
             ],
           },
           deactivatedAt: null,
@@ -157,9 +168,18 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             imageUrl: 'https://example.com/org1.jpg',
             slug: 'org-1',
             stripeSubscriptions: [
-              createSubscriptionWithPrice({
-                lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
-              }),
+              createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+                {
+                  items: [
+                    createPopulatedStripeSubscriptionItemWithPriceAndProduct({
+                      price: {
+                        lookupKey:
+                          priceLookupKeysByTierAndInterval.high.monthly,
+                      },
+                    }),
+                  ],
+                },
+              ),
             ],
           },
           deactivatedAt: null,
@@ -172,9 +192,17 @@ describe('mapOnboardingUserToOrganizationLayoutProps()', () => {
             imageUrl: 'https://example.com/org2.jpg',
             slug: 'org-2',
             stripeSubscriptions: [
-              createSubscriptionWithPrice({
-                lookupKey: pricesByTierAndInterval.low_monthly.lookupKey,
-              }),
+              createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+                {
+                  items: [
+                    createPopulatedStripeSubscriptionItemWithPriceAndProduct({
+                      price: {
+                        lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+                      },
+                    }),
+                  ],
+                },
+              ),
             ],
           },
           deactivatedAt: null,
@@ -279,7 +307,12 @@ describe('mapOnboardingUserToBillingSidebarCardProps()', () => {
     'given: an onboarded %s user without a free trial, should: return an empty object',
     role => {
       const now = new Date();
-      const subscription = createSubscriptionWithPrice({ status: 'active' });
+      const subscription =
+        createPopulatedStripeSubscriptionItemWithPriceAndProduct({
+          price: {
+            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+          },
+        });
       const organization = createPopulatedOrganization();
       const user = createOnboardingUser({
         memberships: [

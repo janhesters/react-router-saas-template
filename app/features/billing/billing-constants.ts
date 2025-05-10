@@ -6,53 +6,39 @@ export const SWITCH_SUBSCRIPTION_INTENT = 'switchSubscription';
 export const UPDATE_BILLING_EMAIL_INTENT = 'updateBillingEmail';
 export const VIEW_INVOICES_INTENT = 'viewInvoices';
 
-/**
- * Hardcoded price IDs for Stripe products.
- *
- * IMPORTANT:
- * - These IDs must match exactly what's configured in Stripe.
- * - If you change a price in Stripe (e.g., create a new one), update the ID
- * here manually.
- * - Consider loading these dynamically from Stripe in the future if price plans
- * change often.
- *
- * ENVIRONMENT NOTE:
- * - If you have separate Stripe environments (dev, staging, prod),
- *   ensure you set the correct IDs for each environment.
- */
-export const pricesByTierAndInterval = {
-  low_monthly: {
-    id: 'price_1RJetbPti3AuUdaNOPzymzNN',
-    lookupKey: 'hobby_monthly_new',
+export const priceLookupKeysByTierAndInterval = {
+  low: {
+    monthly: 'monthly_hobby_plan',
+    annual: 'annual_hobby_plan',
   },
-  low_annual: {
-    id: 'price_1RJevnPti3AuUdaNPCCAIEYE',
-    lookupKey: 'hobby_monthly_new_two',
+  mid: {
+    monthly: 'monthly_startup_plan',
+    annual: 'annual_startup_plan',
   },
-  mid_monthly: {
-    id: 'price_1RGetVPti3AuUdaN4RCP21pJ',
-    lookupKey: 'startup_monthly',
-  },
-  mid_annual: {
-    id: 'price_1RGetVPti3AuUdaNzCYSZMi7',
-    lookupKey: 'startup_annual',
-  },
-  high_monthly: {
-    id: 'price_1RKJ8SPti3AuUdaNYJwZeeyX',
-    lookupKey: 'business_monthly_new',
-  },
-  high_annual: {
-    id: 'price_1RKJ8SPti3AuUdaNWQziByvX',
-    lookupKey: 'business_annual_new',
+  high: {
+    monthly: 'monthly_business_plan',
+    annual: 'annual_business_plan',
   },
 } as const;
 
-type PriceKey = keyof typeof pricesByTierAndInterval;
-export type PriceLookupKey =
-  (typeof pricesByTierAndInterval)[PriceKey]['lookupKey'];
-export type Tier = PriceKey extends `${infer T}_${string}` ? T : never;
-export type Interval = PriceKey extends `${string}_${infer I}` ? I : never;
+export type Tier = keyof typeof priceLookupKeysByTierAndInterval;
+export type Interval = keyof (typeof priceLookupKeysByTierAndInterval)[Tier];
 
-export const lookupKeys: readonly PriceLookupKey[] = Object.values(
-  pricesByTierAndInterval,
-).map(({ lookupKey }) => lookupKey);
+export const monthlyLookupKeys = [
+  priceLookupKeysByTierAndInterval.low.monthly,
+  priceLookupKeysByTierAndInterval.mid.monthly,
+  priceLookupKeysByTierAndInterval.high.monthly,
+] as const;
+
+export const annualLookupKeys = [
+  priceLookupKeysByTierAndInterval.low.annual,
+  priceLookupKeysByTierAndInterval.mid.annual,
+  priceLookupKeysByTierAndInterval.high.annual,
+] as const;
+
+export const allLookupKeys = [
+  ...monthlyLookupKeys,
+  ...annualLookupKeys,
+] as const;
+
+export const allTiers = ['low', 'mid', 'high'] as const;

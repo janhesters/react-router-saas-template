@@ -8,7 +8,7 @@ import {
   userEvent,
 } from '~/test/react-test-utils';
 
-import { pricesByTierAndInterval } from './billing-constants';
+import { priceLookupKeysByTierAndInterval } from './billing-constants';
 import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 
 describe('CreateSubscriptionModalContent component', () => {
@@ -33,15 +33,15 @@ describe('CreateSubscriptionModalContent component', () => {
     // and each should carry the correct priceId
     expect(annualButtons[0]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.low_annual.id,
+      priceLookupKeysByTierAndInterval.low.annual,
     );
     expect(annualButtons[1]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.mid_annual.id,
+      priceLookupKeysByTierAndInterval.mid.annual,
     );
     expect(annualButtons[2]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.high_annual.id,
+      priceLookupKeysByTierAndInterval.high.annual,
     );
 
     // should render the enterprise "Contact Sales" link
@@ -69,15 +69,15 @@ describe('CreateSubscriptionModalContent component', () => {
     expect(monthlyButtons).toHaveLength(3);
     expect(monthlyButtons[0]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.low_monthly.id,
+      priceLookupKeysByTierAndInterval.low.monthly,
     );
     expect(monthlyButtons[1]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.mid_monthly.id,
+      priceLookupKeysByTierAndInterval.mid.monthly,
     );
     expect(monthlyButtons[2]).toHaveAttribute(
       'value',
-      pricesByTierAndInterval.high_monthly.id,
+      priceLookupKeysByTierAndInterval.high.monthly,
     );
   });
 });

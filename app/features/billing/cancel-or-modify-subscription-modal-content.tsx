@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 import type { Interval, Tier } from './billing-constants';
 import {
-  pricesByTierAndInterval,
+  priceLookupKeysByTierAndInterval,
   SWITCH_SUBSCRIPTION_INTENT,
 } from './billing-constants';
 import {
@@ -165,8 +165,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.low_monthly.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.low.monthly}
                         type="submit"
                         {...getButtonProps('monthly', 'low')}
                       />
@@ -212,8 +212,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.mid_monthly.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.mid.monthly}
                         type="submit"
                         {...getButtonProps('monthly', 'mid')}
                       />
@@ -263,8 +263,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.high_monthly.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.high.monthly}
                         type="submit"
                         {...getButtonProps('monthly', 'high')}
                       />
@@ -319,8 +319,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.low_annual.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.low.annual}
                         type="submit"
                         {...getButtonProps('annual', 'low')}
                       />
@@ -369,8 +369,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.mid_annual.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.mid.annual}
                         type="submit"
                         {...getButtonProps('annual', 'mid')}
                       />
@@ -422,8 +422,8 @@ export function CancelOrModifySubscriptionModalContent({
 
                       <Button
                         className="w-full"
-                        name="priceId"
-                        value={pricesByTierAndInterval.high_annual.id}
+                        name="lookupKey"
+                        value={priceLookupKeysByTierAndInterval.high.annual}
                         type="submit"
                         {...getButtonProps('annual', 'high')}
                       />

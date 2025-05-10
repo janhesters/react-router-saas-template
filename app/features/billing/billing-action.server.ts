@@ -42,7 +42,8 @@ import {
   resumeStripeSubscription,
   updateStripeCustomer,
 } from './stripe-helpers.server';
-import { upsertStripeSubscriptionForOrganizationInDatabaseById } from './stripe-subscription-model.server';
+import { retrieveStripePriceFromDatabaseByLookupKey } from './stripe-prices-model.server';
+import { updateStripeSubscriptionInDatabase } from './stripe-subscription-model.server';
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from './stripe-subscription-schedule-model.server';
 
 const schema = z.discriminatedUnion('intent', [
@@ -112,13 +113,21 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
       }
 
       case OPEN_CHECKOUT_SESSION_INTENT: {
+        const price = await retrieveStripePriceFromDatabaseByLookupKey(
+          body.lookupKey,
+        );
+
+        if (!price) {
+          throw new Error('Price not found');
+        }
+
         const checkoutSession = await createStripeCheckoutSession({
           baseUrl,
           customerEmail: organization.billingEmail,
           customerId: organization.stripeCustomerId,
           organizationId: organization.id,
           organizationSlug: organization.slug,
-          priceId: body.priceId,
+          priceId: price.stripeId,
           purchasedById: user.id,
           seatsUsed: organization._count.memberships,
         });
@@ -141,9 +150,7 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
           subscription.cancel_at_period_end !==
           currentSubscription.cancelAtPeriodEnd
         ) {
-          await upsertStripeSubscriptionForOrganizationInDatabaseById(
-            subscription,
-          );
+          await updateStripeSubscriptionInDatabase(subscription);
         }
 
         const toast = await createToastHeaders({
@@ -163,6 +170,14 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
           throw new Error('Organization has no Stripe subscriptions');
         }
 
+        const price = await retrieveStripePriceFromDatabaseByLookupKey(
+          body.lookupKey,
+        );
+
+        if (!price) {
+          throw new Error('Price not found');
+        }
+
         const portalSession = await createStripeSwitchPlanSession({
           baseUrl,
           customerId: organization.stripeCustomerId,
@@ -170,7 +185,7 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
           subscriptionId: organization.stripeSubscriptions[0].stripeId,
           subscriptionItemId:
             organization.stripeSubscriptions[0].items[0].stripeId,
-          newPriceId: body.priceId,
+          newPriceId: price.stripeId,
           quantity: organization._count.memberships,
         });
 

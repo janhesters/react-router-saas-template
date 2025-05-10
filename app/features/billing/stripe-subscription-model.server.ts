@@ -3,6 +3,44 @@ import type Stripe from 'stripe';
 
 import { prisma } from '~/utils/database.server';
 
+/* CREATE */
+
+/**
+ * Creates a new Stripe subscription and its items in our database.
+ * Expects organizationId and purchasedById in subscription.metadata.
+ *
+ * @param stripeSubscription - Stripe.Subscription with metadata: organizationId, purchasedById.
+ * @returns The created StripeSubscription record.
+ */
+export async function createStripeSubscriptionInDatabase(
+  stripeSubscription: Stripe.Subscription,
+) {
+  const { metadata } = stripeSubscription;
+  const organizationId = metadata.organizationId;
+  const purchasedById = metadata.purchasedById;
+
+  return prisma.stripeSubscription.create({
+    data: {
+      stripeId: stripeSubscription.id,
+      organization: { connect: { id: organizationId } },
+      purchasedBy: { connect: { id: purchasedById } },
+      created: new Date(stripeSubscription.created * 1000),
+      cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+      status: stripeSubscription.status,
+      items: {
+        create: stripeSubscription.items.data.map(item => ({
+          stripeId: item.id,
+          currentPeriodStart: new Date(item.current_period_start * 1000),
+          currentPeriodEnd: new Date(item.current_period_end * 1000),
+          price: { connect: { stripeId: item.price.id } },
+        })),
+      },
+    },
+  });
+}
+
+/* READ */
+
 /**
  * Retrieves the latest Stripe subscription for an organization, regardless of
  * status.
@@ -27,50 +65,24 @@ export async function retrieveLatestStripeSubscriptionByOrganizationId(
   });
 }
 
+/* UPDATE */
+
 /**
- * Upserts a Stripe subscription and its items into our database.
+ * Updates an existing Stripe subscription and its items in our database.
  * Expects organizationId and purchasedById in subscription.metadata.
  *
  * @param stripeSubscription - Stripe.Subscription with metadata: organizationId, purchasedById.
- * @returns The upserted StripeSubscription record.
+ * @returns The updated StripeSubscription record.
  */
-export async function upsertStripeSubscriptionForOrganizationInDatabaseById(
+export async function updateStripeSubscriptionInDatabase(
   stripeSubscription: Stripe.Subscription,
 ) {
   const { metadata } = stripeSubscription;
-  const organizationId = metadata.organizationId;
   const purchasedById = metadata.purchasedById;
 
-  return prisma.stripeSubscription.upsert({
+  return prisma.stripeSubscription.update({
     where: { stripeId: stripeSubscription.id },
-    create: {
-      stripeId: stripeSubscription.id,
-      organization: { connect: { id: organizationId } },
-      purchasedBy: { connect: { id: purchasedById } },
-      created: new Date(stripeSubscription.created * 1000),
-      cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-      status: stripeSubscription.status,
-      items: {
-        create: stripeSubscription.items.data.map(item => ({
-          stripeId: item.id,
-          currentPeriodStart: new Date(item.current_period_start * 1000),
-          currentPeriodEnd: new Date(item.current_period_end * 1000),
-          price: {
-            connectOrCreate: {
-              where: { stripeId: item.price.id },
-              create: {
-                stripeId: item.price.id,
-                lookupKey: item.price.lookup_key ?? '',
-                currency: item.price.currency,
-                unitAmount: item.price.unit_amount ?? 0,
-                metadata: item.price.metadata ?? {},
-              },
-            },
-          },
-        })),
-      },
-    },
-    update: {
+    data: {
       purchasedBy: { connect: { id: purchasedById } },
       created: new Date(stripeSubscription.created * 1000),
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
@@ -81,20 +93,13 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById(
           stripeId: item.id,
           currentPeriodStart: new Date(item.current_period_start * 1000),
           currentPeriodEnd: new Date(item.current_period_end * 1000),
-          price: {
-            connectOrCreate: {
-              where: { stripeId: item.price.id },
-              create: {
-                stripeId: item.price.id,
-                lookupKey: item.price.lookup_key ?? '',
-                currency: item.price.currency,
-                unitAmount: item.price.unit_amount ?? 0,
-                metadata: item.price.metadata ?? {},
-              },
-            },
-          },
+          price: { connect: { stripeId: item.price.id } },
         })),
       },
     },
   });
 }
+
+/* DELETE */
+
+// No delete operations currently implemented

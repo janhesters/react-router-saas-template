@@ -4,6 +4,7 @@ import { data, href } from 'react-router';
 import { describe, expect, test } from 'vitest';
 
 import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constants';
+import { getRandomLookupKey } from '~/features/billing/billing-factories.server';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
@@ -488,7 +489,7 @@ describe('/organizations/:organizationSlug route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         organizationSlug: organization.slug,
-        formData: toFormData({ intent, priceId: 'price_123' }),
+        formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -508,7 +509,7 @@ describe('/organizations/:organizationSlug route action', () => {
         const response = (await sendAuthenticatedRequest({
           user,
           organizationSlug: organization.slug,
-          formData: toFormData({ intent, priceId: 'price_123' }),
+          formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
         })) as Response;
 
         expect(response.status).toEqual(302);

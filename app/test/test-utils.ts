@@ -2,11 +2,22 @@
 import { faker } from '@faker-js/faker';
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
-import type Stripe from 'stripe';
+import { StripePriceInterval } from '@prisma/client';
 
-import { createSubscriptionWithItems } from '~/features/billing/billing-factories.server';
-import { createStripeCustomer } from '~/features/billing/stripe-factories.server';
-import { createStripeSubscription } from '~/features/billing/stripe-factories.server';
+import type { Tier } from '~/features/billing/billing-constants';
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import type { StripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
+import {
+  createPopulatedStripePrice,
+  createPopulatedStripeProduct,
+  createPopulatedStripeSubscriptionWithItemsAndPrice,
+} from '~/features/billing/billing-factories.server';
+import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from '~/features/billing/billing-factories.server';
+import {
+  retrieveStripePriceFromDatabaseByLookupKey,
+  saveStripePriceToDatabase,
+} from '~/features/billing/stripe-prices-model.server';
+import { saveStripeProductToDatabase } from '~/features/billing/stripe-product-model.server';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
@@ -24,19 +35,9 @@ import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from '~/features/user-authentication/user-authentication-factories';
+import type { DeepPartial } from '~/utils/types';
 
 import { setMockSession } from './mocks/handlers/supabase/mock-sessions';
-
-/**
- * Recursive partial type for deep overrides, preserving Date instances.
- */
-type DeepPartial<T> = T extends Date
-  ? T
-  : T extends (infer U)[]
-    ? DeepPartial<U>[]
-    : T extends object
-      ? { [P in keyof T]?: DeepPartial<T[P]> }
-      : T;
 
 /**
  * A factory function for creating an onboarded user with their memberships.
@@ -97,7 +98,9 @@ export const createOnboardingUser = (
         // Each org gets at least one subscription with items
         stripeSubscriptions: [
           {
-            ...createSubscriptionWithItems({ organizationId: organization.id }),
+            ...createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+              { organizationId: organization.id },
+            ),
             schedules: [],
           },
         ],
@@ -275,19 +278,35 @@ export async function createUserWithTrialOrgAndAddAsMember({
 export async function createTestSubscriptionForUserAndOrganization({
   user,
   organization,
-  subscription = createStripeSubscription(),
+  subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
+    organizationId: organization.id,
+  }),
+  stripeCustomerId = createPopulatedOrganization().stripeCustomerId!,
 }: {
   user: UserAccount;
   organization: Organization;
-  subscription?: Stripe.Subscription;
+  stripeCustomerId: NonNullable<Organization['stripeCustomerId']>;
+  subscription?: StripeSubscriptionWithItemsAndPrice;
 }) {
-  const customer = createStripeCustomer();
+  const lookupKey = subscription.items[0].price.lookupKey;
+  const price = await retrieveStripePriceFromDatabaseByLookupKey(lookupKey);
+
+  if (!price) {
+    throw new Error(`Price with lookup key ${lookupKey} not found`);
+  }
+
   const organizationWithSubscription =
     await upsertStripeSubscriptionForOrganizationInDatabaseById({
       organizationId: organization.id,
+      stripeCustomerId,
       purchasedById: user.id,
-      stripeCustomerId: customer.id,
-      stripeSubscription: { ...subscription, customer: customer.id },
+      subscription: {
+        ...subscription,
+        items: subscription.items.map(item => ({
+          ...item,
+          priceId: price.stripeId,
+        })),
+      },
     });
   return organizationWithSubscription;
 }
@@ -304,21 +323,21 @@ export async function createUserWithOrgAndAddAsMember({
   organization = createPopulatedOrganization(),
   user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member as OrganizationMembershipRole,
+  subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
+    organizationId: organization.id,
+  }),
 } = {}) {
-  const createdAt = faker.date.recent({ days: 3 });
-  const subscription = createStripeSubscription({
-    created: Math.floor(createdAt.getTime() / 1000),
-  });
   // Save user account and organization and add user as a member.
   await createUserWithTrialOrgAndAddAsMember({
     // When the user subscribes, it ends the trial.
-    organization: { ...organization, trialEnd: createdAt },
+    organization: { ...organization, trialEnd: subscription.created },
     user,
     role,
   });
   await createTestSubscriptionForUserAndOrganization({
     user,
     organization,
+    stripeCustomerId: organization.stripeCustomerId!,
     subscription,
   });
 
@@ -349,4 +368,58 @@ export async function teardownOrganizationAndMember({
   } catch {
     // do nothing, the user was probably deleted in the test
   }
+}
+
+/**
+ * Ensures that Stripe products and their associated prices exist in the
+ * database.
+ * For each pricing tier, it:
+ * 1. Checks if monthly and annual prices already exist
+ * 2. Creates or reuses a product for the tier
+ * 3. Creates any missing prices (monthly and/or annual) for that product
+ *
+ * This ensures test data consistency by maintaining the same product-price
+ * relationships across test runs.
+ */
+export async function ensureStripeProductsAndPricesExist() {
+  for (const tier of Object.keys(priceLookupKeysByTierAndInterval) as Tier[]) {
+    const { monthly, annual } = priceLookupKeysByTierAndInterval[tier];
+
+    const [existingMonthlyPrice, existingAnnualPrice] = await Promise.all([
+      retrieveStripePriceFromDatabaseByLookupKey(monthly),
+      retrieveStripePriceFromDatabaseByLookupKey(annual),
+    ]);
+
+    let productId: string;
+
+    if (existingMonthlyPrice) {
+      productId = existingMonthlyPrice.productId;
+    } else if (existingAnnualPrice) {
+      productId = existingAnnualPrice.productId;
+    } else {
+      const product = createPopulatedStripeProduct();
+      await saveStripeProductToDatabase(product);
+      productId = product.stripeId;
+    }
+
+    if (!existingMonthlyPrice) {
+      const price = createPopulatedStripePrice({
+        lookupKey: monthly,
+        productId,
+        interval: StripePriceInterval.month,
+      });
+      await saveStripePriceToDatabase(price);
+    }
+
+    if (!existingAnnualPrice) {
+      const price = createPopulatedStripePrice({
+        lookupKey: annual,
+        productId,
+        interval: StripePriceInterval.year,
+      });
+      await saveStripePriceToDatabase(price);
+    }
+  }
+
+  console.log('✅ Stripe products and prices seeded successfully');
 }

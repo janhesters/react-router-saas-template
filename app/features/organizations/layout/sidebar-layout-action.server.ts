@@ -7,6 +7,7 @@ import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constan
 import { extractBaseUrl } from '~/features/billing/billing-helpers.server';
 import { openCustomerCheckoutSessionSchema } from '~/features/billing/billing-schemas';
 import { createStripeCheckoutSession } from '~/features/billing/stripe-helpers.server';
+import { retrieveStripePriceFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
@@ -107,13 +108,21 @@ export async function sidebarLayoutAction({
 
         const baseUrl = extractBaseUrl(requestToUrl(request));
 
+        const price = await retrieveStripePriceFromDatabaseByLookupKey(
+          body.lookupKey,
+        );
+
+        if (!price) {
+          throw new Error('Price not found');
+        }
+
         const checkoutSession = await createStripeCheckoutSession({
           baseUrl,
           customerEmail: organization.billingEmail,
           customerId: organization.stripeCustomerId,
           organizationId: organization.id,
           organizationSlug: organization.slug,
-          priceId: body.priceId,
+          priceId: price.stripeId,
           purchasedById: user.id,
           seatsUsed: organization._count.memberships,
         });

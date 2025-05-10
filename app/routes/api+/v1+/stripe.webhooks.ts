@@ -7,6 +7,12 @@ import {
   handleStripeCustomerSubscriptionCreatedEvent,
   handleStripeCustomerSubscriptionDeletedEvent,
   handleStripeCustomerSubscriptionUpdatedEvent,
+  handleStripePriceCreatedEvent,
+  handleStripePriceDeletedEvent,
+  handleStripePriceUpdatedEvent,
+  handleStripeProductCreatedEvent,
+  handleStripeProductDeletedEvent,
+  handleStripeProductUpdatedEvent,
   handleStripeSubscriptionScheduleCreatedEvent,
   handleStripeSubscriptionScheduleExpiringEvent,
   handleStripeSubscriptionScheduleUpdatedEvent,
@@ -73,6 +79,24 @@ export async function action({ request }: Route.ActionArgs) {
       case 'customer.subscription.updated': {
         return handleStripeCustomerSubscriptionUpdatedEvent(event);
       }
+      case 'price.created': {
+        return handleStripePriceCreatedEvent(event);
+      }
+      case 'price.deleted': {
+        return handleStripePriceDeletedEvent(event);
+      }
+      case 'price.updated': {
+        return handleStripePriceUpdatedEvent(event);
+      }
+      case 'product.created': {
+        return handleStripeProductCreatedEvent(event);
+      }
+      case 'product.deleted': {
+        return handleStripeProductDeletedEvent(event);
+      }
+      case 'product.updated': {
+        return handleStripeProductUpdatedEvent(event);
+      }
       case 'subscription_schedule.created': {
         return handleStripeSubscriptionScheduleCreatedEvent(event);
       }
@@ -98,6 +122,9 @@ export async function action({ request }: Route.ActionArgs) {
       case 'payment_intent.created':
       case 'payment_intent.succeeded':
       case 'payment_method.attached':
+      case 'plan.created':
+      case 'plan.deleted':
+      case 'plan.updated':
       case 'setup_intent.created':
       case 'subscription_schedule.released':
       case 'test_helpers.test_clock.advancing':

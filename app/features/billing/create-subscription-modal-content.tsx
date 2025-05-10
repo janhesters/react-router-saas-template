@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import type { Interval, Tier } from './billing-constants';
 import {
   OPEN_CHECKOUT_SESSION_INTENT,
-  pricesByTierAndInterval,
+  priceLookupKeysByTierAndInterval,
 } from './billing-constants';
 import {
   FeatureListItem,
@@ -40,23 +40,23 @@ export function CreateSubscriptionModalContent() {
   const isSubmitting =
     navigation.formData?.get('intent') === OPEN_CHECKOUT_SESSION_INTENT;
   const isSubscribingToLowMonthlyPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.low_monthly.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.low.monthly;
   const isSubscribingToMidMonthlyPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.mid_monthly.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.mid.monthly;
   const isSubscribingToHighMonthlyPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.high_monthly.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.high.monthly;
   const isSubscribingToLowAnnualPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.low_annual.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.low.annual;
   const isSubscribingToMidAnnualPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.mid_annual.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.mid.annual;
   const isSubscribingToHighAnnualPlan =
-    navigation.formData?.get('priceId') ===
-    pricesByTierAndInterval.high_annual.id;
+    navigation.formData?.get('lookupKey') ===
+    priceLookupKeysByTierAndInterval.high.annual;
 
   const getFeatures = (key: string): string[] =>
     t(`plans.${key}.features`, { returnObjects: true }) as string[];
@@ -84,8 +84,8 @@ export function CreateSubscriptionModalContent() {
         tModal('tier-card-cta')
       ),
       disabled: isSubscribing,
-      name: 'priceId',
-      value: pricesByTierAndInterval[`${tier}_${interval}`].id,
+      name: 'lookupKey',
+      value: priceLookupKeysByTierAndInterval[tier][interval],
     };
   };
 

@@ -10,6 +10,8 @@ import type Stripe from 'stripe';
 
 import { prisma } from '~/utils/database.server';
 
+import type { StripeSubscriptionWithItemsAndPrice } from '../billing/billing-factories.server';
+
 /* CREATE */
 
 /**
@@ -274,12 +276,12 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
   organizationId,
   purchasedById,
   stripeCustomerId,
-  stripeSubscription,
+  subscription,
 }: {
   organizationId: Organization['id'];
   purchasedById: UserAccount['id'];
   stripeCustomerId: Stripe.Customer['id'];
-  stripeSubscription: Stripe.Subscription;
+  subscription: StripeSubscriptionWithItemsAndPrice;
 }) {
   return await prisma.organization.update({
     where: { id: organizationId },
@@ -287,57 +289,35 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
       stripeCustomerId,
       stripeSubscriptions: {
         upsert: {
-          where: { organizationId, stripeId: stripeSubscription.id },
+          where: { organizationId, stripeId: subscription.stripeId },
           create: {
-            stripeId: stripeSubscription.id,
+            stripeId: subscription.stripeId,
             purchasedById,
-            created: new Date(stripeSubscription.created * 1000),
-            cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            status: stripeSubscription.status,
+            created: subscription.created,
+            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+            status: subscription.status,
             items: {
-              create: stripeSubscription.items.data.map(item => ({
-                stripeId: item.id,
-                currentPeriodStart: new Date(item.current_period_start * 1000),
-                currentPeriodEnd: new Date(item.current_period_end * 1000),
-                price: {
-                  connectOrCreate: {
-                    where: { stripeId: item.price.id },
-                    create: {
-                      stripeId: item.price.id,
-                      lookupKey: item.price.lookup_key ?? '',
-                      currency: item.price.currency,
-                      unitAmount: item.price.unit_amount ?? 0,
-                      metadata: item.price.metadata ?? {},
-                    },
-                  },
-                },
+              create: subscription.items.map(item => ({
+                stripeId: item.stripeId,
+                currentPeriodStart: item.currentPeriodStart,
+                currentPeriodEnd: item.currentPeriodEnd,
+                priceId: item.priceId,
               })),
             },
           },
           update: {
-            stripeId: stripeSubscription.id,
+            stripeId: subscription.stripeId,
             purchasedById,
-            created: new Date(stripeSubscription.created * 1000),
-            cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-            status: stripeSubscription.status,
+            created: subscription.created,
+            cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+            status: subscription.status,
             items: {
               deleteMany: {}, // Delete existing items first (to prevent duplicates)
-              create: stripeSubscription.items.data.map(item => ({
-                stripeId: item.id,
-                currentPeriodStart: new Date(item.current_period_start * 1000),
-                currentPeriodEnd: new Date(item.current_period_end * 1000),
-                price: {
-                  connectOrCreate: {
-                    where: { stripeId: item.price.id },
-                    create: {
-                      stripeId: item.price.id,
-                      lookupKey: item.price.lookup_key ?? '',
-                      currency: item.price.currency,
-                      unitAmount: item.price.unit_amount ?? 0,
-                      metadata: item.price.metadata ?? {},
-                    },
-                  },
-                },
+              create: subscription.items.map(item => ({
+                stripeId: item.stripeId,
+                currentPeriodStart: item.currentPeriodStart,
+                currentPeriodEnd: item.currentPeriodEnd,
+                priceId: item.priceId,
               })),
             },
           },

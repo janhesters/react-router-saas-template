@@ -1,89 +1,45 @@
-import type { StripePrice, StripeSubscriptionItem } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
-
-import type { Factory } from '~/utils/types';
 
 import {
   createOrganizationWithMembershipsAndSubscriptions,
   createPopulatedOrganization,
 } from '../organizations/organizations-factories.server';
-import { pricesByTierAndInterval } from './billing-constants';
+import { priceLookupKeysByTierAndInterval } from './billing-constants';
 import {
-  createPopulatedStripePrice,
-  createPopulatedStripeSubscription,
+  createPopulatedStripePriceWithProduct,
   createPopulatedStripeSubscriptionItem,
   createPopulatedStripeSubscriptionSchedule,
-  createSubscriptionSchedulePhaseWithPrice,
-  createSubscriptionScheduleWithPhases,
-  type SubscriptionScheduleWithPhases,
+  createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
+  createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct,
 } from './billing-factories.server';
-import type { StripeSubscriptionData } from './billing-helpers.server';
 import {
   extractBaseUrl,
   mapStripeSubscriptionDataToBillingPageProps,
 } from './billing-helpers.server';
 import type { BillingPageProps } from './billing-page';
 
-type ItemOverride = Partial<StripeSubscriptionItem> & {
-  price?: Partial<StripePrice>;
-};
-
-export const createStripeSubscriptionData: Factory<StripeSubscriptionData> = (
-  overrides = {},
-) => {
-  const { items: rawItems, ...subscriptionOverrides } =
-    overrides as Partial<StripeSubscriptionData> & { items?: unknown };
-
-  const itemsOverrides = Array.isArray(rawItems)
-    ? (rawItems as ItemOverride[])
-    : undefined;
-
-  const subscription = createPopulatedStripeSubscription(subscriptionOverrides);
-
-  const baseItems: ItemOverride[] =
-    itemsOverrides && itemsOverrides.length > 0
-      ? itemsOverrides
-      : ([{}] as ItemOverride[]);
-
-  const items = baseItems.map(itemOverride => {
-    const { price: priceOverride, ...subscriptionItemOverrides } = itemOverride;
-
-    const price = createPopulatedStripePrice(priceOverride);
-    const item = createPopulatedStripeSubscriptionItem({
-      stripeSubscriptionId: subscription.stripeId,
-      priceId: price.stripeId,
-      ...subscriptionItemOverrides,
-    });
-
-    return { ...item, price };
-  });
-
-  const schedules: SubscriptionScheduleWithPhases[] = [];
-
-  return { ...subscription, items, schedules };
-};
-
 describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
   test('given: an active paid monthly plan, should: return correct billing props', () => {
     const now = new Date('2025-06-01T00:00:00.000Z');
-    const subscription = createStripeSubscriptionData({
-      organizationId: 'org-123',
-      cancelAtPeriodEnd: false,
-      status: 'active',
-      items: [
-        {
-          price: createPopulatedStripePrice({
-            lookupKey: 'startup_monthly',
-            unitAmount: 2000,
-            metadata: { max_seats: 10 },
-          }),
-          ...createPopulatedStripeSubscriptionItem({
-            currentPeriodStart: new Date('2025-05-15T00:00:00.000Z'),
-            currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
-          }),
-        },
-      ],
-    });
+    const subscription =
+      createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct({
+        organizationId: 'org-123',
+        cancelAtPeriodEnd: false,
+        status: 'active',
+        items: [
+          {
+            price: createPopulatedStripePriceWithProduct({
+              lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
+              unitAmount: 2000,
+              product: { maxSeats: 10 },
+            }),
+            ...createPopulatedStripeSubscriptionItem({
+              currentPeriodStart: new Date('2025-05-15T00:00:00.000Z'),
+              currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
+            }),
+          },
+        ],
+      });
     const organization = createOrganizationWithMembershipsAndSubscriptions({
       stripeSubscriptions: [subscription],
       memberCount: 4,
@@ -104,7 +60,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       currentMonthlyRatePerUser: 20,
       currentPeriodEnd: new Date('2025-06-14T00:00:00.000Z'),
       currentSeats: 4,
-      currentTierName: 'Startup',
+      currentTier: 'mid',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
       maxSeats: 10,
@@ -118,24 +74,25 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
 
   test('given: a subscription cancelled at period end but still ongoing, should: mark status “active”', () => {
     const now = new Date('2025-06-10T00:00:00.000Z');
-    const subscription = createStripeSubscriptionData({
-      organizationId: 'org-456',
-      cancelAtPeriodEnd: true,
-      status: 'active',
-      items: [
-        {
-          price: createPopulatedStripePrice({
-            lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
-            unitAmount: 5000,
-            metadata: { max_seats: 25 },
-          }),
-          ...createPopulatedStripeSubscriptionItem({
-            currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
-            currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
-          }),
-        },
-      ],
-    });
+    const subscription =
+      createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct({
+        organizationId: 'org-456',
+        cancelAtPeriodEnd: true,
+        status: 'active',
+        items: [
+          {
+            price: createPopulatedStripePriceWithProduct({
+              lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
+              unitAmount: 5000,
+              product: { maxSeats: 25 },
+            }),
+            ...createPopulatedStripeSubscriptionItem({
+              currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
+              currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
+            }),
+          },
+        ],
+      });
     const organization = createOrganizationWithMembershipsAndSubscriptions({
       stripeSubscriptions: [subscription],
       memberCount: 8,
@@ -156,7 +113,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       currentMonthlyRatePerUser: 50,
       currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
       currentSeats: 8,
-      currentTierName: 'Business',
+      currentTier: 'high',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
       maxSeats: 25,
@@ -170,24 +127,25 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
 
   test('given: a subscription cancelled at period end and it ran out, should: mark status “paused”', () => {
     const now = new Date('2025-06-10T00:00:00.000Z');
-    const subscription = createStripeSubscriptionData({
-      organizationId: 'org-456',
-      cancelAtPeriodEnd: true,
-      status: 'active',
-      items: [
-        {
-          price: createPopulatedStripePrice({
-            lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
-            unitAmount: 5000,
-            metadata: { max_seats: 25 },
-          }),
-          ...createPopulatedStripeSubscriptionItem({
-            currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
-            currentPeriodEnd: new Date('2025-06-09T00:00:00.000Z'),
-          }),
-        },
-      ],
-    });
+    const subscription =
+      createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct({
+        organizationId: 'org-456',
+        cancelAtPeriodEnd: true,
+        status: 'active',
+        items: [
+          {
+            price: createPopulatedStripePriceWithProduct({
+              lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
+              unitAmount: 5000,
+              product: { maxSeats: 25 },
+            }),
+            ...createPopulatedStripeSubscriptionItem({
+              currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
+              currentPeriodEnd: new Date('2025-06-09T00:00:00.000Z'),
+            }),
+          },
+        ],
+      });
     const organization = createOrganizationWithMembershipsAndSubscriptions({
       stripeSubscriptions: [subscription],
       memberCount: 8,
@@ -208,7 +166,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       currentMonthlyRatePerUser: 50,
       currentPeriodEnd: new Date('2025-06-09T00:00:00.000Z'),
       currentSeats: 8,
-      currentTierName: 'Business',
+      currentTier: 'high',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
       maxSeats: 25,
@@ -246,7 +204,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
       currentSeats: 2,
-      currentTierName: 'Business (Trial)',
+      currentTier: 'high',
       isEnterprisePlan: false,
       isOnFreeTrial: true,
       maxSeats: 25,
@@ -260,57 +218,63 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
 
   test('given: a subscription with a pending downgrade, should: return correct billing props', () => {
     const now = new Date('2025-06-15T00:00:00.000Z');
-    const subscriptionId = createStripeSubscriptionData().stripeId;
+    const subscriptionId =
+      createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct()
+        .stripeId;
     const subscriptionScheduleId =
       createPopulatedStripeSubscriptionSchedule().stripeId;
 
     // 1) Start with a live, high-tier subscription
     const subscription = {
-      ...createStripeSubscriptionData({
-        stripeId: subscriptionId,
-        organizationId: 'org-789',
-        cancelAtPeriodEnd: false,
-        status: 'active',
-        items: [
-          {
-            price: createPopulatedStripePrice({
-              lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
-              unitAmount: 6000,
-              metadata: { max_seats: 10 },
-            }),
-            ...createPopulatedStripeSubscriptionItem({
-              currentPeriodStart: new Date('2025-05-01T00:00:00.000Z'),
-              currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
-            }),
-          },
-        ],
-      }),
+      ...createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
+        {
+          stripeId: subscriptionId,
+          organizationId: 'org-789',
+          cancelAtPeriodEnd: false,
+          status: 'active',
+          items: [
+            {
+              price: createPopulatedStripePriceWithProduct({
+                lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
+                unitAmount: 6000,
+                product: { maxSeats: 25 },
+              }),
+              ...createPopulatedStripeSubscriptionItem({
+                currentPeriodStart: new Date('2025-05-01T00:00:00.000Z'),
+                currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
+              }),
+            },
+          ],
+        },
+      ),
       schedules: [
-        createSubscriptionScheduleWithPhases({
+        createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
+          // force the same IDs you generated above
+          stripeId: subscriptionScheduleId,
           subscriptionId,
+
+          // deep‐override exactly the two phases you care about
           phases: [
-            createSubscriptionSchedulePhaseWithPrice({
+            {
               scheduleId: subscriptionScheduleId,
               startDate: new Date('2025-05-01T00:00:00.000Z'),
               endDate: new Date('2025-06-30T00:00:00.000Z'),
-              price: createPopulatedStripePrice({
-                lookupKey: pricesByTierAndInterval.high_monthly.lookupKey,
+              price: {
+                lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
                 unitAmount: 6000,
-                metadata: { max_seats: 10 },
-              }),
+              },
               quantity: 5,
-            }),
-            createSubscriptionSchedulePhaseWithPrice({
+            },
+            {
               scheduleId: subscriptionScheduleId,
               startDate: new Date('2025-06-30T00:00:00.000Z'),
               endDate: new Date('2025-07-30T00:00:00.000Z'),
-              price: createPopulatedStripePrice({
-                lookupKey: pricesByTierAndInterval.low_monthly.lookupKey,
+              price: {
+                lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
                 unitAmount: 2000,
-                metadata: { max_seats: 10 },
-              }),
+              },
               quantity: 2,
-            }),
+            },
           ],
         }),
       ],
@@ -336,10 +300,10 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       currentMonthlyRatePerUser: 60,
       currentPeriodEnd: new Date('2025-06-30T00:00:00.000Z'),
       currentSeats: 5,
-      currentTierName: 'Business',
+      currentTier: 'high',
       isEnterprisePlan: false,
       isOnFreeTrial: false,
-      maxSeats: 10,
+      maxSeats: 25,
       organizationSlug: organization.slug,
       projectedTotal: 300,
       subscriptionStatus: 'active',

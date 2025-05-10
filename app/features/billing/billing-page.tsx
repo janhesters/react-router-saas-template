@@ -23,7 +23,7 @@ import type { Interval, Tier } from './billing-constants';
 import {
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
-  pricesByTierAndInterval,
+  priceLookupKeysByTierAndInterval,
   RESUME_SUBSCRIPTION_INTENT,
   SWITCH_SUBSCRIPTION_INTENT,
   UPDATE_BILLING_EMAIL_INTENT,
@@ -113,7 +113,7 @@ export type BillingPageProps = {
    */
   currentPeriodEnd: Date;
   currentSeats: number;
-  currentTierName: string;
+  currentTier: Tier;
   isCancellingSubscription?: boolean;
   isEnterprisePlan: boolean;
   isKeepingCurrentSubscription?: boolean;
@@ -134,7 +134,7 @@ export function BillingPage({
   currentMonthlyRatePerUser,
   currentPeriodEnd,
   currentSeats,
-  currentTierName,
+  currentTier,
   isCancellingSubscription = false,
   isKeepingCurrentSubscription = false,
   isOnFreeTrial,
@@ -147,6 +147,9 @@ export function BillingPage({
   subscriptionStatus,
 }: BillingPageProps) {
   const { t, i18n } = useTranslation('billing', { keyPrefix: 'billing-page' });
+  const { t: tTier } = useTranslation('billing', {
+    keyPrefix: 'pricing.plans',
+  });
   const [isPlanManagementModalOpen, setIsPlanManagementModalOpen] =
     useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
@@ -171,26 +174,26 @@ export function BillingPage({
     navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
-        pricesByTierAndInterval.high_annual.id,
-        pricesByTierAndInterval.high_monthly.id,
+        priceLookupKeysByTierAndInterval.high.annual,
+        priceLookupKeysByTierAndInterval.high.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('priceId') as string);
+    ).includes(navigation.formData?.get('lookupKey') as string);
   const isSwitchingToLow =
     navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
-        pricesByTierAndInterval.low_annual.id,
-        pricesByTierAndInterval.low_monthly.id,
+        priceLookupKeysByTierAndInterval.low.annual,
+        priceLookupKeysByTierAndInterval.low.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('priceId') as string);
+    ).includes(navigation.formData?.get('lookupKey') as string);
   const isSwitchingToMid =
     navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
-        pricesByTierAndInterval.mid_annual.id,
-        pricesByTierAndInterval.mid_monthly.id,
+        priceLookupKeysByTierAndInterval.mid.annual,
+        priceLookupKeysByTierAndInterval.mid.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('priceId') as string);
+    ).includes(navigation.formData?.get('lookupKey') as string);
 
   /* Update billing email */
   const isUpdatingBillingEmail =
@@ -362,7 +365,9 @@ export function BillingPage({
 
                     <div className="@xl/form:flex @xl/form:items-center @xl/form:justify-between">
                       <div className="flex items-center justify-between @xl/form:block">
-                        <DescriptionDetail>{currentTierName}</DescriptionDetail>
+                        <DescriptionDetail>
+                          {tTier(`${currentTier}.title`)}
+                        </DescriptionDetail>
 
                         <DescriptionDetail>
                           <Trans

@@ -24,6 +24,7 @@ export default defineConfig({
     trace: process.env.CI ? 'on-first-retry' : 'retain-on-failure',
   },
 
+  globalSetup: './playwright/global-setup.ts',
   globalTeardown: './playwright/global-tear-down.ts',
 
   /* Configure projects for major browsers */
