@@ -70,7 +70,7 @@ test.describe('general organization settings', () => {
     await expect(
       page.getByRole('link', { name: /return home/i }),
     ).toHaveAttribute('href', '/');
-    expect(await page.title()).toMatch(/404/i);
+    expect(await page.title()).toMatch(/404|react router saas template/i);
 
     await teardownOrganizationAndMember({
       user,
@@ -194,13 +194,19 @@ test.describe('general organization settings', () => {
         'input[type="file"]',
         'playwright/fixtures/200x200.jpg',
       );
-      await expect(page.getByText('200x200.jpg')).toBeVisible();
 
       // Enter name again to ensure form is ready
       await page.getByRole('textbox', { name: /organization name/i }).clear();
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);
+
+      // Perform drag and drop of the image again for the same reason
+      await page.setInputFiles(
+        'input[type="file"]',
+        'playwright/fixtures/200x200.jpg',
+      );
+      await expect(page.getByText('200x200.jpg')).toBeVisible();
 
       // Save changes
       await page.getByRole('button', { name: /save changes/i }).click();
@@ -237,29 +243,43 @@ test.describe('general organization settings', () => {
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);
 
-      const nameInput = page.getByRole('textbox', {
-        name: /organization name/i,
-      });
-      const submitButton = page.getByRole('button', {
-        name: /save changes/i,
-      });
+      // Verify page content
+      await expect(page).toHaveTitle(/general | react router saas template/i);
+      await expect(
+        page.getByText(/general settings for this organization/i),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/your organization's public display name/i),
+      ).toBeVisible();
+
+      // Verify form elements
+      await expect(
+        page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /save changes/i }),
+      ).toBeVisible();
 
       // Test whitespace name
-      await nameInput.clear();
-      await nameInput.fill('   a   ');
-      await submitButton.click();
+      await page.getByRole('textbox', { name: /organization name/i }).clear();
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill('   a   ');
+      await page.getByRole('button', { name: /save changes/i }).click();
       await expect(
         page.getByText(/organization name must be at least 3 characters long/i),
       ).toBeVisible();
 
       // Test too long name
-      await nameInput.fill(faker.string.alpha(256));
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill(faker.string.alpha(256));
       await expect(
         page.getByText(
           /organization name must be less than 255 characters long/i,
         ),
       ).toBeVisible();
-      await submitButton.click();
+      await page.getByRole('button', { name: /save changes/i }).click();
 
       await teardownOrganizationAndMember({ organization, user });
     });

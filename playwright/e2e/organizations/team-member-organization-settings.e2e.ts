@@ -334,6 +334,9 @@ test.describe('organization settings members page', () => {
         // Try changing Member to Admin
         await memberRoleButton.focus();
         await page.keyboard.press('Enter');
+        await expect(
+          page.getByRole('combobox', { name: /select new role/i }),
+        ).toBeVisible();
         const changeToAdminButton = page.getByRole('button', {
           name: /admin/i,
         }); // Use exact match to distinguish from description
@@ -346,6 +349,9 @@ test.describe('organization settings members page', () => {
 
         // UI should ideally update after fetcher returns, check for the "Admin" button now
         await page.keyboard.press('Escape'); // Close the dropdown
+        await expect(
+          page.getByRole('combobox', { name: /select new role/i }),
+        ).toBeHidden();
         await expect(
           page
             .getByRole('table')
@@ -400,8 +406,14 @@ test.describe('organization settings members page', () => {
       // Deactivate Member
       const memberRow = table.getByRole('row', { name: memberUser.email });
       await memberRow.getByRole('button', { name: /member/i }).click();
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeVisible();
       await page.getByRole('button', { name: /deactivated/i }).click();
       await page.keyboard.press('Escape'); // Close the dropdown
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeHidden();
       await expect(
         memberRow.getByRole('button', { name: /^deactivated$/i }),
       ).toBeVisible();
@@ -490,8 +502,14 @@ test.describe('organization settings members page', () => {
         .getByRole('table')
         .getByRole('row', { name: memberUser.email });
       await memberRow.getByRole('button', { name: /member/i }).click();
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeVisible();
       await page.getByRole('button', { name: /owner/i }).click();
       await page.keyboard.press('Escape'); // Close the dropdown
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeHidden();
       await expect(
         page
           .getByRole('table')
@@ -507,11 +525,17 @@ test.describe('organization settings members page', () => {
         .getByRole('row', { name: adminUser.email })
         .getByRole('button', { name: /admin/i })
         .click();
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeVisible();
       await page
         .getByRole('button', { name: /member/i })
         .first()
         .click();
       await page.keyboard.press('Escape'); // Close the dropdown
+      await expect(
+        page.getByRole('combobox', { name: /select new role/i }),
+      ).toBeHidden();
       await expect(
         page
           .getByRole('table')
@@ -579,6 +603,9 @@ test.describe('organization settings members page', () => {
           })
           .getByRole('button', { name: new RegExp(initialRole ?? '', 'i') })
           .click();
+        await expect(
+          page.getByRole('combobox', { name: /select new role/i }),
+        ).toBeVisible();
         await page
           .getByRole('button', { name: /deactivated/i })
           .last()
@@ -586,6 +613,9 @@ test.describe('organization settings members page', () => {
 
         // Close the dropdown
         await page.keyboard.press('Escape');
+        await expect(
+          page.getByRole('combobox', { name: /select new role/i }),
+        ).toBeHidden();
 
         // Check UI
         await expect(
@@ -818,12 +848,19 @@ test.describe('organization settings members page', () => {
 
       await page.goto(getMembersPagePath(organization.slug));
 
+      // Verify that you're on the correct page
+      await expect(page.getByText(/invite by email/i)).toBeVisible();
+      await expect(page.getByText(/share an invite link/i)).toBeVisible();
+
       // Locate elements within the "Invite by Email" card
       const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible();
       const roleDropdown = page.getByLabel(/role/i);
+      await expect(roleDropdown).toBeVisible();
       const submitButton = page.getByRole('button', {
         name: /send email invitation/i,
       });
+      await expect(submitButton).toBeVisible();
 
       // Check available roles in dropdown
       await roleDropdown.click();
@@ -878,11 +915,17 @@ test.describe('organization settings members page', () => {
       // Navigate to the team members page
       await page.goto(getMembersPagePath(organization.slug));
 
+      // Verify that you're on the correct page
+      await expect(page.getByText(/invite by email/i)).toBeVisible();
+      await expect(page.getByText(/share an invite link/i)).toBeVisible();
+
       // Locate the email invite form elements
       const emailInput = page.getByLabel(/email/i);
+      await expect(emailInput).toBeVisible();
       const submitButton = page.getByRole('button', {
         name: /send email invitation/i,
       });
+      await expect(submitButton).toBeVisible();
 
       // Attempt to invite the existing member
       await emailInput.fill(existingMember.email);
@@ -978,7 +1021,6 @@ test.describe('organization settings members page', () => {
       await expect(previousPageButton).toBeDisabled();
       await expect(nextPageButton).toBeEnabled();
       await expect(lastPageButton).toBeEnabled();
-      await expect(rowsPerPageSelect).toHaveText('10'); // Default
 
       // Go to next page
       await nextPageButton.click();

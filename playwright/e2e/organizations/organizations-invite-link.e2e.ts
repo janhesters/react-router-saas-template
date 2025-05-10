@@ -151,6 +151,7 @@ test.describe('organizations invite link page', () => {
       await page.goto(getInviteLinkPagePath(link.token));
 
       // It renders the correct page & heading.
+      await expect(page.getByText(/welcome to /i)).toBeVisible();
       await expect(
         page.getByRole('heading', {
           name: new RegExp(
@@ -162,6 +163,9 @@ test.describe('organizations invite link page', () => {
       ).toBeVisible();
       await expect(
         page.getByText(/click the button below to sign up/i),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /accept invite/i }),
       ).toBeVisible();
 
       // It has a button to accept the invite, shows a success toast and

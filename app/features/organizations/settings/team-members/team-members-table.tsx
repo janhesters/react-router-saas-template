@@ -111,7 +111,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
           <input name="userId" value={member.id} type="hidden" />
           <input name="intent" value={CHANGE_ROLE_INTENT} type="hidden" />
 
-          <Command>
+          <Command label={t('command-label')}>
             <CommandInput placeholder={t('roles-placeholder')} />
 
             <CommandList>

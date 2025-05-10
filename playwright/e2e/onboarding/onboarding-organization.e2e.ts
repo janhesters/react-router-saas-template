@@ -109,7 +109,6 @@ test.describe('onboarding organization page', () => {
         'input[type="file"]',
         'playwright/fixtures/200x200.jpg',
       );
-      await expect(page.getByText('200x200.jpg')).toBeVisible();
 
       // Enter name again. Sometimes with MSW activated on the server,
       // it takes time for the fields to become available, so we do it twice
@@ -118,6 +117,13 @@ test.describe('onboarding organization page', () => {
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);
+
+      // Perform drag and drop of the image again for the same reason
+      await page.setInputFiles(
+        'input[type="file"]',
+        'playwright/fixtures/200x200.jpg',
+      );
+      await expect(page.getByText('200x200.jpg')).toBeVisible();
 
       // Create organization
       await page.getByRole('button', { name: /save/i }).click();
@@ -174,6 +180,12 @@ test.describe('onboarding organization page', () => {
       await expect(
         page.getByRole('link', { name: /organization/i }),
       ).toHaveAttribute('aria-current', 'step');
+
+      // Verify page content
+      await expect(
+        page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
 
       // Enter organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();

@@ -195,6 +195,7 @@
         "role-switcher": {
           "admin": "Admin",
           "admin-description": "Can edit the organization and manage billing.",
+          "command-label": "Select new role",
           "deactivated": "Deactivated",
           "deactivated-description": "Access revoked to everything.",
           "member": "Member",

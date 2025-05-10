@@ -174,8 +174,25 @@ test.describe('new organization page', () => {
       await expect(termsLink).toHaveAttribute('href', '/terms-of-service');
       await expect(privacyLink).toHaveAttribute('href', '/privacy-policy');
 
+      // Verify form elements
+      await expect(page.locator('input[type="file"]')).toBeVisible();
+      await expect(
+        page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /create organization/i }),
+      ).toBeVisible();
+
       // Enter organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();
+      await page
+        .getByRole('textbox', { name: /organization name/i })
+        .fill(newName);
+
+      // Enter the name again because sometimes with MSW activated on the server,
+      // it takes time for the fields to become available, so we do it twice
+      // to make sure the test isn't flaky.
+      await page.getByRole('textbox', { name: /organization name/i }).clear();
       await page
         .getByRole('textbox', { name: /organization name/i })
         .fill(newName);

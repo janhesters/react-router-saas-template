@@ -35,6 +35,17 @@ test.describe('contact sales page', () => {
   }) => {
     await page.goto(path);
 
+    // Verify page content
+    await expect(page.getByLabel(/first name/i)).toBeVisible();
+    await expect(page.getByLabel(/last name/i)).toBeVisible();
+    await expect(page.getByLabel(/company/i)).toBeVisible();
+    await expect(page.getByLabel(/work email/i)).toBeVisible();
+    await expect(page.getByLabel(/phone number/i)).toBeVisible();
+    await expect(page.getByLabel(/message/i)).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /contact sales/i }),
+    ).toBeVisible();
+
     // Submit empty form
     await page.getByRole('button', { name: /contact sales/i }).click();
 

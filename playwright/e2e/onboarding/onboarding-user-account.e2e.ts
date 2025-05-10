@@ -94,6 +94,10 @@ test.describe('onboarding user account page', () => {
         page.getByRole('link', { name: /user account/i }),
       ).toHaveAttribute('aria-current', 'step');
 
+      // Verify form elements
+      await expect(page.getByRole('textbox', { name: /name/i })).toBeVisible();
+      await expect(page.getByRole('button', { name: /save/i })).toBeVisible();
+
       // Create profile
       const newName = createPopulatedUserAccount().name;
       await page.getByRole('textbox', { name: /name/i }).fill(newName);
