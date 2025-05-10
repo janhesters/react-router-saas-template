@@ -1,6 +1,5 @@
 // TODO: accept invite via email
 //  - delete all outstanding links for the same email from the same org
-// TODO: Notifications
 // TODO: billing
 // TODO: fix layout for organization settings with avatar
 // TODO: upgrade packages

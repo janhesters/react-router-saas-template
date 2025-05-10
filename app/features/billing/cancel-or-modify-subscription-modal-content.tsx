@@ -145,7 +145,7 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Low Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
+                      <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
@@ -160,7 +160,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.hobby.description')}
+                        {t('plans.low.description')}
                       </TierCardDescription>
 
                       <Button
@@ -176,10 +176,10 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.hobby.features-title')}
+                        {t('plans.low.features-title')}
                       </FeaturesListTitle>
                       <FeaturesList>
-                        {getFeatures('hobby').map(feature => (
+                        {getFeatures('low').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -192,7 +192,7 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Mid Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.startup.title')}</TierCardTitle>
+                      <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
@@ -207,7 +207,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.startup.description')}
+                        {t('plans.mid.description')}
                       </TierCardDescription>
 
                       <Button
@@ -223,11 +223,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.startup.features-title')}
+                        {t('plans.mid.features-title')}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('startup').map(feature => (
+                        {getFeatures('mid').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -241,7 +241,7 @@ export function CancelOrModifySubscriptionModalContent({
                   <TierCard className="ring-primary -mt-1.5 ring-2">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
-                        {t('plans.business.title')}
+                        {t('plans.high.title')}
                         <Badge>{t('most-popular')}</Badge>
                       </TierCardTitle>
 
@@ -258,7 +258,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.business.description')}
+                        {t('plans.high.description')}
                       </TierCardDescription>
 
                       <Button
@@ -274,11 +274,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.business.features-title')}
+                        {t('plans.high.features-title')}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('business').map(feature => (
+                        {getFeatures('high').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -297,7 +297,7 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Low Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.hobby.title')}</TierCardTitle>
+                      <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
@@ -314,7 +314,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.hobby.description')}
+                        {t('plans.low.description')}
                       </TierCardDescription>
 
                       <Button
@@ -330,11 +330,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.hobby.features-title')}
+                        {t('plans.low.features-title')}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('hobby').map(feature => (
+                        {getFeatures('low').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -347,7 +347,7 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Mid Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.startup.title')}</TierCardTitle>
+                      <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
@@ -364,7 +364,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.startup.description')}
+                        {t('plans.mid.description')}
                       </TierCardDescription>
 
                       <Button
@@ -380,11 +380,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.startup.features-title')}
+                        {t('plans.mid.features-title')}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('startup').map(feature => (
+                        {getFeatures('mid').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -398,7 +398,7 @@ export function CancelOrModifySubscriptionModalContent({
                   <TierCard className="ring-primary -mt-1.5 ring-2">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
-                        {t('plans.business.title')}
+                        {t('plans.high.title')}
                         <Badge>{t('most-popular')}</Badge>
                       </TierCardTitle>
 
@@ -417,7 +417,7 @@ export function CancelOrModifySubscriptionModalContent({
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.business.description')}
+                        {t('plans.high.description')}
                       </TierCardDescription>
 
                       <Button
@@ -433,11 +433,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.business.features-title')}
+                        {t('plans.high.features-title')}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('business').map(feature => (
+                        {getFeatures('high').map(feature => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}

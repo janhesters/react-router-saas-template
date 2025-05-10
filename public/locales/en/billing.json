@@ -181,17 +181,6 @@
     "monthly": "Monthly",
     "most-popular": "Most Popular",
     "plans": {
-      "business": {
-        "cta": "Start a 14-day free trial",
-        "description": "For professionals and businesses who want to grow.",
-        "features": [
-          "SSO",
-          "Up to 25 members",
-          "Priority support"
-        ],
-        "features-title": "Everything in Startup, plus:",
-        "title": "Business"
-      },
       "enterprise": {
         "cta": "Contact Sales",
         "description": "For large organizations who need custom solutions.",
@@ -203,7 +192,18 @@
         "features-title": "All Business features, plus:",
         "title": "Enterprise"
       },
-      "hobby": {
+      "high": {
+        "cta": "Start a 14-day free trial",
+        "description": "For professionals and businesses who want to grow.",
+        "features": [
+          "SSO",
+          "Up to 25 members",
+          "Priority support"
+        ],
+        "features-title": "Everything in Startup, plus:",
+        "title": "Business"
+      },
+      "low": {
         "cta": "Get Started",
         "description": "For hobbyists and beginners who are learning and exploring.",
         "features": [
@@ -214,7 +214,7 @@
         "features-title": "Features:",
         "title": "Hobby"
       },
-      "startup": {
+      "mid": {
         "cta": "Start a 14-day free trial",
         "description": "Perfect for startups with small teams that need to scale.",
         "features": [
