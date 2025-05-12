@@ -4,7 +4,7 @@ import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { StripePriceInterval } from '@prisma/client';
 
-import type { Tier } from '~/features/billing/billing-constants';
+import type { LookupKey, Tier } from '~/features/billing/billing-constants';
 import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import type { StripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
 import {
@@ -282,17 +282,20 @@ export async function createTestSubscriptionForUserAndOrganization({
     organizationId: organization.id,
   }),
   stripeCustomerId = createPopulatedOrganization().stripeCustomerId!,
+  lookupKey,
 }: {
   user: UserAccount;
   organization: Organization;
   stripeCustomerId: NonNullable<Organization['stripeCustomerId']>;
   subscription?: StripeSubscriptionWithItemsAndPrice;
+  lookupKey?: LookupKey;
 }) {
-  const lookupKey = subscription.items[0].price.lookupKey;
-  const price = await retrieveStripePriceFromDatabaseByLookupKey(lookupKey);
+  const finalLookupKey = lookupKey ?? subscription.items[0].price.lookupKey;
+  const price =
+    await retrieveStripePriceFromDatabaseByLookupKey(finalLookupKey);
 
   if (!price) {
-    throw new Error(`Price with lookup key ${lookupKey} not found`);
+    throw new Error(`Price with lookup key ${finalLookupKey} not found`);
   }
 
   const organizationWithSubscription =
@@ -326,6 +329,7 @@ export async function createUserWithOrgAndAddAsMember({
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
     organizationId: organization.id,
   }),
+  lookupKey = priceLookupKeysByTierAndInterval.high.annual as LookupKey,
 } = {}) {
   // Save user account and organization and add user as a member.
   await createUserWithTrialOrgAndAddAsMember({
@@ -334,14 +338,19 @@ export async function createUserWithOrgAndAddAsMember({
     user,
     role,
   });
-  await createTestSubscriptionForUserAndOrganization({
+  const orgWithSub = await createTestSubscriptionForUserAndOrganization({
     user,
     organization,
     stripeCustomerId: organization.stripeCustomerId!,
     subscription,
+    lookupKey,
   });
 
-  return { organization, user };
+  return {
+    organization,
+    user,
+    subscription: orgWithSub.stripeSubscriptions[0],
+  };
 }
 
 /**

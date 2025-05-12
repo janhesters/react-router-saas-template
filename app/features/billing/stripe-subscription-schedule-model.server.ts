@@ -3,6 +3,59 @@ import type Stripe from 'stripe';
 
 import { prisma } from '~/utils/database.server';
 
+import type { StripeSubscriptionScheduleWithPhasesAndPrice } from './billing-factories.server';
+
+/* CREATE */
+
+/**
+ * Saves a Stripe subscription schedule with its phases and prices to our database.
+ *
+ * @param stripeSchedule - Stripe.SubscriptionSchedule to save
+ * @returns The saved StripeSubscriptionSchedule record
+ */
+export async function saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
+  stripeSchedule: StripeSubscriptionScheduleWithPhasesAndPrice,
+) {
+  return await prisma.stripeSubscriptionSchedule.create({
+    data: {
+      stripeId: stripeSchedule.stripeId,
+      subscription: {
+        connect: { stripeId: stripeSchedule.subscriptionId },
+      },
+      created: stripeSchedule.created,
+      currentPhaseStart: stripeSchedule.currentPhaseStart,
+      currentPhaseEnd: stripeSchedule.currentPhaseEnd,
+      phases: {
+        create: stripeSchedule.phases.map(phase => ({
+          startDate: phase.startDate,
+          endDate: phase.endDate,
+          price: { connect: { stripeId: phase.price.stripeId } },
+          quantity: phase.quantity,
+        })),
+      },
+    },
+    include: { phases: true },
+  });
+}
+
+/* READ */
+
+/**
+ * Retrieves a Stripe subscription schedule from our database by its ID.
+ *
+ * @param scheduleId - The ID of the Stripe subscription schedule to retrieve
+ * @returns The retrieved StripeSubscriptionSchedule record
+ */
+export async function retrieveStripeSubscriptionScheduleFromDatabaseById(
+  scheduleId: StripeSubscriptionSchedule['stripeId'],
+) {
+  return await prisma.stripeSubscriptionSchedule.findUnique({
+    where: { stripeId: scheduleId },
+  });
+}
+
+/* UPDATE */
+
 /**
  * Upserts a Stripe subscription schedule and its phases into our database.
  * On update, all existing phases are deleted and replaced with new ones since
@@ -11,7 +64,7 @@ import { prisma } from '~/utils/database.server';
  * @param stripeSchedule - Stripe.SubscriptionSchedule to upsert
  * @returns The upserted StripeSubscriptionSchedule record
  */
-export async function upsertStripeSubscriptionScheduleInDatabase(
+export async function upsertStripeSubscriptionScheduleFromAPIInDatabase(
   stripeSchedule: Stripe.SubscriptionSchedule,
 ) {
   if (!stripeSchedule.current_phase) {
@@ -66,6 +119,8 @@ export async function upsertStripeSubscriptionScheduleInDatabase(
     include: { phases: true },
   });
 }
+
+/* DELETE */
 
 /**
  * Deletes a Stripe subscription schedule from our database.

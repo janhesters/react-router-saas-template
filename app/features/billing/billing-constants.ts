@@ -41,4 +41,6 @@ export const allLookupKeys = [
   ...annualLookupKeys,
 ] as const;
 
+export type LookupKey = (typeof allLookupKeys)[number];
+
 export const allTiers = ['low', 'mid', 'high'] as const;

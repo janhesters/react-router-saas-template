@@ -324,6 +324,18 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
         },
       },
     },
+    include: {
+      stripeSubscriptions: {
+        include: {
+          items: { include: { price: { include: { product: true } } } },
+          schedules: {
+            include: {
+              phases: { include: { price: { include: { product: true } } } },
+            },
+          },
+        },
+      },
+    },
   });
 }
 

@@ -18,7 +18,7 @@ import {
   createStripeSubscriptionInDatabase,
   updateStripeSubscriptionInDatabase,
 } from './stripe-subscription-model.server';
-import { upsertStripeSubscriptionScheduleInDatabase } from './stripe-subscription-schedule-model.server';
+import { upsertStripeSubscriptionScheduleFromAPIInDatabase } from './stripe-subscription-schedule-model.server';
 
 const ok = () => new Response('OK');
 
@@ -225,7 +225,7 @@ export const handleStripeSubscriptionScheduleCreatedEvent = async (
   event: Stripe.SubscriptionScheduleCreatedEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleInDatabase(event.data.object);
+    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
@@ -239,7 +239,7 @@ export const handleStripeSubscriptionScheduleExpiringEvent = async (
   event: Stripe.SubscriptionScheduleExpiringEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleInDatabase(event.data.object);
+    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
@@ -253,7 +253,7 @@ export const handleStripeSubscriptionScheduleUpdatedEvent = async (
   event: Stripe.SubscriptionScheduleUpdatedEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleInDatabase(event.data.object);
+    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);

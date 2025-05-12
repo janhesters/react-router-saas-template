@@ -18,11 +18,12 @@ import {
 export async function setupUserWithOrgAndAddAsMember(
   ...args: Parameters<typeof createUserWithOrgAndAddAsMember>
 ) {
-  const { organization, user } = await createUserWithOrgAndAddAsMember(...args);
+  const { organization, user, subscription } =
+    await createUserWithOrgAndAddAsMember(...args);
 
   onTestFinished(async () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  return { organization, user };
+  return { organization, user, subscription };
 }
