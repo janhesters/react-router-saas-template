@@ -43,6 +43,9 @@ export function OrganizationSwitcher({
   const { t } = useTranslation('organizations', {
     keyPrefix: 'layout.organization-switcher',
   });
+  const { t: tTier } = useTranslation('billing', {
+    keyPrefix: 'pricing.plans',
+  });
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -78,7 +81,7 @@ export function OrganizationSwitcher({
                 </span>
 
                 <span className="truncate text-xs">
-                  {t(`plan.${currentOrganization.tier}`, {
+                  {tTier(`${currentOrganization.tier}.title`, {
                     defaultValue: 'Enterprise',
                   })}
                 </span>

@@ -43,12 +43,7 @@
     },
     "organization-switcher": {
       "new-organization": "New organization",
-      "organizations": "Organizations",
-      "plan": {
-        "high": "Business",
-        "low": "Hobby",
-        "mid": "Startup"
-      }
+      "organizations": "Organizations"
     }
   },
   "new": {

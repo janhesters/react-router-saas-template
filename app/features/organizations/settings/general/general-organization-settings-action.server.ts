@@ -3,6 +3,7 @@ import { data, href } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
+import { updateStripeCustomer } from '~/features/billing/stripe-helpers.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { forbidden } from '~/utils/http-responses.server';
@@ -74,6 +75,13 @@ export async function generalOrganizationSettingsAction({
             slug: params.organizationSlug,
             organization: updates,
           });
+
+          if (updates.name && organization.stripeCustomerId) {
+            await updateStripeCustomer({
+              customerId: organization.stripeCustomerId,
+              customerName: updates.name,
+            });
+          }
 
           if (updates.slug) {
             return redirectWithToast(

@@ -4,10 +4,6 @@
 // TODO: fix layout for organization settings with avatar
 // TODO: upgrade packages
 
-// Billing:
-// - Free Tier, Pro Tier, Enterprise Tier
-// - Hobby Tier, Pro Tier, Enterprise Tier
-//   - Optional: free trial
 // 6 people visit link of 5 people invite
 
 import AxeBuilder from '@axe-core/playwright';
@@ -366,7 +362,6 @@ test.describe('account settings', () => {
 // TODO: contact sales enterprise flow
 // TODO: UI tests for when trial ran out (e.g. side bar card has correct text,
 // etc.)
-// TODO: When updating the organization name, also update the Stripe customer.
 // TODO: add a notification 3 days before the trial ends.
 // TODO: prevent downgrade when they have more seats than the new plan would allow.
 // TODO: If during the free trial, you added more seats than any of the plan's
