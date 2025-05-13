@@ -7,12 +7,18 @@ import {
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
   OPEN_CHECKOUT_SESSION_INTENT,
   priceLookupKeysByTierAndInterval,
+  RESUME_SUBSCRIPTION_INTENT,
+  SWITCH_SUBSCRIPTION_INTENT,
+  UPDATE_BILLING_EMAIL_INTENT,
+  VIEW_INVOICES_INTENT,
 } from '~/features/billing/billing-constants';
 import {
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
+  createPopulatedStripeSubscriptionWithItemsAndPrice,
   getRandomLookupKey,
 } from '~/features/billing/billing-factories.server';
 import { retrieveStripePriceFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
+import { retrieveStripeSubscriptionFromDatabaseById } from '~/features/billing/stripe-subscription-model.server';
 import {
   retrieveStripeSubscriptionScheduleFromDatabaseById,
   saveSubscriptionScheduleWithPhasesAndPriceToDatabase,
@@ -29,7 +35,7 @@ import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
 import type { DataWithResponseInit } from '~/utils/http-responses.server';
-import { forbidden, notFound } from '~/utils/http-responses.server';
+import { badRequest, forbidden, notFound } from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
 
 import { action } from './billing';
@@ -353,6 +359,355 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
           /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
         );
         expect(checkoutSessionCalled).toEqual(true);
+      },
+    );
+  });
+
+  describe(`${RESUME_SUBSCRIPTION_INTENT} intent`, () => {
+    const intent = RESUME_SUBSCRIPTION_INTENT;
+
+    test('given: a valid request from a member, should: return a 403', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.member,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent }),
+      })) as DataWithResponseInit<object>;
+      const expected = forbidden();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s and a subscription that is set to cancel at period end, should: return a 200 and call the update endpoint and update the subscription in the database',
+      async role => {
+        let resumeCalled = false;
+        const listener = ({ request }: { request: Request }) => {
+          if (
+            new URL(request.url).pathname ===
+            `/v1/subscriptions/${subscription.stripeId}`
+          ) {
+            resumeCalled = true;
+          }
+        };
+        server.events.on('response:mocked', listener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', listener);
+        });
+
+        const { user, organization, subscription } =
+          await setupUserWithOrgAndAddAsMember({
+            role,
+            subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
+              cancelAtPeriodEnd: true,
+            }),
+          });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({ intent }),
+        })) as DataWithResponseInit<object>;
+
+        expect(response.data).toEqual({});
+        expect(resumeCalled).toEqual(true);
+
+        const updatedSubscription =
+          await retrieveStripeSubscriptionFromDatabaseById(
+            subscription.stripeId,
+          );
+        expect(updatedSubscription?.cancelAtPeriodEnd).toEqual(false);
+      },
+    );
+  });
+
+  describe(`${SWITCH_SUBSCRIPTION_INTENT} intent`, () => {
+    const intent = SWITCH_SUBSCRIPTION_INTENT;
+
+    test('given: a valid request from a member, should: return a 403', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.member,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+      })) as DataWithResponseInit<object>;
+      const expected = forbidden();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+
+    test.each([
+      {
+        data: {},
+        expected: badRequest({
+          errors: { lookupKey: { message: 'Required' } },
+        }),
+      },
+    ])(
+      'given: invalid data $data, should: return validation errors',
+      async ({ data, expected }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.admin,
+        });
+
+        const actual = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({ intent, ...data }),
+        })) as DataWithResponseInit<object>;
+
+        expect(actual).toEqual(expected);
+      },
+    );
+
+    test('given: an invalid lookup key, should: return a bad request', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.admin,
+      });
+
+      const response = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({
+          intent,
+          lookupKey: 'invalid_lookup_key',
+        }),
+      })) as DataWithResponseInit<object>;
+
+      expect(response.init?.status).toEqual(400);
+      expect(response.data).toEqual({ message: 'Price not found' });
+    });
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
+      async role => {
+        let switchSessionCalled = false;
+        const switchListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname === '/v1/billing_portal/sessions') {
+            switchSessionCalled = true;
+          }
+        };
+        server.events.on('response:mocked', switchListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', switchListener);
+        });
+
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+          lookupKey: getRandomLookupKey(),
+        });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({
+            intent,
+            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+          }),
+        })) as Response;
+
+        expect(response.status).toEqual(302);
+        expect(response.headers.get('Location')).toMatch(
+          /^https:\/\/billing\.stripe\.com\/p\/session\/\w+(?:\?.*)?$/,
+        );
+        expect(switchSessionCalled).toEqual(true);
+      },
+    );
+  });
+
+  describe(`${UPDATE_BILLING_EMAIL_INTENT} intent`, () => {
+    const intent = UPDATE_BILLING_EMAIL_INTENT;
+
+    test('given: a valid request from a member, should: return a 403', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.member,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent, billingEmail: 'new@example.com' }),
+      })) as DataWithResponseInit<object>;
+      const expected = forbidden();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+
+    test.each([
+      {
+        data: {},
+        expected: badRequest({
+          errors: { billingEmail: { message: 'Required' } },
+        }),
+      },
+      {
+        data: { billingEmail: 'not-an-email' },
+        expected: badRequest({
+          errors: {
+            billingEmail: {
+              message:
+                'billing:billing-page.update-billing-email-modal.email-invalid',
+            },
+          },
+        }),
+      },
+    ])(
+      'given: invalid data $data, should: return validation errors',
+      async ({ data, expected }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.admin,
+        });
+
+        const actual = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({ intent, ...data }),
+        })) as DataWithResponseInit<object>;
+
+        expect(actual).toEqual(expected);
+      },
+    );
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s with a new email, should: update the billing email and return a 200',
+      async role => {
+        let updateCustomerCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/customers')) {
+            updateCustomerCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+          organization: createPopulatedOrganization({
+            billingEmail: 'old@example.com',
+          }),
+        });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({
+            intent,
+            billingEmail: 'new@example.com',
+          }),
+        })) as DataWithResponseInit<object>;
+
+        expect(response.data).toEqual({});
+        expect(updateCustomerCalled).toEqual(true);
+      },
+    );
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s with the same email, should: skip the update and return a 200',
+      async role => {
+        let updateCustomerCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/customers')) {
+            updateCustomerCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
+        const currentEmail = 'same@example.com';
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+          organization: createPopulatedOrganization({
+            billingEmail: currentEmail,
+          }),
+        });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({
+            intent,
+            billingEmail: currentEmail,
+          }),
+        })) as DataWithResponseInit<object>;
+
+        expect(response.data).toEqual({});
+        expect(updateCustomerCalled).toEqual(false);
+      },
+    );
+  });
+
+  describe(`${VIEW_INVOICES_INTENT} intent`, () => {
+    const intent = VIEW_INVOICES_INTENT;
+
+    test('given: a valid request from a member, should: return a 403', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.member,
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        user,
+        organizationSlug: organization.slug,
+        formData: toFormData({ intent }),
+      })) as DataWithResponseInit<object>;
+      const expected = forbidden();
+
+      expect(actual.init?.status).toEqual(expected.init?.status);
+    });
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
+      async role => {
+        let portalSessionCalled = false;
+        const portalListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname === '/v1/billing_portal/sessions') {
+            portalSessionCalled = true;
+          }
+        };
+        server.events.on('response:mocked', portalListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', portalListener);
+        });
+
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+        });
+
+        const response = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({ intent }),
+        })) as Response;
+
+        expect(response.status).toEqual(302);
+        expect(response.headers.get('Location')).toMatch(
+          /^https:\/\/billing\.stripe\.com\/p\/session\/\w+(?:\?.*)?$/,
+        );
+        expect(portalSessionCalled).toEqual(true);
       },
     );
   });

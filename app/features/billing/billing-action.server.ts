@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
-import { forbidden } from '~/utils/http-responses.server';
+import { badRequest, forbidden } from '~/utils/http-responses.server';
 import i18next from '~/utils/i18next.server';
 import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
@@ -43,7 +43,7 @@ import {
   updateStripeCustomer,
 } from './stripe-helpers.server';
 import { retrieveStripePriceFromDatabaseByLookupKey } from './stripe-prices-model.server';
-import { updateStripeSubscriptionInDatabase } from './stripe-subscription-model.server';
+import { updateStripeSubscriptionInDatabaseById } from './stripe-subscription-model.server';
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from './stripe-subscription-schedule-model.server';
 
 const schema = z.discriminatedUnion('intent', [
@@ -150,7 +150,10 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
           subscription.cancel_at_period_end !==
           currentSubscription.cancelAtPeriodEnd
         ) {
-          await updateStripeSubscriptionInDatabase(subscription);
+          await updateStripeSubscriptionInDatabaseById({
+            id: subscription.id,
+            subscription: { cancelAtPeriodEnd: false },
+          });
         }
 
         const toast = await createToastHeaders({
@@ -175,7 +178,7 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
         );
 
         if (!price) {
-          throw new Error('Price not found');
+          return badRequest({ message: 'Price not found' });
         }
 
         const portalSession = await createStripeSwitchPlanSession({

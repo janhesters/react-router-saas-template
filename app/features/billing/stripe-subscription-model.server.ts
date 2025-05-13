@@ -1,4 +1,4 @@
-import type { Organization } from '@prisma/client';
+import type { Organization, Prisma, StripeSubscription } from '@prisma/client';
 import type Stripe from 'stripe';
 
 import { prisma } from '~/utils/database.server';
@@ -42,6 +42,18 @@ export async function createStripeSubscriptionInDatabase(
 /* READ */
 
 /**
+ * Retrieves a Stripe subscription from our database by its ID.
+ *
+ * @param stripeId - The ID of the Stripe subscription to retrieve
+ * @returns The retrieved StripeSubscription record
+ */
+export async function retrieveStripeSubscriptionFromDatabaseById(
+  stripeId: StripeSubscription['stripeId'],
+) {
+  return await prisma.stripeSubscription.findUnique({ where: { stripeId } });
+}
+
+/**
  * Retrieves the latest Stripe subscription for an organization, regardless of
  * status.
  * Orders by creation date to ensure we get the most recent subscription.
@@ -68,13 +80,33 @@ export async function retrieveLatestStripeSubscriptionByOrganizationId(
 /* UPDATE */
 
 /**
+ * Updates a Stripe subscription in our database by its ID.
+ *
+ * @param id - The ID of the Stripe subscription to update
+ * @param subscription - The new data for the Stripe subscription
+ * @returns The updated StripeSubscription record
+ */
+export async function updateStripeSubscriptionInDatabaseById({
+  id,
+  subscription,
+}: {
+  id: StripeSubscription['stripeId'];
+  subscription: Omit<Prisma.StripeSubscriptionUpdateInput, 'id'>;
+}) {
+  return await prisma.stripeSubscription.update({
+    where: { stripeId: id },
+    data: subscription,
+  });
+}
+
+/**
  * Updates an existing Stripe subscription and its items in our database.
  * Expects organizationId and purchasedById in subscription.metadata.
  *
  * @param stripeSubscription - Stripe.Subscription with metadata: organizationId, purchasedById.
  * @returns The updated StripeSubscription record.
  */
-export async function updateStripeSubscriptionInDatabase(
+export async function updateStripeSubscriptionFromAPIInDatabase(
   stripeSubscription: Stripe.Subscription,
 ) {
   const { metadata } = stripeSubscription;

@@ -16,7 +16,7 @@ import {
 } from './stripe-product-model.server';
 import {
   createStripeSubscriptionInDatabase,
-  updateStripeSubscriptionInDatabase,
+  updateStripeSubscriptionFromAPIInDatabase,
 } from './stripe-subscription-model.server';
 import {
   saveStripeSubscriptionScheduleFromAPIToDatabase,
@@ -116,7 +116,7 @@ export const handleStripeCustomerSubscriptionDeletedEvent = async (
   event: Stripe.CustomerSubscriptionDeletedEvent,
 ) => {
   try {
-    await updateStripeSubscriptionInDatabase(event.data.object);
+    await updateStripeSubscriptionFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
@@ -130,7 +130,7 @@ export const handleStripeCustomerSubscriptionUpdatedEvent = async (
   event: Stripe.CustomerSubscriptionUpdatedEvent,
 ) => {
   try {
-    await updateStripeSubscriptionInDatabase(event.data.object);
+    await updateStripeSubscriptionFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
