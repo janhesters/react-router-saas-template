@@ -18,7 +18,10 @@ import {
   createStripeSubscriptionInDatabase,
   updateStripeSubscriptionInDatabase,
 } from './stripe-subscription-model.server';
-import { upsertStripeSubscriptionScheduleFromAPIInDatabase } from './stripe-subscription-schedule-model.server';
+import {
+  saveStripeSubscriptionScheduleFromAPIToDatabase,
+  updateStripeSubscriptionScheduleFromAPIInDatabase,
+} from './stripe-subscription-schedule-model.server';
 
 const ok = () => new Response('OK');
 
@@ -225,11 +228,11 @@ export const handleStripeSubscriptionScheduleCreatedEvent = async (
   event: Stripe.SubscriptionScheduleCreatedEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
+    await saveStripeSubscriptionScheduleFromAPIToDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
-    console.error('Error upserting Stripe subscription schedule', message);
+    console.error('Error creating Stripe subscription schedule', message);
   }
 
   return ok();
@@ -239,11 +242,11 @@ export const handleStripeSubscriptionScheduleExpiringEvent = async (
   event: Stripe.SubscriptionScheduleExpiringEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
+    await updateStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
-    console.error('Error upserting Stripe subscription schedule', message);
+    console.error('Error updating Stripe subscription schedule', message);
   }
 
   return ok();
@@ -253,11 +256,11 @@ export const handleStripeSubscriptionScheduleUpdatedEvent = async (
   event: Stripe.SubscriptionScheduleUpdatedEvent,
 ) => {
   try {
-    await upsertStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
+    await updateStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
-    console.error('Error upserting Stripe subscription schedule', message);
+    console.error('Error updating Stripe subscription schedule', message);
   }
 
   return ok();

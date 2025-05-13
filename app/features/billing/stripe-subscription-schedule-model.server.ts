@@ -38,33 +38,13 @@ export async function saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
   });
 }
 
-/* READ */
-
 /**
- * Retrieves a Stripe subscription schedule from our database by its ID.
+ * Creates a new Stripe subscription schedule in the database.
  *
- * @param scheduleId - The ID of the Stripe subscription schedule to retrieve
- * @returns The retrieved StripeSubscriptionSchedule record
+ * @param stripeSchedule - Stripe.SubscriptionSchedule to create
+ * @returns The created StripeSubscriptionSchedule record
  */
-export async function retrieveStripeSubscriptionScheduleFromDatabaseById(
-  scheduleId: StripeSubscriptionSchedule['stripeId'],
-) {
-  return await prisma.stripeSubscriptionSchedule.findUnique({
-    where: { stripeId: scheduleId },
-  });
-}
-
-/* UPDATE */
-
-/**
- * Upserts a Stripe subscription schedule and its phases into our database.
- * On update, all existing phases are deleted and replaced with new ones since
- * Stripe doesn't provide real IDs for phases.
- *
- * @param stripeSchedule - Stripe.SubscriptionSchedule to upsert
- * @returns The upserted StripeSubscriptionSchedule record
- */
-export async function upsertStripeSubscriptionScheduleFromAPIInDatabase(
+export async function saveStripeSubscriptionScheduleFromAPIToDatabase(
   stripeSchedule: Stripe.SubscriptionSchedule,
 ) {
   if (!stripeSchedule.current_phase) {
@@ -87,9 +67,8 @@ export async function upsertStripeSubscriptionScheduleFromAPIInDatabase(
     };
   });
 
-  return prisma.stripeSubscriptionSchedule.upsert({
-    where: { stripeId: stripeSchedule.id },
-    create: {
+  return prisma.stripeSubscriptionSchedule.create({
+    data: {
       stripeId: stripeSchedule.id,
       subscription: {
         connect: { stripeId: stripeSchedule.subscription as string },
@@ -103,7 +82,62 @@ export async function upsertStripeSubscriptionScheduleFromAPIInDatabase(
         create: createPhases,
       },
     },
-    update: {
+    include: { phases: true },
+  });
+}
+
+/* READ */
+
+/**
+ * Retrieves a Stripe subscription schedule from our database by its ID.
+ *
+ * @param scheduleId - The ID of the Stripe subscription schedule to retrieve
+ * @returns The retrieved StripeSubscriptionSchedule record
+ */
+export async function retrieveStripeSubscriptionScheduleFromDatabaseById(
+  scheduleId: StripeSubscriptionSchedule['stripeId'],
+) {
+  return await prisma.stripeSubscriptionSchedule.findUnique({
+    where: { stripeId: scheduleId },
+  });
+}
+
+/* UPDATE */
+
+/**
+ * Updates an existing Stripe subscription schedule in the database.
+ * All existing phases are deleted and replaced with new ones since
+ * Stripe doesn't provide real IDs for phases.
+ *
+ * @param stripeSchedule - Stripe.SubscriptionSchedule to update
+ * @returns The updated StripeSubscriptionSchedule record
+ */
+export async function updateStripeSubscriptionScheduleFromAPIInDatabase(
+  stripeSchedule: Stripe.SubscriptionSchedule,
+) {
+  if (!stripeSchedule.current_phase) {
+    // The subscription schedule is released.
+    return;
+  }
+
+  const createPhases = stripeSchedule.phases.map(phase => {
+    if (!phase.items?.[0]?.price || typeof phase.items[0].price !== 'string') {
+      throw new Error('Each phase must have at least one item with a price ID');
+    }
+
+    return {
+      startDate: new Date(phase.start_date * 1000),
+      endDate: new Date(phase.end_date * 1000),
+      price: {
+        connect: { stripeId: phase.items[0].price },
+      },
+      quantity: phase.items[0].quantity ?? 1,
+    };
+  });
+
+  return prisma.stripeSubscriptionSchedule.update({
+    where: { stripeId: stripeSchedule.id },
+    data: {
       created: new Date(stripeSchedule.created * 1000),
       currentPhaseStart: new Date(
         stripeSchedule.current_phase.start_date * 1000,
