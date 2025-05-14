@@ -40,6 +40,10 @@
     "pending-downgrade-banner": {
       "button": "Keep current subscription",
       "description": "Your subscription will downgrade to the {{planName}} ({{billingInterval}}) plan on {{date}}.",
+      "intervals": {
+        "annual": "annual",
+        "monthly": "monthly"
+      },
       "loading-button": "Updating subscription ...",
       "success-title": "Current subscription kept",
       "title": "Downgrade scheduled"
@@ -111,6 +115,10 @@
     "subscription-inactive": {
       "button": "Choose plan",
       "description": "Renew to keep using the app.",
+      "modal": {
+        "description": "Pick a plan that fits your needs.",
+        "title": "Choose your plan to reactivate your subscription"
+      },
       "title": "Subscription inactive"
     },
     "trial-ended": {

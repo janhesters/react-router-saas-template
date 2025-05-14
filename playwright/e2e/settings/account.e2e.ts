@@ -371,10 +371,9 @@ test.describe('account settings', () => {
 // TODO: test people entering credit cards that decline or bounce
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
-// TODO: warn that subscriptions will be cancelled even if there is still
-// time left in the current period.
 // TODO: fix test for trialing and paid organizations
 // TODO: enforce limits
 // TODO: Use lifecycle events for the tests: https://mswjs.io/docs/api/life-cycle-events
 // TODO: Prevent the org from sending out email invite links if they have more members than the plan allows.
 // TODO: Show a warning that the organization is full when the organization reached the limit.
+// TODO: make sure the app can't be used when the subscription is cancelled and ran out.

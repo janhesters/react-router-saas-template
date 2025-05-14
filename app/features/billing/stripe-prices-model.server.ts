@@ -38,7 +38,6 @@ export async function saveStripePriceFromAPIToDatabase(price: Stripe.Price) {
 }
 
 /* READ */
-
 /**
  * Retrieves a Stripe price from the database by its lookup key.
  *
@@ -49,6 +48,21 @@ export async function retrieveStripePriceFromDatabaseByLookupKey(
   lookupKey: StripePrice['lookupKey'],
 ) {
   return prisma.stripePrice.findUnique({ where: { lookupKey } });
+}
+
+/**
+ * Retrieves a Stripe price with its associated product from the database by lookup key.
+ *
+ * @param lookupKey - The lookup key of the price to retrieve.
+ * @returns The retrieved Stripe price with its product.
+ */
+export async function retrieveStripePriceWithProductFromDatabaseByLookupKey(
+  lookupKey: StripePrice['lookupKey'],
+) {
+  return prisma.stripePrice.findUnique({
+    where: { lookupKey },
+    include: { product: true },
+  });
 }
 
 /* UPDATE */

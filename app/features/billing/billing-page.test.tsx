@@ -431,7 +431,7 @@ describe('BillingPage component', () => {
     expect(screen.getByText(/downgrade scheduled/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /your subscription will downgrade to the mid \(monthly\) plan on february 12, 2025/i,
+        /your subscription will downgrade to the startup \(monthly\) plan on february 12, 2025/i,
       ),
     ).toBeInTheDocument();
     expect(
@@ -443,7 +443,7 @@ describe('BillingPage component', () => {
     const props = createProps({
       isKeepingCurrentSubscription: true,
       pendingChange: {
-        pendingTier: 'mid' as const,
+        pendingTier: 'high' as const,
         pendingInterval: 'monthly' as const,
         pendingChangeDate: new Date('2025-02-12T00:00:00.000Z'),
       },
@@ -458,7 +458,7 @@ describe('BillingPage component', () => {
     expect(screen.getByText(/downgrade scheduled/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /your subscription will downgrade to the mid \(monthly\) plan on february 12, 2025/i,
+        /your subscription will downgrade to the business \(monthly\) plan on february 12, 2025/i,
       ),
     ).toBeInTheDocument();
     expect(

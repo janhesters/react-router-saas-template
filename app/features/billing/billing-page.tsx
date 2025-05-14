@@ -58,6 +58,9 @@ function PendingDowngradeBanner({
   const { t, i18n } = useTranslation('billing', {
     keyPrefix: 'billing-page.pending-downgrade-banner',
   });
+  const { t: tTier } = useTranslation('billing', {
+    keyPrefix: 'pricing.plans',
+  });
 
   const formattedDate = useMemo(() => {
     return new Intl.DateTimeFormat(i18n.language || 'en-GB', {
@@ -75,8 +78,8 @@ function PendingDowngradeBanner({
         <AlertDescription>
           {t('description', {
             date: formattedDate,
-            planName: pendingTier,
-            billingInterval: pendingInterval,
+            planName: tTier(`${pendingTier}.title`),
+            billingInterval: t(`intervals.${pendingInterval}`),
           })}
         </AlertDescription>
 

@@ -7,6 +7,8 @@ import dotenv from 'dotenv';
 import { promiseHash } from 'remix-utils/promise';
 
 import type { LookupKey } from '~/features/billing/billing-constants';
+import type { StripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
+import { createPopulatedStripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import type { CreateInviteLinkInfoCookieParams } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
@@ -185,12 +187,16 @@ export async function setupOrganizationAndLoginAsMember({
   page,
   user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member,
+  subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
+    organizationId: organization.id,
+  }),
   lookupKey,
 }: {
   organization?: Organization;
   page: Page;
   role?: OrganizationMembershipRole;
   user?: UserAccount;
+  subscription?: StripeSubscriptionWithItemsAndPrice;
   lookupKey?: LookupKey;
 }) {
   const data = await setupTrialOrganizationAndLoginAsMember({
@@ -204,6 +210,7 @@ export async function setupOrganizationAndLoginAsMember({
       user: data.user,
       organization: data.organization,
       stripeCustomerId: data.organization.stripeCustomerId!,
+      subscription,
       lookupKey,
     });
 

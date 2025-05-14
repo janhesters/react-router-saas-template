@@ -1,7 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { faker } from '@faker-js/faker';
 import type { Organization } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
+import {
+  OrganizationMembershipRole,
+  StripeSubscriptionStatus,
+} from '@prisma/client';
 import { expect, test } from 'playwright/test';
 import {
   getPath,
@@ -11,6 +14,12 @@ import {
 } from 'playwright/utils';
 
 import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import {
+  createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
+  createPopulatedStripeSubscriptionWithItemsAndPrice,
+} from '~/features/billing/billing-factories.server';
+import { retrieveStripePriceWithProductFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
+import { saveSubscriptionScheduleWithPhasesAndPriceToDatabase } from '~/features/billing/stripe-subscription-schedule-model.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
   deleteOrganizationFromDatabaseById,
@@ -575,6 +584,225 @@ test.describe('billing page', () => {
       organization.id,
     );
     expect(updatedOrg?.billingEmail).toEqual(newEmail);
+
+    await teardownOrganizationAndMember({ organization, user });
+  });
+
+  test("given: the user's subscription is set to cancel in the future, should: show a warning and a button to let the user resume the subscription", async ({
+    page,
+  }) => {
+    const role = faker.helpers.arrayElement([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ]);
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+      role,
+      subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
+        cancelAtPeriodEnd: true,
+      }),
+    });
+
+    await page.goto(createPath(organization.slug));
+
+    // banner container
+    const pendingBanner = page.getByRole('alert');
+    await expect(pendingBanner).toBeVisible();
+
+    // title & description slots
+    await expect(
+      pendingBanner.getByText(/your subscription is ending soon\./i),
+    ).toBeVisible();
+
+    const endDate =
+      organization.stripeSubscriptions[0].items[0].currentPeriodEnd.toLocaleDateString(
+        'en-US',
+        {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        },
+      );
+    await expect(
+      pendingBanner.getByText(
+        new RegExp(`Your subscription runs out on ${endDate}\\.`),
+      ),
+    ).toBeVisible();
+
+    // resume button
+    const resumeButton = pendingBanner.getByRole('button', {
+      name: /resume subscription/i,
+    });
+    await expect(resumeButton).toBeVisible();
+
+    // click & expect toast + disappear
+    await resumeButton.click();
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/subscription resumed/i),
+    ).toBeVisible();
+    await expect(pendingBanner).toBeHidden();
+
+    await teardownOrganizationAndMember({ organization, user });
+  });
+
+  test("given: the user's subscription is cancelled in the past, should: show an inactive banner and sidebar card, and let them open the reactivate modal", async ({
+    page,
+  }) => {
+    // pick an admin or owner role
+    const role = faker.helpers.arrayElement([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ]);
+
+    // seed an org with a terminal canceled subscription
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+      role,
+      subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
+        status: StripeSubscriptionStatus.canceled,
+        items: [
+          {
+            // make sure there's a currentPeriodEnd in the past
+            currentPeriodEnd: faker.date.past(),
+          },
+        ],
+      }),
+    });
+
+    // navigate to billing
+    await page.goto(createPath(organization.slug));
+
+    //
+    // — alert banner —
+    //
+    const inactiveBanner = page.getByRole('alert');
+    await expect(inactiveBanner).toBeVisible();
+    await expect(
+      inactiveBanner.getByText(/your subscription is inactive\./i),
+    ).toBeVisible();
+    await expect(
+      inactiveBanner.getByText(/your subscription has been cancelled\./i),
+    ).toBeVisible();
+
+    // banner "Reactivate subscription" button
+    const bannerReactivate = inactiveBanner.getByRole('button', {
+      name: /reactivate subscription/i,
+    });
+    await expect(bannerReactivate).toBeVisible();
+
+    //
+    // — sidebar card —
+    //
+    const sidebar = page.getByRole('navigation', { name: /sidebar/i });
+    const inactiveCard = sidebar.locator('[data-slot="card"]');
+
+    await expect(
+      inactiveCard.getByText(/subscription inactive/i),
+    ).toBeVisible();
+    await expect(
+      inactiveCard.getByText(/renew to keep using the app\./i),
+    ).toBeVisible();
+
+    // sidebar "Choose plan" button
+    const choosePlanButton = inactiveCard.getByRole('button', {
+      name: /choose plan/i,
+    });
+    await expect(choosePlanButton).toBeVisible();
+
+    //
+    // clicking the sidebar button opens the reactivate modal
+    //
+    await choosePlanButton.click();
+    const reactivateModal = page.getByRole('dialog', {
+      name: /choose your plan to reactivate your subscription/i,
+    });
+    await expect(reactivateModal).toBeVisible();
+    // close it to reset state
+    await reactivateModal.getByRole('button', { name: /close/i }).click();
+    await expect(reactivateModal).toBeHidden();
+
+    //
+    // clicking the banner button opens the same reactivate modal
+    //
+    await bannerReactivate.click();
+    await expect(
+      page.getByRole('dialog', {
+        name: /choose your plan to reactivate your subscription/i,
+      }),
+    ).toBeVisible();
+
+    // cleanup
+    await teardownOrganizationAndMember({ organization, user });
+  });
+
+  test("given: the user's subscription is marked to downgrade, should: show a pending-downgrade banner and let the user keep their current subscription", async ({
+    page,
+  }) => {
+    // pick an admin or owner
+    const role = faker.helpers.arrayElement([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ]);
+
+    // seed an org with an active subscription
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+      role,
+      lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
+    });
+    const subscription = organization.stripeSubscriptions[0];
+
+    // schedule a downgrade: pick a lower price
+    const lowerPrice =
+      await retrieveStripePriceWithProductFromDatabaseByLookupKey(
+        priceLookupKeysByTierAndInterval.low.monthly,
+      );
+    const schedule =
+      createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
+        subscriptionId: subscription.stripeId,
+        phases: [{ price: lowerPrice!, startDate: faker.date.soon() }],
+      });
+    await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(schedule);
+
+    // go to billing
+    await page.goto(createPath(organization.slug));
+
+    // — pending-downgrade banner —
+    const pendingBanner = page.getByRole('alert');
+    await expect(pendingBanner).toBeVisible();
+    await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
+
+    // build expected description
+    const phase = schedule.phases[0];
+    const billingInterval =
+      phase.price.interval === 'month' ? 'monthly' : 'annually';
+    const downgradeDate = phase.startDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const descRegex = new RegExp(
+      `Your subscription will downgrade to the hobby \\(${billingInterval}\\) plan on ${downgradeDate}\\.`,
+      'i',
+    );
+    await expect(pendingBanner.getByText(descRegex)).toBeVisible();
+
+    // “Keep current subscription” CTA
+    const keepButton = pendingBanner.getByRole('button', {
+      name: /keep current subscription/i,
+    });
+    await expect(keepButton).toBeVisible();
+
+    // click it → should show success toast and hide the banner
+    await keepButton.click();
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/current subscription kept/i),
+    ).toBeVisible();
+    await expect(pendingBanner).toBeHidden();
 
     await teardownOrganizationAndMember({ organization, user });
   });

@@ -98,7 +98,11 @@ export function BillingSidebarCard({
 
       <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
         <DialogHeader>
-          <DialogTitle>{t('billing-modal.title')}</DialogTitle>
+          <DialogTitle>
+            {state === 'cancelled'
+              ? t('subscription-inactive.modal.title')
+              : t('billing-modal.title')}
+          </DialogTitle>
 
           <VisuallyHidden>
             <DialogDescription>
