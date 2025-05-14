@@ -52,7 +52,8 @@
       "manage-users": "Manage users",
       "next-billing-date": "Next Billing Date",
       "projected-total": "Projected Total",
-      "rate-format": "${{amount}} <1>per user billed monthly</1>",
+      "rate-format-annual": "${{amount}} <1>per user billed annually</1>",
+      "rate-format-monthly": "${{amount}} <1>per user billed monthly</1>",
       "users": "Users",
       "users-format": "{{current}} / {{max}}",
       "view-invoices": "View invoices"

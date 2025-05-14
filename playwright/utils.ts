@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import type { APIResponse, Page } from '@playwright/test';
 import { request } from '@playwright/test';
 import type { Organization, UserAccount } from '@prisma/client';
@@ -5,6 +6,7 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import dotenv from 'dotenv';
 import { promiseHash } from 'remix-utils/promise';
 
+import type { LookupKey } from '~/features/billing/billing-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import type { CreateInviteLinkInfoCookieParams } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
@@ -137,17 +139,22 @@ export async function loginAndSaveUserAccountToDatabase({
 }
 
 /**
- * Creates an organization and a user, adds that user as a member of the
+ * Creates a trial organization and a user, adds that user as a member of the
  * organization, and logs in the user via cookie for the given page.
  *
  * @param params - The organization and user to create and the test's page.
  * @returns The organization and user that were created.
  */
-export async function setupOrganizationAndLoginAsMember({
-  organization = createPopulatedOrganization(),
+export async function setupTrialOrganizationAndLoginAsMember({
+  organization = createPopulatedOrganization({
+    billingEmail: '',
+    createdAt: faker.date.recent({ days: 3 }),
+    // eslint-disable-next-line unicorn/no-null
+    stripeCustomerId: null,
+  }),
   page,
-  user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member,
+  user = createPopulatedUserAccount(),
 }: {
   organization?: Organization;
   page: Page;
@@ -163,13 +170,44 @@ export async function setupOrganizationAndLoginAsMember({
     members: [data.user.id],
     role,
   });
-  await createTestSubscriptionForUserAndOrganization({
-    user: data.user,
-    organization: data.organization,
-    stripeCustomerId: data.organization.stripeCustomerId!,
-  });
-
   return data;
+}
+
+/**
+ * Creates an organization and a user, adds that user as a member of the
+ * organization, and logs in the user via cookie for the given page.
+ *
+ * @param params - The organization and user to create and the test's page.
+ * @returns The organization and user that were created.
+ */
+export async function setupOrganizationAndLoginAsMember({
+  organization = createPopulatedOrganization(),
+  page,
+  user = createPopulatedUserAccount(),
+  role = OrganizationMembershipRole.member,
+  lookupKey,
+}: {
+  organization?: Organization;
+  page: Page;
+  role?: OrganizationMembershipRole;
+  user?: UserAccount;
+  lookupKey?: LookupKey;
+}) {
+  const data = await setupTrialOrganizationAndLoginAsMember({
+    organization,
+    page,
+    role,
+    user,
+  });
+  const organizationWithSubscription =
+    await createTestSubscriptionForUserAndOrganization({
+      user: data.user,
+      organization: data.organization,
+      stripeCustomerId: data.organization.stripeCustomerId!,
+      lookupKey,
+    });
+
+  return { ...data, organization: organizationWithSubscription };
 }
 
 /**

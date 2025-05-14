@@ -114,6 +114,7 @@ export type BillingPageProps = {
   currentPeriodEnd: Date;
   currentSeats: number;
   currentTier: Tier;
+  currentInterval: Interval;
   isCancellingSubscription?: boolean;
   isEnterprisePlan: boolean;
   isKeepingCurrentSubscription?: boolean;
@@ -135,6 +136,7 @@ export function BillingPage({
   currentPeriodEnd,
   currentSeats,
   currentTier,
+  currentInterval,
   isCancellingSubscription = false,
   isKeepingCurrentSubscription = false,
   isOnFreeTrial,
@@ -374,7 +376,11 @@ export function BillingPage({
                             components={{
                               1: <span className="text-muted-foreground" />,
                             }}
-                            i18nKey="billing:billing-page.plan-information.rate-format"
+                            i18nKey={
+                              currentInterval === 'monthly'
+                                ? 'billing:billing-page.plan-information.rate-format-monthly'
+                                : 'billing:billing-page.plan-information.rate-format-annual'
+                            }
                             values={{ amount: currentMonthlyRatePerUser }}
                           />
                         </DescriptionDetail>

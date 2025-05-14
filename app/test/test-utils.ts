@@ -406,7 +406,13 @@ export async function ensureStripeProductsAndPricesExist() {
     } else if (existingAnnualPrice) {
       productId = existingAnnualPrice.productId;
     } else {
-      const product = createPopulatedStripeProduct();
+      const product = createPopulatedStripeProduct({
+        name: {
+          high: 'Business',
+          low: 'Hobby',
+          mid: 'Startup',
+        }[tier],
+      });
       await saveStripeProductToDatabase(product);
       productId = product.stripeId;
     }
