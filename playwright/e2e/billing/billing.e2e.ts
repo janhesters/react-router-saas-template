@@ -807,6 +807,80 @@ test.describe('billing page', () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
+  test('given: the user is on an annual subscription and has a plan change for the same tier but monthly scheduled, should: show the pending downgrade banner', async ({
+    page,
+  }) => {
+    // pick an admin or owner role
+    const role = faker.helpers.arrayElement([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ]);
+
+    // seed an org with an ANNUAL “high” (e.g. Business) subscription
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+      role,
+      lookupKey: priceLookupKeysByTierAndInterval.high.annual,
+    });
+    const subscription = organization.stripeSubscriptions[0];
+
+    // schedule a switch to the MONTHLY version of the same tier
+    const monthlyPrice =
+      await retrieveStripePriceWithProductFromDatabaseByLookupKey(
+        priceLookupKeysByTierAndInterval.high.monthly,
+      );
+    const schedule =
+      createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
+        subscriptionId: subscription.stripeId,
+        phases: [
+          {
+            price: monthlyPrice!,
+            startDate: faker.date.soon(),
+          },
+        ],
+      });
+    await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(schedule);
+
+    // navigate to billing
+    await page.goto(createPath(organization.slug));
+
+    // — pending-downgrade banner —
+    const pendingBanner = page.getByRole('alert');
+    await expect(pendingBanner).toBeVisible();
+    await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
+
+    // build expected description
+    const phase = schedule.phases[0];
+    const switchDate = phase.startDate.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    });
+    const descRegex = new RegExp(
+      `Your subscription will downgrade to the business \\(monthly\\) plan on ${switchDate}\\.`,
+      'i',
+    );
+    await expect(pendingBanner.getByText(descRegex)).toBeVisible();
+
+    // “Keep current subscription” CTA
+    const keepButton = pendingBanner.getByRole('button', {
+      name: /keep current subscription/i,
+    });
+    await expect(keepButton).toBeVisible();
+
+    // click it → should hide banner and show toast
+    await keepButton.click();
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/current subscription kept/i),
+    ).toBeVisible();
+    await expect(pendingBanner).toBeHidden();
+
+    // cleanup
+    await teardownOrganizationAndMember({ organization, user });
+  });
+
   // ========================================================================
   // Accessibility Tests
   // ========================================================================

@@ -138,6 +138,7 @@
     "prisma:wipe": "npx prisma migrate reset --force && npx prisma db push",
     "start": "react-router-serve ./build/server/index.js",
     "start-with-server-mocks": "cross-env SERVER_MOCKS=true npm run start",
+    "stripe:resend-events": "xargs -n1 stripe events resend < stripe-events.txt",
     "test": "vitest --reporter=verbose",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",

@@ -366,8 +366,6 @@ test.describe('account settings', () => {
 // TODO: prevent downgrade when they have more seats than the new plan would allow.
 // TODO: If during the free trial, you added more seats than any of the plan's
 // limits => they should only be able to pick plans that match their seats.
-// TODO: a downgrade from high annual to high annual should STILL show the
-// downgrade pending banner.
 // TODO: test people entering credit cards that decline or bounce
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
@@ -377,3 +375,4 @@ test.describe('account settings', () => {
 // TODO: Prevent the org from sending out email invite links if they have more members than the plan allows.
 // TODO: Show a warning that the organization is full when the organization reached the limit.
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
+// TODO: handle downgrade goes through when the user has more seats than the new plan allows.

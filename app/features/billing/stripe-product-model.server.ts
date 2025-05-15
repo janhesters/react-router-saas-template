@@ -46,7 +46,17 @@ export async function saveStripeProductFromAPIToDatabase(
 
 /* READ */
 
-// No read operations currently implemented
+/**
+ * Retrieves a Stripe product from the database by its Stripe ID.
+ *
+ * @param stripeId - The Stripe ID of the product to retrieve.
+ * @returns The retrieved Stripe product.
+ */
+export async function retrieveStripeProductFromDatabaseById(
+  stripeId: StripeProduct['stripeId'],
+) {
+  return prisma.stripeProduct.findUnique({ where: { stripeId } });
+}
 
 /* UPDATE */
 

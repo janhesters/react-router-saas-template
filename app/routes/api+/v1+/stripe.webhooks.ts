@@ -21,18 +21,18 @@ import { getErrorMessage } from '~/utils/get-error-message';
 
 import type { Route } from './+types/stripe.webhooks';
 
-const notAllowed = () =>
-  new Response(JSON.stringify({ message: 'Method Not Allowed' }), {
-    status: 405,
+const json = (payload: unknown, init?: ResponseInit) =>
+  new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+    ...init,
   });
+
+const notAllowed = () =>
+  json({ message: 'Method Not Allowed' }, { status: 405 });
 
 const badRequest = (payload?: { message?: string; error?: string }) =>
-  new Response(JSON.stringify({ message: 'Bad Request', ...payload }), {
-    status: 400,
-  });
-
-const json = (payload: unknown) =>
-  new Response(JSON.stringify(payload), { status: 200 });
+  json({ message: 'Bad Request', ...payload }, { status: 400 });
 
 export const loader = () => notAllowed();
 

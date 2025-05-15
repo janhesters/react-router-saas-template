@@ -216,7 +216,7 @@ enum StripePriceInterval {
 model StripePrice {
   stripeId          String                            @id
   lookupKey         String                            @unique
-  product           StripeProduct                     @relation(fields: [productId], references: [stripeId])
+  product           StripeProduct                     @relation(fields: [productId], references: [stripeId], onDelete: Cascade)
   productId         String
   currency          String
   active            Boolean

@@ -6,6 +6,18 @@ import { prisma } from '~/utils/database.server';
 /* CREATE */
 
 /**
+ * Saves a Stripe subscription to our database.
+ *
+ * @param subscription - The Stripe subscription to save.
+ * @returns The saved Stripe subscription.
+ */
+export async function saveStripeSubscriptionToDatabase(
+  subscription: Prisma.StripeSubscriptionUncheckedCreateInput,
+) {
+  return prisma.stripeSubscription.create({ data: subscription });
+}
+
+/**
  * Creates a new Stripe subscription and its items in our database.
  * Expects organizationId and purchasedById in subscription.metadata.
  *
@@ -51,6 +63,21 @@ export async function retrieveStripeSubscriptionFromDatabaseById(
   stripeId: StripeSubscription['stripeId'],
 ) {
   return await prisma.stripeSubscription.findUnique({ where: { stripeId } });
+}
+
+/**
+ * Retrieves a Stripe subscription from our database by its ID, including its items.
+ *
+ * @param stripeId - The ID of the Stripe subscription to retrieve
+ * @returns The retrieved StripeSubscription record with its items
+ */
+export async function retrieveStripeSubscriptionWithItemsFromDatabaseById(
+  stripeId: StripeSubscription['stripeId'],
+) {
+  return await prisma.stripeSubscription.findUnique({
+    where: { stripeId },
+    include: { items: true },
+  });
 }
 
 /**
@@ -134,4 +161,14 @@ export async function updateStripeSubscriptionFromAPIInDatabase(
 
 /* DELETE */
 
-// No delete operations currently implemented
+/**
+ * Deletes a Stripe subscription from our database by its ID.
+ *
+ * @param stripeId - The ID of the Stripe subscription to delete
+ * @returns The deleted StripeSubscription record
+ */
+export async function deleteStripeSubscriptionFromDatabaseById(
+  stripeId: StripeSubscription['stripeId'],
+) {
+  return await prisma.stripeSubscription.delete({ where: { stripeId } });
+}

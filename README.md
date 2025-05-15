@@ -354,6 +354,8 @@ After you’ve created your products and prices locally (with `npm run dev` and 
    xargs -n1 stripe events resend < stripe-events.txt
    ```
 
+   This command is also available via `npm run stripe:resend-events`.
+
 > **Tip:** Keep `stripe-events.txt` checked into your repo (or in a safe place) so you can easily replay your entire setup whenever you rebuild your local database.
 
 ### 2. Seed Stripe Data for Tests (Local vs. CI)

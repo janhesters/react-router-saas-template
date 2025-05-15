@@ -23,7 +23,11 @@ import {
   updateStripeSubscriptionScheduleFromAPIInDatabase,
 } from './stripe-subscription-schedule-model.server';
 
-const ok = () => new Response('OK');
+const ok = () =>
+  new Response(JSON.stringify({ message: 'OK' }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
 
 const prettyPrint = (event: Stripe.Event) => {
   console.log(
@@ -62,6 +66,7 @@ export const handleStripeCheckoutSessionCompletedEvent = async (
         });
       }
     } else {
+      console.error('No organization ID found in checkout session metadata');
       prettyPrint(event);
     }
   } catch (error) {

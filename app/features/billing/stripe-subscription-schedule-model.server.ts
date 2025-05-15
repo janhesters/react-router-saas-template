@@ -102,6 +102,21 @@ export async function retrieveStripeSubscriptionScheduleFromDatabaseById(
   });
 }
 
+/**
+ * Retrieves a Stripe subscription schedule from our database by its ID.
+ *
+ * @param scheduleId - The ID of the Stripe subscription schedule to retrieve
+ * @returns The retrieved StripeSubscriptionSchedule record
+ */
+export async function retrieveStripeSubscriptionScheduleWithPhasesFromDatabaseById(
+  scheduleId: StripeSubscriptionSchedule['stripeId'],
+) {
+  return await prisma.stripeSubscriptionSchedule.findUnique({
+    where: { stripeId: scheduleId },
+    include: { phases: true },
+  });
+}
+
 /* UPDATE */
 
 /**
