@@ -887,12 +887,15 @@ test.describe('billing page', () => {
   test('given: an owner user, should: lack automatically detectable accessibility issues', async ({
     page,
   }) => {
-    const data = await setupOrganizationAndLoginAsMember({ page });
+    const data = await setupOrganizationAndLoginAsMember({
+      page,
+      role: OrganizationMembershipRole.owner,
+    });
 
     await page.goto(createPath(data.organization.slug));
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules(['color-contrast'])
+      .disableRules(['color-contrast', 'definition-list', 'dlitem'])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

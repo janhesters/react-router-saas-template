@@ -6,7 +6,7 @@ import type { StripeSubscriptionSchedulePhaseWithPrice } from './billing-factori
 import { getTierAndIntervalForLookupKey } from './billing-helpers';
 import type { BillingPageProps } from './billing-page';
 import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
-import type { retrieveLatestStripeSubscriptionByOrganizationId } from './stripe-subscription-model.server';
+import type { retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId } from './stripe-subscription-model.server';
 
 const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
   StripeSubscriptionStatus.active,
@@ -16,7 +16,11 @@ const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
 ] as const;
 
 export type StripeSubscriptionData = NonNullable<
-  Awaited<ReturnType<typeof retrieveLatestStripeSubscriptionByOrganizationId>>
+  Awaited<
+    ReturnType<
+      typeof retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId
+    >
+  >
 >;
 
 export function mapStripeSubscriptionDataToBillingPageProps({
@@ -112,7 +116,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
 
   // 9. Pending change
   // 9.1) Grab the upcoming schedule (if any)
-  const schedule = subscription.schedules?.[0];
+  const schedule = subscription.schedule;
   let nextPhase: StripeSubscriptionSchedulePhaseWithPrice | undefined;
   if (schedule) {
     nextPhase = schedule.phases.find(

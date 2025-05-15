@@ -101,7 +101,7 @@ export const createOnboardingUser = (
             ...createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(
               { organizationId: organization.id },
             ),
-            schedules: [],
+            schedule: null,
           },
         ],
       },

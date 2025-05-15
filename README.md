@@ -387,3 +387,7 @@ What it does before your tests run:
 4. Logs success or exits on error, ensuring your tests always see exactly the pricing rows they expect.
 
 You don’t need to replay webhooks or manage `stripe-events.txt` in CI—this script handles everything. Just push your code and let your CI pipeline run `npm test`.
+
+### 3. Configure the Customer Portal
+
+Add the prices you created to your customer portal.

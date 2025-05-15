@@ -668,10 +668,10 @@ test.describe(`${path} API route`, () => {
       expect(databaseSchedule!.created.getTime()).toEqual(
         scheduleData.created * 1000,
       );
-      expect(databaseSchedule!.currentPhaseStart.getTime()).toEqual(
+      expect(databaseSchedule!.currentPhaseStart!.getTime()).toEqual(
         scheduleData.current_phase!.start_date * 1000,
       );
-      expect(databaseSchedule!.currentPhaseEnd.getTime()).toEqual(
+      expect(databaseSchedule!.currentPhaseEnd!.getTime()).toEqual(
         scheduleData.current_phase!.end_date * 1000,
       );
       expect(databaseSchedule!.phases.length).toEqual(1);
@@ -759,10 +759,10 @@ test.describe(`${path} API route`, () => {
       expect(updatedSchedule).not.toBeNull();
       expect(updatedSchedule!.stripeId).toEqual(initialSchedule.stripeId);
       expect(updatedSchedule!.subscriptionId).toEqual(subscription.stripeId);
-      expect(updatedSchedule!.currentPhaseStart.getTime()).toEqual(
+      expect(updatedSchedule!.currentPhaseStart!.getTime()).toEqual(
         updatedStartDate * 1000,
       );
-      expect(updatedSchedule!.currentPhaseEnd.getTime()).toEqual(
+      expect(updatedSchedule!.currentPhaseEnd!.getTime()).toEqual(
         updatedEndDate * 1000,
       );
       expect(updatedSchedule!.phases.length).toEqual(1);
@@ -851,10 +851,10 @@ test.describe(`${path} API route`, () => {
       expect(updatedSchedule).not.toBeNull();
       expect(updatedSchedule!.stripeId).toEqual(initialSchedule.stripeId);
       expect(updatedSchedule!.subscriptionId).toEqual(subscription.stripeId);
-      expect(updatedSchedule!.currentPhaseStart.getTime()).toEqual(
+      expect(updatedSchedule!.currentPhaseStart!.getTime()).toEqual(
         updatedStartDate * 1000,
       );
-      expect(updatedSchedule!.currentPhaseEnd.getTime()).toEqual(
+      expect(updatedSchedule!.currentPhaseEnd!.getTime()).toEqual(
         updatedEndDate * 1000,
       );
       expect(updatedSchedule!.phases.length).toEqual(1);

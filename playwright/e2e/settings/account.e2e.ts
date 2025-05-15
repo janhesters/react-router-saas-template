@@ -363,7 +363,6 @@ test.describe('account settings', () => {
 // TODO: UI tests for when trial ran out (e.g. side bar card has correct text,
 // etc.)
 // TODO: add a notification 3 days before the trial ends.
-// TODO: prevent downgrade when they have more seats than the new plan would allow.
 // TODO: If during the free trial, you added more seats than any of the plan's
 // limits => they should only be able to pick plans that match their seats.
 // TODO: test people entering credit cards that decline or bounce

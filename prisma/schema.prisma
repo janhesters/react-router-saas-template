@@ -189,8 +189,8 @@ model StripeSubscription {
   /// Possible values are incomplete, incomplete_expired, trialing, active,
   /// past_due, canceled, unpaid, or paused.
   status            StripeSubscriptionStatus
-  /// A subscription can have multiple schedules, each with a different price.
-  schedules         StripeSubscriptionSchedule[]
+  /// A subscription can have only one schedule.
+  schedule          StripeSubscriptionSchedule?
 }
 
 model StripeSubscriptionItem {
@@ -228,11 +228,11 @@ model StripePrice {
 
 model StripeSubscriptionSchedule {
   stripeId          String                            @id
-  subscriptionId    String
+  subscriptionId    String                            @unique
   subscription      StripeSubscription                @relation(fields: [subscriptionId], references: [stripeId], onDelete: Cascade)
   created           DateTime
-  currentPhaseStart DateTime
-  currentPhaseEnd   DateTime
+  currentPhaseStart DateTime?
+  currentPhaseEnd   DateTime?
   phases            StripeSubscriptionSchedulePhase[]
 }
 

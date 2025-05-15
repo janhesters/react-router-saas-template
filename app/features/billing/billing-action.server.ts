@@ -96,9 +96,9 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
           throw new Error('Organization has no Stripe subscriptions');
         }
 
-        if (currentSubscription.schedules?.[0]) {
+        if (currentSubscription.schedule) {
           const schedule = await keepCurrentSubscription(
-            currentSubscription.schedules[0].stripeId,
+            currentSubscription.schedule.stripeId,
           );
 
           await deleteStripeSubscriptionScheduleFromDatabaseById(schedule.id);

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
 import type {
@@ -67,7 +68,9 @@ export const createPopulatedStripeSubscriptionSchedule: Factory<
   subscriptionId = createPopulatedStripeSubscription().stripeId,
   created = faker.date.past({ years: 1 }),
   currentPhaseStart = faker.date.past({ years: 1 }),
-  currentPhaseEnd = faker.date.future({ years: 1, refDate: currentPhaseStart }),
+  currentPhaseEnd = currentPhaseStart
+    ? faker.date.future({ years: 1, refDate: currentPhaseStart })
+    : null,
 } = {}) => ({
   stripeId,
   subscriptionId,
@@ -306,16 +309,16 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
 
 export type StripeSubscriptionWithScheduleAndItemsWithPriceAndProduct =
   StripeSubscription & {
-    schedules: StripeSubscriptionScheduleWithPhasesAndPrice[];
+    schedule: StripeSubscriptionScheduleWithPhasesAndPrice;
     items: StripeSubscriptionItemWithPriceAndProduct[];
   };
 
 /**
- * Creates a complete Stripe subscription with schedules, items, prices and products.
+ * Creates a complete Stripe subscription with schedule, items, prices and products.
  *
  * @param params - Optional parameters to customize the subscription.
  * @param params.items - Optional array of subscription items with prices and products.
- * @param params.schedules - Optional array of subscription schedules with phases.
+ * @param params.schedule - Optional subscription schedule with phases.
  * @param params.subscriptionOverrides - Optional subscription override values.
  * @returns A populated Stripe subscription with all associated data.
  */
@@ -325,7 +328,7 @@ export function createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAn
   // Pull out array overrides so they don't go to the base subscription factory
   const {
     items: itemsOverride,
-    schedules: schedulesOverride,
+    schedule: scheduleOverride,
     ...subscriptionBaseOverride
   } = overrides;
 
@@ -341,14 +344,11 @@ export function createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAn
       )
     : [createPopulatedStripeSubscriptionItemWithPriceAndProduct()];
 
-  // Schedules: same logic as items
-  const schedules = Array.isArray(schedulesOverride)
-    ? schedulesOverride.map(scheduleOverride =>
-        createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice(
-          scheduleOverride,
-        ),
-      )
-    : [createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice()];
+  // Schedule: same logic as items
+  const schedule =
+    createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice(
+      scheduleOverride,
+    );
 
-  return { ...baseSubscription, ...overrides, items, schedules };
+  return { ...baseSubscription, ...overrides, items, schedule };
 }

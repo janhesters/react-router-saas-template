@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import type { StripeSubscriptionSchedule } from '@prisma/client';
 import type Stripe from 'stripe';
 
@@ -47,11 +48,6 @@ export async function saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
 export async function saveStripeSubscriptionScheduleFromAPIToDatabase(
   stripeSchedule: Stripe.SubscriptionSchedule,
 ) {
-  if (!stripeSchedule.current_phase) {
-    // The subscription schedule is released.
-    return;
-  }
-
   const createPhases = stripeSchedule.phases.map(phase => {
     if (!phase.items?.[0]?.price || typeof phase.items[0].price !== 'string') {
       throw new Error('Each phase must have at least one item with a price ID');
@@ -74,10 +70,12 @@ export async function saveStripeSubscriptionScheduleFromAPIToDatabase(
         connect: { stripeId: stripeSchedule.subscription as string },
       },
       created: new Date(stripeSchedule.created * 1000),
-      currentPhaseStart: new Date(
-        stripeSchedule.current_phase.start_date * 1000,
-      ),
-      currentPhaseEnd: new Date(stripeSchedule.current_phase.end_date * 1000),
+      currentPhaseStart: stripeSchedule.current_phase?.start_date
+        ? new Date(stripeSchedule.current_phase.start_date * 1000)
+        : null,
+      currentPhaseEnd: stripeSchedule.current_phase?.end_date
+        ? new Date(stripeSchedule.current_phase.end_date * 1000)
+        : null,
       phases: {
         create: createPhases,
       },
@@ -130,11 +128,6 @@ export async function retrieveStripeSubscriptionScheduleWithPhasesFromDatabaseBy
 export async function updateStripeSubscriptionScheduleFromAPIInDatabase(
   stripeSchedule: Stripe.SubscriptionSchedule,
 ) {
-  if (!stripeSchedule.current_phase) {
-    // The subscription schedule is released.
-    return;
-  }
-
   const createPhases = stripeSchedule.phases.map(phase => {
     if (!phase.items?.[0]?.price || typeof phase.items[0].price !== 'string') {
       throw new Error('Each phase must have at least one item with a price ID');
@@ -154,10 +147,12 @@ export async function updateStripeSubscriptionScheduleFromAPIInDatabase(
     where: { stripeId: stripeSchedule.id },
     data: {
       created: new Date(stripeSchedule.created * 1000),
-      currentPhaseStart: new Date(
-        stripeSchedule.current_phase.start_date * 1000,
-      ),
-      currentPhaseEnd: new Date(stripeSchedule.current_phase.end_date * 1000),
+      currentPhaseStart: stripeSchedule.current_phase?.start_date
+        ? new Date(stripeSchedule.current_phase.start_date * 1000)
+        : null,
+      currentPhaseEnd: stripeSchedule.current_phase?.end_date
+        ? new Date(stripeSchedule.current_phase.end_date * 1000)
+        : null,
       phases: {
         // First delete all existing phases
         deleteMany: {},

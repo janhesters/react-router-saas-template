@@ -91,15 +91,17 @@ export async function retrieveStripeSubscriptionWithItemsFromDatabaseById(
  * including subscription items and prices. Returns null if no subscription
  * exists.
  */
-export async function retrieveLatestStripeSubscriptionByOrganizationId(
+export async function retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId(
   organizationId: Organization['id'],
 ) {
   return await prisma.stripeSubscription.findFirst({
     where: { organizationId },
     orderBy: { created: 'desc' },
     include: {
-      items: { include: { price: true } },
-      schedules: { include: { phases: { include: { price: true } } } },
+      items: {
+        include: { price: true },
+      },
+      schedule: { include: { phases: { include: { price: true } } } },
     },
   });
 }

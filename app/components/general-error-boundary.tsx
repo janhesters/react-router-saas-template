@@ -55,7 +55,7 @@ export function GeneralErrorBoundary({
   const params = useParams();
 
   if (typeof document !== 'undefined') {
-    console.error(error);
+    console.error('client error in general error boundary', error);
   }
 
   return (

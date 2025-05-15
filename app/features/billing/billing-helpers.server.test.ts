@@ -251,37 +251,35 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
           ],
         },
       ),
-      schedules: [
-        createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-          // force the same IDs you generated above
-          stripeId: subscriptionScheduleId,
-          subscriptionId,
+      schedule: createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
+        // force the same IDs you generated above
+        stripeId: subscriptionScheduleId,
+        subscriptionId,
 
-          // deep‐override exactly the two phases you care about
-          phases: [
-            {
-              scheduleId: subscriptionScheduleId,
-              startDate: new Date('2025-05-01T00:00:00.000Z'),
-              endDate: new Date('2025-06-30T00:00:00.000Z'),
-              price: {
-                lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
-                unitAmount: 6000,
-              },
-              quantity: 5,
+        // deep‐override exactly the two phases you care about
+        phases: [
+          {
+            scheduleId: subscriptionScheduleId,
+            startDate: new Date('2025-05-01T00:00:00.000Z'),
+            endDate: new Date('2025-06-30T00:00:00.000Z'),
+            price: {
+              lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
+              unitAmount: 6000,
             },
-            {
-              scheduleId: subscriptionScheduleId,
-              startDate: new Date('2025-06-30T00:00:00.000Z'),
-              endDate: new Date('2025-07-30T00:00:00.000Z'),
-              price: {
-                lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
-                unitAmount: 2000,
-              },
-              quantity: 2,
+            quantity: 5,
+          },
+          {
+            scheduleId: subscriptionScheduleId,
+            startDate: new Date('2025-06-30T00:00:00.000Z'),
+            endDate: new Date('2025-07-30T00:00:00.000Z'),
+            price: {
+              lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+              unitAmount: 2000,
             },
-          ],
-        }),
-      ],
+            quantity: 2,
+          },
+        ],
+      }),
     };
 
     const organization = createOrganizationWithMembershipsAndSubscriptions({

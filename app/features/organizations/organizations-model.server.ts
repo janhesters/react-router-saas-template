@@ -175,9 +175,7 @@ export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabase
         take: 1,
         include: {
           items: { include: { price: true } },
-          schedules: {
-            orderBy: { created: 'desc' },
-            take: 1, // only the latest schedule
+          schedule: {
             include: {
               phases: {
                 orderBy: { startDate: 'asc' },
@@ -328,7 +326,7 @@ export async function upsertStripeSubscriptionForOrganizationInDatabaseById({
       stripeSubscriptions: {
         include: {
           items: { include: { price: { include: { product: true } } } },
-          schedules: {
+          schedule: {
             include: {
               phases: { include: { price: { include: { product: true } } } },
             },

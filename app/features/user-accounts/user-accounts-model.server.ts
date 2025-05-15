@@ -121,9 +121,7 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
                 take: 1,
                 include: {
                   items: { include: { price: { include: { product: true } } } },
-                  schedules: {
-                    orderBy: { created: 'desc' },
-                    take: 1, // only the latest schedule
+                  schedule: {
                     include: {
                       phases: {
                         orderBy: { startDate: 'asc' },
@@ -238,9 +236,7 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsAndSubscr
                 take: 1,
                 include: {
                   items: { include: { price: true } },
-                  schedules: {
-                    orderBy: { created: 'desc' },
-                    take: 1, // only the latest schedule
+                  schedule: {
                     include: {
                       phases: {
                         orderBy: { startDate: 'asc' },
