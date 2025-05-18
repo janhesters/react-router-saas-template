@@ -412,6 +412,7 @@ export async function ensureStripeProductsAndPricesExist() {
           low: 'Hobby',
           mid: 'Startup',
         }[tier],
+        maxSeats: tier === 'high' ? 25 : tier === 'mid' ? 5 : 1,
       });
       await saveStripeProductToDatabase(product);
       productId = product.stripeId;

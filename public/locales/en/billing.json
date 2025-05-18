@@ -179,6 +179,11 @@
   },
   "no-current-plan-modal": {
     "annual": "Annual",
+    "disabled-plans-alert": {
+      "description-plural": "You currently have {{currentSeats}} users, and the {{plan1Title}} plan only supports {{plan1Capacity}} user while the {{plan2Title}} plan only supports {{plan2Capacity}} users. Please choose a plan that supports at least {{currentSeats}} seats.",
+      "description-singular": "You currently have {{currentSeats}} users, and the {{planTitle}} plan only supports {{planCapacity}} user. Please choose a plan that supports at least {{currentSeats}} seats.",
+      "title": "Why are some plans disabled?"
+    },
     "monthly": "Monthly",
     "tier-card-busy": "Subscribing ...",
     "tier-card-cta": "Subscribe Now"

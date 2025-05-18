@@ -122,6 +122,10 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
                 include: {
                   items: { include: { price: { include: { product: true } } } },
                   schedule: {
+                    where: {
+                      currentPhaseStart: { not: null },
+                      currentPhaseEnd: { not: null },
+                    },
                     include: {
                       phases: {
                         orderBy: { startDate: 'asc' },

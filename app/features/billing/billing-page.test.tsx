@@ -24,6 +24,14 @@ const createProps: Factory<BillingPageProps> = ({
     currentTier: 'high' as const,
     currentTierInterval: 'annual' as const,
   },
+  createSubscriptionModalProps = {
+    currentSeats: 1,
+    planLimits: {
+      low: 1,
+      mid: 10,
+      high: 25,
+    },
+  },
   currentInterval = 'monthly',
   currentMonthlyRatePerUser = faker.number.int({ min: 5, max: 50 }),
   currentPeriodEnd = faker.date.future(),
@@ -44,6 +52,7 @@ const createProps: Factory<BillingPageProps> = ({
   billingEmail,
   cancelAtPeriodEnd,
   cancelOrModifySubscriptionModalProps,
+  createSubscriptionModalProps,
   currentInterval,
   currentMonthlyRatePerUser,
   currentPeriodEnd,

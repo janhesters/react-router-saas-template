@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Form, href, Link, useNavigation } from 'react-router';
 
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Badge } from '~/components/ui/badge';
 import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
@@ -29,7 +30,17 @@ import {
   TierGrid,
 } from './pricing';
 
-export function CreateSubscriptionModalContent() {
+export type CreateSubscriptionModalContentProps = {
+  /** how many seats your org is currently using */
+  currentSeats: number;
+  /** max seats per tier (e.g. { low: 1, mid: 10, high: 25 }) */
+  planLimits: Record<Tier, number>;
+};
+
+export function CreateSubscriptionModalContent({
+  currentSeats,
+  planLimits,
+}: CreateSubscriptionModalContentProps) {
   const { t } = useTranslation('billing', { keyPrefix: 'pricing' });
   const { t: tModal } = useTranslation('billing', {
     keyPrefix: 'no-current-plan-modal',
@@ -83,14 +94,41 @@ export function CreateSubscriptionModalContent() {
       ) : (
         tModal('tier-card-cta')
       ),
-      disabled: isSubscribing,
+      disabled: isSubscribing || planLimits[tier] < currentSeats,
       name: 'lookupKey',
       value: priceLookupKeysByTierAndInterval[tier][interval],
     };
   };
 
+  // figure out which tiers can’t cover your seats:
+  const unavailable = (['low', 'mid', 'high'] as Tier[]).filter(
+    tier => planLimits[tier] < currentSeats,
+  );
+
   return (
     <Form method="post" replace>
+      {unavailable.length > 0 && (
+        <Alert className="mb-4">
+          <AlertTitle>{tModal('disabled-plans-alert.title')}</AlertTitle>
+
+          <AlertDescription>
+            {unavailable.length === 1
+              ? tModal('disabled-plans-alert.description-singular', {
+                  currentSeats,
+                  planTitle: t(`plans.${unavailable[0]}.title`),
+                  planCapacity: planLimits[unavailable[0]],
+                })
+              : tModal('disabled-plans-alert.description-plural', {
+                  currentSeats,
+                  plan1Title: t(`plans.${unavailable[0]}.title`),
+                  plan1Capacity: planLimits[unavailable[0]],
+                  plan2Title: t(`plans.${unavailable[1]}.title`),
+                  plan2Capacity: planLimits[unavailable[1]],
+                })}
+          </AlertDescription>
+        </Alert>
+      )}
+
       <fieldset disabled={isSubmitting}>
         <input
           type="hidden"

@@ -1,7 +1,11 @@
 import type { ShouldRevalidateFunctionArgs, UIMatch } from 'react-router';
 import { data, href, Outlet, redirect } from 'react-router';
+import { promiseHash } from 'remix-utils/promise';
 
 import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar';
+import { allLookupKeys } from '~/features/billing/billing-constants';
+import { getCreateSubscriptionModalProps } from '~/features/billing/billing-helpers.server';
+import { retrieveProductsFromDatabaseByPriceLookupKeys } from '~/features/billing/stripe-product-model.server';
 import { mapInitialNotificationsDataToNotificationButtonProps } from '~/features/notifications/notifications-helpers.server';
 import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from '~/features/notifications/notifications-model.server';
 import { AppHeader } from '~/features/organizations/layout/app-header';
@@ -45,8 +49,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     );
   }
 
-  const { user, organization, headers } =
-    await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+  const {
+    auth: { user, organization, headers },
+    products,
+  } = await promiseHash({
+    auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
+    products: retrieveProductsFromDatabaseByPriceLookupKeys(
+      allLookupKeys as unknown as string[],
+    ),
+  });
   const notificationData =
     await retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById(
       { userId: user.id, organizationId: organization.id },
@@ -69,6 +80,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         user,
         organizationSlug: params.organizationSlug,
       }),
+      ...getCreateSubscriptionModalProps(organization, products),
     },
     { headers },
   );
@@ -85,6 +97,7 @@ export default function OrganizationLayoutRoute({
 }: Route.ComponentProps) {
   const {
     billingSidebarCardProps,
+    createSubscriptionModalProps,
     defaultSidebarOpen,
     navUserProps,
     notificationButtonProps,
@@ -97,7 +110,12 @@ export default function OrganizationLayoutRoute({
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
       <AppSidebar
-        billingSidebarCardProps={billingSidebarCardProps}
+        billingSidebarCardProps={
+          billingSidebarCardProps && {
+            ...billingSidebarCardProps,
+            createSubscriptionModalProps,
+          }
+        }
         navUserProps={navUserProps}
         organizationSwitcherProps={organizationSwitcherProps}
         organizationSlug={params.organizationSlug}

@@ -85,7 +85,12 @@ export function mapOnboardingUserToBillingSidebarCardProps({
   now: Date;
   organizationSlug: Organization['slug'];
   user: OnboardingUser;
-}): { billingSidebarCardProps?: BillingSidebarCardProps } {
+}): {
+  billingSidebarCardProps?: Omit<
+    BillingSidebarCardProps,
+    'createSubscriptionModalProps'
+  >;
+} {
   const currentMembership = user.memberships.find(
     membership => membership.organization.slug === organizationSlug,
   );

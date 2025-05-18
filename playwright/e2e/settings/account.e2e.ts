@@ -360,15 +360,11 @@ test.describe('account settings', () => {
 // Allow users to change their billing address, and name. (in stripe)
 
 // TODO: contact sales enterprise flow
-// TODO: UI tests for when trial ran out (e.g. side bar card has correct text,
-// etc.)
-// TODO: add a notification 3 days before the trial ends.
 // TODO: If during the free trial, you added more seats than any of the plan's
 // limits => they should only be able to pick plans that match their seats.
 // TODO: test people entering credit cards that decline or bounce
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
-// TODO: fix test for trialing and paid organizations
 // TODO: enforce limits
 // TODO: Use lifecycle events for the tests: https://mswjs.io/docs/api/life-cycle-events
 // TODO: Prevent the org from sending out email invite links if they have more members than the plan allows.

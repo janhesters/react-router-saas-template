@@ -6,8 +6,9 @@ import type { StripeSubscriptionSchedulePhaseWithPrice } from './billing-factori
 import { getTierAndIntervalForLookupKey } from './billing-helpers';
 import type { BillingPageProps } from './billing-page';
 import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
+import type { CreateSubscriptionModalContentProps } from './create-subscription-modal-content';
+import type { retrieveProductsFromDatabaseByPriceLookupKeys } from './stripe-product-model.server';
 import type { retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId } from './stripe-subscription-model.server';
-
 const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
   StripeSubscriptionStatus.active,
   StripeSubscriptionStatus.trialing,
@@ -29,7 +30,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
 }: {
   organization: OrganizationWithMembershipsAndSubscriptions;
   now: Date;
-}): BillingPageProps {
+}): Omit<BillingPageProps, 'createSubscriptionModalProps'> {
   const subscription = organization.stripeSubscriptions[0];
 
   if (!subscription) {
@@ -168,3 +169,23 @@ export function mapStripeSubscriptionDataToBillingPageProps({
  */
 export const extractBaseUrl = (url: URL) =>
   `${process.env.NODE_ENV === 'production' ? 'https:' : 'http:'}//${url.host}`;
+
+export type ProductsForBillingPage = Awaited<
+  ReturnType<typeof retrieveProductsFromDatabaseByPriceLookupKeys>
+>;
+
+export function getCreateSubscriptionModalProps(
+  organization: OrganizationWithMembershipsAndSubscriptions,
+  products: ProductsForBillingPage,
+): { createSubscriptionModalProps: CreateSubscriptionModalContentProps } {
+  const [low = 0, mid = 0, high = 0] = products
+    .map(({ maxSeats }) => maxSeats)
+    .sort((a, b) => a - b);
+
+  return {
+    createSubscriptionModalProps: {
+      currentSeats: organization._count.memberships,
+      planLimits: { low, mid, high },
+    },
+  };
+}

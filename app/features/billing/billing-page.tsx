@@ -31,7 +31,10 @@ import {
 } from './billing-constants';
 import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
 import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
-import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
+import {
+  CreateSubscriptionModalContent,
+  type CreateSubscriptionModalContentProps,
+} from './create-subscription-modal-content';
 import {
   DescriptionDetail,
   DescriptionList,
@@ -107,8 +110,9 @@ function PendingDowngradeBanner({
 
 export type BillingPageProps = {
   billingEmail: Organization['billingEmail'];
-  cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps;
   cancelAtPeriodEnd: boolean;
+  cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps;
+  createSubscriptionModalProps: CreateSubscriptionModalContentProps;
   currentMonthlyRatePerUser: number;
   /**
    * During trial, this is the trial end date.
@@ -135,6 +139,7 @@ export function BillingPage({
   billingEmail,
   cancelAtPeriodEnd,
   cancelOrModifySubscriptionModalProps,
+  createSubscriptionModalProps,
   currentMonthlyRatePerUser,
   currentPeriodEnd,
   currentSeats,
@@ -256,7 +261,9 @@ export function BillingPage({
                 </VisuallyHidden>
               </DialogHeader>
 
-              <CreateSubscriptionModalContent />
+              <CreateSubscriptionModalContent
+                {...createSubscriptionModalProps}
+              />
             </DialogContent>
           </Dialog>
         ) : cancelAtPeriodEnd ? (
@@ -335,7 +342,9 @@ export function BillingPage({
                   </VisuallyHidden>
                 </DialogHeader>
 
-                <CreateSubscriptionModalContent />
+                <CreateSubscriptionModalContent
+                  {...createSubscriptionModalProps}
+                />
               </DialogContent>
             </Dialog>
           )
@@ -547,7 +556,9 @@ export function BillingPage({
                 }}
               />
             ) : (
-              <CreateSubscriptionModalContent />
+              <CreateSubscriptionModalContent
+                {...createSubscriptionModalProps}
+              />
             )}
           </DialogContent>
         </Dialog>

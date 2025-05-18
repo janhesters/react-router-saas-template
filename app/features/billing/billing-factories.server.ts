@@ -149,6 +149,42 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
 
 /* Compound Factories */
 
+export type StripeProductWithPrices = StripeProduct & {
+  prices: StripePrice[];
+};
+
+/**
+ * Creates a Stripe product with its associated prices.
+ *
+ * @param overrides - Optional parameters to customize the product and prices.
+ * @param overrides.prices - Optional array of price override values.
+ * @param overrides.productOverrides - Optional product override values.
+ * @returns A populated Stripe product with its associated prices.
+ */
+export function createStripeProductWithPrices(
+  overrides: DeepPartial<StripeProductWithPrices> = {},
+): StripeProductWithPrices {
+  const { prices: pricesOverride, ...productOverrides } = overrides;
+
+  // Create the base product
+  const product = createPopulatedStripeProduct(productOverrides);
+
+  // Handle price overrides, defaulting to two prices if none given
+  const prices = Array.isArray(pricesOverride)
+    ? pricesOverride.map(priceOvr =>
+        createPopulatedStripePrice({
+          ...priceOvr,
+          productId: product.stripeId,
+        }),
+      )
+    : [
+        createPopulatedStripePrice({ productId: product.stripeId }),
+        createPopulatedStripePrice({ productId: product.stripeId }),
+      ];
+
+  return { ...product, ...overrides, prices };
+}
+
 export type StripePriceWithProduct = StripePrice & {
   product: StripeProduct;
 };

@@ -5,13 +5,18 @@ import { promiseHash } from 'remix-utils/promise';
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
 import { billingAction } from '~/features/billing/billing-action.server';
 import {
+  allLookupKeys,
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
   RESUME_SUBSCRIPTION_INTENT,
   VIEW_INVOICES_INTENT,
 } from '~/features/billing/billing-constants';
-import { mapStripeSubscriptionDataToBillingPageProps } from '~/features/billing/billing-helpers.server';
+import {
+  getCreateSubscriptionModalProps,
+  mapStripeSubscriptionDataToBillingPageProps,
+} from '~/features/billing/billing-helpers.server';
 import { BillingPage } from '~/features/billing/billing-page';
+import { retrieveProductsFromDatabaseByPriceLookupKeys } from '~/features/billing/stripe-product-model.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { getPageTitle } from '~/utils/get-page-title.server';
 import { notFound } from '~/utils/http-responses.server';
@@ -24,9 +29,13 @@ export const handle = { i18n: 'billing' };
 export async function loader({ request, params }: Route.LoaderArgs) {
   const {
     auth: { organization, headers, role },
+    products,
     t,
   } = await promiseHash({
     auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
+    products: retrieveProductsFromDatabaseByPriceLookupKeys(
+      allLookupKeys as unknown as string[],
+    ),
     t: i18next.getFixedT(request, ['billing', 'common']),
   });
 
@@ -35,13 +44,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
     throw notFound();
   }
 
-  const billingPageProps = mapStripeSubscriptionDataToBillingPageProps({
-    organization,
-    now: new Date(),
-  });
-
   return data(
-    { billingPageProps, title: getPageTitle(t, 'billing-page.page-title') },
+    {
+      billingPageProps: {
+        ...mapStripeSubscriptionDataToBillingPageProps({
+          organization,
+          now: new Date(),
+        }),
+        ...getCreateSubscriptionModalProps(organization, products),
+      },
+      title: getPageTitle(t, 'billing-page.page-title'),
+    },
     { headers },
   );
 }

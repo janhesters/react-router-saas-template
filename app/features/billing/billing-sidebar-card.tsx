@@ -20,10 +20,12 @@ import {
 } from '~/components/ui/dialog';
 import { cn } from '~/lib/utils';
 
+import type { CreateSubscriptionModalContentProps } from './create-subscription-modal-content';
 import { CreateSubscriptionModalContent } from './create-subscription-modal-content';
 
 export type BillingSidebarCardProps = {
   className?: string;
+  createSubscriptionModalProps: CreateSubscriptionModalContentProps;
   state: 'trialing' | 'trialEnded' | 'cancelled';
   showButton: boolean;
   trialEndDate: Date;
@@ -31,6 +33,7 @@ export type BillingSidebarCardProps = {
 
 export function BillingSidebarCard({
   className,
+  createSubscriptionModalProps,
   state,
   showButton,
   trialEndDate,
@@ -111,7 +114,7 @@ export function BillingSidebarCard({
           </VisuallyHidden>
         </DialogHeader>
 
-        <CreateSubscriptionModalContent />
+        <CreateSubscriptionModalContent {...createSubscriptionModalProps} />
       </DialogContent>
     </Dialog>
   );

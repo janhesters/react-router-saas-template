@@ -58,6 +58,21 @@ export async function retrieveStripeProductFromDatabaseById(
   return prisma.stripeProduct.findUnique({ where: { stripeId } });
 }
 
+/**
+ * Retrieves Stripe products from the database by their price lookup keys.
+ *
+ * @param lookupKeys - The price lookup keys of the products to retrieve.
+ * @returns The retrieved Stripe products.
+ */
+export async function retrieveProductsFromDatabaseByPriceLookupKeys(
+  lookupKeys: string[],
+) {
+  return prisma.stripeProduct.findMany({
+    where: { prices: { some: { lookupKey: { in: lookupKeys } } } },
+    include: { prices: { where: { lookupKey: { in: lookupKeys } } } },
+  });
+}
+
 /* UPDATE */
 
 /**

@@ -22,12 +22,16 @@ import { retrieveStripePriceWithProductFromDatabaseByLookupKey } from '~/feature
 import { saveSubscriptionScheduleWithPhasesAndPriceToDatabase } from '~/features/billing/stripe-subscription-schedule-model.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
+  addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
   retrieveOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
 } from '~/features/organizations/organizations-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { deleteUserAccountFromDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
+import {
+  deleteUserAccountFromDatabaseById,
+  saveUserAccountToDatabase,
+} from '~/features/user-accounts/user-accounts-model.server';
 import { teardownOrganizationAndMember } from '~/test/test-utils';
 
 const createPath = (organizationSlug: Organization['slug']) =>
@@ -127,7 +131,7 @@ test.describe('billing page', () => {
     await page.goto(createPath(organization.slug));
 
     // Verify page title
-    await expect(page).toHaveTitle(/general | react router saas template/i);
+    await expect(page).toHaveTitle(/billing | react router saas template/i);
 
     // Verify headings
     await expect(
@@ -339,6 +343,125 @@ test.describe('billing page', () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
+  test('given: the user is an admin or an owner and the organization is on a free trial and has more members than a plan allows, should: NOT let the user subscribe to a plan that allows less seats', async ({
+    page,
+  }) => {
+    const role = faker.helpers.arrayElement([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ]);
+    const { organization, user } = await setupTrialOrganizationAndLoginAsMember(
+      {
+        page,
+        role,
+      },
+    );
+
+    // Add member to organization
+    const otherUser = createPopulatedUserAccount();
+    await saveUserAccountToDatabase(otherUser);
+    await addMembersToOrganizationInDatabaseById({
+      id: organization.id,
+      members: [otherUser.id],
+      role: OrganizationMembershipRole.member,
+    });
+
+    // Visit the billing page
+    await page.goto(createPath(organization.slug));
+
+    // Verify page title
+    await expect(page).toHaveTitle(/billing | react router saas template/i);
+
+    // Verify headings
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /billing/i, level: 2 }),
+    ).toBeVisible();
+
+    // Alert CTA banner
+    const alertBanner = page.getByRole('alert');
+    await expect(
+      alertBanner.getByText(/your organization is currently on a free trial/i),
+    ).toBeVisible();
+    await expect(
+      alertBanner.getByText(/your free trial will end on/i),
+    ).toBeVisible();
+    await expect(
+      alertBanner.getByRole('button', { name: /add payment information/i }),
+    ).toBeVisible();
+
+    // Open modal to pick a plan
+    await alertBanner
+      .getByRole('button', { name: /add payment information/i })
+      .click();
+    const modal = page.getByRole('dialog', { name: /choose your plan/i });
+    await expect(modal).toBeVisible();
+
+    // helper: current tab panel
+    const activePanel = () =>
+      modal.locator('div[role="tabpanel"]:not([hidden])');
+
+    // --- ANNUAL (default) ---
+    // Hobby (1 seat) should be disabled when you have 2 users
+    const hobbyAnnual = activePanel().locator(
+      '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
+    );
+    await expect(
+      hobbyAnnual.getByRole('button', { name: /subscribe now/i }),
+    ).toBeDisabled();
+
+    // And the explanatory copy appears
+    await expect(
+      modal.getByText(/why are some plans disabled\?/i),
+    ).toBeVisible();
+    await expect(
+      modal.getByText(
+        /you currently have 2 users, and the hobby plan only supports 1 user\./i,
+      ),
+    ).toBeVisible();
+    await expect(
+      modal.getByText(/please choose a plan that supports at least 2 seats\./i),
+    ).toBeVisible();
+
+    // Startup (10 seats) and Business (25 seats) remain enabled
+    const startupAnnual = activePanel().locator(
+      '[data-slot=card]:has([data-slot=card-title]:has-text("Startup"))',
+    );
+    await expect(
+      startupAnnual.getByRole('button', { name: /subscribe now/i }),
+    ).toBeEnabled();
+
+    const businessAnnual = activePanel().locator(
+      '[data-slot=card]:has([data-slot=card-title]:has-text("Business"))',
+    );
+    await expect(
+      businessAnnual.getByRole('button', { name: /subscribe now/i }),
+    ).toBeEnabled();
+
+    // --- MONTHLY ---
+    // Switch to monthly tab
+    await page.getByRole('tab', { name: /monthly/i }).click();
+    await expect(page.getByRole('tab', { name: /monthly/i })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    const monthlyPanel = activePanel();
+
+    // Hobby monthly still disabled
+    const hobbyMonthly = monthlyPanel.locator(
+      '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
+    );
+    await expect(
+      hobbyMonthly.getByRole('button', { name: /subscribe now/i }),
+    ).toBeDisabled();
+
+    // Teardown
+    await teardownOrganizationAndMember({ organization, user });
+    await deleteUserAccountFromDatabaseById(otherUser.id);
+  });
+
   test('given: the user is an admin or an owner and the organization is NOT on a free trial, should: let the user switch plans, view their invoices, and switch their billing email', async ({
     page,
   }) => {
@@ -356,7 +479,7 @@ test.describe('billing page', () => {
     await page.goto(createPath(organization.slug));
 
     // Verify page title + headings
-    await expect(page).toHaveTitle(/general | react router saas template/i);
+    await expect(page).toHaveTitle(/billing | react router saas template/i);
     await expect(
       page.getByRole('heading', { name: /settings/i, level: 1 }),
     ).toBeVisible();

@@ -11,9 +11,12 @@ import {
   createPopulatedStripeSubscriptionSchedule,
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
   createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct,
+  createStripeProductWithPrices,
 } from './billing-factories.server';
+import type { ProductsForBillingPage } from './billing-helpers.server';
 import {
   extractBaseUrl,
+  getCreateSubscriptionModalProps,
   mapStripeSubscriptionDataToBillingPageProps,
 } from './billing-helpers.server';
 import type { BillingPageProps } from './billing-page';
@@ -49,7 +52,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       organization,
       now,
     });
-    const expected: BillingPageProps = {
+    const expected: Omit<BillingPageProps, 'createSubscriptionModalProps'> = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
       cancelOrModifySubscriptionModalProps: {
@@ -103,7 +106,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       organization,
       now,
     });
-    const expected: BillingPageProps = {
+    const expected: Omit<BillingPageProps, 'createSubscriptionModalProps'> = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: true,
       cancelOrModifySubscriptionModalProps: {
@@ -157,7 +160,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       organization,
       now,
     });
-    const expected: BillingPageProps = {
+    const expected: Omit<BillingPageProps, 'createSubscriptionModalProps'> = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: true,
       cancelOrModifySubscriptionModalProps: {
@@ -196,7 +199,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       now,
     });
 
-    const expected: BillingPageProps = {
+    const expected: Omit<BillingPageProps, 'createSubscriptionModalProps'> = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
       cancelOrModifySubscriptionModalProps: {
@@ -291,7 +294,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       organization,
       now,
     });
-    const expected: BillingPageProps = {
+    const expected: Omit<BillingPageProps, 'createSubscriptionModalProps'> = {
       billingEmail: organization.billingEmail,
       cancelAtPeriodEnd: false,
       cancelOrModifySubscriptionModalProps: {
@@ -329,5 +332,43 @@ describe('extractBaseUrl()', () => {
     const expected = 'http://example.com';
 
     expect(actual).toEqual(expected);
+  });
+});
+
+describe('getCreateSubscriptionModalProps()', () => {
+  test('should compute modal props from org and products', () => {
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      memberCount: 3,
+      stripeSubscriptions: [],
+    });
+    const products = [
+      createStripeProductWithPrices({ maxSeats: 1 }),
+      createStripeProductWithPrices({ maxSeats: 10 }),
+      createStripeProductWithPrices({ maxSeats: 25 }),
+    ];
+
+    const actual = getCreateSubscriptionModalProps(organization, products);
+    expect(actual).toEqual({
+      createSubscriptionModalProps: {
+        currentSeats: 3,
+        planLimits: { low: 1, mid: 10, high: 25 },
+      },
+    });
+  });
+
+  test('should handle empty products', () => {
+    const organization = createOrganizationWithMembershipsAndSubscriptions({
+      memberCount: 2,
+      stripeSubscriptions: [],
+    });
+    const products: ProductsForBillingPage = [];
+
+    const actual = getCreateSubscriptionModalProps(organization, products);
+    expect(actual).toEqual({
+      createSubscriptionModalProps: {
+        currentSeats: 2,
+        planLimits: { low: 0, mid: 0, high: 0 },
+      },
+    });
   });
 });

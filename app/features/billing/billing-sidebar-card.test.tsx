@@ -8,10 +8,18 @@ import type { BillingSidebarCardProps } from './billing-sidebar-card';
 import { BillingSidebarCard } from './billing-sidebar-card';
 
 const createProps: Factory<BillingSidebarCardProps> = ({
+  createSubscriptionModalProps = {
+    currentSeats: 1,
+    planLimits: {
+      low: 1,
+      mid: 10,
+      high: 25,
+    },
+  },
   state = 'trialing',
   showButton = true,
   trialEndDate = new Date('2024-12-31'),
-} = {}) => ({ state, showButton, trialEndDate });
+} = {}) => ({ createSubscriptionModalProps, state, showButton, trialEndDate });
 
 describe('BillingSidebarCard component', () => {
   test('given: free trial is active, should: show active trial message with end date and correct button text', () => {
