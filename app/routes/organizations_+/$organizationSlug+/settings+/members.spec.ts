@@ -68,7 +68,7 @@ async function sendAuthenticatedRequest({
   return await action({ request, context: {}, params: { organizationSlug } });
 }
 
-setupMockServerLifecycle(
+const server = setupMockServerLifecycle(
   ...supabaseHandlers,
   ...resendHandlers,
   ...stripeHandlers,
@@ -476,6 +476,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     ])(
       'given: the user is an admin and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role',
       async ({ initialTargetRole, newRole }) => {
+        // Add MSW event listener for Stripe subscription update - but it shouldn't be called
+        let stripeUpdateCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+            stripeUpdateCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
         const { user: adminUser, organization } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.admin,
@@ -506,6 +518,9 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           );
         expect(membership?.role).toEqual(newRole);
         expect(membership?.deactivatedAt).toBeNull();
+
+        // Verify Stripe was NOT called (since this is just a role change)
+        expect(stripeUpdateCalled).toEqual(false);
       },
     );
 
@@ -515,6 +530,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     ])(
       'given: the user is an admin and deactivates another member with role %s, should: return 200 ok and deactivate the membership',
       async initialTargetRole => {
+        // Add MSW event listener for Stripe subscription update
+        let stripeUpdateCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+            stripeUpdateCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
         const { user: adminUser, organization } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.admin,
@@ -549,6 +576,9 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         expect(membership?.deactivatedAt?.getTime()).toBeGreaterThanOrEqual(
           snapshot.getTime(),
         );
+
+        // Verify Stripe was called to decrease seats
+        expect(stripeUpdateCalled).toEqual(true);
       },
     );
 
@@ -581,6 +611,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     ])(
       'given: the user is an owner and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role',
       async ({ initialTargetRole, newRole }) => {
+        // Add MSW event listener for Stripe subscription update - but it shouldn't be called
+        let stripeUpdateCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+            stripeUpdateCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
         const { user: ownerUser, organization } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.owner,
@@ -611,6 +653,9 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           );
         expect(membership?.role).toEqual(newRole);
         expect(membership?.deactivatedAt).toBeNull();
+
+        // Verify Stripe was NOT called (since this is just a role change)
+        expect(stripeUpdateCalled).toEqual(false);
       },
     );
 
@@ -621,6 +666,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     ])(
       'given: the user is an owner and deactivates another member with role %s, should: return 200 ok and deactivate the membership',
       async initialTargetRole => {
+        // Add MSW event listener for Stripe subscription update
+        let stripeUpdateCalled = false;
+        const updateListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+            stripeUpdateCalled = true;
+          }
+        };
+        server.events.on('response:mocked', updateListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', updateListener);
+        });
+
         const { user: ownerUser, organization } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.owner,
@@ -655,6 +712,9 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         expect(membership?.deactivatedAt?.getTime()).toBeGreaterThanOrEqual(
           snapshot.getTime(),
         );
+
+        // Verify Stripe was called to decrease seats
+        expect(stripeUpdateCalled).toEqual(true);
       },
     );
   });

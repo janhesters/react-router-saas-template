@@ -63,7 +63,7 @@ async function setup() {
   return user;
 }
 
-setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
+const server = setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe('/settings/account route action', () => {
   test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
@@ -264,6 +264,18 @@ describe('/settings/account route action', () => {
     const intent = DELETE_USER_ACCOUNT_INTENT;
 
     test('given: a user who is only a member or admin of organizations, should: delete the user account and return a redirect to the home page', async () => {
+      // Add MSW event listener for Stripe subscription update
+      let stripeUpdateCalled = false;
+      const updateListener = ({ request }: { request: Request }) => {
+        if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          stripeUpdateCalled = true;
+        }
+      };
+      server.events.on('response:mocked', updateListener);
+      onTestFinished(() => {
+        server.events.removeListener('response:mocked', updateListener);
+      });
+
       // Setup: Create a user who is a member of one org and admin of another
       const { user: memberUser, organization: memberOrg } =
         await setupUserWithOrgAndAddAsMember({
@@ -304,9 +316,26 @@ describe('/settings/account route action', () => {
       );
       expect(memberOrgExists).not.toEqual(null);
       expect(adminOrgExists).not.toEqual(null);
+
+      // Verify Stripe was called to adjust seats
+      expect(stripeUpdateCalled).toEqual(true);
     });
 
     test('given: a user who is the sole owner (only member) of an organization, should: delete both the user account and organization, and return a redirect to the home page', async () => {
+      // Add MSW event listener for Stripe subscription update - it should be
+      // called since it's a sole owner, and the org's subscriptions should
+      // be cancelled.
+      let stripeUpdateCalled = false;
+      const updateListener = ({ request }: { request: Request }) => {
+        if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          stripeUpdateCalled = true;
+        }
+      };
+      server.events.on('response:mocked', updateListener);
+      onTestFinished(() => {
+        server.events.removeListener('response:mocked', updateListener);
+      });
+
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
@@ -343,6 +372,9 @@ describe('/settings/account route action', () => {
         title: 'Your account has been deleted',
         type: 'success',
       });
+
+      // Verify Stripe was called (since org was deleted, also via Stripe)
+      expect(stripeUpdateCalled).toEqual(true);
     });
 
     test('given: a user who is an owner of an organization with other members, should: return a 400 error indicating they must transfer ownership first', async () => {
@@ -377,6 +409,18 @@ describe('/settings/account route action', () => {
     });
 
     test('given: a user who is both a sole owner of one org and a member of others, should: delete the user account, delete the solely owned org, and return a redirect to home page', async () => {
+      // Add MSW event listener for Stripe subscription update
+      let stripeUpdateCalled = false;
+      const updateListener = ({ request }: { request: Request }) => {
+        if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          stripeUpdateCalled = true;
+        }
+      };
+      server.events.on('response:mocked', updateListener);
+      onTestFinished(() => {
+        server.events.removeListener('response:mocked', updateListener);
+      });
+
       // Setup user as member of one org
       const { user: memberUser, organization: memberOrg } =
         await setupUserWithOrgAndAddAsMember({
@@ -419,6 +463,9 @@ describe('/settings/account route action', () => {
         memberOrg.id,
       );
       expect(memberOrgExists).not.toEqual(null);
+
+      // Verify Stripe was called to adjust seats for the remaining org
+      expect(stripeUpdateCalled).toEqual(true);
     });
   });
 });
