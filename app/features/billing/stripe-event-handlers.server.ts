@@ -1,5 +1,6 @@
 import type { Stripe } from 'stripe';
 
+import { stripeAdmin } from '~/features/billing/stripe-admin.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 
 import { updateOrganizationInDatabaseById } from '../organizations/organizations-model.server';
@@ -37,6 +38,66 @@ const prettyPrint = (event: Stripe.Event) => {
         JSON.stringify(event, null, 2)
       : 'event not logged in production mode - look it up in the Stripe Dashboard',
   );
+};
+
+export const handleStripeChargeDisputeClosedEvent = async (
+  event: Stripe.ChargeDisputeClosedEvent,
+) => {
+  const dispute = event.data.object;
+
+  // only cancel if the dispute was lost (cardholder won)
+  if (dispute.status !== 'lost') {
+    return ok();
+  }
+
+  try {
+    // normalize dispute.charge → string ID
+    const chargeId =
+      typeof dispute.charge === 'string' ? dispute.charge : dispute.charge.id;
+
+    // fetch the Charge
+    const charge = await stripeAdmin.charges.retrieve(chargeId);
+
+    // extract customer ID
+    const customerId =
+      typeof charge.customer === 'string'
+        ? charge.customer
+        : charge.customer?.id;
+    if (!customerId) {
+      console.log('No customer associated with charge', charge.id);
+      return ok();
+    }
+
+    // list active subscriptions for that customer
+    const subsList = await stripeAdmin.subscriptions.list({
+      customer: customerId,
+      status: 'active',
+      limit: 1, // just need one
+    });
+
+    if (subsList.data.length === 0) {
+      console.log(`No active subscriptions for customer ${customerId}`);
+      return ok();
+    }
+
+    // cancel the first one (or adjust logic if you need something more nuanced)
+    const cancelled = await stripeAdmin.subscriptions.cancel(
+      subsList.data[0].id,
+    );
+
+    console.log(
+      'Automatically cancelled subscription due to lost dispute:',
+      cancelled.id,
+    );
+  } catch (error) {
+    prettyPrint(event);
+    console.error(
+      'Error cancelling subscription on dispute.closed',
+      getErrorMessage(error),
+    );
+  }
+
+  return ok();
 };
 
 export const handleStripeCheckoutSessionCompletedEvent = async (

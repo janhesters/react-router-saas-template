@@ -126,6 +126,8 @@ model ContactSalesFormSubmission {
   workEmail   String
 }
 
+// Stripe models
+
 model StripeProduct {
   stripeId String        @id
   name     String
@@ -202,7 +204,7 @@ model StripeSubscriptionItem {
   currentPeriodEnd     DateTime
   /// Start of the current period that the subscription item has been invoiced for.
   currentPeriodStart   DateTime
-  price                StripePrice        @relation(fields: [priceId], references: [stripeId])
+  price                StripePrice        @relation(fields: [priceId], references: [stripeId], onDelete: Cascade)
   priceId              String
 }
 
@@ -243,9 +245,11 @@ model StripeSubscriptionSchedulePhase {
   startDate  DateTime
   endDate    DateTime
   priceId    String
-  price      StripePrice                @relation(fields: [priceId], references: [stripeId])
+  price      StripePrice                @relation(fields: [priceId], references: [stripeId], onDelete: Cascade)
   quantity   Int
 }
+
+// Notification models
 
 model Notification {
   id             String                  @id @default(cuid(2))

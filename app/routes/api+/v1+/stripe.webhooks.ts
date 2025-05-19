@@ -2,6 +2,7 @@ import invariant from 'tiny-invariant';
 
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
 import {
+  handleStripeChargeDisputeClosedEvent,
   handleStripeCheckoutSessionCompletedEvent,
   handleStripeCustomerDeletedEvent,
   handleStripeCustomerSubscriptionCreatedEvent,
@@ -64,6 +65,9 @@ export async function action({ request }: Route.ActionArgs) {
     );
 
     switch (event.type) {
+      case 'charge.dispute.closed': {
+        return handleStripeChargeDisputeClosedEvent(event);
+      }
       case 'checkout.session.completed': {
         return handleStripeCheckoutSessionCompletedEvent(event);
       }
@@ -108,6 +112,8 @@ export async function action({ request }: Route.ActionArgs) {
       }
       case 'billing_portal.configuration.updated':
       case 'billing_portal.session.created':
+      case 'charge.dispute.created':
+      case 'charge.dispute.funds_withdrawn':
       case 'charge.succeeded':
       case 'customer.created':
       case 'customer.updated':
