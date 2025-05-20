@@ -141,6 +141,13 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
         where: { expiresAt: { gt: now } },
         orderBy: { createdAt: 'desc' },
       },
+      stripeSubscriptions: {
+        orderBy: { created: 'desc' },
+        take: 1,
+        include: {
+          items: { include: { price: { include: { product: true } } } },
+        },
+      },
     },
   });
 }

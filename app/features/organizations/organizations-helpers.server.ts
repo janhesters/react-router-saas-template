@@ -13,7 +13,10 @@ import {
   adjustSeats,
   deactivateStripeCustomer,
 } from '../billing/stripe-helpers.server';
-import type { OnboardingUser } from '../onboarding/onboarding-helpers.server';
+import type {
+  OnboardingUser,
+  OrganizationWithMembershipsAndSubscriptions,
+} from '../onboarding/onboarding-helpers.server';
 import { requireOnboardedUserAccountExists } from '../onboarding/onboarding-helpers.server';
 import { saveInviteLinkUseToDatabase } from './accept-invite-link/invite-link-use-model.server';
 import {
@@ -152,7 +155,8 @@ export async function acceptInviteLink({
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
 
-    if (subscription) {
+    // TODO: subscription must also NOT be cancelled
+    if (subscription && subscription.status !== 'canceled') {
       await adjustSeats({
         subscriptionId: subscription.stripeId,
         subscriptionItemId: subscription.items[0].stripeId,
@@ -161,3 +165,23 @@ export async function acceptInviteLink({
     }
   }
 }
+
+/**
+ * Checks if the organization is full.
+ *
+ * @param organization - The organization to check.
+ * @returns `true` if the organization is full; otherwise, `false`.
+ */
+export const getOrganizationIsFull = (
+  organization: OrganizationWithMembershipsAndSubscriptions,
+) => {
+  const currentSubscription = organization.stripeSubscriptions[0];
+  const currentSubscriptionIsActive =
+    !!currentSubscription &&
+    !['canceled', 'past_due'].includes(currentSubscription.status);
+  const maxSeats =
+    (currentSubscriptionIsActive &&
+      currentSubscription.items[0]?.price.product.maxSeats) ||
+    25;
+  return organization._count.memberships >= maxSeats;
+};

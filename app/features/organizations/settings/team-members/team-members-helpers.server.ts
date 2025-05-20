@@ -1,10 +1,4 @@
-import type {
-  Organization,
-  OrganizationEmailInviteLink,
-  OrganizationInviteLink,
-  OrganizationMembership,
-  UserAccount,
-} from '@prisma/client';
+import type { OrganizationMembership, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 
 import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from '~/features/organizations/organizations-model.server';
@@ -35,13 +29,21 @@ export const requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug =
     throwIfEntityIsMissing,
   );
 
-export type OrganizationWithMembers = Organization & {
-  memberships: (OrganizationMembership & {
-    member: UserAccount;
-  })[];
-  organizationInviteLinks: OrganizationInviteLink[];
-  organizationEmailInviteLink: OrganizationEmailInviteLink[];
-};
+// export type OrganizationWithMembers = Organization & {
+//   memberships: (OrganizationMembership & {
+//     member: UserAccount;
+//   })[];
+//   organizationInviteLinks: OrganizationInviteLink[];
+//   organizationEmailInviteLink: OrganizationEmailInviteLink[];
+//   stripeSubscriptions: StripeSubscriptionWithItemsAndPriceAndProduct[];
+// };
+export type OrganizationWithMembers = NonNullable<
+  Awaited<
+    ReturnType<
+      typeof retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug
+    >
+  >
+>;
 
 type Member = {
   avatar: string;
@@ -73,24 +75,35 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
   organization: OrganizationWithMembers;
   request: Request;
 }): {
-  emailInviteCard: Pick<EmailInviteCardProps, 'currentUserIsOwner'>;
+  emailInviteCard: Pick<
+    EmailInviteCardProps,
+    'currentUserIsOwner' | 'organizationIsFull'
+  >;
   inviteLinkCard: InviteLinkCardProps;
+  organizationIsFull: boolean;
   teamMemberTable: TeamMembersTableProps;
 } {
   const link = organization.organizationInviteLinks[0];
+  const currentSubscription = organization.stripeSubscriptions[0];
+  const maxSeats = currentSubscription?.items[0]?.price.product.maxSeats ?? 25;
+  const organizationIsFull = organization.memberships.length >= maxSeats;
 
   return {
     emailInviteCard: {
       currentUserIsOwner: currentUsersRole === OrganizationMembershipRole.owner,
+      organizationIsFull,
     },
     inviteLinkCard: {
-      inviteLink: link
-        ? {
-            href: tokenToInviteLink(link.token, request),
-            expiryDate: link.expiresAt.toISOString(),
-          }
-        : undefined,
+      inviteLink:
+        link && !organizationIsFull
+          ? {
+              href: tokenToInviteLink(link.token, request),
+              expiryDate: link.expiresAt.toISOString(),
+            }
+          : undefined,
+      organizationIsFull,
     },
+    organizationIsFull,
     teamMemberTable: {
       currentUsersRole,
       members: [

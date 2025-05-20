@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
-import { badRequest, forbidden } from '~/utils/http-responses.server';
+import { badRequest, conflict, forbidden } from '~/utils/http-responses.server';
 import i18next from '~/utils/i18next.server';
 import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
@@ -42,7 +42,10 @@ import {
   resumeStripeSubscription,
   updateStripeCustomer,
 } from './stripe-helpers.server';
-import { retrieveStripePriceFromDatabaseByLookupKey } from './stripe-prices-model.server';
+import {
+  retrieveStripePriceFromDatabaseByLookupKey,
+  retrieveStripePriceWithProductFromDatabaseByLookupKey,
+} from './stripe-prices-model.server';
 import { updateStripeSubscriptionInDatabaseById } from './stripe-subscription-model.server';
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from './stripe-subscription-schedule-model.server';
 
@@ -113,12 +116,21 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
       }
 
       case OPEN_CHECKOUT_SESSION_INTENT: {
-        const price = await retrieveStripePriceFromDatabaseByLookupKey(
-          body.lookupKey,
-        );
+        if (organization.stripeSubscriptions[0]) {
+          return conflict();
+        }
+
+        const price =
+          await retrieveStripePriceWithProductFromDatabaseByLookupKey(
+            body.lookupKey,
+          );
 
         if (!price) {
           throw new Error('Price not found');
+        }
+
+        if (organization._count.memberships > price.product.maxSeats) {
+          return conflict();
         }
 
         const checkoutSession = await createStripeCheckoutSession({

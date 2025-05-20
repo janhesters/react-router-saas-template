@@ -21,7 +21,10 @@ import {
   updateOrganizationMembershipInDatabase,
 } from '../../organization-membership-model.server';
 import { saveOrganizationEmailInviteLinkToDatabase } from '../../organizations-email-invite-link-model.server';
-import { requireUserIsMemberOfOrganization } from '../../organizations-helpers.server';
+import {
+  getOrganizationIsFull,
+  requireUserIsMemberOfOrganization,
+} from '../../organizations-helpers.server';
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
   saveOrganizationInviteLinkToDatabase,
@@ -60,6 +63,17 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
 
     switch (body.intent) {
       case CREATE_NEW_INVITE_LINK_INTENT: {
+        if (getOrganizationIsFull(organization)) {
+          return badRequest({
+            errors: {
+              email: {
+                message:
+                  'organizations:settings.team-members.invite-by-email.form.organization-full',
+              },
+            },
+          });
+        }
+
         // Deactivate any existing active invite link
         const latestInviteLink =
           await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
@@ -177,12 +191,25 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
 
           // If the user was deactivated, and there is a subscription,
           // they will now take up a seat again.
-          if (targetMembership.deactivatedAt && subscription) {
-            await adjustSeats({
-              subscriptionId: subscription.stripeId,
-              subscriptionItemId: subscription.items[0].stripeId,
-              newQuantity: organization._count.memberships + 1,
-            });
+          if (targetMembership.deactivatedAt) {
+            if (getOrganizationIsFull(organization)) {
+              return badRequest({
+                errors: {
+                  email: {
+                    message:
+                      'organizations:settings.team-members.invite-by-email.form.organization-full',
+                  },
+                },
+              });
+            }
+
+            if (subscription) {
+              await adjustSeats({
+                subscriptionId: subscription.stripeId,
+                subscriptionItemId: subscription.items[0].stripeId,
+                newQuantity: organization._count.memberships + 1,
+              });
+            }
           }
         }
 
@@ -198,6 +225,17 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
       }
 
       case INVITE_BY_EMAIL_INTENT: {
+        if (getOrganizationIsFull(organization)) {
+          return badRequest({
+            errors: {
+              email: {
+                message:
+                  'organizations:settings.team-members.invite-by-email.form.organization-full',
+              },
+            },
+          });
+        }
+
         if (
           role !== OrganizationMembershipRole.owner &&
           body.role === OrganizationMembershipRole.owner

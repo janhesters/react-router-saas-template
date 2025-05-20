@@ -94,4 +94,42 @@ describe('TeamMembersInviteLinkCard component', () => {
       ),
     ).toBeInTheDocument();
   });
+
+  test('given: organization is full and no invite link, should: disable form', () => {
+    const props = createProps({ organizationIsFull: true });
+    const { slug } = createPopulatedOrganization();
+    const path = `/organizations/${slug}/settings/team-members`;
+    const RouterStub = createRoutesStub([
+      {
+        path,
+        Component: () => <InviteLinkCard {...props} inviteLink={undefined} />,
+      },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify form is disabled
+    expect(
+      screen.getByRole('button', { name: /create new invite link/i }),
+    ).toBeDisabled();
+  });
+
+  test('given: organization is full and has an invite link, should: disable form', () => {
+    const props = createProps({ organizationIsFull: true });
+    const { slug } = createPopulatedOrganization();
+    const path = `/organizations/${slug}/settings/team-members`;
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <InviteLinkCard {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify form is disabled
+    expect(
+      screen.getByRole('button', { name: /regenerate link/i }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole('button', { name: /deactivate link/i }),
+    ).toBeEnabled();
+  });
 });

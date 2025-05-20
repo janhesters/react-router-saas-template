@@ -140,6 +140,7 @@
           "email-placeholder": "Your colleague's email ...",
           "email-required": "Please enter a valid email (required).",
           "inviting": "Sending email invitation ...",
+          "organization-full": "You have reached the maximum number of seats for your subscription.",
           "role": "Role",
           "role-admin": "Admin",
           "role-member": "Member",
@@ -171,6 +172,11 @@
         "new-link-deactivates-old": "Generating a new link automatically deactivates the old one.",
         "regenerate-link": "Regenerate link",
         "regenerating": "Regenerating ..."
+      },
+      "organization-is-full-alert": {
+        "button": "Go to billing",
+        "description": "Switch to a higher-tier plan or contact sales to invite new members.",
+        "title": "No seats remaining"
       },
       "page-title": "Team Members",
       "table": {

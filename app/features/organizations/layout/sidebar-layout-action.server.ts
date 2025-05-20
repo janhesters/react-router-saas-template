@@ -7,7 +7,7 @@ import { OPEN_CHECKOUT_SESSION_INTENT } from '~/features/billing/billing-constan
 import { extractBaseUrl } from '~/features/billing/billing-helpers.server';
 import { openCustomerCheckoutSessionSchema } from '~/features/billing/billing-schemas';
 import { createStripeCheckoutSession } from '~/features/billing/stripe-helpers.server';
-import { retrieveStripePriceFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
+import { retrieveStripePriceWithProductFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
 import {
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
@@ -26,7 +26,7 @@ import {
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
-import { forbidden, notFound } from '~/utils/http-responses.server';
+import { conflict, forbidden, notFound } from '~/utils/http-responses.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import {
@@ -106,15 +106,24 @@ export async function sidebarLayoutAction({
           return forbidden();
         }
 
-        const baseUrl = extractBaseUrl(requestToUrl(request));
+        if (organization.stripeSubscriptions[0]) {
+          return conflict();
+        }
 
-        const price = await retrieveStripePriceFromDatabaseByLookupKey(
-          body.lookupKey,
-        );
+        const price =
+          await retrieveStripePriceWithProductFromDatabaseByLookupKey(
+            body.lookupKey,
+          );
 
         if (!price) {
           throw new Error('Price not found');
         }
+
+        if (organization._count.memberships > price.product.maxSeats) {
+          return conflict();
+        }
+
+        const baseUrl = extractBaseUrl(requestToUrl(request));
 
         const checkoutSession = await createStripeCheckoutSession({
           baseUrl,

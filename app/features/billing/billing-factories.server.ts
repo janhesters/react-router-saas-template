@@ -233,6 +233,39 @@ export function createPopulatedStripeSubscriptionItemWithPriceAndProduct(
   return { ...base, ...overrides, price };
 }
 
+export type StripeSubscriptionWithItemsAndPriceAndProduct =
+  StripeSubscription & {
+    items: StripeSubscriptionItemWithPriceAndProduct[];
+  };
+
+/**
+ * Creates a Stripe subscription with its associated subscription items, prices and products.
+ *
+ * @param params - Optional parameters to customize the subscription.
+ * @param params.items - Optional array of subscription items with prices and products.
+ * @param params.subscriptionOverrides - Optional subscription override values.
+ * @returns A populated Stripe subscription with all associated data.
+ */
+export function createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct(
+  overrides: DeepPartial<StripeSubscriptionWithItemsAndPriceAndProduct> = {},
+): StripeSubscriptionWithItemsAndPriceAndProduct {
+  const { items: itemsOverride, ...subscriptionBaseOverride } = overrides;
+
+  // Base subscription (just top-level fields)
+  const baseSubscription = createPopulatedStripeSubscription(
+    subscriptionBaseOverride,
+  );
+
+  // Items: if provided (even empty), map overrides; else default one
+  const items = Array.isArray(itemsOverride)
+    ? itemsOverride.map(itemOverride =>
+        createPopulatedStripeSubscriptionItemWithPriceAndProduct(itemOverride),
+      )
+    : [createPopulatedStripeSubscriptionItemWithPriceAndProduct()];
+
+  return { ...baseSubscription, ...overrides, items };
+}
+
 export type StripeSubscriptionSchedulePhaseWithPrice =
   StripeSubscriptionSchedulePhase & {
     price: StripePrice;

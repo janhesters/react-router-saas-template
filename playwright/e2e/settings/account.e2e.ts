@@ -360,7 +360,6 @@ test.describe('account settings', () => {
 // Allow users to change their billing address, and name. (in stripe)
 
 // TODO: contact sales enterprise flow
-// TODO: test people entering credit cards that decline or bounce
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
 // TODO: enforce limits
@@ -368,3 +367,4 @@ test.describe('account settings', () => {
 // TODO: Show a warning that the organization is full when the organization reached the limit.
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
 // TODO: handle downgrade goes through when the user has more seats than the new plan allows.
+// TODO: add tests that test if the user is on trial if it's required vs. on a subscription if required (conflict)

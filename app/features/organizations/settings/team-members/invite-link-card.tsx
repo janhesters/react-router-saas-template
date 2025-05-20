@@ -28,9 +28,13 @@ import {
 
 export type InviteLinkCardProps = {
   inviteLink?: { href: string; expiryDate: string };
+  organizationIsFull?: boolean;
 };
 
-export function InviteLinkCard({ inviteLink }: InviteLinkCardProps) {
+export function InviteLinkCard({
+  inviteLink,
+  organizationIsFull = false,
+}: InviteLinkCardProps) {
   const { t, i18n } = useTranslation('organizations', {
     keyPrefix: 'settings.team-members.invite-link',
   });
@@ -69,6 +73,8 @@ export function InviteLinkCard({ inviteLink }: InviteLinkCardProps) {
     },
     [i18n.language],
   );
+
+  const disabled = isSubmitting || organizationIsFull;
 
   return (
     <Card>
@@ -158,7 +164,7 @@ export function InviteLinkCard({ inviteLink }: InviteLinkCardProps) {
                 <Button
                   aria-describedby="link-regenerate-warning"
                   className="w-full"
-                  disabled={isSubmitting}
+                  disabled={disabled}
                   name="intent"
                   value="createNewInviteLink"
                   type="submit"
@@ -176,7 +182,7 @@ export function InviteLinkCard({ inviteLink }: InviteLinkCardProps) {
 
               <Form method="POST" replace>
                 <Button
-                  disabled={isSubmitting}
+                  disabled={isDeactivatingLink}
                   name="intent"
                   value="deactivateInviteLink"
                   type="submit"
@@ -212,7 +218,7 @@ export function InviteLinkCard({ inviteLink }: InviteLinkCardProps) {
           <Form className="w-full" method="POST" replace>
             <Button
               className="w-full"
-              disabled={isSubmitting}
+              disabled={disabled}
               name="intent"
               value="createNewInviteLink"
               type="submit"

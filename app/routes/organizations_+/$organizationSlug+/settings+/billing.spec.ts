@@ -29,13 +29,27 @@ import {
 } from '~/features/notifications/notifications-factories.server';
 import { saveNotificationWithRecipientForUserAndOrganizationInDatabaseById } from '~/features/notifications/notifications-model.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
+import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+import {
+  deleteUserAccountFromDatabaseById,
+  saveUserAccountToDatabase,
+} from '~/features/user-accounts/user-accounts-model.server';
 import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
-import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
+import {
+  setupUserWithOrgAndAddAsMember,
+  setupUserWithTrialOrgAndAddAsMember,
+} from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
 import type { DataWithResponseInit } from '~/utils/http-responses.server';
-import { badRequest, forbidden, notFound } from '~/utils/http-responses.server';
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+} from '~/utils/http-responses.server';
 import { toFormData } from '~/utils/to-form-data';
 
 import { action } from './billing';
@@ -313,7 +327,7 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
     const intent = OPEN_CHECKOUT_SESSION_INTENT;
 
     test('given: a valid request from a member, should: return a 403', async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -344,9 +358,8 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
           server.events.removeListener('response:mocked', checkoutListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
-        });
+        const { user, organization } =
+          await setupUserWithTrialOrgAndAddAsMember({ role });
 
         const response = (await sendAuthenticatedRequest({
           user,
@@ -359,6 +372,86 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
           /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
         );
         expect(checkoutSessionCalled).toEqual(true);
+      },
+    );
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409',
+      async role => {
+        let checkoutSessionCalled = false;
+        const checkoutListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname === '/v1/checkout/sessions') {
+            checkoutSessionCalled = true;
+          }
+        };
+        server.events.on('response:mocked', checkoutListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', checkoutListener);
+        });
+
+        const { user, organization } =
+          await setupUserWithTrialOrgAndAddAsMember({ role });
+        const otherUser = createPopulatedUserAccount();
+        await saveUserAccountToDatabase(otherUser);
+        await addMembersToOrganizationInDatabaseById({
+          id: organization.id,
+          members: [otherUser.id],
+        });
+        onTestFinished(async () => {
+          await deleteUserAccountFromDatabaseById(otherUser.id);
+        });
+
+        const actual = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({
+            intent,
+            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+          }),
+        })) as DataWithResponseInit<{ message: string }>;
+        const expected = conflict();
+
+        expect(actual).toEqual(expected);
+        expect(checkoutSessionCalled).toEqual(false);
+      },
+    );
+
+    test.each([
+      OrganizationMembershipRole.admin,
+      OrganizationMembershipRole.owner,
+    ])(
+      'given: a valid request from a %s, but their organization already has a subscription, should: return a 409',
+      async role => {
+        let checkoutSessionCalled = false;
+        const checkoutListener = ({ request }: { request: Request }) => {
+          if (new URL(request.url).pathname === '/v1/checkout/sessions') {
+            checkoutSessionCalled = true;
+          }
+        };
+        server.events.on('response:mocked', checkoutListener);
+        onTestFinished(() => {
+          server.events.removeListener('response:mocked', checkoutListener);
+        });
+
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+        });
+
+        const actual = (await sendAuthenticatedRequest({
+          user,
+          organizationSlug: organization.slug,
+          formData: toFormData({
+            intent,
+            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+          }),
+        })) as DataWithResponseInit<{ message: string }>;
+        const expected = conflict();
+
+        expect(actual).toEqual(expected);
+        expect(checkoutSessionCalled).toEqual(false);
       },
     );
   });

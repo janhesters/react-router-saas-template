@@ -11,10 +11,12 @@ const createProps: Factory<EmailInviteCardProps> = ({
   currentUserIsOwner = false,
   errors,
   isInvitingByEmail = false,
+  organizationIsFull = false,
 } = {}) => ({
   currentUserIsOwner,
   errors,
   isInvitingByEmail,
+  organizationIsFull,
 });
 
 const originalHasPointerCapture = (pointerId: number) =>
@@ -141,5 +143,21 @@ describe('EmailInviteCard Component', () => {
     expect(
       hiddenSelect.querySelector('option[value="owner"]'),
     ).toBeInTheDocument();
+  });
+
+  test('given: organization is full, should: disable form', () => {
+    const props = createProps({ organizationIsFull: true });
+    const { slug } = createPopulatedOrganization();
+    const path = `/organizations/${slug}/settings/team-members`;
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <EmailInviteCard {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify form is disabled
+    expect(screen.getByLabelText(/email/i)).toBeDisabled();
+    expect(screen.getByLabelText(/role/i)).toBeDisabled();
+    expect(screen.getByRole('button')).toBeDisabled();
   });
 });

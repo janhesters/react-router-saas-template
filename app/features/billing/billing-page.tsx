@@ -18,6 +18,7 @@ import {
   DialogTrigger,
 } from '~/components/ui/dialog';
 import { Separator } from '~/components/ui/separator';
+import { cn } from '~/lib/utils';
 
 import type { Interval, Tier } from './billing-constants';
 import {
@@ -419,7 +420,11 @@ export function BillingPage({
                         {t('plan-information.users')}
                       </DescriptionTerm>
 
-                      <DescriptionDetail>
+                      <DescriptionDetail
+                        className={cn(
+                          currentSeats > maxSeats && 'text-destructive',
+                        )}
+                      >
                         {t('plan-information.users-format', {
                           current: currentSeats,
                           max: maxSeats,

@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next';
-import { data, useNavigation } from 'react-router';
+import { data, href, Link, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { EmailInviteCard } from '~/features/organizations/settings/team-members/invite-by-email-card';
@@ -54,11 +56,17 @@ export async function action(args: Route.ActionArgs) {
 export default function OrganizationMembersRoute({
   actionData,
   loaderData,
+  params,
 }: Route.ComponentProps) {
   const { t } = useTranslation('organizations', {
     keyPrefix: 'settings.team-members',
   });
-  const { emailInviteCard, inviteLinkCard, teamMemberTable } = loaderData;
+  const {
+    emailInviteCard,
+    inviteLinkCard,
+    organizationIsFull,
+    teamMemberTable,
+  } = loaderData;
   const errors = getFormErrors(actionData);
 
   const navigation = useNavigation();
@@ -79,6 +87,36 @@ export default function OrganizationMembersRoute({
         </div>
 
         <Separator />
+
+        {organizationIsFull && (
+          <div className="@container/alert">
+            <Alert
+              className="flex flex-col gap-2 @2xl/alert:block"
+              variant="destructive"
+            >
+              <AlertTitle>{t('organization-is-full-alert.title')}</AlertTitle>
+
+              <AlertDescription>
+                {t('organization-is-full-alert.description')}
+              </AlertDescription>
+
+              <Button
+                asChild
+                className="shadow-none @2xl/alert:absolute @2xl/alert:top-1/2 @2xl/alert:right-3 @2xl/alert:-translate-y-1/2"
+                size="sm"
+              >
+                <Link
+                  to={href(
+                    '/organizations/:organizationSlug/settings/billing',
+                    { organizationSlug: params.organizationSlug },
+                  )}
+                >
+                  {t('organization-is-full-alert.button')}
+                </Link>
+              </Button>
+            </Alert>
+          </div>
+        )}
 
         {teamMemberTable.currentUsersRole !== 'member' && (
           <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2">

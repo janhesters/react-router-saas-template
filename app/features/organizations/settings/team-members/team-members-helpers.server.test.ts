@@ -2,6 +2,8 @@ import { createId } from '@paralleldrive/cuid2';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 
+import type { StripeSubscriptionWithItemsAndPriceAndProduct } from '~/features/billing/billing-factories.server';
+import { createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct } from '~/features/billing/billing-factories.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
 
 import {
@@ -20,10 +22,12 @@ const createOrganizationWithLinksAndMembers = ({
   emailInviteCount,
   inviteLinkCount,
   memberCount,
+  stripeSubscription,
 }: {
   emailInviteCount: number;
   inviteLinkCount: number;
   memberCount: number;
+  stripeSubscription?: StripeSubscriptionWithItemsAndPriceAndProduct;
 }): OrganizationWithMembers => {
   const organization = createPopulatedOrganization();
   const memberships = Array.from({ length: memberCount }, () =>
@@ -38,20 +42,28 @@ const createOrganizationWithLinksAndMembers = ({
   const links = Array.from({ length: inviteLinkCount }, () =>
     createPopulatedOrganizationInviteLink({
       organizationId: organization.id,
-      creatorId: memberships[0].member.id,
+      creatorId: memberships[0]?.member.id,
     }),
   );
   const emailInvites = Array.from({ length: emailInviteCount }, () =>
     createPopulatedOrganizationEmailInviteLink({
       organizationId: organization.id,
-      invitedById: memberships?.[0]?.member.id ?? createId(),
+      invitedById: memberships[0]?.member.id,
     }),
   );
+  const stripeSubscriptions = stripeSubscription
+    ? [
+        createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct(
+          stripeSubscription,
+        ),
+      ]
+    : [];
   return {
     ...organization,
     memberships,
     organizationInviteLinks: links,
     organizationEmailInviteLink: emailInvites,
+    stripeSubscriptions,
   };
 };
 
@@ -88,6 +100,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     const expected = {
       emailInviteCard: {
         currentUserIsOwner: true,
+        organizationIsFull: false,
       },
       inviteLinkCard: {
         inviteLink: {
@@ -95,7 +108,9 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
           expiryDate:
             organization.organizationInviteLinks[0].expiresAt.toISOString(),
         },
+        organizationIsFull: false,
       },
+      organizationIsFull: false,
       teamMemberTable: {
         currentUsersRole,
         members: organization.memberships.map(membership => ({
@@ -133,10 +148,13 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     const expected = {
       emailInviteCard: {
         currentUserIsOwner: false,
+        organizationIsFull: false,
       },
       inviteLinkCard: {
         inviteLink: undefined,
+        organizationIsFull: false,
       },
+      organizationIsFull: false,
       teamMemberTable: {
         currentUsersRole,
         members: organization.memberships.map((membership, index) => ({
@@ -186,10 +204,13 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     const expected = {
       emailInviteCard: {
         currentUserIsOwner: true,
+        organizationIsFull: false,
       },
       inviteLinkCard: {
         inviteLink: undefined,
+        organizationIsFull: false,
       },
+      organizationIsFull: false,
       teamMemberTable: {
         currentUsersRole,
         members: [
@@ -241,7 +262,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: 'some-id', // ID doesn't matter since there are no members
+      currentUsersId: 'some-id',
       currentUsersRole,
       organization,
       request,
@@ -250,10 +271,13 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     const expected = {
       emailInviteCard: {
         currentUserIsOwner: true,
+        organizationIsFull: false,
       },
       inviteLinkCard: {
         inviteLink: undefined,
+        organizationIsFull: false,
       },
+      organizationIsFull: false,
       teamMemberTable: {
         currentUsersRole,
         members: organization.organizationEmailInviteLink.map(invite => ({
@@ -316,5 +340,103 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       role: OrganizationMembershipRole.member,
       status: 'emailInvitePending',
     });
+  });
+
+  test('given: an organization that has reached the subscription seat limit, should: return correct props with organizationIsFull true', () => {
+    const currentUsersRole = OrganizationMembershipRole.member;
+    const stripeSubscriptionOverride = {
+      items: [{ price: { product: { maxSeats: 1 } } }],
+    } as unknown as StripeSubscriptionWithItemsAndPriceAndProduct;
+    const organization = createOrganizationWithLinksAndMembers({
+      inviteLinkCount: 0,
+      memberCount: 1,
+      emailInviteCount: 0,
+      stripeSubscription: stripeSubscriptionOverride,
+    });
+    organization.memberships[0].role = currentUsersRole;
+    const request = new Request('http://localhost');
+
+    const actual = mapOrganizationDataToTeamMemberSettingsProps({
+      currentUsersId: organization.memberships[0].member.id,
+      currentUsersRole,
+      organization,
+      request,
+    });
+
+    const expected = {
+      emailInviteCard: {
+        currentUserIsOwner: false,
+        organizationIsFull: true,
+      },
+      inviteLinkCard: {
+        inviteLink: undefined,
+        organizationIsFull: true,
+      },
+      organizationIsFull: true,
+      teamMemberTable: {
+        currentUsersRole,
+        members: organization.memberships.map((membership, index) => ({
+          avatar: membership.member.imageUrl,
+          deactivatedAt: undefined,
+          email: membership.member.email,
+          id: membership.member.id,
+          isCurrentUser: index === 0,
+          name: membership.member.name,
+          role: membership.role,
+          status: index === 0 ? 'createdTheOrganization' : 'joinedViaLink',
+        })),
+      },
+    };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test('given: an organization that has reached the subscription seat limit, should: return undefined for inviteLink even if link exists', () => {
+    const currentUsersRole = OrganizationMembershipRole.member;
+    const stripeSubscriptionOverride = {
+      items: [{ price: { product: { maxSeats: 1 } } }],
+    } as unknown as StripeSubscriptionWithItemsAndPriceAndProduct;
+    const organization = createOrganizationWithLinksAndMembers({
+      inviteLinkCount: 1, // Create a link that should be ignored
+      memberCount: 1,
+      emailInviteCount: 0,
+      stripeSubscription: stripeSubscriptionOverride,
+    });
+    organization.memberships[0].role = currentUsersRole;
+    const request = new Request('http://localhost');
+
+    const actual = mapOrganizationDataToTeamMemberSettingsProps({
+      currentUsersId: organization.memberships[0].member.id,
+      currentUsersRole,
+      organization,
+      request,
+    });
+
+    const expected = {
+      emailInviteCard: {
+        currentUserIsOwner: false,
+        organizationIsFull: true,
+      },
+      inviteLinkCard: {
+        inviteLink: undefined, // Should be undefined even though link exists
+        organizationIsFull: true,
+      },
+      organizationIsFull: true,
+      teamMemberTable: {
+        currentUsersRole,
+        members: organization.memberships.map((membership, index) => ({
+          avatar: membership.member.imageUrl,
+          deactivatedAt: undefined,
+          email: membership.member.email,
+          id: membership.member.id,
+          isCurrentUser: index === 0,
+          name: membership.member.name,
+          role: membership.role,
+          status: index === 0 ? 'createdTheOrganization' : 'joinedViaLink',
+        })),
+      },
+    };
+
+    expect(actual).toEqual(expected);
   });
 });

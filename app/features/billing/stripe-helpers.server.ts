@@ -4,7 +4,6 @@ import type Stripe from 'stripe';
 
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
 
-// TODO: check if no email is provided, that the user can NOT enter their own.
 export async function createStripeCheckoutSession({
   baseUrl,
   customerEmail,

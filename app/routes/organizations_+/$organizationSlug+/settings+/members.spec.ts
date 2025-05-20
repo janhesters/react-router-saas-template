@@ -5,7 +5,11 @@ import { addDays, subSeconds } from 'date-fns';
 import { data } from 'react-router';
 import { describe, expect, onTestFinished, test } from 'vitest';
 
-import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from '~/features/organizations/organization-membership-model.server';
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import {
+  retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
+  updateOrganizationMembershipInDatabase,
+} from '~/features/organizations/organization-membership-model.server';
 import { retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId } from '~/features/organizations/organizations-email-invite-link-model.server';
 import {
   createPopulatedOrganization,
@@ -32,12 +36,15 @@ import { resendHandlers } from '~/test/mocks/handlers/resend';
 import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
-import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
+import {
+  setupUserWithOrgAndAddAsMember,
+  setupUserWithTrialOrgAndAddAsMember,
+} from '~/test/server-test-utils';
 import { createAuthenticatedRequest } from '~/test/test-utils';
+import type { DataWithResponseInit } from '~/utils/http-responses.server';
 import {
   badRequest,
   created,
-  type DataWithResponseInit,
   forbidden,
   notFound,
 } from '~/utils/http-responses.server';
@@ -66,6 +73,32 @@ async function sendAuthenticatedRequest({
   });
 
   return await action({ request, context: {}, params: { organizationSlug } });
+}
+
+async function setupMultipleMembers({
+  memberCount,
+  organizationId,
+}: {
+  memberCount: number;
+  organizationId: Organization['id'];
+}) {
+  const users = Array.from({ length: memberCount }, () =>
+    createPopulatedUserAccount(),
+  );
+  await Promise.all(users.map(user => saveUserAccountToDatabase(user)));
+  await addMembersToOrganizationInDatabaseById({
+    id: organizationId,
+    members: users.map(user => user.id),
+    role: OrganizationMembershipRole.member,
+  });
+
+  onTestFinished(async () => {
+    await Promise.all(
+      users.map(user => deleteUserAccountFromDatabaseById(user.id)),
+    );
+  });
+
+  return users;
 }
 
 const server = setupMockServerLifecycle(
@@ -166,6 +199,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       async role => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role,
+          lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
         });
 
         const actual = await sendAuthenticatedRequest({
@@ -201,6 +235,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       async role => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role,
+          lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
         });
         const existingInviteLink = createPopulatedOrganizationInviteLink({
           organizationId: organization.id,
@@ -240,6 +275,55 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         expect(updatedLink?.deactivatedAt).not.toEqual(null);
       },
     );
+
+    test('given: a user on the lowest plan (low.monthly) and only one existing member, should: return 400 because the org is full', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+        lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user,
+        formData: toFormData({ intent: CREATE_NEW_INVITE_LINK_INTENT }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+    });
+
+    test('given: a user on a trial plan with 25 members, should: return 400 because the org is full', async () => {
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+      await setupMultipleMembers({
+        memberCount: 24,
+        organizationId: organization.id,
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user,
+        formData: toFormData({ intent: CREATE_NEW_INVITE_LINK_INTENT }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+    });
   });
 
   describe(`${DEACTIVATE_INVITE_LINK_INTENT} intent`, () => {
@@ -717,6 +801,103 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         expect(stripeUpdateCalled).toEqual(true);
       },
     );
+
+    test('given: an owner on the lowest plan (low.monthly) reactivating a deactivated member, should: return 400 because the org is full', async () => {
+      const { user: ownerUser, organization } =
+        await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.owner,
+          lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+        });
+
+      const targetUser = await setupTargetMember(
+        organization,
+        OrganizationMembershipRole.member,
+      );
+      await updateOrganizationMembershipInDatabase({
+        userId: targetUser.id,
+        organizationId: organization.id,
+        data: { deactivatedAt: new Date() },
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user: ownerUser,
+        formData: toFormData({
+          intent: CHANGE_ROLE_INTENT,
+          userId: targetUser.id,
+          role: OrganizationMembershipRole.member,
+        }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+
+      const membership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            userId: targetUser.id,
+            organizationId: organization.id,
+          },
+        );
+      expect(membership?.deactivatedAt).not.toBeNull();
+    });
+
+    test('given: an owner on a trial plan with 25 members reactivating someone, should: return 400 because the org is full', async () => {
+      const { user: ownerUser, organization } =
+        await setupUserWithTrialOrgAndAddAsMember({
+          role: OrganizationMembershipRole.owner,
+        });
+      await setupMultipleMembers({
+        memberCount: 24,
+        organizationId: organization.id,
+      });
+
+      const targetUser = await setupTargetMember(
+        organization,
+        OrganizationMembershipRole.member,
+      );
+      await updateOrganizationMembershipInDatabase({
+        userId: targetUser.id,
+        organizationId: organization.id,
+        data: { deactivatedAt: new Date() },
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user: ownerUser,
+        formData: toFormData({
+          intent: CHANGE_ROLE_INTENT,
+          userId: targetUser.id,
+          role: OrganizationMembershipRole.member,
+        }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+
+      const membership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            userId: targetUser.id,
+            organizationId: organization.id,
+          },
+        );
+      expect(membership?.deactivatedAt).not.toBeNull();
+    });
   });
 
   describe(`${INVITE_BY_EMAIL_INTENT} intent`, () => {
@@ -945,5 +1126,62 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
       },
     );
+
+    test('given: a user on the lowest plan (low.monthly) trying to invite anyone, should: return 400 because the org is full', async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+        lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user,
+        formData: toFormData({
+          intent: INVITE_BY_EMAIL_INTENT,
+          email: faker.internet.email(),
+          role: OrganizationMembershipRole.member,
+        }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+    });
+
+    test('given: a user on a trial plan with 25 members trying to invite, should: return 400 because the org is full', async () => {
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+      await setupMultipleMembers({
+        memberCount: 24,
+        organizationId: organization.id,
+      });
+
+      const actual = await sendAuthenticatedRequest({
+        user,
+        formData: toFormData({
+          intent: INVITE_BY_EMAIL_INTENT,
+          email: faker.internet.email(),
+          role: OrganizationMembershipRole.member,
+        }),
+        organizationSlug: organization.slug,
+      });
+      const expected = badRequest({
+        errors: {
+          email: {
+            message:
+              'organizations:settings.team-members.invite-by-email.form.organization-full',
+          },
+        },
+      });
+
+      expect(actual).toEqual(expected);
+    });
   });
 });

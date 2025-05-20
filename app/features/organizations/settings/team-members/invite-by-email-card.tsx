@@ -44,6 +44,7 @@ export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;
   errors?: InviteByEmailErrors;
   isInvitingByEmail?: boolean;
+  organizationIsFull?: boolean;
   successEmail?: string;
 };
 
@@ -51,6 +52,7 @@ export function EmailInviteCard({
   currentUserIsOwner,
   errors,
   isInvitingByEmail = false,
+  organizationIsFull = false,
   successEmail,
 }: EmailInviteCardProps) {
   const { t } = useTranslation('organizations', {
@@ -80,6 +82,8 @@ export function EmailInviteCard({
     }
   }, [successEmail]);
 
+  const disabled = isInvitingByEmail || organizationIsFull;
+
   return (
     <Card>
       <CardHeader>
@@ -95,7 +99,7 @@ export function EmailInviteCard({
             id="invite-by-email-form"
             onSubmit={form.handleSubmit(handleSubmit)}
           >
-            <fieldset disabled={isInvitingByEmail}>
+            <fieldset disabled={disabled}>
               <div className="flex gap-4">
                 <FormField
                   control={form.control}
@@ -173,7 +177,7 @@ export function EmailInviteCard({
       <CardFooter>
         <Button
           className="w-full"
-          disabled={isInvitingByEmail}
+          disabled={disabled}
           form="invite-by-email-form"
           name="intent"
           type="submit"

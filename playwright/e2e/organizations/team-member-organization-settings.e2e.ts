@@ -5,6 +5,7 @@ import { expect, test } from '@playwright/test';
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import {
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
@@ -1047,6 +1048,49 @@ test.describe('organization settings members page', () => {
 
       await teardownMultipleMembers(data);
     });
+  });
+
+  test('given: an owner for an organization who has reached the maximum number of seats: should show a warning and deactivate the buttons', async ({
+    page,
+  }) => {
+    const data = await setupOrganizationAndLoginAsMember({
+      organization: createPopulatedOrganization(),
+      page,
+      role: OrganizationMembershipRole.owner,
+      lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+    });
+
+    await page.goto(getMembersPagePath(data.organization.slug));
+
+    // 1. Alert/banner is visible with appropriate text
+    const alertBanner = page.getByRole('alert');
+    await expect(alertBanner.getByText(/no seats remaining/i)).toBeVisible();
+    await expect(
+      alertBanner.getByText(
+        /switch to a higher-tier plan or contact sales to invite new members./i,
+      ),
+    ).toBeVisible();
+    await expect(
+      alertBanner.getByRole('link', { name: /go to billing/i }),
+    ).toHaveAttribute(
+      'href',
+      `/organizations/${data.organization.slug}/settings/billing`,
+    );
+
+    // 2. Invite-by-link button is disabled
+    const createLinkButton = page.getByRole('button', {
+      name: /create new invite link/i,
+    });
+    await expect(createLinkButton).toBeDisabled();
+
+    // 3. Send-email-invitation button is disabled
+    const sendEmailButton = page.getByRole('button', {
+      name: /send email invitation/i,
+    });
+    await expect(sendEmailButton).toBeDisabled();
+
+    // teardown
+    await teardownOrganizationAndMember(data);
   });
 
   // ========================================================================
