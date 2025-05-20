@@ -303,6 +303,14 @@ Why is good test coverage important for a template? Same reason why it's good fo
 
 The React Router SaaS Template is set up to listen to product & prices webhooks. This also allows your account managers to create and manage products & prices in the Stripe Dashboard, and have them automatically reflected in your app.
 
+By default, it uses three plans with seat limits of:
+
+- low (Hobby): 1 seat
+- mid (Startup): 10 seats
+- high (Business): 25 seats
+
+You might need to tweak a bit of test code if you want to change these limits. Do a fuzzy search for these limits.
+
 For local development, run your app with `npm run dev` and forward webhooks to your local server with `stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks`.
 
 For production, follow the same instructions, but us the production URL of your

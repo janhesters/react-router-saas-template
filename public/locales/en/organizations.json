@@ -1,4 +1,20 @@
 {
+  "accept-email-invite": {
+    "accept-invite": "Accept invite",
+    "accept-invite-instructions": "Click the button below to sign up. By using this email invite you will automatically join the correct organization.",
+    "accepting-invite": "Accepting invite ...",
+    "already-member-toast-description": "You are already a member of {{organizationName}}",
+    "already-member-toast-title": "Already a member",
+    "invite-email-invalid-toast-description": "The email invite is invalid or has expired",
+    "invite-email-invalid-toast-title": "Failed to accept invite",
+    "invite-email-valid-toast-description": "Please register or log in to accept the invitation",
+    "invite-email-valid-toast-title": "Invitation email is valid",
+    "invite-you-to-join": "{{inviterName}} invites you to join {{organizationName}}",
+    "join-success-toast-description": "You are now a member of {{organizationName}}",
+    "join-success-toast-title": "Successfully joined organization",
+    "page-title": "Invitation",
+    "welcome-to-app-name": "Welcome to {{appName}}"
+  },
   "accept-invite-link": {
     "accept-invite": "Accept invite",
     "accept-invite-instructions": "Click the button below to sign up. By using this link you will automatically join the correct organization.",
@@ -151,10 +167,12 @@
         "invite-email": {
           "button-text": "Join {{organizationName}}",
           "call-to-action": "Join now to collaborate with your colleagues!",
-          "description": "{{inviterName}} has invited you to join {{organizationName}} in {{appName}}. This invite expires in 48 hours.",
+          "description": "{{inviterName}} has invited you to join {{organizationName}} in {{appName}}. This invite expires in 7 days.",
           "subject": "{{inviteName}} invited you to {{appName}}",
           "title": "You've Been Invited to {{appName}}!"
         },
+        "organization-full-toast-description": "You've used up all your available seats.",
+        "organization-full-toast-title": "Organization is full",
         "success-toast-title": "Email invitation sent"
       },
       "invite-link": {

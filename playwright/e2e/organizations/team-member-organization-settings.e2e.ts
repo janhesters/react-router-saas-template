@@ -55,6 +55,7 @@ async function setupMultipleMembers({
     await setupOrganizationAndLoginAsMember({
       page,
       role: requestingUserRole,
+      lookupKey: priceLookupKeysByTierAndInterval.high.annual,
     });
 
   // Create other users and add them to the organization with specified roles

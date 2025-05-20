@@ -193,14 +193,26 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           // they will now take up a seat again.
           if (targetMembership.deactivatedAt) {
             if (getOrganizationIsFull(organization)) {
-              return badRequest({
-                errors: {
-                  email: {
-                    message:
-                      'organizations:settings.team-members.invite-by-email.form.organization-full',
+              const t = await i18next.getFixedT(request, 'organizations', {
+                keyPrefix:
+                  'organizations:settings.team-members.invite-by-email',
+              });
+              const toastHeaders = await createToastHeaders({
+                title: t('organization-full-toast-title'),
+                description: t('organization-full-toast-description'),
+                type: 'error',
+              });
+              return badRequest(
+                {
+                  errors: {
+                    email: {
+                      message:
+                        'organizations:settings.team-members.invite-by-email.form.organization-full',
+                    },
                   },
                 },
-              });
+                { headers: combineHeaders(headers, toastHeaders) },
+              );
             }
 
             if (subscription) {
@@ -272,13 +284,13 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
 
         const emailInvite = await saveOrganizationEmailInviteLinkToDatabase({
           email: body.email,
-          expiresAt: addDays(new Date(), 2),
+          expiresAt: addDays(new Date(), 7),
           invitedById: user.id,
           organizationId: organization.id,
           role: body.role,
         });
 
-        const joinUrl = `${process.env.APP_URL}/email-invite/${emailInvite.token}`;
+        const joinUrl = `${process.env.APP_URL}/organizations/email-invite?token=${emailInvite.token}`;
 
         const result = await sendEmail({
           to: body.email,

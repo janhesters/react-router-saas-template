@@ -837,7 +837,21 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual.data).toEqual(expected.data);
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      // Verify toast
+      const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+      const { toast } = await getToast(
+        new Request(createUrl(organization.slug), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        title: 'Organization is full',
+        description: "You've used up all your available seats.",
+        type: 'error',
+      });
 
       const membership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
@@ -887,7 +901,21 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual.data).toEqual(expected.data);
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      // Verify toast
+      const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+      const { toast } = await getToast(
+        new Request(createUrl(organization.slug), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        title: 'Organization is full',
+        description: "You've used up all your available seats.",
+        type: 'error',
+      });
 
       const membership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(

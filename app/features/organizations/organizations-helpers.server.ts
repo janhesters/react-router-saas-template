@@ -1,5 +1,6 @@
 import type {
   Organization,
+  OrganizationEmailInviteLink,
   OrganizationInviteLink,
   UserAccount,
 } from '@prisma/client';
@@ -19,6 +20,7 @@ import type {
 } from '../onboarding/onboarding-helpers.server';
 import { requireOnboardedUserAccountExists } from '../onboarding/onboarding-helpers.server';
 import { saveInviteLinkUseToDatabase } from './accept-invite-link/invite-link-use-model.server';
+import { updateEmailInviteLinkInDatabaseById } from './organizations-email-invite-link-model.server';
 import {
   addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
@@ -145,6 +147,54 @@ export async function acceptInviteLink({
   await saveInviteLinkUseToDatabase({
     inviteLinkId,
     userId: userAccountId,
+  });
+
+  const organization =
+    await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
+      organizationId,
+    );
+
+  if (organization) {
+    const subscription = organization.stripeSubscriptions[0];
+
+    // TODO: subscription must also NOT be cancelled
+    if (subscription && subscription.status !== 'canceled') {
+      await adjustSeats({
+        subscriptionId: subscription.stripeId,
+        subscriptionItemId: subscription.items[0].stripeId,
+        newQuantity: organization._count.memberships + 1,
+      });
+    }
+  }
+}
+
+/**
+ * Accepts an email invite and adds the user to the organization. Also adjusts
+ * the number of seats on the organization's subscription if it exists.
+ *
+ * @param userAccountId - The ID of the user account to add to the organization.
+ * @param organizationId - The ID of the organization to add the user to.
+ * @param inviteLinkId - The ID of the invite link to accept.
+ */
+export async function acceptEmailInvite({
+  userAccountId,
+  organizationId,
+  inviteLinkId,
+  role,
+}: {
+  userAccountId: UserAccount['id'];
+  organizationId: Organization['id'];
+  inviteLinkId: OrganizationEmailInviteLink['id'];
+  role: OrganizationMembershipRole;
+}) {
+  await addMembersToOrganizationInDatabaseById({
+    id: organizationId,
+    members: [userAccountId],
+    role,
+  });
+  await updateEmailInviteLinkInDatabaseById({
+    id: inviteLinkId,
+    emailInviteLink: { deactivatedAt: new Date() },
   });
 
   const organization =

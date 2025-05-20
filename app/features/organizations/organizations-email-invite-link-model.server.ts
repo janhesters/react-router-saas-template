@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-null */
 import type {
   Organization,
   OrganizationEmailInviteLink,
@@ -23,6 +24,20 @@ export async function saveOrganizationEmailInviteLinkToDatabase(
 /* READ */
 
 /**
+ * Retrieves an organization email invite link from the database by its ID.
+ *
+ * @param id - The ID of the email invite link to retrieve.
+ * @returns The email invite link or null if not found.
+ */
+export async function retrieveEmailInviteLinkFromDatabaseById(
+  id: OrganizationEmailInviteLink['id'],
+) {
+  return prisma.organizationEmailInviteLink.findUnique({
+    where: { id },
+  });
+}
+
+/**
  * Retrieves an active organization email invite link from the database based on
  * its token.
  *
@@ -35,7 +50,7 @@ export async function retrieveActiveEmailInviteLinkFromDatabaseByToken(
 ) {
   const now = new Date();
   return prisma.organizationEmailInviteLink.findFirst({
-    where: { token, expiresAt: { gt: now } },
+    where: { token, expiresAt: { gt: now }, deactivatedAt: null },
     include: {
       organization: { select: { id: true, name: true, slug: true } },
       invitedBy: { select: { id: true, name: true } },
@@ -55,8 +70,30 @@ export async function retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId
 ) {
   const now = new Date();
   return prisma.organizationEmailInviteLink.findMany({
-    where: { organizationId, expiresAt: { gt: now } },
+    where: { organizationId, expiresAt: { gt: now }, deactivatedAt: null },
     orderBy: { createdAt: 'desc' },
     include: { invitedBy: { select: { id: true, name: true } } },
+  });
+}
+
+/* UPDATE */
+
+/**
+ * Updates an email invite link in the database.
+ *
+ * @param id - The id of the email invite link to update.
+ * @param emailInviteLink - The email invite link to update.
+ * @returns The updated email invite link.
+ */
+export async function updateEmailInviteLinkInDatabaseById({
+  id,
+  emailInviteLink,
+}: {
+  id: OrganizationEmailInviteLink['id'];
+  emailInviteLink: Prisma.OrganizationEmailInviteLinkUncheckedUpdateInput;
+}) {
+  return prisma.organizationEmailInviteLink.update({
+    where: { id },
+    data: emailInviteLink,
   });
 }
