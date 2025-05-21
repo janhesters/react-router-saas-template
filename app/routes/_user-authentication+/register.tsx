@@ -8,7 +8,7 @@ import {
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
-import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
+import { getInviteInfoForAuthRoutes } from '~/features/organizations/organizations-helpers.server';
 import type { RegisterActionData } from '~/features/user-authentication/registration/register-action.server';
 import { registerAction } from '~/features/user-authentication/registration/register-action.server';
 import { RegistrationFormCard } from '~/features/user-authentication/registration/registration-form-card';
@@ -28,7 +28,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { t, linkData } = await promiseHash({
     userIsAnonymous: requireUserIsAnonymous(request),
     t: i18next.getFixedT(request, ['user-authentication', 'common']),
-    linkData: getValidInviteLinkInfo(request),
+    linkData: getInviteInfoForAuthRoutes(request),
   });
   return data(
     {

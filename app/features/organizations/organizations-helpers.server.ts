@@ -5,7 +5,9 @@ import type {
   UserAccount,
 } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
+import { promiseHash } from 'remix-utils/promise';
 
+import { combineHeaders } from '~/utils/combine-headers.server';
 import { notFound } from '~/utils/http-responses.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
@@ -19,6 +21,8 @@ import type {
   OrganizationWithMembershipsAndSubscriptions,
 } from '../onboarding/onboarding-helpers.server';
 import { requireOnboardedUserAccountExists } from '../onboarding/onboarding-helpers.server';
+import { getValidEmailInviteInfo } from './accept-email-invite/accept-email-invite-helpers.server';
+import { getValidInviteLinkInfo } from './accept-invite-link/accept-invite-link-helpers.server';
 import { saveInviteLinkUseToDatabase } from './accept-invite-link/invite-link-use-model.server';
 import { updateEmailInviteLinkInDatabaseById } from './organizations-email-invite-link-model.server';
 import {
@@ -235,3 +239,26 @@ export const getOrganizationIsFull = (
     25;
   return organization._count.memberships >= maxSeats;
 };
+
+/**
+ * Retrieves the invite info from the request.
+ *
+ * @param request - The request to get the invite info from.
+ * @returns The invite info.
+ */
+export async function getInviteInfoForAuthRoutes(request: Request) {
+  const { inviteLinkInfo, emailInviteInfo } = await promiseHash({
+    inviteLinkInfo: getValidInviteLinkInfo(request),
+    emailInviteInfo: getValidEmailInviteInfo(request),
+  });
+
+  return {
+    inviteLinkInfo: emailInviteInfo.emailInviteInfo
+      ? {
+          creatorName: emailInviteInfo.emailInviteInfo.inviterName,
+          organizationName: emailInviteInfo.emailInviteInfo.organizationName,
+        }
+      : inviteLinkInfo.inviteLinkInfo,
+    headers: combineHeaders(inviteLinkInfo.headers, emailInviteInfo.headers),
+  };
+}

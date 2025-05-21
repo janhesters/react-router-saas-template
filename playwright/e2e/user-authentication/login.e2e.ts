@@ -1,9 +1,12 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
+import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
 import {
   createPopulatedOrganization,
+  createPopulatedOrganizationEmailInviteLink,
   createPopulatedOrganizationInviteLink,
 } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
@@ -18,6 +21,7 @@ import { createUserWithOrgAndAddAsMember } from '~/test/test-utils';
 import {
   getPath,
   loginByCookie,
+  setupEmailInviteCookie,
   setupInviteLinkCookie,
   setupOrganizationAndLoginAsMember,
 } from '../../utils';
@@ -248,6 +252,90 @@ test.describe('login page', () => {
       cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
+
+    await deleteUserAccountFromDatabaseById(user.id);
+    await deleteOrganizationFromDatabaseById(organization.id);
+  });
+
+  test('given: an anonymous user with an active email invite in their cookies, should: show text letting the user know they will join the organization after logging in', async ({
+    page,
+  }) => {
+    const { organization, user } = await createUserWithOrgAndAddAsMember({
+      organization: createPopulatedOrganization({
+        name: "Moore, O'Hara and Gerlach",
+      }),
+    });
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: user.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    await page.goto(path);
+
+    await expect(
+      page.getByText(new RegExp(`log in to join ${organization.name}`, 'i')),
+    ).toBeVisible();
+    await expect(
+      page.getByText(
+        new RegExp(
+          `${user.name} has invited you to join ${organization.name}`,
+          'i',
+        ),
+      ),
+    ).toBeVisible();
+
+    await deleteUserAccountFromDatabaseById(user.id);
+    await deleteOrganizationFromDatabaseById(organization.id);
+  });
+
+  test('given: an anonymous user with an inactive email invite in their cookies, should: NOT show any text about joining an organization and also clear the email invite cookie', async ({
+    page,
+  }) => {
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: user.id,
+      deactivatedAt: new Date(),
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.id, expiresAt: invite.expiresAt },
+    });
+
+    await page.goto(path);
+
+    // Check that the normal login text is shown instead of the invite text
+    await expect(page.getByText(/welcome back/i)).toBeVisible();
+
+    // Verify that the invite-specific text is not shown
+    await expect(
+      page.getByText(new RegExp(`log in to join ${organization.name}`, 'i')),
+    ).not.toBeVisible();
+    await expect(
+      page.getByText(
+        new RegExp(
+          `${user.name} has invited you to join ${organization.name}`,
+          'i',
+        ),
+      ),
+    ).not.toBeVisible();
+
+    // Verify that the email invite cookie is cleared
+    const cookies = await page.context().cookies();
+    const emailInviteCookie = cookies.find(
+      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+    );
+    expect(emailInviteCookie).toBeUndefined();
 
     await deleteUserAccountFromDatabaseById(user.id);
     await deleteOrganizationFromDatabaseById(organization.id);
