@@ -10,11 +10,8 @@ import i18next from '~/utils/i18next.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import { requireUserIsAnonymous } from '../user-authentication-helpers.server';
-import {
-  type EmailLoginErrors,
-  loginWithEmailSchema,
-  loginWithGoogleSchema,
-} from './login-schemas';
+import type { EmailLoginErrors } from './login-schemas';
+import { loginWithEmailSchema, loginWithGoogleSchema } from './login-schemas';
 import type { Route } from '.react-router/types/app/routes/_user-authentication+/+types/login';
 
 export type LoginActionData =

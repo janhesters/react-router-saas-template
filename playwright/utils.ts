@@ -9,6 +9,9 @@ import { promiseHash } from 'remix-utils/promise';
 import type { LookupKey } from '~/features/billing/billing-constants';
 import type { StripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
 import { createPopulatedStripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
+import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
+import type { CreateEmailInviteInfoCookieParams } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
+import { createEmailInviteInfoCookie } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import type { CreateInviteLinkInfoCookieParams } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
@@ -229,12 +232,14 @@ export async function setupInviteLinkCookie({
   link,
 }: {
   page: Page;
-  link: CreateInviteLinkInfoCookieParams; // Adjust type as needed
+  link: CreateInviteLinkInfoCookieParams;
 }) {
   const cookieHeader = await createInviteLinkInfoCookie(link);
 
   // Extract the raw cookie value from the Set-Cookie header
-  const cookieValueMatch = /^__invite_link_info=([^;]+)/.exec(cookieHeader);
+  const cookieValueMatch = new RegExp(
+    `^${INVITE_LINK_INFO_SESSION_NAME}=([^;]+)`,
+  ).exec(cookieHeader);
   if (!cookieValueMatch?.[1]) {
     throw new Error('Failed to extract cookie value from Set-Cookie header');
   }
@@ -251,6 +256,52 @@ export async function setupInviteLinkCookie({
   await page.context().addCookies([
     {
       name: INVITE_LINK_INFO_SESSION_NAME,
+      value: cookieValue, // Only the raw signed value
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true, // Match your cookie config
+      sameSite: 'Lax', // Match your cookie config
+      expires, // Use expires instead of maxAge
+    },
+  ]);
+}
+
+/**
+ * Sets up the email invite cookie with organization and invitee information.
+ * This simulates what happens when a user clicks an email invite link before authentication.
+ *
+ * @param params - The page and email invite information to set up the cookie.
+ * @returns A promise that resolves when the cookie has been set.
+ */
+export async function setupEmailInviteCookie({
+  page,
+  invite,
+}: {
+  page: Page;
+  invite: CreateEmailInviteInfoCookieParams;
+}) {
+  const cookieHeader = await createEmailInviteInfoCookie(invite);
+
+  // Extract the raw cookie value from the Set-Cookie header
+  const cookieValueMatch = new RegExp(
+    `^${EMAIL_INVITE_INFO_SESSION_NAME}=([^;]+)`,
+  ).exec(cookieHeader);
+  if (!cookieValueMatch?.[1]) {
+    throw new Error('Failed to extract cookie value from Set-Cookie header');
+  }
+  const cookieValue = cookieValueMatch[1];
+
+  // Extract Max-Age and convert to expires (optional)
+  const maxAgeMatch = /Max-Age=(\d+)/.exec(cookieHeader);
+  let expires: number | undefined;
+  if (maxAgeMatch) {
+    const maxAgeSeconds = Number.parseInt(maxAgeMatch[1], 10);
+    expires = Math.floor(Date.now() / 1000) + maxAgeSeconds; // Convert to Unix timestamp in seconds
+  }
+
+  await page.context().addCookies([
+    {
+      name: EMAIL_INVITE_INFO_SESSION_NAME,
       value: cookieValue, // Only the raw signed value
       domain: 'localhost',
       path: '/',

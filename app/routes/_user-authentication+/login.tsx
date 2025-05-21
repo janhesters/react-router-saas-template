@@ -3,7 +3,7 @@ import { data, useActionData, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
-import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
+import { getInviteInfoForAuthRoutes } from '~/features/organizations/organizations-helpers.server';
 import type { LoginActionData } from '~/features/user-authentication/login/login-action.server';
 import { loginAction } from '~/features/user-authentication/login/login-action.server';
 import { LoginFormCard } from '~/features/user-authentication/login/login-form-card';
@@ -23,7 +23,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { t, linkData } = await promiseHash({
     userIsAnonymous: requireUserIsAnonymous(request),
     t: i18next.getFixedT(request, ['user-authentication', 'common']),
-    linkData: getValidInviteLinkInfo(request),
+    linkData: getInviteInfoForAuthRoutes(request),
   });
   return data(
     {
