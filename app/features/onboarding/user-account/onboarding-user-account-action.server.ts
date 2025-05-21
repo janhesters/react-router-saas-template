@@ -1,7 +1,9 @@
 import { href, redirect } from 'react-router';
 
-import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
+import { destroyEmailInviteInfoSession } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { destroyInviteLinkInfoSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
+import { updateEmailInviteLinkInDatabaseById } from '~/features/organizations/organizations-email-invite-link-model.server';
+import { getInviteInfoForAuthRoutes } from '~/features/organizations/organizations-helpers.server';
 import { updateUserAccountInDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
@@ -27,12 +29,20 @@ export async function onboardingUserAccountAction({
     });
 
     const { inviteLinkInfo, headers: inviteLinkHeaders } =
-      await getValidInviteLinkInfo(request);
+      await getInviteInfoForAuthRoutes(request);
 
     if (user.memberships.length > 0 && inviteLinkInfo) {
       const t = await i18next.getFixedT(request, 'organizations', {
         keyPrefix: 'accept-invite-link',
       });
+
+      if (inviteLinkInfo.type === 'emailInvite') {
+        await updateEmailInviteLinkInDatabaseById({
+          id: inviteLinkInfo.inviteLinkId,
+          emailInviteLink: { deactivatedAt: new Date() },
+        });
+      }
+
       return redirectWithToast(
         href('/organizations/:organizationSlug/dashboard', {
           organizationSlug: inviteLinkInfo.organizationSlug,
@@ -47,6 +57,7 @@ export async function onboardingUserAccountAction({
         {
           headers: combineHeaders(
             headers,
+            await destroyEmailInviteInfoSession(request),
             await destroyInviteLinkInfoSession(request),
           ),
         },

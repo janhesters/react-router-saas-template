@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
+import { createPopulatedOrganizationEmailInviteLink } from '~/features/organizations/organizations-factories.server';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
@@ -17,6 +20,7 @@ import {
 
 import {
   getPath,
+  setupEmailInviteCookie,
   setupInviteLinkCookie,
   setupOrganizationAndLoginAsMember,
 } from '../../utils';
@@ -293,6 +297,191 @@ test.describe(`${path} API route`, () => {
       cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
+
+    // Cleanup
+    await teardownOrganizationAndMember({ user, organization });
+  });
+
+  test('given: a valid token hash for an existing user with an active email invite cookie, should: add them to the organization after login and show success toast', async ({
+    page,
+  }) => {
+    // Create organization and email invite
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Create and save the user who will log in
+    const userAccount = createPopulatedUserAccount();
+    await saveUserAccountToDatabase(userAccount);
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Go to login confirm with token hash
+    const tokenHash = stringifyTokenHashData({
+      email: userAccount.email,
+      id: userAccount.supabaseUserId,
+    });
+    await page.goto(`/login/confirm?token_hash=${tokenHash}`);
+
+    // Verify redirect to organization dashboard
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+
+    // Verify success toast
+    await expect(
+      page
+        .getByRole('region', {
+          name: /notifications/i,
+        })
+        .getByText(/successfully joined organization/i),
+    ).toBeVisible();
+
+    // Verify email invite cookie is cleared
+    const cookies = await page.context().cookies();
+    const emailInviteCookie = cookies.find(
+      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+    );
+    expect(emailInviteCookie).toBeUndefined();
+
+    // Cleanup
+    await deleteUserAccountFromDatabaseById(userAccount.id);
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a valid token hash for a new user with an active email invite cookie, should: create their account, add them to the organization, show a success toast, and clear the email invite cookie', async ({
+    page,
+  }) => {
+    // Create organization and email invite
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Generate a unique email for testing.
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Use the email as the token hash.
+    const tokenHash = stringifyTokenHashData({ email: testEmail });
+
+    // Navigate to the login-confirm page with token hash.
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify the user is redirected to the onboarding page.
+    await expect(
+      page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual('/onboarding/user-account');
+
+    // Verify the user account was created in the database.
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(testEmail);
+
+    // Enter the account details
+    const { name } = createPopulatedUserAccount();
+    await page.getByRole('textbox', { name: /name/i }).fill(name);
+    await page.getByRole('button', { name: /save/i }).click();
+
+    // Verify success toast
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page
+        .getByRole('region', {
+          name: /notifications/i,
+        })
+        .getByText(/successfully joined organization/i),
+    ).toBeVisible();
+
+    // Verify email invite cookie is cleared
+    const cookies = await page.context().cookies();
+    const emailInviteCookie = cookies.find(
+      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+    );
+    expect(emailInviteCookie).toBeUndefined();
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test("given: a valid token hash for an existing user with an active email invite cookie for an organization they're already a member of, should: redirect to the organization's dashboard and show a toast", async ({
+    page,
+  }) => {
+    // Create organization and user who is already a member
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
+
+    // Create an email invite for the same organization
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: user.id,
+      email: user.email,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Go to login confirm with token hash for the same user
+    const tokenHash = stringifyTokenHashData({
+      email: user.email,
+      id: user.supabaseUserId,
+    });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify redirect to organization dashboard
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(
+          new RegExp(`You are already a member of ${organization.name}`, 'i'),
+        ),
+    ).toBeVisible();
+
+    // Verify email invite cookie is cleared
+    const cookies = await page.context().cookies();
+    const emailInviteCookie = cookies.find(
+      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+    );
+    expect(emailInviteCookie).toBeUndefined();
 
     // Cleanup
     await teardownOrganizationAndMember({ user, organization });

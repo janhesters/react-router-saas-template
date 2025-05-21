@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
+import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
+import { createPopulatedOrganizationEmailInviteLink } from '~/features/organizations/organizations-factories.server';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
@@ -15,7 +18,12 @@ import {
   teardownOrganizationAndMember,
 } from '~/test/test-utils';
 
-import { getPath, loginByCookie, setupInviteLinkCookie } from '../../utils';
+import {
+  getPath,
+  loginByCookie,
+  setupEmailInviteCookie,
+  setupInviteLinkCookie,
+} from '../../utils';
 
 const path = '/register/confirm';
 
@@ -178,5 +186,75 @@ test.describe(`${path} API route`, () => {
 
     // Clean up.
     await teardownOrganizationAndMember({ user, organization });
+  });
+
+  test('given: a new user with an active email invite cookie, should: create their account, add them to the organization, and show success toast', async ({
+    page,
+  }) => {
+    // Create organization and email invite
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Generate email for the new user
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Go to register confirm with token hash
+    const tokenHash = stringifyTokenHashData({ email: testEmail });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify redirect to onboarding page
+    await expect(
+      page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(`/onboarding/user-account`);
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(testEmail);
+
+    // Enter the account details
+    const { name } = createPopulatedUserAccount();
+    await page.getByRole('textbox', { name: /name/i }).fill(name);
+    await page.getByRole('button', { name: /save/i }).click();
+
+    // Verify success toast
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page
+        .getByRole('region', {
+          name: /notifications/i,
+        })
+        .getByText(/successfully joined organization/i),
+    ).toBeVisible();
+
+    // Verify email invite cookie is cleared
+    const cookies = await page.context().cookies();
+    const emailInviteCookie = cookies.find(
+      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+    );
+    expect(emailInviteCookie).toBeUndefined();
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
   });
 });

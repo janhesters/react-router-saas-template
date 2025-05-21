@@ -1,9 +1,12 @@
 import { describe, expect, onTestFinished, test } from 'vitest';
 
 import { ONBOARDING_USER_ACCOUNT_INTENT } from '~/features/onboarding/user-account/onboarding-user-account-constants';
+import { createEmailInviteInfoCookie } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
+import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
 import {
   createPopulatedOrganization,
+  createPopulatedOrganizationEmailInviteLink,
   createPopulatedOrganizationInviteLink,
 } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
@@ -273,7 +276,71 @@ describe('/onboarding/user-account route action', () => {
         `/organizations/${organization.slug}/dashboard`,
       );
 
-      const maybeToast = response.headers.get('Set-Cookie')?.split(',')[2];
+      const setCookie = response.headers.get('Set-Cookie')!;
+      const toastMatch = /__toast=[^;]+/.exec(setCookie);
+      const maybeToast = toastMatch?.[0] ?? '';
+      const { toast } = await getToast(
+        new Request(createUrl(), {
+          headers: { cookie: maybeToast ?? '' },
+        }),
+      );
+      expect(toast).toMatchObject({
+        id: expect.any(String) as string,
+        title: 'Successfully joined organization',
+        description: `You are now a member of ${organization.name}`,
+        type: 'success',
+      });
+    });
+
+    test('given: a user who needs onboarding with an email invite session info in the request, should: redirect to the organizations dashboard page and show a toast', async () => {
+      // The invited user who just picked their name
+      const { userAccount } = await setup(
+        createPopulatedUserAccount({ name: '' }),
+      );
+      // The user who created the email invite
+      const { userAccount: invitingUser } = await setup();
+      // Create and save the organization
+      const organization = createPopulatedOrganization();
+      await saveOrganizationToDatabase(organization);
+      onTestFinished(async () => {
+        await deleteOrganizationFromDatabaseById(organization.id);
+      });
+      // Add both users as members (inviter is owner by default)
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [invitingUser.id, userAccount.id],
+      });
+      // Create and save the email invite
+      const emailInvite = createPopulatedOrganizationEmailInviteLink({
+        organizationId: organization.id,
+        invitedById: invitingUser.id,
+      });
+      await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
+      // Generate the Set-Cookie header for the email invite session
+      const cookie = await createEmailInviteInfoCookie({
+        tokenId: emailInvite.token,
+        expiresAt: emailInvite.expiresAt,
+      });
+      const headers = new Headers({ Cookie: cookie });
+
+      // Form data with intent and name filled
+      const formData = toFormData({ intent, name: 'Test User' });
+
+      const response = (await sendAuthenticatedRequest({
+        userAccount,
+        formData,
+        headers,
+      })) as Response;
+
+      expect(response.status).toEqual(302);
+      expect(response.headers.get('Location')).toEqual(
+        `/organizations/${organization.slug}/dashboard`,
+      );
+
+      // Extract the toast cookie
+      const setCookie = response.headers.get('Set-Cookie')!;
+      const toastMatch = /__toast=[^;]+/.exec(setCookie);
+      const maybeToast = toastMatch?.[0] ?? '';
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeToast ?? '' },

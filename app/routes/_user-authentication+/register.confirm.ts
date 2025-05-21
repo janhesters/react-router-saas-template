@@ -1,7 +1,11 @@
 import { href, redirect } from 'react-router';
 
+import { getValidEmailInviteInfo } from '~/features/organizations/accept-email-invite/accept-email-invite-helpers.server';
 import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
-import { acceptInviteLink } from '~/features/organizations/organizations-helpers.server';
+import {
+  acceptEmailInvite,
+  acceptInviteLink,
+} from '~/features/organizations/organizations-helpers.server';
 import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
@@ -14,6 +18,8 @@ export async function loader({ request }: Route.LoaderArgs) {
   const { supabase, headers } = await requireUserIsAnonymous(request);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
+  const { emailInviteInfo, headers: emailInviteHeaders } =
+    await getValidEmailInviteInfo(request);
 
   const tokenHash = getSearchParameterFromRequest('token_hash')(request);
 
@@ -39,7 +45,16 @@ export async function loader({ request }: Route.LoaderArgs) {
       supabaseUserId: user.id,
     });
 
-    if (inviteLinkInfo) {
+    if (emailInviteInfo) {
+      await acceptEmailInvite({
+        userAccountId: userAccount.id,
+        organizationId: emailInviteInfo.organizationId,
+        inviteLinkId: emailInviteInfo.emailInviteId,
+        role: emailInviteInfo.role,
+        // eslint-disable-next-line unicorn/no-null
+        deactivatedAt: null,
+      });
+    } else if (inviteLinkInfo) {
       await acceptInviteLink({
         userAccountId: userAccount.id,
         organizationId: inviteLinkInfo.organizationId,
@@ -59,6 +74,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   }
 
   return redirect(href('/onboarding'), {
-    headers: combineHeaders(headers, inviteLinkHeaders),
+    headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
   });
 }

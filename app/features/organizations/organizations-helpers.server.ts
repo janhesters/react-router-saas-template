@@ -185,7 +185,9 @@ export async function acceptEmailInvite({
   organizationId,
   inviteLinkId,
   role,
+  deactivatedAt = new Date(),
 }: {
+  deactivatedAt?: OrganizationEmailInviteLink['deactivatedAt'];
   userAccountId: UserAccount['id'];
   organizationId: Organization['id'];
   inviteLinkId: OrganizationEmailInviteLink['id'];
@@ -198,7 +200,7 @@ export async function acceptEmailInvite({
   });
   await updateEmailInviteLinkInDatabaseById({
     id: inviteLinkId,
-    emailInviteLink: { deactivatedAt: new Date() },
+    emailInviteLink: { deactivatedAt },
   });
 
   const organization =
@@ -255,10 +257,15 @@ export async function getInviteInfoForAuthRoutes(request: Request) {
   return {
     inviteLinkInfo: emailInviteInfo.emailInviteInfo
       ? {
+          inviteLinkId: emailInviteInfo.emailInviteInfo.emailInviteId,
           creatorName: emailInviteInfo.emailInviteInfo.inviterName,
           organizationName: emailInviteInfo.emailInviteInfo.organizationName,
+          organizationSlug: emailInviteInfo.emailInviteInfo.organizationSlug,
+          type: 'emailInvite',
         }
-      : inviteLinkInfo.inviteLinkInfo,
+      : inviteLinkInfo.inviteLinkInfo
+        ? { ...inviteLinkInfo.inviteLinkInfo, type: 'inviteLink' }
+        : undefined,
     headers: combineHeaders(inviteLinkInfo.headers, emailInviteInfo.headers),
   };
 }
