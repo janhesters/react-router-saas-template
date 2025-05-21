@@ -7,6 +7,7 @@ import type {
 import { OrganizationMembershipRole } from '@prisma/client';
 import { promiseHash } from 'remix-utils/promise';
 
+import { combineHeaders } from '~/utils/combine-headers.server';
 import { notFound } from '~/utils/http-responses.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
@@ -251,15 +252,13 @@ export async function getInviteInfoForAuthRoutes(request: Request) {
     emailInviteInfo: getValidEmailInviteInfo(request),
   });
 
-  if (emailInviteInfo?.emailInviteInfo) {
-    return {
-      inviteLinkInfo: {
-        creatorName: emailInviteInfo.emailInviteInfo.inviterName,
-        organizationName: emailInviteInfo.emailInviteInfo.organizationName,
-      },
-      headers: emailInviteInfo.headers,
-    };
-  }
-
-  return inviteLinkInfo;
+  return {
+    inviteLinkInfo: emailInviteInfo.emailInviteInfo
+      ? {
+          creatorName: emailInviteInfo.emailInviteInfo.inviterName,
+          organizationName: emailInviteInfo.emailInviteInfo.organizationName,
+        }
+      : inviteLinkInfo.inviteLinkInfo,
+    headers: combineHeaders(inviteLinkInfo.headers, emailInviteInfo.headers),
+  };
 }

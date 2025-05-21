@@ -7,7 +7,9 @@ import { NotFound } from './not-found';
 describe('NotFound Component', () => {
   test('given: component renders, should: display all required elements', () => {
     const path = '/non-existent';
-    const RouterStub = createRoutesStub([{ path, Component: NotFound }]);
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <NotFound /> },
+    ]);
 
     render(<RouterStub initialEntries={[path]} />);
 

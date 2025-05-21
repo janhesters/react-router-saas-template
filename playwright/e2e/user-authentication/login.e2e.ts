@@ -274,7 +274,7 @@ test.describe('login page', () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.id, expiresAt: invite.expiresAt },
+      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
     });
 
     await page.goto(path);
