@@ -472,7 +472,6 @@ export function BillingPage({
                     </div>
 
                     <Button
-                      // TODO: test this edge case in E2E tests, too
                       disabled={isOnFreeTrial}
                       name="intent"
                       size="sm"

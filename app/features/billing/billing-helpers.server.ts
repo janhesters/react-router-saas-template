@@ -40,7 +40,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
       cancelOrModifySubscriptionModalProps: {
         canCancelSubscription: false,
         currentTier: 'high',
-        currentTierInterval: 'annual',
+        currentTierInterval: 'monthly',
       },
       currentInterval: 'monthly',
       currentMonthlyRatePerUser: 85,
@@ -67,7 +67,6 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   const { price } = items[0];
 
   // 3. Parse max seats from metadata.max_seats (string or number)
-  // TODO: get the real max seats
   const rawMaxSeats = price.product.maxSeats;
   const maxSeats =
     typeof rawMaxSeats === 'string'
@@ -77,11 +76,8 @@ export function mapStripeSubscriptionDataToBillingPageProps({
         : 1;
   const currentSeats = organization._count.memberships;
 
-  // 4. Compute the per-user monthly rate (divide annual by 12 if needed)
-  let cents = price.unitAmount;
-  if (price.lookupKey.endsWith('_annual')) {
-    cents = Math.round(cents / 12);
-  }
+  // 4. Compute the per-user rate in dollars
+  const cents = price.unitAmount;
   const currentMonthlyRatePerUser = cents / 100;
 
   // 5. Humanize the tier name (capitalize lookupKey prefix)

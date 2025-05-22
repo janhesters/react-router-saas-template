@@ -26,7 +26,6 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   });
 
   if (role === OrganizationMembershipRole.member) {
-    // TODO: write E2E tests for this
     throw notFound();
   }
 

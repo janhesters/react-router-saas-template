@@ -519,6 +519,3 @@ test.describe(`${path} API route`, () => {
     await teardownOrganizationAndMember({ user, organization });
   });
 });
-
-// TODO: make sure that users join with the correct role
-// TODO: make sure you can only accept the invite, if you're the correct user

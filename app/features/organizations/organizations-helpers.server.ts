@@ -161,7 +161,6 @@ export async function acceptInviteLink({
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
 
-    // TODO: subscription must also NOT be cancelled
     if (subscription && subscription.status !== 'canceled') {
       await adjustSeats({
         subscriptionId: subscription.stripeId,
@@ -211,7 +210,6 @@ export async function acceptEmailInvite({
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
 
-    // TODO: subscription must also NOT be cancelled
     if (subscription && subscription.status !== 'canceled') {
       await adjustSeats({
         subscriptionId: subscription.stripeId,

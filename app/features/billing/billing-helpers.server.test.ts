@@ -1,3 +1,4 @@
+import { StripePriceInterval } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
 
 import {
@@ -35,6 +36,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
               lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
               unitAmount: 2000,
               product: { maxSeats: 10 },
+              interval: StripePriceInterval.month,
             }),
             ...createPopulatedStripeSubscriptionItem({
               currentPeriodStart: new Date('2025-05-15T00:00:00.000Z'),
@@ -89,6 +91,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
               lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
               unitAmount: 5000,
               product: { maxSeats: 25 },
+              interval: StripePriceInterval.month,
             }),
             ...createPopulatedStripeSubscriptionItem({
               currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
@@ -143,6 +146,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
               lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
               unitAmount: 5000,
               product: { maxSeats: 25 },
+              interval: StripePriceInterval.month,
             }),
             ...createPopulatedStripeSubscriptionItem({
               currentPeriodStart: new Date('2025-06-01T00:00:00.000Z'),
@@ -205,7 +209,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
       cancelOrModifySubscriptionModalProps: {
         canCancelSubscription: false,
         currentTier: 'high',
-        currentTierInterval: 'annual',
+        currentTierInterval: 'monthly',
       },
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
@@ -245,6 +249,7 @@ describe('mapStripeSubscriptionDataToBillingPageProps()', () => {
                 lookupKey: priceLookupKeysByTierAndInterval.high.monthly,
                 unitAmount: 6000,
                 product: { maxSeats: 25 },
+                interval: StripePriceInterval.month,
               }),
               ...createPopulatedStripeSubscriptionItem({
                 currentPeriodStart: new Date('2025-05-01T00:00:00.000Z'),
