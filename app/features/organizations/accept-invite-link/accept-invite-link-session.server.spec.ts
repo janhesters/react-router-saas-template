@@ -30,7 +30,9 @@ const createTestInviteLinkInfo = (
     : addSeconds(new Date(), expiresInSeconds);
 
   return {
-    tokenId: overrides.tokenId ?? createPopulatedOrganizationInviteLink().id,
+    inviteLinkToken:
+      overrides.inviteLinkToken ??
+      createPopulatedOrganizationInviteLink().token,
     expiresAt: expiresAt,
   };
 };
@@ -71,7 +73,7 @@ describe('Invite Link Info Session', () => {
       });
       const actual = await getInviteLinkInfoFromSession(request);
       const expected: InviteLinkInfoSessionData = {
-        tokenId: inviteInfo.tokenId,
+        inviteLinkToken: inviteInfo.inviteLinkToken,
       };
 
       expect(actual).toEqual(expected);
@@ -97,7 +99,7 @@ describe('Invite Link Info Session', () => {
       expect(cookieHeader).toMatch(/Max-Age=0|Expires=.*1970/);
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Attempted to create invite link session cookie for already expired link with id: ${expiredInviteInfo.tokenId}`,
+          `Attempted to create invite link session cookie for already expired link with token: ${expiredInviteInfo.inviteLinkToken}`,
         ),
       );
 

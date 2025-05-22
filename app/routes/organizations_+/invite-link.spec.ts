@@ -149,7 +149,9 @@ describe('/organizations/invite-link route action', () => {
           headers: { cookie: maybeHeaders ?? '' },
         }),
       );
-      expect(inviteLinkInfo).toMatchObject({ tokenId: inviteLink.id });
+      expect(inviteLinkInfo).toMatchObject({
+        inviteLinkToken: inviteLink.token,
+      });
     });
   });
 

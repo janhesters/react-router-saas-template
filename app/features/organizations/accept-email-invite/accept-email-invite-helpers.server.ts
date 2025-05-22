@@ -82,7 +82,7 @@ export async function getValidEmailInviteInfo(request: Request) {
 
   if (tokenInfo) {
     const emailInvite = await retrieveActiveEmailInviteLinkFromDatabaseByToken(
-      tokenInfo.tokenId,
+      tokenInfo.emailInviteToken,
     );
 
     if (emailInvite && emailInvite.organization) {

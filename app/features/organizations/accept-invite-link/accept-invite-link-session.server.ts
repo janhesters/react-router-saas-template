@@ -8,10 +8,10 @@ import { INVITE_LINK_INFO_SESSION_NAME } from './accept-invite-link-constants';
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 
 // Define keys for the session data
-const INVITE_LINK_TOKEN_ID_KEY = 'tokenId';
+const INVITE_LINK_TOKEN_KEY = 'inviteLinkToken'; // This is the token NOT the id
 
 const inviteLinkSchema = z.object({
-  [INVITE_LINK_TOKEN_ID_KEY]: z.string(),
+  [INVITE_LINK_TOKEN_KEY]: z.string(),
 });
 
 export type InviteLinkInfoSessionData = z.infer<typeof inviteLinkSchema>;
@@ -53,7 +53,7 @@ export async function createInviteLinkInfoCookie(
     // This shouldn't happen if using retrieveActiveInviteLinkFromDatabaseByToken,
     // but it's good defensive programming.
     console.warn(
-      `Attempted to create invite link session cookie for already expired link with id: ${inviteLinkInfo.tokenId}`,
+      `Attempted to create invite link session cookie for already expired link with token: ${inviteLinkInfo.inviteLinkToken}`,
     );
     // Return a header that immediately expires the cookie if it existed
     const cookieHeader = await destroySession(session);
@@ -62,7 +62,7 @@ export async function createInviteLinkInfoCookie(
 
   // Calculate remaining time in seconds
   const maxAgeInSeconds = Math.floor((expiresAtTime - now) / 1000);
-  session.set(INVITE_LINK_TOKEN_ID_KEY, inviteLinkInfo.tokenId);
+  session.set(INVITE_LINK_TOKEN_KEY, inviteLinkInfo.inviteLinkToken);
   return await commitSession(session, {
     maxAge: maxAgeInSeconds,
   });
@@ -97,10 +97,10 @@ export async function getInviteLinkInfoFromSession(
   request: Request,
 ): Promise<InviteLinkInfoSessionData | undefined> {
   const session = await getSession(request.headers.get('Cookie'));
-  const tokenId = session.get(INVITE_LINK_TOKEN_ID_KEY);
+  const inviteLinkToken = session.get(INVITE_LINK_TOKEN_KEY);
 
   // Attempt to parse the retrieved data against the schema
-  const result = inviteLinkSchema.safeParse({ tokenId });
+  const result = inviteLinkSchema.safeParse({ inviteLinkToken });
 
   // Return the parsed data if successful, otherwise undefined
   return result.success ? result.data : undefined;

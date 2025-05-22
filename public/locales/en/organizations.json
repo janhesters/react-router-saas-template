@@ -7,8 +7,8 @@
     "already-member-toast-title": "Already a member",
     "invite-email-invalid-toast-description": "The email invite is invalid or has expired",
     "invite-email-invalid-toast-title": "Failed to accept invite",
-    "invite-email-valid-toast-description": "Please register or log in to accept the invitation",
-    "invite-email-valid-toast-title": "Invitation email is valid",
+    "invite-email-valid-toast-description": "Please register or log in to accept the invitation.",
+    "invite-email-valid-toast-title": "Success",
     "invite-you-to-join": "{{inviterName}} invites you to join {{organizationName}}",
     "join-success-toast-description": "You are now a member of {{organizationName}}",
     "join-success-toast-title": "Successfully joined organization",
@@ -24,7 +24,7 @@
     "invite-link-invalid-toast-description": "The invite link is invalid or has expired",
     "invite-link-invalid-toast-title": "Failed to accept invite",
     "invite-link-valid-toast-description": "Please register or log in to accept the invitation",
-    "invite-link-valid-toast-title": "Invitation link is valid",
+    "invite-link-valid-toast-title": "Success",
     "invite-you-to-join": "{{inviterName}} invites you to join {{organizationName}}",
     "join-success-toast-description": "You are now a member of {{organizationName}}",
     "join-success-toast-title": "Successfully joined organization",
@@ -167,7 +167,7 @@
         "invite-email": {
           "button-text": "Join {{organizationName}}",
           "call-to-action": "Join now to collaborate with your colleagues!",
-          "description": "{{inviterName}} has invited you to join {{organizationName}} in {{appName}}. This invite expires in 7 days.",
+          "description": "{{inviterName}} has invited you to join {{organizationName}} in {{appName}}. This invite expires in 48 hours.",
           "subject": "{{inviteName}} invited you to {{appName}}",
           "title": "You've Been Invited to {{appName}}!"
         },

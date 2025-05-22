@@ -49,7 +49,7 @@ export async function retrieveActiveEmailInviteLinkFromDatabaseByToken(
   token: OrganizationEmailInviteLink['token'],
 ) {
   const now = new Date();
-  return prisma.organizationEmailInviteLink.findFirst({
+  return prisma.organizationEmailInviteLink.findUnique({
     where: { token, expiresAt: { gt: now }, deactivatedAt: null },
     include: {
       organization: { select: { id: true, name: true, slug: true } },

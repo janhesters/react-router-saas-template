@@ -252,7 +252,9 @@ const createColumns = ({
       currentUsersRole === 'member' ||
       // 3. If the current user is an admin and the row is an owner (admins
       // can't change owners' roles)
-      (currentUsersRole === 'admin' && row.original.role === 'owner') ? (
+      (currentUsersRole === 'admin' && row.original.role === 'owner') ||
+      // 4. If the member is pending email invite (can't change roles of pending invites)
+      row.original.status === 'emailInvitePending' ? (
         <div className="text-muted-foreground">
           {row.original.deactivatedAt
             ? t('role-switcher.deactivated')

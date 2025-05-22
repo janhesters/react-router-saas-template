@@ -29,14 +29,6 @@ export const requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug =
     throwIfEntityIsMissing,
   );
 
-// export type OrganizationWithMembers = Organization & {
-//   memberships: (OrganizationMembership & {
-//     member: UserAccount;
-//   })[];
-//   organizationInviteLinks: OrganizationInviteLink[];
-//   organizationEmailInviteLink: OrganizationEmailInviteLink[];
-//   stripeSubscriptions: StripeSubscriptionWithItemsAndPriceAndProduct[];
-// };
 export type OrganizationWithMembers = NonNullable<
   Awaited<
     ReturnType<
@@ -88,6 +80,11 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
   const maxSeats = currentSubscription?.items[0]?.price.product.maxSeats ?? 25;
   const organizationIsFull = organization.memberships.length >= maxSeats;
 
+  // Exclude invites for users who are already members
+  const membershipEmails = new Set(
+    organization.memberships.map(m => m.member.email),
+  );
+
   return {
     emailInviteCard: {
       currentUserIsOwner: currentUsersRole === OrganizationMembershipRole.owner,
@@ -107,7 +104,7 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
     teamMemberTable: {
       currentUsersRole,
       members: [
-        // Add email invites first, sorted by most recent
+        // Email invites first, sorted, distinct, and excluding existing members
         ...organization.organizationEmailInviteLink
           .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
           // Filter to only keep the first (most recent) invite for each email
@@ -116,6 +113,7 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
               array.findIndex(index_ => index_.email === invite.email) ===
               index,
           )
+          .filter(invite => !membershipEmails.has(invite.email))
           .map(
             (invite): Member => ({
               avatar: '',
@@ -123,12 +121,13 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
               id: invite.id,
               isCurrentUser: false,
               name: '',
-              role: OrganizationMembershipRole.member,
+              role: invite.role,
               deactivatedAt: undefined,
               status: 'emailInvitePending',
             }),
           ),
-        // Then add existing members
+
+        // Then existing members
         ...organization.memberships.map((membership): Member => {
           const isCurrentUser = membership.member.id === currentUsersId;
           return {

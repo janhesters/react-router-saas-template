@@ -129,7 +129,7 @@ export async function acceptEmailInviteAction({ request }: Route.ActionArgs) {
         }
 
         const emailInviteInfo = await createEmailInviteInfoHeaders({
-          tokenId: link.id,
+          emailInviteToken: link.token,
           expiresAt: link.expiresAt,
         });
 

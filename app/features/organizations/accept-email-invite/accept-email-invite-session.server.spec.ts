@@ -30,8 +30,9 @@ const createTestEmailInviteInfo = (
     : addSeconds(new Date(), expiresInSeconds);
 
   return {
-    tokenId:
-      overrides.tokenId ?? createPopulatedOrganizationEmailInviteLink().id,
+    emailInviteToken:
+      overrides.emailInviteToken ??
+      createPopulatedOrganizationEmailInviteLink().token,
     expiresAt: expiresAt,
   };
 };
@@ -72,7 +73,7 @@ describe('Email Invite Info Session', () => {
       });
       const actual = await getEmailInviteInfoFromSession(request);
       const expected: EmailInviteInfoSessionData = {
-        tokenId: inviteInfo.tokenId,
+        emailInviteToken: inviteInfo.emailInviteToken,
       };
 
       expect(actual).toEqual(expected);
@@ -98,7 +99,7 @@ describe('Email Invite Info Session', () => {
       expect(cookieHeader).toMatch(/Max-Age=0|Expires=.*1970/);
       expect(warnSpy).toHaveBeenCalledWith(
         expect.stringContaining(
-          `Attempted to create email invite session cookie for already expired invite with id: ${expiredInviteInfo.tokenId}`,
+          `Attempted to create email invite session cookie for already expired invite with token: ${expiredInviteInfo.emailInviteToken}`,
         ),
       );
 

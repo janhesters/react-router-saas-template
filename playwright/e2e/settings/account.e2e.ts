@@ -1,6 +1,3 @@
-// TODO: accept invite via email
-//  - delete all outstanding links for the same email from the same org
-// TODO: billing
 // TODO: fix layout for organization settings with avatar
 // TODO: upgrade packages
 
@@ -345,26 +342,10 @@ test.describe('account settings', () => {
   });
 });
 
-// States:
-// - trialing
-// - paused (= no payment info added after trial ran out)
-// - incomplete (= payment info was added after trial, but the initial payment failed)
-// - incomplete_expired (= payment info was added after trial, but the first invoice was not paid within 23 hours - terminal => user needs to subscribe again => check if creating a checkout session lets them enter a free trial or not)
-//  - important: if the user resubscribes, it needs to PREVENT them from using a trial.
-// - past_due (= invoice is not paid by the due date)
-// - canceled (= user canceled the subscription, or payment failed and subscription was auto cancelled)
-//   - subscription is cancelled, but still ongoing.
-//   - subscriptino is cancelled, and after the current period.
-
-// All Stripe helper functions have TSDoc.
-// Allow users to change their billing address, and name. (in stripe)
-
 // TODO: contact sales enterprise flow
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
 // TODO: enforce limits
-// TODO: Prevent the org from sending out email invite links if they have more members than the plan allows.
-// TODO: Show a warning that the organization is full when the organization reached the limit.
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
 // TODO: handle downgrade goes through when the user has more seats than the new plan allows.
 // TODO: add tests that test if the user is on trial if it's required vs. on a subscription if required (conflict)

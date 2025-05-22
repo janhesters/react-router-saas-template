@@ -258,7 +258,7 @@ describe('/onboarding/user-account route action', () => {
       });
       await saveOrganizationInviteLinkToDatabase(inviteLink);
       const cookie = await createInviteLinkInfoCookie({
-        tokenId: inviteLink.id,
+        inviteLinkToken: inviteLink.token,
         expiresAt: inviteLink.expiresAt,
       });
       const headers = new Headers({ Cookie: cookie });
@@ -318,7 +318,7 @@ describe('/onboarding/user-account route action', () => {
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
       // Generate the Set-Cookie header for the email invite session
       const cookie = await createEmailInviteInfoCookie({
-        tokenId: emailInvite.token,
+        emailInviteToken: emailInvite.token,
         expiresAt: emailInvite.expiresAt,
       });
       const headers = new Headers({ Cookie: cookie });

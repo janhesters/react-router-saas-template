@@ -8,10 +8,10 @@ import { EMAIL_INVITE_INFO_SESSION_NAME } from './accept-email-invite-constants'
 invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 
 // Define keys for the session data
-const EMAIL_INVITE_TOKEN_ID_KEY = 'tokenId';
+const EMAIL_INVITE_TOKEN_KEY = 'emailInviteToken'; // This is the token NOT the id
 
 const emailInviteSchema = z.object({
-  [EMAIL_INVITE_TOKEN_ID_KEY]: z.string(),
+  [EMAIL_INVITE_TOKEN_KEY]: z.string(),
 });
 
 export type EmailInviteInfoSessionData = z.infer<typeof emailInviteSchema>;
@@ -53,7 +53,7 @@ export async function createEmailInviteInfoCookie(
     // This shouldn't happen if using retrieveActiveEmailInviteFromDatabaseByToken,
     // but it's good defensive programming.
     console.warn(
-      `Attempted to create email invite session cookie for already expired invite with id: ${emailInviteInfo.tokenId}`,
+      `Attempted to create email invite session cookie for already expired invite with token: ${emailInviteInfo.emailInviteToken}`,
     );
     // Return a header that immediately expires the cookie if it existed
     const cookieHeader = await destroySession(session);
@@ -62,7 +62,7 @@ export async function createEmailInviteInfoCookie(
 
   // Calculate remaining time in seconds
   const maxAgeInSeconds = Math.floor((expiresAtTime - now) / 1000);
-  session.set(EMAIL_INVITE_TOKEN_ID_KEY, emailInviteInfo.tokenId);
+  session.set(EMAIL_INVITE_TOKEN_KEY, emailInviteInfo.emailInviteToken);
   return await commitSession(session, {
     maxAge: maxAgeInSeconds,
   });
@@ -97,10 +97,10 @@ export async function getEmailInviteInfoFromSession(
   request: Request,
 ): Promise<EmailInviteInfoSessionData | undefined> {
   const session = await getSession(request.headers.get('Cookie'));
-  const tokenId = session.get(EMAIL_INVITE_TOKEN_ID_KEY);
+  const emailInviteToken = session.get(EMAIL_INVITE_TOKEN_KEY);
 
   // Attempt to parse the retrieved data against the schema
-  const result = emailInviteSchema.safeParse({ tokenId });
+  const result = emailInviteSchema.safeParse({ emailInviteToken });
 
   // Return the parsed data if successful, otherwise undefined
   return result.success ? result.data : undefined;

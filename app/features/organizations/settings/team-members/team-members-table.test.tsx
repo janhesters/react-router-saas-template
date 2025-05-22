@@ -18,7 +18,6 @@ const createMember: Factory<Member> = ({
   deactivatedAt = faker.datatype.boolean() ? faker.date.recent() : null,
   status = faker.helpers.arrayElement([
     'joinedViaLink',
-    'emailInvitePending',
     'joinedViaEmailInvite',
   ]),
   avatar = createPopulatedUserAccount().imageUrl,
@@ -277,5 +276,37 @@ describe('TeamMembersTable Component', () => {
     expect(
       screen.getByRole('combobox', { name: /rows per page/i }),
     ).toBeInTheDocument();
+  });
+
+  test('given: a pending invited member, should: display role as text only without role switcher', () => {
+    const props = createProps({
+      currentUsersRole: OrganizationMembershipRole.owner,
+      members: [
+        createMember({
+          role: 'member',
+          status: 'emailInvitePending',
+          deactivatedAt: null,
+        }),
+      ],
+    });
+    const { slug } = createPopulatedOrganization();
+    const path = `/organizations/${slug}/settings/team-members`;
+    const RouterStub = createRoutesStub([
+      { path, Component: () => <TeamMembersTable {...props} /> },
+    ]);
+
+    render(<RouterStub initialEntries={[path]} />);
+
+    // Verify no role switcher button is present for pending invite
+    expect(
+      screen.queryByRole('button', { name: /member/i }),
+    ).not.toBeInTheDocument();
+
+    // Verify role is displayed as text
+    expect(screen.getByText(/member/i)).toBeInTheDocument();
+
+    // Verify status shows pending with loading indicator
+    const pendingBadge = screen.getByText(/pending/i);
+    expect(pendingBadge).toBeInTheDocument();
   });
 });

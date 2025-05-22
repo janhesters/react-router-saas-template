@@ -194,7 +194,7 @@ test.describe('register page', () => {
     // Set the invite link cookie
     await setupInviteLinkCookie({
       page,
-      link: { tokenId: link.id, expiresAt: link.expiresAt },
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     await page.goto(path);
@@ -228,7 +228,7 @@ test.describe('register page', () => {
     // Set the invite link cookie
     await setupInviteLinkCookie({
       page,
-      link: { tokenId: link.id, expiresAt: link.expiresAt },
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     await page.goto(path);
@@ -279,7 +279,7 @@ test.describe('register page', () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
     });
 
     await page.goto(path);
@@ -313,7 +313,7 @@ test.describe('register page', () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.id, expiresAt: invite.expiresAt },
+      invite: { emailInviteToken: invite.id, expiresAt: invite.expiresAt },
     });
 
     await page.goto(path);

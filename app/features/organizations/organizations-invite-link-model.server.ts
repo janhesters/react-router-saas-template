@@ -39,11 +39,11 @@ export async function retrieveOrganizationInviteLinkFromDatabaseById(
  * @returns The organization invite link with a given id or null if it
  * wasn't found or its deactivated or expired.
  */
-export async function retrieveActiveOrganizationInviteLinkFromDatabaseById(
-  id: OrganizationInviteLink['id'],
+export async function retrieveActiveOrganizationInviteLinkFromDatabaseByToken(
+  token: OrganizationInviteLink['token'],
 ) {
   return prisma.organizationInviteLink.findUnique({
-    where: { id, deactivatedAt: null, expiresAt: { gt: new Date() } },
+    where: { token, deactivatedAt: null, expiresAt: { gt: new Date() } },
     include: {
       organization: { select: { name: true, id: true, slug: true } },
       creator: { select: { name: true, id: true } },

@@ -73,7 +73,10 @@ export async function loader({ request }: Route.LoaderArgs) {
     }
   }
 
-  return redirect(href('/onboarding'), {
-    headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
-  });
+  return redirect(
+    emailInviteInfo ? href('/onboarding/user-account') : href('/onboarding'),
+    {
+      headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
+    },
+  );
 }

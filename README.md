@@ -399,3 +399,9 @@ You don’t need to replay webhooks or manage `stripe-events.txt` in CI—this s
 ### 3. Configure the Customer Portal
 
 Add the prices you created to your customer portal.
+
+### Intentional Design Decisions
+
+- Downgrading a subscription does **not** deactivate existing members. The reasoning is simple: more active users typically means more revenue. Automatically removing members would work against that. If your plan has other limits, you should handle those restrictions yourself - but since subscriptions are billed per user per month, it’s in your interest to avoid limiting user count unnecessarily.
+- Users can still be added even if the subscription is cancelled. This allows you to generate more revenue if the customer decides to subscribe again - since pricing is per user, more added users means a higher monthly total once they reactivate.
+

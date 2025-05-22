@@ -822,6 +822,14 @@ test.describe('organization settings members page', () => {
           .getByText(/email invitation sent/i),
       ).toBeVisible();
 
+      // Check that the pending invite is displayed in the members table
+      const pendingInviteRow = page
+        .getByRole('table')
+        .getByRole('row', { name: inviteEmail });
+      await expect(pendingInviteRow).toBeVisible();
+      await expect(pendingInviteRow.getByText(/pending/i)).toBeVisible();
+      await expect(pendingInviteRow.getByText(/admin/i)).toBeVisible();
+
       // Check database for the invite
       const emailInvites =
         await retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
@@ -885,6 +893,14 @@ test.describe('organization settings members page', () => {
           })
           .getByText(/email invitation sent/i),
       ).toBeVisible();
+
+      // Check that the pending invite is displayed in the members table
+      const pendingInviteRow = page
+        .getByRole('table')
+        .getByRole('row', { name: inviteEmail });
+      await expect(pendingInviteRow).toBeVisible();
+      await expect(pendingInviteRow.getByText(/pending/i)).toBeVisible();
+      await expect(pendingInviteRow.getByText(/owner/i)).toBeVisible();
 
       // Check database for the invite
       const emailInvites =

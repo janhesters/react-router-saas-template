@@ -106,7 +106,7 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
         }
 
         const inviteLinkInfo = await createInviteLinkInfoHeaders({
-          tokenId: link.id,
+          inviteLinkToken: link.token,
           expiresAt: link.expiresAt,
         });
         return redirectWithToast(

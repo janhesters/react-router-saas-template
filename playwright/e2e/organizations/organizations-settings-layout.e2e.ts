@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
+import { faker } from '@faker-js/faker';
 import { expect, test } from '@playwright/test';
+import { OrganizationMembershipRole } from '@prisma/client';
 
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
@@ -69,6 +71,7 @@ test.describe('organization settings layout', () => {
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
+      role: OrganizationMembershipRole.member,
     });
 
     await page.goto(`/organizations/${organization.slug}/settings/general`);
@@ -87,6 +90,65 @@ test.describe('organization settings layout', () => {
       `/organizations/${organization.slug}/settings/general`,
     );
     await expect(generalLink).toHaveAttribute('data-active', 'true');
+
+    // Verify members link exists
+    const membersLink = settingsNav.getByRole('link', { name: /members/i });
+    await expect(membersLink).toBeVisible();
+    await expect(membersLink).toHaveAttribute(
+      'href',
+      `/organizations/${organization.slug}/settings/members`,
+    );
+
+    // Verify billing link is hidden
+    const billingLink = settingsNav.getByRole('link', { name: /billing/i });
+    await expect(billingLink).toBeHidden();
+
+    await teardownOrganizationAndMember({ organization, user });
+  });
+
+  test('given: a logged in user who is onboarded and an admin or owner of the organization, should: show the correct settings navigation', async ({
+    page,
+  }) => {
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
+      page,
+      role: faker.helpers.arrayElement([
+        OrganizationMembershipRole.admin,
+        OrganizationMembershipRole.owner,
+      ]),
+    });
+
+    await page.goto(`/organizations/${organization.slug}/settings/general`);
+
+    // Verify settings navigation
+    const settingsNav = page.getByRole('navigation', {
+      name: /settings navigation/i,
+    });
+    await expect(settingsNav).toBeVisible();
+
+    // Verify general settings link is active
+    const generalLink = settingsNav.getByRole('link', { name: /general/i });
+    await expect(generalLink).toBeVisible();
+    await expect(generalLink).toHaveAttribute(
+      'href',
+      `/organizations/${organization.slug}/settings/general`,
+    );
+    await expect(generalLink).toHaveAttribute('data-active', 'true');
+
+    // Verify members link exists
+    const membersLink = settingsNav.getByRole('link', { name: /members/i });
+    await expect(membersLink).toBeVisible();
+    await expect(membersLink).toHaveAttribute(
+      'href',
+      `/organizations/${organization.slug}/settings/members`,
+    );
+
+    // Verify billing link is visible
+    const billingLink = settingsNav.getByRole('link', { name: /billing/i });
+    await expect(billingLink).toBeVisible();
+    await expect(billingLink).toHaveAttribute(
+      'href',
+      `/organizations/${organization.slug}/settings/billing`,
+    );
 
     await teardownOrganizationAndMember({ organization, user });
   });

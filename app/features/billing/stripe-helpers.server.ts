@@ -4,6 +4,21 @@ import type Stripe from 'stripe';
 
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
 
+/**
+ * Creates a Stripe Checkout Session for a subscription purchase or update.
+ *
+ * @param baseUrl - Your app's public URL (e.g., https://app.example.com).
+ * @param customerEmail - The billing email for the customer/organization.
+ * @param customerId - The Stripe customer ID, if already created; omit to
+ * create a new customer.
+ * @param organizationId - The Prisma ID of the organization.
+ * @param organizationSlug - The slug of the organization for constructing
+ * return URLs.
+ * @param priceId - The Stripe Price ID to subscribe or update to.
+ * @param purchasedById - The UserAccount ID of who initiated the purchase.
+ * @param seatsUsed - Number of seats (quantity) to include in the subscription.
+ * @returns A Promise that resolves to the Stripe Checkout Session.
+ */
 export async function createStripeCheckoutSession({
   baseUrl,
   customerEmail,
@@ -66,6 +81,14 @@ export async function createStripeCheckoutSession({
   return session;
 }
 
+/**
+ * Creates a Stripe Customer Portal session for billing management.
+ *
+ * @param baseUrl - Your app's public URL.
+ * @param customerId - The Stripe customer ID.
+ * @param organizationSlug - The slug of the organization for return URL.
+ * @returns A Promise that resolves to the Stripe Billing Portal Session.
+ */
 export async function createStripeCustomerPortalSession({
   baseUrl,
   customerId,
@@ -86,6 +109,20 @@ export async function createStripeCustomerPortalSession({
   return session;
 }
 
+/**
+ * Creates a Stripe Customer Portal session deep-linking to switch subscription
+ * plans.
+ *
+ * @param baseUrl - Your app's public URL.
+ * @param customerId - The Stripe customer ID.
+ * @param organizationSlug - The organization slug for return URL.
+ * @param subscriptionId - ID of the subscription to update.
+ * @param subscriptionItemId - ID of the subscription item to change.
+ * @param newPriceId - New Stripe Price ID for the subscription item.
+ * @param quantity - The quantity for the updated subscription item.
+ *   Must match existing quantity to preserve it.
+ * @returns A Promise that resolves to the Stripe Billing Portal Session.
+ */
 export async function createStripeSwitchPlanSession({
   baseUrl,
   customerId,
@@ -101,8 +138,7 @@ export async function createStripeSwitchPlanSession({
   subscriptionId: string;
   subscriptionItemId: string;
   newPriceId: string;
-  /**
-   * This MUST be the existing quantity of the subscription item, if you
+  /** This MUST be the existing quantity of the subscription item, if you
    * want to preserve the quantity. Otherwise, Stripe will default to 1.
    */
   quantity: number;
@@ -126,6 +162,15 @@ export async function createStripeSwitchPlanSession({
   return session;
 }
 
+/**
+ * Updates a Stripe customer's email, name, and/or metadata.
+ *
+ * @param customerId - The Stripe customer ID to update.
+ * @param customerName - Optional new name for the customer.
+ * @param customerEmail - Optional new email for the customer.
+ * @param organizationId - Optional organization ID to store in metadata.
+ * @returns A Promise that resolves to the updated Stripe Customer object.
+ */
 export async function updateStripeCustomer({
   customerId,
   customerName,
@@ -146,6 +191,16 @@ export async function updateStripeCustomer({
   return customer;
 }
 
+/**
+ * Creates a Stripe Customer Portal session deep-linking to cancel a
+ * subscription.
+ *
+ * @param baseUrl - Your app's public URL.
+ * @param customerId - The Stripe customer ID.
+ * @param organizationSlug - The slug of the organization for return URL.
+ * @param subscriptionId - The Stripe Subscription ID to cancel.
+ * @returns A Promise that resolves to the Stripe Billing Portal Session.
+ */
 export async function createStripeCancelSubscriptionSession({
   baseUrl,
   customerId,
@@ -181,6 +236,12 @@ export async function createStripeCancelSubscriptionSession({
   return session;
 }
 
+/**
+ * Resumes a Stripe subscription if it's scheduled to cancel at period end.
+ *
+ * @param subscriptionId - The Stripe subscription ID to resume or retrieve.
+ * @returns A Promise that resolves to the resumed or current Subscription.
+ */
 export async function resumeStripeSubscription(subscriptionId: string) {
   // 1) Retrieve current subscription
   const subscription = await stripeAdmin.subscriptions.retrieve(subscriptionId);
@@ -197,12 +258,30 @@ export async function resumeStripeSubscription(subscriptionId: string) {
   return subscription;
 }
 
+/**
+ * Releases a Stripe Subscription Schedule, keeping the current subscription
+ * active.
+ *
+ * @param scheduleId - The ID of the SubscriptionSchedule to release.
+ * @returns A Promise that resolves to the released SubscriptionSchedule.
+ */
 export async function keepCurrentSubscription(
   scheduleId: Stripe.SubscriptionSchedule['id'],
 ) {
   return await stripeAdmin.subscriptionSchedules.release(scheduleId);
 }
 
+/**
+ * Adjusts the seat quantity of a Stripe subscription and updates future phases.
+ *
+ * @param subscriptionId - The Stripe subscription ID to update.
+ * @param subscriptionItemId - The subscription item ID whose quantity should be
+ * updated.
+ * @param stripeScheduleId - Optional SubscriptionSchedule ID for future phases.
+ * @param newQuantity - The new seat quantity to set.
+ * @returns A Promise that resolves to an object with the updated subscription
+ * and schedule.
+ */
 export async function adjustSeats({
   subscriptionId,
   subscriptionItemId,
@@ -245,6 +324,12 @@ export async function adjustSeats({
   return { updatedSub };
 }
 
+/**
+ * Cancels all active subscriptions for a Stripe customer.
+ *
+ * @param customerId - The Stripe customer ID whose subscriptions to cancel.
+ * @returns A Promise that resolves to an object containing cancelled subscriptions.
+ */
 export async function deactivateStripeCustomer(customerId: string) {
   const subscriptions = await stripeAdmin.subscriptions.list({
     customer: customerId,

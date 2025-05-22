@@ -137,7 +137,7 @@ test.describe(`${path} API route`, () => {
     // Set the invite link cookie
     await setupInviteLinkCookie({
       page,
-      link: { tokenId: link.id, expiresAt: link.expiresAt },
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Go to login confirm with token hash
@@ -191,7 +191,7 @@ test.describe(`${path} API route`, () => {
     // Set the invite link cookie
     await setupInviteLinkCookie({
       page,
-      link: { tokenId: link.id, expiresAt: link.expiresAt },
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Generate a unique email for testing.
@@ -264,7 +264,7 @@ test.describe(`${path} API route`, () => {
     // Set the invite link cookie
     await setupInviteLinkCookie({
       page,
-      link: { tokenId: link.id, expiresAt: link.expiresAt },
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Go to login confirm with token hash for the same user
@@ -321,7 +321,7 @@ test.describe(`${path} API route`, () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
     });
 
     // Go to login confirm with token hash
@@ -375,7 +375,7 @@ test.describe(`${path} API route`, () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
     });
 
     // Generate a unique email for testing.
@@ -449,7 +449,7 @@ test.describe(`${path} API route`, () => {
     // Set the email invite cookie
     await setupEmailInviteCookie({
       page,
-      invite: { tokenId: invite.token, expiresAt: invite.expiresAt },
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
     });
 
     // Go to login confirm with token hash for the same user

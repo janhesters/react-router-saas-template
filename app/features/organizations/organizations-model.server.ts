@@ -138,7 +138,7 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
         take: 1,
       },
       organizationEmailInviteLink: {
-        where: { expiresAt: { gt: now } },
+        where: { expiresAt: { gt: now }, deactivatedAt: null },
         orderBy: { createdAt: 'desc' },
       },
       stripeSubscriptions: {

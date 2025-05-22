@@ -4,7 +4,7 @@ import { notFound } from '~/utils/http-responses.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
 
 import {
-  retrieveActiveOrganizationInviteLinkFromDatabaseById,
+  retrieveActiveOrganizationInviteLinkFromDatabaseByToken,
   retrieveCreatorAndOrganizationForActiveLinkFromDatabaseByToken,
 } from '../organizations-invite-link-model.server';
 import {
@@ -91,8 +91,8 @@ export async function getValidInviteLinkInfo(request: Request) {
 
   if (tokenInfo) {
     const inviteLink =
-      await retrieveActiveOrganizationInviteLinkFromDatabaseById(
-        tokenInfo.tokenId,
+      await retrieveActiveOrganizationInviteLinkFromDatabaseByToken(
+        tokenInfo.inviteLinkToken,
       );
 
     if (inviteLink) {

@@ -284,7 +284,7 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
 
         const emailInvite = await saveOrganizationEmailInviteLinkToDatabase({
           email: body.email,
-          expiresAt: addDays(new Date(), 7),
+          expiresAt: addDays(new Date(), 2),
           invitedById: user.id,
           organizationId: organization.id,
           role: body.role,

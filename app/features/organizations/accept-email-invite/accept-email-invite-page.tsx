@@ -59,7 +59,6 @@ export function AcceptEmailInvitePage({
           <Form
             className="mt-10 flex items-center justify-center gap-x-6"
             method="POST"
-            replace
           >
             <Button
               disabled={isAcceptingInvite}

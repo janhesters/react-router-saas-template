@@ -1,3 +1,4 @@
+import { OrganizationMembershipRole } from '@prisma/client';
 import { useTranslation } from 'react-i18next';
 import { href, Link, Outlet, useLocation } from 'react-router';
 import { redirect } from 'react-router';
@@ -8,21 +9,33 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from '~/components/ui/navigation-menu';
+import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 
 import type { Route } from './+types/_organization-settings-layout';
 
 export const handle = { i18n: 'organizations' };
 
-export function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, params }: Route.LoaderArgs) {
   const pathname = new URL(request.url).pathname;
   if (pathname.endsWith('/settings')) {
     return redirect(pathname + '/general');
   }
 
-  return { headerTitle: 'Organization Settings' };
+  const { role } = await requireUserIsMemberOfOrganization(
+    request,
+    params.organizationSlug,
+  );
+
+  return {
+    headerTitle: 'Organization Settings',
+    showBilling:
+      role === OrganizationMembershipRole.admin ||
+      role === OrganizationMembershipRole.owner,
+  };
 }
 
 export default function OrganizationSettingsLayout({
+  loaderData,
   params,
 }: Route.ComponentProps) {
   const pathname = useLocation().pathname;
@@ -42,12 +55,16 @@ export default function OrganizationSettingsLayout({
         organizationSlug: params.organizationSlug,
       }),
     },
-    {
-      title: t('billing'),
-      url: href('/organizations/:organizationSlug/settings/billing', {
-        organizationSlug: params.organizationSlug,
-      }),
-    },
+    ...(loaderData.showBilling
+      ? [
+          {
+            title: t('billing'),
+            url: href('/organizations/:organizationSlug/settings/billing', {
+              organizationSlug: params.organizationSlug,
+            }),
+          },
+        ]
+      : []),
   ];
 
   return (

@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { createId } from '@paralleldrive/cuid2';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { describe, expect, test } from 'vitest';
@@ -49,6 +50,11 @@ const createOrganizationWithLinksAndMembers = ({
     createPopulatedOrganizationEmailInviteLink({
       organizationId: organization.id,
       invitedById: memberships[0]?.member.id,
+      role: faker.helpers.arrayElement([
+        OrganizationMembershipRole.member,
+        OrganizationMembershipRole.admin,
+        OrganizationMembershipRole.owner,
+      ]),
     }),
   );
   const stripeSubscriptions = stripeSubscription
@@ -222,7 +228,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
             id: invite.id,
             isCurrentUser: false,
             name: '',
-            role: OrganizationMembershipRole.member,
+            role: invite.role,
             status: 'emailInvitePending',
           })),
           // Then existing members
@@ -287,7 +293,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
           id: invite.id,
           isCurrentUser: false,
           name: '',
-          role: OrganizationMembershipRole.member,
+          role: invite.role,
           status: 'emailInvitePending',
         })),
       },
@@ -337,7 +343,7 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       id: organization.organizationEmailInviteLink[0].id,
       isCurrentUser: false,
       name: '',
-      role: OrganizationMembershipRole.member,
+      role: organization.organizationEmailInviteLink[0].role,
       status: 'emailInvitePending',
     });
   });
@@ -393,9 +399,10 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
 
   test('given: an organization that has reached the subscription seat limit, should: return undefined for inviteLink even if link exists', () => {
     const currentUsersRole = OrganizationMembershipRole.member;
-    const stripeSubscriptionOverride = {
-      items: [{ price: { product: { maxSeats: 1 } } }],
-    } as unknown as StripeSubscriptionWithItemsAndPriceAndProduct;
+    const stripeSubscriptionOverride =
+      createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct({
+        items: [{ price: { product: { maxSeats: 1 } } }],
+      });
     const organization = createOrganizationWithLinksAndMembers({
       inviteLinkCount: 1, // Create a link that should be ignored
       memberCount: 1,
@@ -434,6 +441,91 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
           role: membership.role,
           status: index === 0 ? 'createdTheOrganization' : 'joinedViaLink',
         })),
+      },
+    };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test('given: an invite for an email that already has a membership, should: not show that invite', () => {
+    const currentUsersRole = OrganizationMembershipRole.owner;
+    // Create one member with a known email…
+    const member = createPopulatedUserAccount({ email: 'foo@bar.com' });
+    const organization = {
+      ...createPopulatedOrganization(),
+      memberships: [
+        {
+          ...createPopulatedOrganizationMembership({
+            organizationId: 'org-id',
+            memberId: member.id,
+            role: OrganizationMembershipRole.owner,
+          }),
+          member,
+        },
+      ],
+      organizationInviteLinks: [],
+      // Two invites: one for the existing member email, one for a new email
+      organizationEmailInviteLink: [
+        createPopulatedOrganizationEmailInviteLink({
+          organizationId: 'org-id',
+          invitedById: member.id,
+          email: 'foo@bar.com', // should be filtered out
+          createdAt: new Date('2024-04-01'),
+        }),
+        createPopulatedOrganizationEmailInviteLink({
+          organizationId: 'org-id',
+          invitedById: member.id,
+          email: 'new@invite.com', // should be kept
+          createdAt: new Date('2024-04-02'),
+        }),
+      ],
+      stripeSubscriptions: [],
+    };
+
+    const request = new Request('http://localhost');
+
+    const actual = mapOrganizationDataToTeamMemberSettingsProps({
+      currentUsersId: member.id,
+      currentUsersRole,
+      organization,
+      request,
+    });
+    const expected = {
+      emailInviteCard: {
+        currentUserIsOwner: true,
+        organizationIsFull: false,
+      },
+      inviteLinkCard: {
+        inviteLink: undefined,
+        organizationIsFull: false,
+      },
+      organizationIsFull: false,
+      teamMemberTable: {
+        currentUsersRole: OrganizationMembershipRole.owner,
+        members: [
+          // only the new invite, since foo@bar.com is already a member
+          {
+            avatar: '',
+            deactivatedAt: undefined,
+            email: 'new@invite.com',
+            id: organization.organizationEmailInviteLink[0].id,
+            isCurrentUser: false,
+            name: '',
+            role: organization.organizationEmailInviteLink[0].role,
+            status: 'emailInvitePending',
+          },
+          // then the existing member
+          {
+            avatar: member.imageUrl,
+            deactivatedAt: undefined,
+            email: member.email,
+            id: member.id,
+            isCurrentUser: true,
+            name: member.name,
+            role: OrganizationMembershipRole.owner, // same as currentUsersRole
+            status: 'createdTheOrganization',
+          },
+        ],
       },
     };
 

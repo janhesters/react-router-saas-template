@@ -155,7 +155,9 @@ describe('/organizations/email-invite route action', () => {
           headers: { cookie: maybeHeaders ?? '' },
         }),
       );
-      expect(emailInviteInfo).toMatchObject({ tokenId: emailInviteLink.id });
+      expect(emailInviteInfo).toMatchObject({
+        emailInviteToken: emailInviteLink.token,
+      });
     });
   });
 

@@ -61,6 +61,19 @@ test.describe('organizations email invite page', () => {
 
       // The page title is correct.
       await expect(page).toHaveTitle(/register | react router saas template/i);
+      await expect(
+        page.getByText(
+          new RegExp(`register to join ${organization.name}`, 'i'),
+        ),
+      ).toBeVisible();
+      await expect(
+        page.getByText(
+          new RegExp(
+            `${user.name} has invited you to join ${organization.name}`,
+            'i',
+          ),
+        ),
+      ).toBeVisible();
 
       await teardownOrganizationAndMember({ organization, user });
     });
