@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { href } from 'react-router';
 
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
@@ -250,6 +252,112 @@ test.describe(`${path} API route`, () => {
       cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
     );
     expect(emailInviteCookie).toBeUndefined();
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a new user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an invite link for this organization
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Generate email for the new user
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
+    });
+
+    // Go to register confirm with token hash
+    const tokenHash = stringifyTokenHashData({ email: testEmail });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/invite-link')}?token=${link.token}`,
+    );
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(testEmail);
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a new user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an email invite for this organization
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Generate email for the new user
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Go to register confirm with token hash
+    const tokenHash = stringifyTokenHashData({ email: testEmail });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/email-invite')}?token=${invite.token}`,
+    );
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(testEmail);
 
     // Cleanup
     if (userAccount) {

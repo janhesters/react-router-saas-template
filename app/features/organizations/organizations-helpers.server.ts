@@ -5,12 +5,15 @@ import type {
   UserAccount,
 } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
+import { href } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { notFound } from '~/utils/http-responses.server';
+import i18next from '~/utils/i18next.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
+import { redirectWithToast } from '~/utils/toast.server';
 
 import {
   adjustSeats,
@@ -22,7 +25,9 @@ import type {
 } from '../onboarding/onboarding-helpers.server';
 import { requireOnboardedUserAccountExists } from '../onboarding/onboarding-helpers.server';
 import { getValidEmailInviteInfo } from './accept-email-invite/accept-email-invite-helpers.server';
+import { destroyEmailInviteInfoSession } from './accept-email-invite/accept-email-invite-session.server';
 import { getValidInviteLinkInfo } from './accept-invite-link/accept-invite-link-helpers.server';
+import { destroyInviteLinkInfoSession } from './accept-invite-link/accept-invite-link-session.server';
 import { saveInviteLinkUseToDatabase } from './accept-invite-link/invite-link-use-model.server';
 import { updateEmailInviteLinkInDatabaseById } from './organizations-email-invite-link-model.server';
 import {
@@ -138,21 +143,15 @@ export async function acceptInviteLink({
   userAccountId,
   organizationId,
   inviteLinkId,
+  inviteLinkToken,
+  request,
 }: {
   userAccountId: UserAccount['id'];
   organizationId: Organization['id'];
   inviteLinkId: OrganizationInviteLink['id'];
+  inviteLinkToken: OrganizationInviteLink['token'];
+  request: Request;
 }) {
-  await addMembersToOrganizationInDatabaseById({
-    id: organizationId,
-    members: [userAccountId],
-    role: OrganizationMembershipRole.member,
-  });
-  await saveInviteLinkUseToDatabase({
-    inviteLinkId,
-    userId: userAccountId,
-  });
-
   const organization =
     await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
       organizationId,
@@ -160,6 +159,35 @@ export async function acceptInviteLink({
 
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
+
+    if (subscription) {
+      const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
+
+      if (organization._count.memberships >= maxSeats) {
+        const t = await i18next.getFixedT(request, 'organizations', {
+          keyPrefix: 'accept-invite-link',
+        });
+        throw await redirectWithToast(
+          `${href('/organizations/invite-link')}?token=${inviteLinkToken}`,
+          {
+            title: t('organization-full-toast-title'),
+            description: t('organization-full-toast-description'),
+            type: 'error',
+          },
+          { headers: await destroyInviteLinkInfoSession(request) },
+        );
+      }
+    }
+
+    await addMembersToOrganizationInDatabaseById({
+      id: organizationId,
+      members: [userAccountId],
+      role: OrganizationMembershipRole.member,
+    });
+    await saveInviteLinkUseToDatabase({
+      inviteLinkId,
+      userId: userAccountId,
+    });
 
     if (subscription && subscription.status !== 'canceled') {
       await adjustSeats({
@@ -180,35 +208,60 @@ export async function acceptInviteLink({
  * @param inviteLinkId - The ID of the invite link to accept.
  */
 export async function acceptEmailInvite({
-  userAccountId,
-  organizationId,
-  inviteLinkId,
-  role,
   deactivatedAt = new Date(),
+  emailInviteId,
+  emailInviteToken,
+  organizationId,
+  request,
+  role,
+  userAccountId,
 }: {
   deactivatedAt?: OrganizationEmailInviteLink['deactivatedAt'];
-  userAccountId: UserAccount['id'];
+  emailInviteId: OrganizationEmailInviteLink['id'];
+  emailInviteToken: OrganizationEmailInviteLink['token'];
   organizationId: Organization['id'];
-  inviteLinkId: OrganizationEmailInviteLink['id'];
+  request: Request;
   role: OrganizationMembershipRole;
+  userAccountId: UserAccount['id'];
 }) {
-  await addMembersToOrganizationInDatabaseById({
-    id: organizationId,
-    members: [userAccountId],
-    role,
-  });
-  await updateEmailInviteLinkInDatabaseById({
-    id: inviteLinkId,
-    emailInviteLink: { deactivatedAt },
-  });
-
   const organization =
     await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
       organizationId,
     );
+  console.log('organization', organization);
 
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
+    console.log('subscription', subscription);
+
+    if (subscription) {
+      const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
+
+      if (organization._count.memberships >= maxSeats) {
+        const t = await i18next.getFixedT(request, 'organizations', {
+          keyPrefix: 'accept-email-invite',
+        });
+        throw await redirectWithToast(
+          `${href('/organizations/email-invite')}?token=${emailInviteToken}`,
+          {
+            title: t('organization-full-toast-title'),
+            description: t('organization-full-toast-description'),
+            type: 'error',
+          },
+          { headers: await destroyEmailInviteInfoSession(request) },
+        );
+      }
+    }
+
+    await addMembersToOrganizationInDatabaseById({
+      id: organizationId,
+      members: [userAccountId],
+      role,
+    });
+    await updateEmailInviteLinkInDatabaseById({
+      id: emailInviteId,
+      emailInviteLink: { deactivatedAt },
+    });
 
     if (subscription && subscription.status !== 'canceled') {
       await adjustSeats({

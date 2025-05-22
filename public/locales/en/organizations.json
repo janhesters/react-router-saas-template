@@ -12,6 +12,8 @@
     "invite-you-to-join": "{{inviterName}} invites you to join {{organizationName}}",
     "join-success-toast-description": "You are now a member of {{organizationName}}",
     "join-success-toast-title": "Successfully joined organization",
+    "organization-full-toast-description": "The organization has reached its member limit",
+    "organization-full-toast-title": "Organization is full",
     "page-title": "Invitation",
     "welcome-to-app-name": "Welcome to {{appName}}"
   },
@@ -28,6 +30,8 @@
     "invite-you-to-join": "{{inviterName}} invites you to join {{organizationName}}",
     "join-success-toast-description": "You are now a member of {{organizationName}}",
     "join-success-toast-title": "Successfully joined organization",
+    "organization-full-toast-description": "The organization has reached its member limit",
+    "organization-full-toast-title": "Organization is full",
     "page-title": "Invitation",
     "welcome-to-app-name": "Welcome to {{appName}}"
   },

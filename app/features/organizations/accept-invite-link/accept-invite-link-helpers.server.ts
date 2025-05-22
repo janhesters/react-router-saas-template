@@ -104,6 +104,7 @@ export async function getValidInviteLinkInfo(request: Request) {
           organizationName: inviteLink.organization.name,
           organizationSlug: inviteLink.organization.slug,
           inviteLinkId: inviteLink.id,
+          inviteLinkToken: inviteLink.token,
         },
       };
     }

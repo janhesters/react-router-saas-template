@@ -181,7 +181,7 @@ export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabase
         orderBy: { created: 'desc' },
         take: 1,
         include: {
-          items: { include: { price: true } },
+          items: { include: { price: { include: { product: true } } } },
           schedule: {
             include: {
               phases: {

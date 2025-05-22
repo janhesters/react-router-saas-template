@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { href } from 'react-router';
 
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
@@ -20,9 +22,9 @@ import {
 
 import {
   getPath,
+  loginByCookie,
   setupEmailInviteCookie,
   setupInviteLinkCookie,
-  setupOrganizationAndLoginAsMember,
 } from '../../utils';
 
 const path = '/login/confirm';
@@ -102,9 +104,10 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
-      page,
-    });
+    const { user, organization } = await createUserWithOrgAndAddAsMember();
+
+    // Log in the user using cookies.
+    await loginByCookie({ page, user });
 
     // Navigate to the login-confirm page with any token.
     await page.goto(`${path}?token_hash=any_token`);
@@ -485,5 +488,115 @@ test.describe(`${path} API route`, () => {
 
     // Cleanup
     await teardownOrganizationAndMember({ user, organization });
+  });
+
+  test('given: a valid token_hash for an existing user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an invite link for this organization
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
+    });
+
+    // Create token hash for existing user
+    const tokenHash = stringifyTokenHashData({
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+    });
+
+    // Navigate to login confirm with token hash
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/invite-link')}?token=${link.token}`,
+    );
+
+    // Cleanup
+    await teardownOrganizationAndMember({
+      user: existingUser,
+      organization: existingOrg,
+    });
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a valid token_hash for an existing user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an email invite for this organization
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Create token hash for existing user
+    const tokenHash = stringifyTokenHashData({
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+    });
+
+    // Navigate to login confirm with token hash
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/email-invite')}?token=${invite.token}`,
+    );
+
+    // Cleanup
+    await teardownOrganizationAndMember({
+      user: existingUser,
+      organization: existingOrg,
+    });
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
   });
 });

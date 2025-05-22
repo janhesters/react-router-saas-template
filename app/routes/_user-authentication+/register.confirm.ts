@@ -47,18 +47,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
-        userAccountId: userAccount.id,
-        organizationId: emailInviteInfo.organizationId,
-        inviteLinkId: emailInviteInfo.emailInviteId,
-        role: emailInviteInfo.role,
         // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
+        emailInviteId: emailInviteInfo.emailInviteId,
+        emailInviteToken: emailInviteInfo.emailInviteToken,
+        organizationId: emailInviteInfo.organizationId,
+        request,
+        role: emailInviteInfo.role,
+        userAccountId: userAccount.id,
       });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
-        userAccountId: userAccount.id,
-        organizationId: inviteLinkInfo.organizationId,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
+        inviteLinkToken: inviteLinkInfo.inviteLinkToken,
+        organizationId: inviteLinkInfo.organizationId,
+        request,
+        userAccountId: userAccount.id,
       });
     }
   } catch (error) {

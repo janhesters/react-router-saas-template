@@ -94,6 +94,7 @@ export async function getValidEmailInviteInfo(request: Request) {
           organizationName: emailInvite.organization.name,
           organizationSlug: emailInvite.organization.slug,
           emailInviteId: emailInvite.id,
+          emailInviteToken: emailInvite.token,
           role: emailInvite.role,
         },
       };

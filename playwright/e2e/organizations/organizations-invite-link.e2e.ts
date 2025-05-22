@@ -5,6 +5,7 @@ import { expect, test } from '@playwright/test';
 import type { OrganizationInviteLink } from '@prisma/client';
 import { promiseHash } from 'remix-utils/promise';
 
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
 import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
 import {
@@ -223,13 +224,52 @@ test.describe('organizations invite link page', () => {
       await teardownOrganizationAndMember(auth);
     });
 
-    test("given: a valid token for an organization that the user is already a member of, should: redirect the organization and show a toast that they're already a member", async ({
+    test('given: a valid token for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+      page,
+    }) => {
+      // Create an organization with the low tier plan (1 seat limit)
+      const { auth, data } = await promiseHash({
+        auth: setupOrganizationAndLoginAsMember({ page }),
+        data: createUserWithOrgAndAddAsMember({
+          lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+        }),
+      });
+
+      // Create an invite link for this organization
+      const link = createPopulatedOrganizationInviteLink({
+        creatorId: data.user.id,
+        organizationId: data.organization.id,
+      });
+      await saveOrganizationInviteLinkToDatabase(link);
+
+      // Visit the invite link page
+      await page.goto(getInviteLinkPagePath(link.token));
+
+      // Click the accept invite button
+      await page.getByRole('button', { name: /accept invite/i }).click();
+
+      // Verify toast message
+      await expect(
+        page
+          .getByRole('region', { name: /notifications/i })
+          .getByText(/organization has reached its member limit/i),
+      ).toBeVisible();
+
+      // Verify we're still on the same page (not redirected)
+      expect(getPath(page)).toEqual(getInviteLinkPagePath(link.token));
+
+      await teardownOrganizationAndMember(data);
+      await teardownOrganizationAndMember(auth);
+    });
+
+    test("given: a valid token for an organization that the user is already a member of, should: redirect to the organization and show a toast that they're already a member", async ({
       page,
     }) => {
       // Create an organization and make the user a member and log in as that
       // user
       const { user, organization } = await setupOrganizationAndLoginAsMember({
         page,
+        lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
       });
 
       // Create an invite link for the same organization

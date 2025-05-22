@@ -57,9 +57,11 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
 
           try {
             await acceptInviteLink({
-              userAccountId: userAccount.id,
-              organizationId: link.organization.id,
               inviteLinkId: link.id,
+              inviteLinkToken: link.token,
+              organizationId: link.organization.id,
+              request,
+              userAccountId: userAccount.id,
             });
 
             return redirectWithToast(

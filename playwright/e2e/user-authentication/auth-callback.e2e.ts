@@ -1,7 +1,8 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
-import { getPath } from 'playwright/utils';
+import { href } from 'react-router';
 
+import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
 import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
 import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
 import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
@@ -19,7 +20,11 @@ import {
   teardownOrganizationAndMember,
 } from '~/test/test-utils';
 
-import { setupEmailInviteCookie, setupInviteLinkCookie } from '../../utils';
+import {
+  getPath,
+  setupEmailInviteCookie,
+  setupInviteLinkCookie,
+} from '../../utils';
 
 const path = '/auth/callback';
 
@@ -517,5 +522,235 @@ test.describe(`${path} API route`, () => {
 
     // Cleanup
     await teardownOrganizationAndMember({ user, organization });
+  });
+
+  test('given: a valid code for a new user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an invite link for this organization
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Generate email for the new user and create auth code
+    const { email } = createPopulatedUserAccount();
+    const code = stringifyAuthCodeData({ provider: 'google', email });
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/invite-link')}?token=${link.token}`,
+    );
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(email);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(email);
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a valid code for a new user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an email invite for this organization
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Generate email for the new user and create auth code
+    const { email } = createPopulatedUserAccount();
+    const code = stringifyAuthCodeData({ provider: 'google', email });
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/email-invite')}?token=${invite.token}`,
+    );
+
+    // Verify the user account was created
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(email);
+    expect(userAccount).not.toBeNull();
+    expect(userAccount?.email).toEqual(email);
+
+    // Cleanup
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a code for an existing user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an invite link for this organization
+    const link = createPopulatedOrganizationInviteLink({
+      organizationId: organization.id,
+      creatorId: invitingUser.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Create auth code for existing user
+    const code = stringifyAuthCodeData({
+      provider: 'google',
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+    });
+
+    // Set the invite link cookie
+    await setupInviteLinkCookie({
+      page,
+      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/invite-link')}?token=${link.token}`,
+    );
+
+    // Cleanup
+    await teardownOrganizationAndMember({
+      user: existingUser,
+      organization: existingOrg,
+    });
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
+  });
+
+  test('given: a code for an existing user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    page,
+  }) => {
+    // Create organization with the low tier plan (1 seat limit)
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember({
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      });
+
+    // Create an email invite for this organization
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      organizationId: organization.id,
+      invitedById: invitingUser.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Set up the code verifier cookie
+    await setupCodeVerifierCookie({ page });
+
+    // Create auth code for existing user
+    const code = stringifyAuthCodeData({
+      provider: 'google',
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+    });
+
+    // Set the email invite cookie
+    await setupEmailInviteCookie({
+      page,
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+    });
+
+    // Navigate to callback with code
+    await page.goto(`${path}?code=${code}`);
+
+    // Verify toast message
+    await expect(
+      page
+        .getByRole('region', { name: /notifications/i })
+        .getByText(/organization has reached its member limit/i),
+    ).toBeVisible();
+
+    // Verify we're still on the same page (not redirected)
+    expect(getPath(page)).toEqual(
+      `${href('/organizations/email-invite')}?token=${invite.token}`,
+    );
+
+    // Cleanup
+    await teardownOrganizationAndMember({
+      user: existingUser,
+      organization: existingOrg,
+    });
+    await teardownOrganizationAndMember({ user: invitingUser, organization });
   });
 });

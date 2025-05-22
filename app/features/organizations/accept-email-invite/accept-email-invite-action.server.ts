@@ -75,10 +75,12 @@ export async function acceptEmailInviteAction({ request }: Route.ActionArgs) {
 
           try {
             await acceptEmailInvite({
-              userAccountId: userAccount.id,
+              emailInviteId: link.id,
+              emailInviteToken: link.token,
               organizationId: link.organization.id,
-              inviteLinkId: link.id,
+              request,
               role: link.role,
+              userAccountId: userAccount.id,
             });
 
             return redirectWithToast(

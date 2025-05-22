@@ -99,14 +99,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
-        userAccountId: finalUserAccount.id,
-        organizationId: emailInviteInfo.organizationId,
-        inviteLinkId: emailInviteInfo.emailInviteId,
-        role: emailInviteInfo.role,
         // If the user already has a name, we deactivate the email invite link,
         // otherwise this will be done during onboarding.
         // eslint-disable-next-line unicorn/no-null
         deactivatedAt: userAccount?.name ? new Date() : null,
+        emailInviteId: emailInviteInfo.emailInviteId,
+        emailInviteToken: emailInviteInfo.emailInviteToken,
+        organizationId: emailInviteInfo.organizationId,
+        request,
+        role: emailInviteInfo.role,
+        userAccountId: finalUserAccount.id,
       });
 
       // If the user has a name, they're already onboarded and we can redirect
@@ -136,9 +138,11 @@ export async function loader({ request }: Route.LoaderArgs) {
           redirect(href('/onboarding/user-account'), { headers });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
-        userAccountId: finalUserAccount.id,
-        organizationId: inviteLinkInfo.organizationId,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
+        inviteLinkToken: inviteLinkInfo.inviteLinkToken,
+        organizationId: inviteLinkInfo.organizationId,
+        request,
+        userAccountId: finalUserAccount.id,
       });
 
       // If the user has a name, they're already onboarded and we can redirect

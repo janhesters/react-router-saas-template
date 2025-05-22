@@ -347,5 +347,4 @@ test.describe('account settings', () => {
 // subscription is used.
 // TODO: enforce limits
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
-// TODO: handle downgrade goes through when the user has more seats than the new plan allows.
 // TODO: add tests that test if the user is on trial if it's required vs. on a subscription if required (conflict)

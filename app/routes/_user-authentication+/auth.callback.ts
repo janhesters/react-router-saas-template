@@ -96,10 +96,12 @@ export async function loader({ request }: Route.LoaderArgs) {
 
         if (emailInviteInfo) {
           await acceptEmailInvite({
-            userAccountId: maybeUser.id,
+            emailInviteId: emailInviteInfo.emailInviteId,
+            emailInviteToken: emailInviteInfo.emailInviteToken,
             organizationId: emailInviteInfo.organizationId,
-            inviteLinkId: emailInviteInfo.emailInviteId,
+            request,
             role: emailInviteInfo.role,
+            userAccountId: maybeUser.id,
           });
 
           return redirectWithToast(
@@ -125,9 +127,11 @@ export async function loader({ request }: Route.LoaderArgs) {
           // If the user is not a member of the organization, add them to the
           // organization and save the invite link use.
           await acceptInviteLink({
-            userAccountId: maybeUser.id,
-            organizationId: inviteLinkInfo.organizationId,
             inviteLinkId: inviteLinkInfo.inviteLinkId,
+            inviteLinkToken: inviteLinkInfo.inviteLinkToken,
+            organizationId: inviteLinkInfo.organizationId,
+            request,
+            userAccountId: maybeUser.id,
           });
 
           return redirectWithToast(
@@ -164,18 +168,22 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
-        userAccountId: userProfile.id,
-        organizationId: emailInviteInfo.organizationId,
-        inviteLinkId: emailInviteInfo.emailInviteId,
-        role: emailInviteInfo.role,
         // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
+        emailInviteId: emailInviteInfo.emailInviteId,
+        emailInviteToken: emailInviteInfo.emailInviteToken,
+        organizationId: emailInviteInfo.organizationId,
+        request,
+        role: emailInviteInfo.role,
+        userAccountId: userProfile.id,
       });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
-        userAccountId: userProfile.id,
-        organizationId: inviteLinkInfo.organizationId,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
+        inviteLinkToken: inviteLinkInfo.inviteLinkToken,
+        organizationId: inviteLinkInfo.organizationId,
+        request,
+        userAccountId: userProfile.id,
       });
     }
 
