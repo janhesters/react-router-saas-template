@@ -37,7 +37,7 @@
   "faq": {
     "items": [
       {
-        "answer": "Yes! This is an open-source project and is free to use under the MIT license.",
+        "answer": "Yes! This is an open-source project and is free to use under the MIT license. However, some of the integrated services (for example Supabase, Stripe, hosting providers, etc.) may incur their own usage fees, which you are responsible for covering.",
         "question": "Is this free?"
       },
       {
@@ -123,7 +123,7 @@
         "title": "Internationalization"
       },
       {
-        "description": "Includes user account settings, multi-tenant support, an onboarding flow, and a host of other utilities to help you hit the ground running.",
+        "description": "Includes user account settings, sending emails (with Resend), an onboarding flow, and a host of other utilities to help you hit the ground running.",
         "eyebrow": "Miscellaneous",
         "title": "And much more ..."
       }
@@ -133,6 +133,7 @@
   },
   "footer": {
     "made-with-love": "Made with ❤️ by",
+    "reactsquad": "ReactSquad",
     "social": {
       "github": "Github",
       "linkedin": "LinkedIn",

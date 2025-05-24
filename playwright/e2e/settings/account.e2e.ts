@@ -5,6 +5,7 @@
 // subscription is used.
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
 // TODO: New dark mode based on Segriodxa article.
+// TODO: implement confirmation before joining organization.
 
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';

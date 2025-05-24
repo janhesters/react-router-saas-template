@@ -61,7 +61,7 @@ export function Footer() {
           <span className="flex items-center gap-2">
             {t('made-with-love')}
             <a
-              aria-label={t('made-with-love-by')}
+              aria-label={t('reactsquad')}
               className="text-foreground h-6 w-auto"
               href="https://reactsquad.io"
             >
