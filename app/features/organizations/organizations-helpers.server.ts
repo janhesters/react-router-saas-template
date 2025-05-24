@@ -228,11 +228,9 @@ export async function acceptEmailInvite({
     await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
       organizationId,
     );
-  console.log('organization', organization);
 
   if (organization) {
     const subscription = organization.stripeSubscriptions[0];
-    console.log('subscription', subscription);
 
     if (subscription) {
       const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;

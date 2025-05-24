@@ -21,6 +21,8 @@ import {
   TierContainer,
   TierGrid,
 } from '~/features/billing/pricing';
+import { Footer } from '~/features/landing/footer';
+import { Header } from '~/features/landing/header';
 import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/pricing';
@@ -44,319 +46,323 @@ export default function PricingRoute() {
   };
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-4 lg:px-8">
-      <div className="mx-auto mb-8 max-w-2xl text-center">
-        <h1 className="text-primary">{tPage('page-title')}</h1>
+    <>
+      <Header />
+      <main className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48">
+        <div className="mx-auto mb-8 max-w-2xl text-center">
+          <h1 className="text-primary">{tPage('page-title')}</h1>
 
-        <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
-          {tPage('pricing-heading')}
-        </h2>
+          <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
+            {tPage('pricing-heading')}
+          </h2>
 
-        <p className="text-muted-foreground mt-6 text-lg text-pretty">
-          {tPage('page-description')}
-        </p>
-      </div>
-
-      <Tabs value={billingPeriod} onValueChange={setBillingPeriod}>
-        <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
-          <TabsList>
-            <TabsTrigger value="monthly">{t('monthly')}</TabsTrigger>
-
-            <TabsTrigger value="annual">{t('annual')}</TabsTrigger>
-          </TabsList>
-
-          {billingPeriod === 'monthly' && (
-            <p className="text-primary text-sm">{t('save-annually')}</p>
-          )}
+          <p className="text-muted-foreground mt-6 text-lg text-pretty">
+            {tPage('page-description')}
+          </p>
         </div>
 
-        <TabsContent value="monthly">
-          <TierContainer>
-            <TierGrid>
-              <TierCard>
-                <TierCardHeader>
-                  <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+        <Tabs value={billingPeriod} onValueChange={setBillingPeriod}>
+          <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
+            <TabsList>
+              <TabsTrigger value="monthly">{t('monthly')}</TabsTrigger>
 
-                  <TierCardPrice>{t('free')}</TierCardPrice>
+              <TabsTrigger value="annual">{t('annual')}</TabsTrigger>
+            </TabsList>
 
-                  <TierCardDescription>
-                    {t('plans.low.description')}
-                  </TierCardDescription>
+            {billingPeriod === 'monthly' && (
+              <p className="text-primary text-sm">{t('save-annually')}</p>
+            )}
+          </div>
 
-                  <Button asChild className="w-full">
-                    <Link to={href('/register')}>{t('plans.low.cta')}</Link>
-                  </Button>
-                </TierCardHeader>
+          <TabsContent value="monthly">
+            <TierContainer>
+              <TierGrid>
+                <TierCard>
+                  <TierCardHeader>
+                    <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
 
-                <Separator />
+                    <TierCardPrice>{t('free')}</TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.low.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.low.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('low').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
+                    <Button asChild className="w-full">
+                      <Link to={href('/register')}>{t('plans.low.cta')}</Link>
+                    </Button>
+                  </TierCardHeader>
 
-              <TierCard>
-                <TierCardHeader>
-                  <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>
-                    <Trans
-                      i18nKey="billing:pricing.price"
-                      values={{ price: '$30' }}
-                      components={{
-                        1: (
-                          <span className="text-muted-foreground text-sm font-normal" />
-                        ),
-                      }}
-                    />
-                  </TierCardPrice>
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.low.features-title')}
+                    </FeaturesListTitle>
 
-                  <TierCardDescription>
-                    {t('plans.mid.description')}
-                  </TierCardDescription>
+                    <FeaturesList>
+                      {getFeatures('low').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
 
-                  <Button className="w-full">{t('plans.mid.cta')}</Button>
-                </TierCardHeader>
+                <TierCard>
+                  <TierCardHeader>
+                    <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
 
-                <Separator />
+                    <TierCardPrice>
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$30' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
+                    </TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.mid.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.mid.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('mid').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
+                    <Button className="w-full">{t('plans.mid.cta')}</Button>
+                  </TierCardHeader>
 
-              <TierCard className="ring-primary ring-2">
-                <TierCardHeader>
-                  <TierCardTitle className="text-primary">
-                    {t('plans.high.title')}
-                    <Badge>{t('most-popular')}</Badge>
-                  </TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>
-                    <Trans
-                      i18nKey="billing:pricing.price"
-                      values={{ price: '$55' }}
-                      components={{
-                        1: (
-                          <span className="text-muted-foreground text-sm font-normal" />
-                        ),
-                      }}
-                    />
-                  </TierCardPrice>
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.mid.features-title')}
+                    </FeaturesListTitle>
 
-                  <TierCardDescription>
-                    {t('plans.high.description')}
-                  </TierCardDescription>
+                    <FeaturesList>
+                      {getFeatures('mid').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
 
-                  <Button className="w-full">{t('plans.high.cta')}</Button>
-                </TierCardHeader>
+                <TierCard className="ring-primary ring-2">
+                  <TierCardHeader>
+                    <TierCardTitle className="text-primary">
+                      {t('plans.high.title')}
+                      <Badge>{t('most-popular')}</Badge>
+                    </TierCardTitle>
 
-                <Separator />
+                    <TierCardPrice>
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$55' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
+                    </TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.high.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.high.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('high').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
-            </TierGrid>
-          </TierContainer>
-        </TabsContent>
+                    <Button className="w-full">{t('plans.high.cta')}</Button>
+                  </TierCardHeader>
 
-        <TabsContent value="annual">
-          <TierContainer>
-            <TierGrid className="@6xl/tiers:grid-cols-4">
-              <TierCard>
-                <TierCardHeader>
-                  <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>{t('free')}</TierCardPrice>
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.high.features-title')}
+                    </FeaturesListTitle>
 
-                  <TierCardDescription>
-                    {t('plans.low.description')}
-                  </TierCardDescription>
+                    <FeaturesList>
+                      {getFeatures('high').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
+              </TierGrid>
+            </TierContainer>
+          </TabsContent>
 
-                  <Button asChild className="w-full">
-                    <Link to={href('/register')}>{t('plans.low.cta')}</Link>
-                  </Button>
-                </TierCardHeader>
+          <TabsContent value="annual">
+            <TierContainer>
+              <TierGrid className="@6xl/tiers:grid-cols-4">
+                <TierCard>
+                  <TierCardHeader>
+                    <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
 
-                <Separator />
+                    <TierCardPrice>{t('free')}</TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.low.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.low.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('low').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
+                    <Button asChild className="w-full">
+                      <Link to={href('/register')}>{t('plans.low.cta')}</Link>
+                    </Button>
+                  </TierCardHeader>
 
-              <TierCard>
-                <TierCardHeader>
-                  <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>
-                    <Trans
-                      i18nKey="billing:pricing.price"
-                      values={{ price: '$25' }}
-                      components={{
-                        1: (
-                          <span className="text-muted-foreground text-sm font-normal" />
-                        ),
-                      }}
-                    />
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.low.features-title')}
+                    </FeaturesListTitle>
 
-                    <OfferBadge>-15%</OfferBadge>
-                  </TierCardPrice>
+                    <FeaturesList>
+                      {getFeatures('low').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
 
-                  <TierCardDescription>
-                    {t('plans.mid.description')}
-                  </TierCardDescription>
+                <TierCard>
+                  <TierCardHeader>
+                    <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
 
-                  <Button className="w-full">{t('plans.mid.cta')}</Button>
-                </TierCardHeader>
+                    <TierCardPrice>
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$25' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
 
-                <Separator />
+                      <OfferBadge>-15%</OfferBadge>
+                    </TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.mid.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.mid.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('mid').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
+                    <Button className="w-full">{t('plans.mid.cta')}</Button>
+                  </TierCardHeader>
 
-              <TierCard className="ring-primary -mt-1.5 ring-2">
-                <TierCardHeader>
-                  <TierCardTitle className="text-primary">
-                    {t('plans.high.title')}
-                    <Badge>{t('most-popular')}</Badge>
-                  </TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>
-                    <Trans
-                      i18nKey="billing:pricing.price"
-                      values={{ price: '$45' }}
-                      components={{
-                        1: (
-                          <span className="text-muted-foreground text-sm font-normal" />
-                        ),
-                      }}
-                    />
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.mid.features-title')}
+                    </FeaturesListTitle>
 
-                    <OfferBadge>-20%</OfferBadge>
-                  </TierCardPrice>
+                    <FeaturesList>
+                      {getFeatures('mid').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
 
-                  <TierCardDescription>
-                    {t('plans.high.description')}
-                  </TierCardDescription>
+                <TierCard className="ring-primary -mt-1.5 ring-2">
+                  <TierCardHeader>
+                    <TierCardTitle className="text-primary">
+                      {t('plans.high.title')}
+                      <Badge>{t('most-popular')}</Badge>
+                    </TierCardTitle>
 
-                  <Button className="w-full">{t('plans.high.cta')}</Button>
-                </TierCardHeader>
+                    <TierCardPrice>
+                      <Trans
+                        i18nKey="billing:pricing.price"
+                        values={{ price: '$45' }}
+                        components={{
+                          1: (
+                            <span className="text-muted-foreground text-sm font-normal" />
+                          ),
+                        }}
+                      />
 
-                <Separator />
+                      <OfferBadge>-20%</OfferBadge>
+                    </TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.high.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.high.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('high').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
+                    <Button className="w-full">{t('plans.high.cta')}</Button>
+                  </TierCardHeader>
 
-              <TierCard className="@4xl/tiers:col-start-2 @6xl/tiers:col-start-auto">
-                <TierCardHeader>
-                  <TierCardTitle>{t('plans.enterprise.title')}</TierCardTitle>
+                  <Separator />
 
-                  <TierCardPrice>{t('custom')}</TierCardPrice>
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.high.features-title')}
+                    </FeaturesListTitle>
 
-                  <TierCardDescription>
-                    {t('plans.enterprise.description')}
-                  </TierCardDescription>
+                    <FeaturesList>
+                      {getFeatures('high').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
 
-                  <Button asChild className="w-full">
-                    <Link to={href('/contact-sales')}>
-                      {t('plans.enterprise.cta')}
-                    </Link>
-                  </Button>
-                </TierCardHeader>
+                <TierCard className="@4xl/tiers:col-start-2 @6xl/tiers:col-start-auto">
+                  <TierCardHeader>
+                    <TierCardTitle>{t('plans.enterprise.title')}</TierCardTitle>
 
-                <Separator />
+                    <TierCardPrice>{t('custom')}</TierCardPrice>
 
-                <TierCardContent>
-                  <FeaturesListTitle>
-                    {t('plans.enterprise.features-title')}
-                  </FeaturesListTitle>
+                    <TierCardDescription>
+                      {t('plans.enterprise.description')}
+                    </TierCardDescription>
 
-                  <FeaturesList>
-                    {getFeatures('enterprise').map(feature => (
-                      <FeatureListItem key={feature}>
-                        <CheckIcon />
-                        {feature}
-                      </FeatureListItem>
-                    ))}
-                  </FeaturesList>
-                </TierCardContent>
-              </TierCard>
-            </TierGrid>
-          </TierContainer>
-        </TabsContent>
-      </Tabs>
-    </main>
+                    <Button asChild className="w-full">
+                      <Link to={href('/contact-sales')}>
+                        {t('plans.enterprise.cta')}
+                      </Link>
+                    </Button>
+                  </TierCardHeader>
+
+                  <Separator />
+
+                  <TierCardContent>
+                    <FeaturesListTitle>
+                      {t('plans.enterprise.features-title')}
+                    </FeaturesListTitle>
+
+                    <FeaturesList>
+                      {getFeatures('enterprise').map(feature => (
+                        <FeatureListItem key={feature}>
+                          <CheckIcon />
+                          {feature}
+                        </FeatureListItem>
+                      ))}
+                    </FeaturesList>
+                  </TierCardContent>
+                </TierCard>
+              </TierGrid>
+            </TierContainer>
+          </TabsContent>
+        </Tabs>
+      </main>
+      <Footer />
+    </>
   );
 }

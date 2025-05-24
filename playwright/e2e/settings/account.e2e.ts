@@ -1,7 +1,10 @@
 // TODO: fix layout for organization settings with avatar
 // TODO: upgrade packages
-
-// 6 people visit link of 5 people invite
+// TODO: contact sales enterprise flow
+// TODO: add test that if there are multiple subscriptions, only the latest
+// subscription is used.
+// TODO: make sure the app can't be used when the subscription is cancelled and ran out.
+// TODO: New dark mode based on Segriodxa article.
 
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
@@ -341,10 +344,3 @@ test.describe('account settings', () => {
     await deleteUserAccountFromDatabaseById(otherUser.id);
   });
 });
-
-// TODO: contact sales enterprise flow
-// TODO: add test that if there are multiple subscriptions, only the latest
-// subscription is used.
-// TODO: enforce limits
-// TODO: make sure the app can't be used when the subscription is cancelled and ran out.
-// TODO: add tests that test if the user is on trial if it's required vs. on a subscription if required (conflict)
