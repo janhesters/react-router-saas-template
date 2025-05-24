@@ -23,7 +23,7 @@ import i18next from '~/utils/i18next.server';
 import type { Route } from './+types/root';
 import { NotFound } from './components/not-found';
 import { Toaster } from './components/ui/sonner';
-import { parseColorScheme } from './features/color-scheme/color-scheme.server';
+import { getColorScheme } from './features/color-scheme/color-scheme.server';
 import { ColorSchemeScript } from './features/color-scheme/color-scheme-script';
 import { useColorScheme } from './features/color-scheme/use-color-scheme';
 import { useToast } from './hooks/use-toast';
@@ -65,7 +65,7 @@ export const shouldRevalidate = ({
 export async function loader({ request }: Route.LoaderArgs) {
   const { colorScheme, honeypotInputProps, locale, t, toastData } =
     await promiseHash({
-      colorScheme: parseColorScheme(request),
+      colorScheme: getColorScheme(request),
       honeypotInputProps: honeypot.getInputProps(),
       locale: i18next.getLocale(request),
       t: i18next.getFixedT(request),
@@ -103,7 +103,7 @@ export function Layout({
 
   return (
     <html
-      className={colorScheme === 'dark' ? 'dark' : ''}
+      className={colorScheme}
       lang={locale}
       dir={i18n.dir()}
       // When the user a.) has their system color scheme set to "dark", and b.)

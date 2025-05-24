@@ -1,69 +1,34 @@
+/* eslint-disable unicorn/no-null */
 import type { ActionFunction } from 'react-router';
-import { createCookie, redirect } from 'react-router';
-import { safeRedirect } from 'remix-utils/safe-redirect';
-
-import { badRequest } from '~/utils/http-responses.server';
+import { createCookie, data } from 'react-router';
+import { createTypedCookie } from 'remix-utils/typed-cookie';
+import { z } from 'zod';
 
 import type { ColorScheme } from './color-scheme-constants';
-import {
-  COLOR_SCHEME_FORM_KEY,
-  colorSchemes,
-  RETURN_TO_FORM_KEY,
-} from './color-scheme-constants';
-
-type ColorSchemeCookie = {
-  colorScheme: ColorScheme;
-};
+import { COLOR_SCHEME_FORM_KEY, colorSchemes } from './color-scheme-constants';
 
 const cookie = createCookie('color-scheme', {
-  maxAge: 60 * 60 * 24 * 365, // one year
+  path: '/',
   sameSite: 'lax',
+  httpOnly: true,
+  secrets: [process.env.COOKIE_SECRET ?? 'secret'],
 });
 
-/**
- * Parses the color scheme preference from the request's cookie.
- *
- * @param request - The incoming request object containing the cookie header
- * @returns The user's preferred color scheme, or 'system' if no preference is
- * set.
- */
-export async function parseColorScheme(request: Request): Promise<ColorScheme> {
-  const cookieHeader = request.headers.get('Cookie');
-  const parsed = (await cookie.parse(cookieHeader)) as
-    | ColorSchemeCookie
-    | undefined;
-  return parsed ? parsed.colorScheme : colorSchemes.system;
+const schema = z
+  .enum([colorSchemes.dark, colorSchemes.light, colorSchemes.system]) // Possible color schemes
+  .default(colorSchemes.system) // If there's no cookie, default to "system"
+  // eslint-disable-next-line unicorn/prefer-top-level-await
+  .catch(colorSchemes.system); // In case of an error, default to "system"
+
+const typedCookie = createTypedCookie({ cookie, schema });
+
+export async function getColorScheme(request: Request): Promise<ColorScheme> {
+  const colorScheme = await typedCookie.parse(request.headers.get('Cookie'));
+  return colorScheme ?? colorSchemes.system; // Default to "system" if no cookie is found
 }
 
-/**
- * Serializes the color scheme preference into a cookie string.
- * If the color scheme is 'system', the cookie is destroyed.
- *
- * @param colorScheme - The color scheme to serialize
- * @returns A serialized cookie string containing the color scheme preference
- */
-function serializeColorScheme(colorScheme: ColorScheme) {
-  const destroyCookie = colorScheme === colorSchemes.system;
-
-  if (destroyCookie) {
-    return cookie.serialize({}, { expires: new Date(0), maxAge: 0 });
-  }
-
-  return cookie.serialize({ colorScheme });
-}
-
-/**
- * Validates that a form value is a valid ColorScheme.
- *
- * @param formValue - The value to validate
- * @returns A type predicate indicating if the value is a valid ColorScheme
- */
-function validateColorScheme(formValue: unknown): formValue is ColorScheme {
-  return (
-    formValue === ('dark' satisfies ColorScheme) ||
-    formValue === ('light' satisfies ColorScheme) ||
-    formValue === ('system' satisfies ColorScheme)
-  );
+export async function setColorScheme(colorScheme: ColorScheme) {
+  return await typedCookie.serialize(colorScheme);
 }
 
 /**
@@ -76,14 +41,8 @@ function validateColorScheme(formValue: unknown): formValue is ColorScheme {
  */
 export const colorSchemeAction: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
-  const colorScheme = formData.get(COLOR_SCHEME_FORM_KEY);
-  const returnTo = safeRedirect(formData.get(RETURN_TO_FORM_KEY));
-
-  if (!validateColorScheme(colorScheme)) {
-    throw badRequest();
-  }
-
-  return redirect(returnTo ?? '/', {
-    headers: { 'Set-Cookie': await serializeColorScheme(colorScheme) },
+  const colorScheme = schema.parse(formData.get(COLOR_SCHEME_FORM_KEY));
+  return data(null, {
+    headers: { 'Set-Cookie': await setColorScheme(colorScheme) },
   });
 };

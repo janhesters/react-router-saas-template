@@ -2,7 +2,19 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark {
+  /* support the .dark class */
+  &:where(.dark *, .dark) {
+    @slot;
+  }
+
+  /* support the .system class + prefers-color-scheme */
+  &:where(.system *, .system) {
+    @media (prefers-color-scheme: dark) {
+      @slot;
+    }
+  }
+}
 
 :root {
   --background: oklch(1 0 0);
@@ -159,6 +171,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html,
   body {
     @apply bg-background text-foreground;
   }

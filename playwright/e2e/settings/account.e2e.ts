@@ -4,7 +4,6 @@
 // TODO: add test that if there are multiple subscriptions, only the latest
 // subscription is used.
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
-// TODO: New dark mode based on Segriodxa article.
 // TODO: implement confirmation before joining organization.
 
 import AxeBuilder from '@axe-core/playwright';

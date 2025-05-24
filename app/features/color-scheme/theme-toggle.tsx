@@ -2,7 +2,7 @@ import { MonitorIcon, MoonIcon, SunIcon } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TbBrightness } from 'react-icons/tb';
-import { Form, useLocation } from 'react-router';
+import { Form } from 'react-router';
 
 import { Button } from '~/components/ui/button';
 import {
@@ -18,7 +18,7 @@ import { cn } from '~/lib/utils';
 
 import {
   COLOR_SCHEME_FORM_KEY,
-  RETURN_TO_FORM_KEY,
+  colorSchemes,
   THEME_TOGGLE_INTENT,
 } from './color-scheme-constants';
 import { useColorScheme } from './use-color-scheme';
@@ -50,7 +50,6 @@ function ColorSchemeButton({
 
 export function ThemeToggle() {
   const { t } = useTranslation('color-scheme');
-  const location = useLocation();
 
   return (
     <DropdownMenu>
@@ -73,26 +72,20 @@ export function ThemeToggle() {
         <DropdownMenuSeparator className="sr-only" />
 
         <DropdownMenuGroup asChild>
-          <Form action="/color-scheme" method="post" replace>
+          <Form action="/color-scheme" method="post" navigate={false}>
             <input name="intent" type="hidden" value={THEME_TOGGLE_INTENT} />
 
-            <input
-              name={RETURN_TO_FORM_KEY}
-              type="hidden"
-              value={location.pathname + location.search}
-            />
-
-            <ColorSchemeButton value="light">
+            <ColorSchemeButton value={colorSchemes.light}>
               <SunIcon />
               {t('dropdown-menu-item-light')}
             </ColorSchemeButton>
 
-            <ColorSchemeButton value="dark">
+            <ColorSchemeButton value={colorSchemes.dark}>
               <MoonIcon />
               {t('dropdown-menu-item-dark')}
             </ColorSchemeButton>
 
-            <ColorSchemeButton value="system">
+            <ColorSchemeButton value={colorSchemes.system}>
               <MonitorIcon />
               {t('dropdown-menu-item-system')}
             </ColorSchemeButton>
