@@ -132,7 +132,6 @@
     "prisma:migrate": "npx prisma migrate dev --name",
     "prisma:push": "npx prisma db push && npx prisma generate",
     "prisma:reset-dev": "npm run prisma:wipe && npm run prisma:seed && npm run dev",
-    "prisma:reset-dev-with-mocks": "npm run prisma:wipe && npm run prisma:seed && npm run dev-with-mocks",
     "prisma:seed": "tsx ./prisma/seed.ts",
     "prisma:setup": "prisma generate && prisma migrate deploy && prisma db push",
     "prisma:studio": "npx prisma studio",

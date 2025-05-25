@@ -2,6 +2,10 @@
 
 Thank you for your interest in contributing to the React Router SaaS Template! This guide outlines the process, standards, and best practices for contributing to the project.
 
+**Boy scout rule:** If you see something that can be improved, please improve it!
+
+> Leave the code better than you found it.
+
 ## Table of Contents
 
 * [Code of Conduct](#code-of-conduct)
@@ -20,42 +24,11 @@ We expect all contributors to adhere to our code of conduct. Please be respectfu
 
 ## Getting Started
 
-Follow these steps to set up your environment:
-
-1. **Fork the repository**
-2. **Clone your fork**:
-
-   ```bash
-   git clone https://github.com/your-username/react-router-saas-template.git
-   cd react-router-saas-template
-   ```
-3. **Add upstream remote** (to keep your fork in sync):
-
-   ```bash
-   git remote add upstream https://github.com/janhesters/react-router-saas-template.git
-   git fetch upstream
-   git branch --set-upstream-to=upstream/main main
-   ```
-4. **Copy environment file**:
-
-   ```bash
-   cp .env.example .env
-   ```
-5. **Install dependencies**:
-
-   ```bash
-   npm install
-   ```
-6. **Start the development server**:
-
-   ```bash
-   npm run dev
-   ```
+Follow the steps outlined in the main [README.md](./README.md#getting-started).
 
 ## Issue Workflow
 
 1. **Create an issue** describing your proposed feature or bug fix. Include:
-
    * A clear title
    * Description of the problem or feature
    * Relevant context (screenshots, logs, examples)
@@ -79,7 +52,7 @@ Follow these steps to set up your environment:
    npm run typecheck    # Type checking
    npm run lint         # Linting
    npm run test         # Unit & integration tests
-   npm run test:e2e     # End-to-end tests
+   npm run test:e2e:ui  # End-to-end tests
    ```
 5. **Commit changes** following our [Commit Guidelines](#commit-guidelines).
 
@@ -108,7 +81,7 @@ type(scope): short description
 After staging, use Commitizen for consistent formatting:
 
 ```bash
-npm run commit
+npx cz
 ```
 
 ## Pull Request Process
@@ -134,7 +107,7 @@ npm run commit
 
 ### Test Location
 
-* **Tests live adjacent to implementation files**, not in a `__tests__` directory. For example:
+* **Tests live adjacent to implementation files**, for example:
 
   ```text
   src/components/Button.tsx
@@ -157,8 +130,8 @@ Follow the project’s testing conventions:
 Run tests with:
 
 ```bash
-npm run test       # Unit & integration
-npm run test:e2e   # End-to-end
+npm run test        # Unit & integration
+npm run test:e2e:ui # End-to-end
 ```
 
 ## Style Guide
@@ -184,15 +157,15 @@ npm run test:e2e   # End-to-end
 
 ### File Structure & Naming
 
-* Components: `PascalCase.tsx`
-* Utilities: `camelCase.ts`
-* Constants: `SCREAMING_SNAKE_CASE.ts`
+* All files must be named in `kebab-case`.
+* All constants must be named in `SCREAMING_SNAKE_CASE`.
 
 ### Code Quality
 
 * ESLint & Prettier
 * Write self-documenting code
+* Add TSDoc to your complex functions
 * Comment complex logic
-* Keep functions small and focused
+* Keep functions small and focused (DOT principle)
 
 Thank you for helping improve the React Router SaaS Template! We look forward to your contributions.
