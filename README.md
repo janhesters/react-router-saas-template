@@ -588,6 +588,27 @@ It's recommended to install an editor plugin (like the
 to get auto-formatting on save. There's also a `npm run format` script you can
 run to format all files in the project.
 
+### AI-Driven Development
+
+This template leverages and was written with **AI-Driven Development (AIDD)**, where you steer high-level design and let AI generate the bulk of your implementation via [**SudoLang**](https://github.com/paralleldrive/sudolang-llm-support), a natural-language-style pseudocode that advanced LLMs already understand.
+
+With AIDD you can:
+
+- Define requirements and architecture in plain pseudocode.
+- Let AI produce 90%+ of your source code (tests, UIs, state layers, etc.).
+- Iterate and refactor faster, keeping consistency across your codebase.
+
+#### Included SudoLang Metaprograms
+
+Under `meta/`, you’ll find ready-to-use scripts that automate common workflows:
+
+- **tdd-functions.sudo** – full TDD pipelines (gather requirements, generate tests, implement)
+- **react-component.sudo** – scaffold React components with tests and docs
+- **action-tests.sudo** – test React Router action handlers
+- **svg-to-react.sudo** – convert SVG assets into React components
+
+Learn more about AIDD and SudoLang in [The Art of Effortless Programming](https://leanpub.com/effortless-programming) by [Eric Elliott](https://www.threads.com/@__ericelliott).
+
 ## Building for Production
 
 Create a production build:
