@@ -90,7 +90,9 @@ const DropzoneContent = ({
   className?: string;
   renderButton?: boolean;
 }) => {
-  const { t } = useTranslation('dropzone');
+  const { t } = useTranslation('components', {
+    keyPrefix: 'dropzone',
+  });
   const {
     files,
     setFiles,
@@ -240,7 +242,9 @@ const DropzoneContent = ({
 };
 
 const DropzoneEmptyState = ({ className }: { className?: string }) => {
-  const { t } = useTranslation('dropzone');
+  const { t } = useTranslation('components', {
+    keyPrefix: 'dropzone',
+  });
   const { maxFiles, maxFileSize, inputRef, isSuccess } = useDropzoneContext();
 
   if (isSuccess) {
@@ -259,7 +263,7 @@ const DropzoneEmptyState = ({ className }: { className?: string }) => {
       <div className="flex flex-col items-center gap-y-1">
         <p className="text-muted-foreground text-xs">
           <Trans
-            i18nKey="dropzone:empty-state.drag-drop"
+            i18nKey="components:dropzone.empty-state.drag-drop"
             count={maxFiles === 1 ? 1 : 2}
             components={{
               1: (

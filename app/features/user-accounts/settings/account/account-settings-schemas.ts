@@ -9,19 +9,20 @@ export const updateUserAccountFormSchema = z.object({
   intent: z.literal(UPDATE_USER_ACCOUNT_INTENT),
   name: z
     .string({
-      invalid_type_error: 'settings:user-account.form.name-must-be-string',
+      invalid_type_error:
+        'user-accounts:settings.user-account.form.name-must-be-string',
     })
     .trim()
-    .min(2, 'settings:user-account.form.name-min-length')
-    .max(128, 'settings:user-account.form.name-max-length'),
+    .min(2, 'user-accounts:settings.user-account.form.name-min-length')
+    .max(128, 'user-accounts:settings.user-account.form.name-max-length'),
   email: z.string().email().optional(),
   avatar: z
     .instanceof(File, {
-      message: 'settings:user-account.form.avatar-must-be-file',
+      message: 'user-accounts:settings.user-account.form.avatar-must-be-file',
     })
     .refine(
       file => file.size <= AVATAR_MAX_FILE_SIZE,
-      'settings:user-account.form.avatar-max-file-size',
+      'user-accounts:settings.user-account.form.avatar-max-file-size',
     )
     .optional(),
 });

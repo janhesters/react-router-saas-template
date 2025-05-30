@@ -15,22 +15,19 @@ import {
   CardTitle,
 } from '~/components/ui/card';
 import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireOnboardedUserAccountExists } from '~/features/onboarding/onboarding-helpers.server';
 import { cn } from '~/lib/utils';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/_index';
 
-export const handle = { i18n: 'organizations' };
-
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
   const {
     data: { user },
-    t,
   } = await promiseHash({
     data: requireOnboardedUserAccountExists(request),
-    t: i18next.getFixedT(request, ['organizations', 'common']),
   });
 
   if (user.memberships.length === 1) {
@@ -39,7 +36,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     memberships: user.memberships,
-    title: getPageTitle(t, 'organizations-list.title'),
+    title: getPageTitle(i18n, 'organizations:organizations-list.title'),
   };
 }
 

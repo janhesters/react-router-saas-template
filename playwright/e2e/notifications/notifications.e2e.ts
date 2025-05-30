@@ -13,7 +13,7 @@ import {
 import { saveNotificationWithRecipientForUserAndOrganizationInDatabaseById } from '~/features/notifications/notifications-model.server';
 import { teardownOrganizationAndMember } from '~/test/test-utils';
 
-import { setupOrganizationAndLoginAsMember } from '../../utils';
+import { getPath, setupOrganizationAndLoginAsMember } from '../../utils';
 
 const createPath = (organizationSlug: string) =>
   href('/organizations/:organizationSlug/dashboard', {
@@ -83,6 +83,20 @@ test.describe('notifications', () => {
 
     await page.goto(createPath(organization.slug));
 
+    // Delay a bit so everything loads
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page.getByRole('button', { name: /open theme menu/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /open notifications/i }),
+    ).toBeVisible();
+
     // Open notifications panel
     await page.getByRole('button', { name: /open notifications/i }).click();
 
@@ -109,6 +123,20 @@ test.describe('notifications', () => {
     });
 
     await page.goto(createPath(organization.slug));
+
+    // Delay a bit so everything loads
+    await expect(
+      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page.getByRole('button', { name: /open theme menu/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: /open unread notifications/i }),
+    ).toBeVisible();
 
     // Open notifications panel
     await page
@@ -160,6 +188,20 @@ test.describe('notifications', () => {
       });
 
       await page.goto(createPath(organization.slug));
+
+      // Delay a bit so everything loads
+      await expect(
+        page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      ).toBeVisible();
+      expect(getPath(page)).toEqual(
+        `/organizations/${organization.slug}/dashboard`,
+      );
+      await expect(
+        page.getByRole('button', { name: /open theme menu/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /open unread notifications/i }),
+      ).toBeVisible();
 
       // Open notifications panel
       await page

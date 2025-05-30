@@ -7,22 +7,19 @@ import { data, href, Link } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { Button } from '~/components/ui/button';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { getPageTitle } from '~/utils/get-page-title.server';
 import { notFound } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/billing_.success';
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request, params }: Route.LoaderArgs) {
+export async function loader({ request, params, context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
   const {
     auth: { headers, role },
-    t,
   } = await promiseHash({
     auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
-    t: i18next.getFixedT(request, ['billing', 'common']),
   });
 
   if (role === OrganizationMembershipRole.member) {
@@ -30,7 +27,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   }
 
   return data(
-    { title: getPageTitle(t, 'billing-success-page.page-title') },
+    {
+      title: getPageTitle(i18n, 'billing:billing-success-page.page-title'),
+    },
     { headers },
   );
 }

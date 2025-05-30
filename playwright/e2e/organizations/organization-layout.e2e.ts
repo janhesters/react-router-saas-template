@@ -170,6 +170,9 @@ test.describe('organization layout', () => {
       const htmlElement = page.locator('html');
       await expect(htmlElement).not.toHaveClass('dark');
 
+      await expect(
+        page.getByRole('button', { name: /open notifications/i }),
+      ).toBeVisible();
       await page.getByRole('button', { name: /open theme menu/i }).click();
       await page.getByRole('menuitem', { name: /dark/i }).click();
 

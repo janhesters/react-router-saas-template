@@ -2,11 +2,11 @@ import type { AuthOtpResponse } from '@supabase/supabase-js';
 import { redirect } from 'react-router';
 import { z } from 'zod';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { conflict, tooManyRequests } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
 import { requireUserIsAnonymous } from '../user-authentication-helpers.server';
@@ -29,10 +29,11 @@ const registerSchema = z.discriminatedUnion('intent', [
 
 export async function registerAction({
   request,
+  context,
 }: Route.ActionArgs): Promise<RegisterActionData> {
   try {
     const { supabase, headers } = await requireUserIsAnonymous(request);
-    const t = await i18next.getFixedT(request);
+    const i18n = getInstance(context);
     const body = await validateFormData(request, registerSchema);
 
     switch (body.intent) {
@@ -55,7 +56,7 @@ export async function registerAction({
         const { data, error } = await supabase.auth.signInWithOtp({
           email: body.email,
           options: {
-            data: { intent: body.intent, appName: t('common:app-name') },
+            data: { intent: body.intent, appName: i18n.t('common:app-name') },
             shouldCreateUser: true,
           },
         });

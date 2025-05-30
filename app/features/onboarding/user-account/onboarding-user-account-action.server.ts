@@ -1,5 +1,6 @@
 import { href, redirect } from 'react-router';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { destroyEmailInviteInfoSession } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { destroyInviteLinkInfoSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { updateEmailInviteLinkInDatabaseById } from '~/features/organizations/organizations-email-invite-link-model.server';
@@ -7,7 +8,6 @@ import { getInviteInfoForAuthRoutes } from '~/features/organizations/organizatio
 import { updateUserAccountInDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import i18next from '~/utils/i18next.server';
 import { redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -18,6 +18,7 @@ import type { Route } from '.react-router/types/app/routes/onboarding+/+types/us
 
 export async function onboardingUserAccountAction({
   request,
+  context,
 }: Route.ActionArgs) {
   try {
     const { headers, user } = await requireUserNeedsOnboarding(request);
@@ -32,9 +33,7 @@ export async function onboardingUserAccountAction({
       await getInviteInfoForAuthRoutes(request);
 
     if (user.memberships.length > 0 && inviteLinkInfo) {
-      const t = await i18next.getFixedT(request, 'organizations', {
-        keyPrefix: 'accept-invite-link',
-      });
+      const i18n = getInstance(context);
 
       if (inviteLinkInfo.type === 'emailInvite') {
         await updateEmailInviteLinkInDatabaseById({
@@ -48,10 +47,15 @@ export async function onboardingUserAccountAction({
           organizationSlug: inviteLinkInfo.organizationSlug,
         }),
         {
-          title: t('join-success-toast-title'),
-          description: t('join-success-toast-description', {
-            organizationName: inviteLinkInfo.organizationName,
-          }),
+          title: i18n.t(
+            'organizations:accept-invite-link.join-success-toast-title',
+          ),
+          description: i18n.t(
+            'organizations:accept-invite-link.join-success-toast-description',
+            {
+              organizationName: inviteLinkInfo.organizationName,
+            },
+          ),
           type: 'success',
         },
         {

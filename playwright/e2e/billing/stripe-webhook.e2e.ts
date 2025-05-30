@@ -644,6 +644,7 @@ test.describe(`${path} API route`, () => {
                 metadata: {},
                 discounts: [],
                 plan: price.stripeId, // Required by Stripe API types
+                billing_thresholds: null,
               },
             ],
           }),
@@ -736,6 +737,7 @@ test.describe(`${path} API route`, () => {
                 metadata: {},
                 discounts: [],
                 plan: price.stripeId,
+                billing_thresholds: null,
               },
             ],
           }),
@@ -828,6 +830,7 @@ test.describe(`${path} API route`, () => {
                 metadata: {},
                 discounts: [],
                 plan: price.stripeId,
+                billing_thresholds: null,
               },
             ],
           }),

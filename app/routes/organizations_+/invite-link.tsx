@@ -1,5 +1,6 @@
 import { promiseHash } from 'remix-utils/promise';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { acceptInviteLinkAction } from '~/features/organizations/accept-invite-link/accept-invite-link-action.server';
 import {
   getInviteLinkToken,
@@ -7,20 +8,17 @@ import {
 } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
 import { AcceptInviteLinkPage } from '~/features/organizations/accept-invite-link/accept-invite-link-page';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/invite-link';
 
-export const handle = { i18n: 'organizations' };
-
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
   const token = getInviteLinkToken(request);
-  const { data, t } = await promiseHash({
+  const { data } = await promiseHash({
     data: requireCreatorAndOrganizationByTokenExists(token),
-    t: i18next.getFixedT(request, ['common', 'organizations']),
   });
   return {
-    title: getPageTitle(t, 'accept-invite-link.page-title'),
+    title: getPageTitle(i18n, 'organizations:accept-invite-link.page-title'),
     token,
     ...data,
   };

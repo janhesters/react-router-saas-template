@@ -18,17 +18,24 @@ import { HoneypotProvider } from 'remix-utils/honeypot/react';
 import { promiseHash } from 'remix-utils/promise';
 import sonnerStyles from 'sonner/dist/styles.css?url';
 
-import i18next from '~/utils/i18next.server';
-
 import type { Route } from './+types/root';
 import { NotFound } from './components/not-found';
 import { Toaster } from './components/ui/sonner';
 import { getColorScheme } from './features/color-scheme/color-scheme.server';
 import { ColorSchemeScript } from './features/color-scheme/color-scheme-script';
 import { useColorScheme } from './features/color-scheme/use-color-scheme';
+import {
+  getInstance,
+  getLocale,
+  i18nextMiddleware,
+} from './features/localization/middleware.server';
+import { createLocaleHeaders } from './features/localization/session.server';
 import { useToast } from './hooks/use-toast';
+import { combineHeaders } from './utils/combine-headers.server';
 import { honeypot } from './utils/honeypot.server';
 import { getToast } from './utils/toast.server';
+
+export const unstable_middleware = [i18nextMiddleware];
 
 export const links: Route.LinksFunction = () => [
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -43,8 +50,6 @@ export const links: Route.LinksFunction = () => [
   },
   { rel: 'stylesheet', href: sonnerStyles },
 ];
-
-export const handle = { i18n: ['common', 'color-scheme'] };
 
 /**
  * By enabling single fetch, the loaders will no longer revalidate the data when the action status is in the 4xx range.
@@ -62,16 +67,15 @@ export const shouldRevalidate = ({
   return defaultShouldRevalidate;
 };
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const { colorScheme, honeypotInputProps, locale, t, toastData } =
-    await promiseHash({
-      colorScheme: getColorScheme(request),
-      honeypotInputProps: honeypot.getInputProps(),
-      locale: i18next.getLocale(request),
-      t: i18next.getFixedT(request),
-      toastData: getToast(request),
-    });
-  const title = t('app-name');
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const { colorScheme, honeypotInputProps, toastData } = await promiseHash({
+    colorScheme: getColorScheme(request),
+    honeypotInputProps: honeypot.getInputProps(),
+    toastData: getToast(request),
+  });
+  const locale = getLocale(context);
+  const i18next = getInstance(context);
+  const title = i18next.t('common:app-name');
   const { toast, headers: toastHeaders } = toastData;
   return data(
     {
@@ -81,7 +85,9 @@ export async function loader({ request }: Route.LoaderArgs) {
       title,
       toast,
     },
-    { headers: toastHeaders },
+    {
+      headers: combineHeaders(toastHeaders, await createLocaleHeaders(locale)),
+    },
   );
 }
 
@@ -91,21 +97,18 @@ export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
   const data = useLoaderData<typeof loader>();
-  const locale = data?.locale ?? 'en';
   const error = useRouteError();
   const isErrorFromRoute = isRouteErrorResponse(error);
   const colorScheme = useColorScheme();
 
   const { i18n } = useTranslation();
-
-  useChangeLanguage(locale);
   useToast(data?.toast);
 
   return (
     <html
       className={colorScheme}
-      lang={locale}
-      dir={i18n.dir()}
+      lang={i18n.language}
+      dir={i18n.dir(i18n.language)}
       // When the user a.) has their system color scheme set to "dark", and b.)
       // picks "system" in the theme toggle, the color scheme is undefined from
       // the root loader, but "dark" in the client. There won't be a flash
@@ -136,7 +139,8 @@ export function Layout({
   );
 }
 
-export default function App() {
+export default function App({ loaderData }: Route.ComponentProps) {
+  useChangeLanguage(loaderData.locale);
   return <Outlet />;
 }
 

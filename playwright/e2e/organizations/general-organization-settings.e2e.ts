@@ -165,8 +165,17 @@ test.describe('general organization settings', () => {
       // Verify page content
       await expect(page).toHaveTitle(/general | react router saas template/i);
       await expect(
+        page.getByRole('heading', { name: /general/i, level: 2 }),
+      ).toBeVisible();
+      await expect(
         page.getByText(/general settings for this organization/i),
       ).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
       await expect(
         page.getByRole('link', { name: /team members/i }),
       ).toHaveAttribute(
@@ -174,7 +183,16 @@ test.describe('general organization settings', () => {
         `/organizations/${organization.slug}/settings/members`,
       );
       await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
+      await expect(
         page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/your organization's public display name/i),
       ).toBeVisible();
 
       // Enter organization name first time
@@ -293,6 +311,39 @@ test.describe('general organization settings', () => {
       });
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);
+
+      // Verify page content
+      await expect(page).toHaveTitle(/general | react router saas template/i);
+      await expect(
+        page.getByRole('heading', { name: /general/i, level: 2 }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/general settings for this organization/i),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
+      await expect(
+        page.getByRole('textbox', { name: /organization name/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByText(/your organization's public display name/i),
+      ).toBeVisible();
 
       // Open delete dialog
       await page.getByRole('button', { name: /delete organization/i }).click();

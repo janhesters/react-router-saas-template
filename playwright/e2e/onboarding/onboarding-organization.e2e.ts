@@ -77,6 +77,12 @@ test.describe('onboarding organization page', () => {
       await expect(
         page.getByRole('heading', { name: /onboarding/i, level: 1 }),
       ).toBeVisible();
+      await expect(
+        page.getByRole('navigation', { name: /onboarding progress/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('link', { name: /organization/i }),
+      ).toHaveAttribute('aria-current', 'step');
       await expect(page.getByText(/create your organization/i)).toBeVisible();
       await expect(
         page.getByText(

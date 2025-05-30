@@ -14,7 +14,7 @@ import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from
 
 import type { Route } from './+types/register.confirm';
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase, headers } = await requireUserIsAnonymous(request);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
@@ -47,6 +47,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
+        context,
         // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
         emailInviteId: emailInviteInfo.emailInviteId,
@@ -58,6 +59,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
+        context,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
         inviteLinkToken: inviteLinkInfo.inviteLinkToken,
         organizationId: inviteLinkInfo.organizationId,

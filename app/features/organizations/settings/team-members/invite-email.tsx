@@ -3,7 +3,7 @@ import { Button, Container, Html, Text } from '@react-email/components';
 type InviteEmailProps = {
   /**
    * Pre-translated and interpolated strings from:
-   * organizations.settings.team-members.invite-email.*
+   * organizations:settings.team-members.invite-email.*
    */
   title: string;
   description: string;

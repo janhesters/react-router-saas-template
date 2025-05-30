@@ -5,12 +5,12 @@ import type {
   UserAccount,
 } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
+import type { unstable_RouterContextProvider } from 'react-router';
 import { href } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { notFound } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
 import { redirectWithToast } from '~/utils/toast.server';
@@ -19,6 +19,7 @@ import {
   adjustSeats,
   deactivateStripeCustomer,
 } from '../billing/stripe-helpers.server';
+import { getInstance } from '../localization/middleware.server';
 import type {
   OnboardingUser,
   OrganizationWithMembershipsAndSubscriptions,
@@ -140,12 +141,14 @@ export async function deleteOrganization(organizationId: Organization['id']) {
  * @param inviteLinkId - The ID of the invite link to accept.
  */
 export async function acceptInviteLink({
+  context,
   userAccountId,
   organizationId,
   inviteLinkId,
   inviteLinkToken,
   request,
 }: {
+  context: unstable_RouterContextProvider;
   userAccountId: UserAccount['id'];
   organizationId: Organization['id'];
   inviteLinkId: OrganizationInviteLink['id'];
@@ -164,14 +167,16 @@ export async function acceptInviteLink({
       const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
 
       if (organization._count.memberships >= maxSeats) {
-        const t = await i18next.getFixedT(request, 'organizations', {
-          keyPrefix: 'accept-invite-link',
-        });
+        const i18n = getInstance(context);
         throw await redirectWithToast(
           `${href('/organizations/invite-link')}?token=${inviteLinkToken}`,
           {
-            title: t('organization-full-toast-title'),
-            description: t('organization-full-toast-description'),
+            title: i18n.t(
+              'organizations:accept-invite-link.organization-full-toast-title',
+            ),
+            description: i18n.t(
+              'organizations:accept-invite-link.organization-full-toast-description',
+            ),
             type: 'error',
           },
           { headers: await destroyInviteLinkInfoSession(request) },
@@ -208,6 +213,7 @@ export async function acceptInviteLink({
  * @param inviteLinkId - The ID of the invite link to accept.
  */
 export async function acceptEmailInvite({
+  context,
   deactivatedAt = new Date(),
   emailInviteId,
   emailInviteToken,
@@ -216,6 +222,7 @@ export async function acceptEmailInvite({
   role,
   userAccountId,
 }: {
+  context: unstable_RouterContextProvider;
   deactivatedAt?: OrganizationEmailInviteLink['deactivatedAt'];
   emailInviteId: OrganizationEmailInviteLink['id'];
   emailInviteToken: OrganizationEmailInviteLink['token'];
@@ -236,14 +243,16 @@ export async function acceptEmailInvite({
       const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
 
       if (organization._count.memberships >= maxSeats) {
-        const t = await i18next.getFixedT(request, 'organizations', {
-          keyPrefix: 'accept-email-invite',
-        });
+        const i18n = getInstance(context);
         throw await redirectWithToast(
           `${href('/organizations/email-invite')}?token=${emailInviteToken}`,
           {
-            title: t('organization-full-toast-title'),
-            description: t('organization-full-toast-description'),
+            title: i18n.t(
+              'organizations:accept-email-invite.organization-full-toast-title',
+            ),
+            description: i18n.t(
+              'organizations:accept-email-invite.organization-full-toast-description',
+            ),
             type: 'error',
           },
           { headers: await destroyEmailInviteInfoSession(request) },

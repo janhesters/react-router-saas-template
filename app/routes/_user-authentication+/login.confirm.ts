@@ -1,5 +1,6 @@
 import { href, redirect } from 'react-router';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { getValidEmailInviteInfo } from '~/features/organizations/accept-email-invite/accept-email-invite-helpers.server';
 import { destroyEmailInviteInfoSession } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
@@ -13,12 +14,11 @@ import { retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail } from '~/f
 import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
-import i18next from '~/utils/i18next.server';
 import { redirectWithToast } from '~/utils/toast.server';
 
 import type { Route } from './+types/register.confirm';
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase, headers } = await requireUserIsAnonymous(request);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
@@ -61,9 +61,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     }));
 
   if (inviteLinkInfo || emailInviteInfo) {
-    const t = await i18next.getFixedT(request, 'organizations', {
-      keyPrefix: 'accept-invite-link',
-    });
+    const i18n = getInstance(context);
     const organizationId =
       inviteLinkInfo?.organizationId ?? emailInviteInfo!.organizationId;
     const organizationSlug =
@@ -81,10 +79,15 @@ export async function loader({ request }: Route.LoaderArgs) {
           organizationSlug,
         }),
         {
-          title: t('already-member-toast-title'),
-          description: t('already-member-toast-description', {
-            organizationName,
-          }),
+          title: i18n.t(
+            'organizations:accept-invite-link.already-member-toast-title',
+          ),
+          description: i18n.t(
+            'organizations:accept-invite-link.already-member-toast-description',
+            {
+              organizationName,
+            },
+          ),
           type: 'info',
         },
         {
@@ -99,6 +102,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
+        context,
         // If the user already has a name, we deactivate the email invite link,
         // otherwise this will be done during onboarding.
         // eslint-disable-next-line unicorn/no-null
@@ -119,10 +123,15 @@ export async function loader({ request }: Route.LoaderArgs) {
               organizationSlug: emailInviteInfo.organizationSlug,
             }),
             {
-              title: t('join-success-toast-title'),
-              description: t('join-success-toast-description', {
-                organizationName: emailInviteInfo.organizationName,
-              }),
+              title: i18n.t(
+                'organizations:accept-invite-link.join-success-toast-title',
+              ),
+              description: i18n.t(
+                'organizations:accept-invite-link.join-success-toast-description',
+                {
+                  organizationName: emailInviteInfo.organizationName,
+                },
+              ),
               type: 'success',
             },
             {
@@ -138,6 +147,7 @@ export async function loader({ request }: Route.LoaderArgs) {
           redirect(href('/onboarding/user-account'), { headers });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
+        context,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
         inviteLinkToken: inviteLinkInfo.inviteLinkToken,
         organizationId: inviteLinkInfo.organizationId,
@@ -153,10 +163,15 @@ export async function loader({ request }: Route.LoaderArgs) {
               organizationSlug: inviteLinkInfo.organizationSlug,
             }),
             {
-              title: t('join-success-toast-title'),
-              description: t('join-success-toast-description', {
-                organizationName: inviteLinkInfo.organizationName,
-              }),
+              title: i18n.t(
+                'organizations:accept-invite-link.join-success-toast-title',
+              ),
+              description: i18n.t(
+                'organizations:accept-invite-link.join-success-toast-description',
+                {
+                  organizationName: inviteLinkInfo.organizationName,
+                },
+              ),
               type: 'success',
             },
             {

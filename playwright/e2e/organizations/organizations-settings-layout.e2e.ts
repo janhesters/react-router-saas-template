@@ -175,6 +175,22 @@ test.describe('organization settings layout', () => {
 
       await page.goto(`/organizations/${organization.slug}/settings/general`);
 
+      // Verify settings navigation (delay a bit so everything loads)
+      const settingsNav = page.getByRole('navigation', {
+        name: /settings navigation/i,
+      });
+      await expect(settingsNav).toBeVisible();
+
+      // Verify general settings link is active
+      const generalLink = settingsNav.getByRole('link', { name: /general/i });
+      await expect(generalLink).toBeVisible();
+      await expect(generalLink).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(generalLink).toHaveAttribute('data-active', 'true');
+
+      // Switch to other organization
       await page
         .getByRole('button', { name: new RegExp(organization.name, 'i') })
         .click();

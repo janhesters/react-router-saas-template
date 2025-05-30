@@ -5,10 +5,10 @@ import { Link, Outlet } from 'react-router';
 import { Button } from '~/components/ui/button';
 import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
 
-export const handle = { i18n: 'settings' };
-
 export default function SettingsLayout() {
-  const { t } = useTranslation('settings', { keyPrefix: 'layout' });
+  const { t } = useTranslation('user-accounts', {
+    keyPrefix: 'settings.layout',
+  });
 
   return (
     <>

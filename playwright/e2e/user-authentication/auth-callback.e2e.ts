@@ -349,11 +349,15 @@ test.describe(`${path} API route`, () => {
     });
 
     // Navigate to callback with code
-    await page.goto(`${path}?code=${code}`);
+    await page.goto(`${path}?code=${code}`, { waitUntil: 'load' });
 
     // Verify redirect to onboarding page
     await expect(
       page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/create your account/i)).toBeVisible();
+    await expect(
+      page.getByText(/please create your user account to get started./i),
     ).toBeVisible();
     expect(getPath(page)).toEqual(`/onboarding/user-account`);
 
@@ -364,7 +368,10 @@ test.describe(`${path} API route`, () => {
 
     // Enter the account details
     const { name } = createPopulatedUserAccount();
+    // Enter the name twice so JavaScript can load properly
     await page.getByRole('textbox', { name: /name/i }).fill(name);
+    await page.getByRole('textbox', { name: /email/i }).clear();
+    await page.getByRole('textbox', { name: /email/i }).fill(email);
     await page.getByRole('button', { name: /save/i }).click();
 
     // Verify success toast

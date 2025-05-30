@@ -3,6 +3,7 @@ import { data, href, useNavigation } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserNeedsOnboarding } from '~/features/onboarding/onboarding-helpers.server';
 import { OnboardingSteps } from '~/features/onboarding/onboarding-steps';
 import { onboardingOrganizationAction } from '~/features/onboarding/organization/onboarding-organization-action.server';
@@ -10,20 +11,19 @@ import { ONBOARDING_ORGANIZATION_INTENT } from '~/features/onboarding/organizati
 import { OnboardingOrganizationFormCard } from '~/features/onboarding/organization/onboarding-organization-form-card';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/organization';
 
-export const handle = { i18n: ['onboarding', 'dropzone'] };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const { t, auth } = await promiseHash({
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
+  const { auth } = await promiseHash({
     auth: requireUserNeedsOnboarding(request),
-    t: i18next.getFixedT(request, ['onboarding', 'common']),
   });
 
   return data(
-    { title: getPageTitle(t, 'organization.title') },
+    {
+      title: getPageTitle(i18n, 'organizations:onboarding.organization.title'),
+    },
     { headers: auth.headers },
   );
 }

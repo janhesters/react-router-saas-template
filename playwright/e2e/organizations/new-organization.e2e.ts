@@ -235,7 +235,9 @@ test.describe('new organization page', () => {
         page,
       });
 
-      await page.goto(`/organizations/${organization.slug}`);
+      await page.goto(`/organizations/${organization.slug}`, {
+        waitUntil: 'load',
+      });
 
       await page
         .getByRole('button', { name: new RegExp(organization.name, 'i') })
@@ -295,8 +297,25 @@ test.describe('new organization page', () => {
         page,
       });
 
-      await page.goto(`/organizations/${organization.slug}`);
+      await page.goto(`/organizations/${organization.slug}`, {
+        waitUntil: 'load',
+      });
 
+      // Delay a bit so everything loads
+      await expect(
+        page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      ).toBeVisible();
+      expect(getPath(page)).toEqual(
+        `/organizations/${organization.slug}/dashboard`,
+      );
+      await expect(
+        page.getByRole('button', { name: /open theme menu/i }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole('button', { name: /open unread notifications/i }),
+      ).toBeVisible();
+
+      // Open organization switcher
       await page
         .getByRole('button', { name: new RegExp(organization.name, 'i') })
         .click();

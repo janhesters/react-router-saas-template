@@ -296,6 +296,25 @@ test.describe('organization settings members page', () => {
 
       await page.goto(getMembersPagePath(organization.slug));
 
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
+
       // Verify that it shows the correct description for admins
       await expect(
         page.getByText(/manage your team members and their permissions./i),
@@ -403,6 +422,26 @@ test.describe('organization settings members page', () => {
       )!;
 
       await page.goto(getMembersPagePath(organization.slug));
+
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
+
       const table = page.getByRole('table');
 
       // Deactivate Member
@@ -793,6 +832,25 @@ test.describe('organization settings members page', () => {
 
       await page.goto(getMembersPagePath(organization.slug));
 
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
+
       // Locate elements within the "Invite by Email" card
       const emailInput = page.getByLabel(/email/i);
       const roleDropdown = page.getByLabel(/role/i);
@@ -932,6 +990,25 @@ test.describe('organization settings members page', () => {
 
       // Navigate to the team members page
       await page.goto(getMembersPagePath(organization.slug));
+
+      await expect(
+        page.getByRole('link', { name: /general/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/general`,
+      );
+      await expect(
+        page.getByRole('link', { name: /team members/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/members`,
+      );
+      await expect(
+        page.getByRole('link', { name: /billing/i }),
+      ).toHaveAttribute(
+        'href',
+        `/organizations/${organization.slug}/settings/billing`,
+      );
 
       // Verify that you're on the correct page
       await expect(page.getByText(/invite by email/i)).toBeVisible();

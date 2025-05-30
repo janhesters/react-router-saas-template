@@ -4,10 +4,10 @@ import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
 import { updateStripeCustomer } from '~/features/billing/stripe-helpers.server';
+import { getInstance } from '~/features/localization/middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { forbidden } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { slugify } from '~/utils/slugify.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
@@ -37,13 +37,12 @@ const generalOrganizationSettingsActionSchema = z.discriminatedUnion('intent', [
 export async function generalOrganizationSettingsAction({
   request,
   params,
+  context,
 }: Route.ActionArgs) {
   try {
-    const { auth, t } = await promiseHash({
+    const i18n = getInstance(context);
+    const { auth } = await promiseHash({
       auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
-      t: i18next.getFixedT(request, 'organizations', {
-        keyPrefix: 'settings.general.toast',
-      }),
     });
     const { headers, organization, role } = auth;
     const body = await validateFormData(
@@ -88,14 +87,21 @@ export async function generalOrganizationSettingsAction({
               href(`/organizations/:organizationSlug/settings/general`, {
                 organizationSlug: updates.slug,
               }),
-              { title: t('organization-profile-updated'), type: 'success' },
+              {
+                title: i18n.t(
+                  'organizations:settings.general.toast.organization-profile-updated',
+                ),
+                type: 'success',
+              },
               { headers },
             );
           }
         }
 
         const toastHeaders = await createToastHeaders({
-          title: t('organization-profile-updated'),
+          title: i18n.t(
+            'organizations:settings.general.toast.organization-profile-updated',
+          ),
           type: 'success',
         });
         return data({}, { headers: combineHeaders(headers, toastHeaders) });
@@ -105,7 +111,12 @@ export async function generalOrganizationSettingsAction({
         await deleteOrganization(organization.id);
         return redirectWithToast(
           href('/organizations'),
-          { title: t('organization-deleted'), type: 'success' },
+          {
+            title: i18n.t(
+              'organizations:settings.general.toast.organization-deleted',
+            ),
+            type: 'success',
+          },
           { headers },
         );
       }

@@ -3,6 +3,7 @@ import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
 import { adjustSeats } from '~/features/billing/stripe-helpers.server';
+import { getInstance } from '~/features/localization/middleware.server';
 import { deleteOrganization } from '~/features/organizations/organizations-helpers.server';
 import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import {
@@ -13,7 +14,6 @@ import { supabaseAdminClient } from '~/features/user-authentication/supabase.ser
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { badRequest } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
@@ -32,15 +32,16 @@ const schema = z.discriminatedUnion('intent', [
   z.object({ intent: z.literal(DELETE_USER_ACCOUNT_INTENT) }),
 ]);
 
-export async function accountSettingsAction({ request }: Route.ActionArgs) {
+export async function accountSettingsAction({
+  request,
+  context,
+}: Route.ActionArgs) {
   try {
-    const { auth, t } = await promiseHash({
+    const i18n = getInstance(context);
+    const { auth } = await promiseHash({
       auth: requireAuthenticatedUserWithMembershipsAndSubscriptionsExists(
         request,
       ),
-      t: i18next.getFixedT(request, 'settings', {
-        keyPrefix: 'user-account.toast',
-      }),
     });
     const { user, headers } = auth;
     const body = await validateFormData(request, schema, {
@@ -74,7 +75,9 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
         }
 
         const toastHeaders = await createToastHeaders({
-          title: t('user-account-updated'),
+          title: i18n.t(
+            'user-accounts:settings.user-account.toast.user-account-updated',
+          ),
           type: 'success',
         });
         return data(
@@ -145,7 +148,12 @@ export async function accountSettingsAction({ request }: Route.ActionArgs) {
 
         return redirectWithToast(
           '/',
-          { title: t('user-account-deleted'), type: 'success' },
+          {
+            title: i18n.t(
+              'user-accounts:settings.user-account.toast.user-account-deleted',
+            ),
+            type: 'success',
+          },
           { headers },
         );
       }

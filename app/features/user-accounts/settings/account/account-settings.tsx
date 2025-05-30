@@ -56,7 +56,9 @@ export type AccountSettingsProps = {
 };
 
 function AvatarDragAndDrop({ isInvalid }: { isInvalid: boolean }) {
-  const { t } = useTranslation('drag-and-drop');
+  const { t } = useTranslation('components', {
+    keyPrefix: 'drag-and-drop',
+  });
 
   return (
     // The real input of the form is the hidden input above the drag and drop
@@ -72,7 +74,7 @@ function AvatarDragAndDrop({ isInvalid }: { isInvalid: boolean }) {
         <DragAndDropHeading>
           <Trans
             components={{ 1: <DrapAndDropButton /> }}
-            i18nKey="drag-and-drop:heading"
+            i18nKey="components:drag-and-drop.heading"
           />
         </DragAndDropHeading>
 
@@ -93,8 +95,8 @@ export function AccountSettings({
   user,
   success,
 }: AccountSettingsProps) {
-  const { t } = useTranslation('settings', {
-    keyPrefix: 'user-account.form',
+  const { t } = useTranslation('user-accounts', {
+    keyPrefix: 'settings.user-account.form',
   });
   const submit = useSubmit();
 

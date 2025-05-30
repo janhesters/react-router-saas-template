@@ -128,6 +128,10 @@ test.describe(`${path} API route`, () => {
     await expect(
       page.getByRole('heading', { name: /onboarding/i, level: 1 }),
     ).toBeVisible();
+    await expect(page.getByText(/create your account/i)).toBeVisible();
+    await expect(
+      page.getByText(/please create your user account to get started/i),
+    ).toBeVisible();
     expect(getPath(page)).toEqual(`/onboarding/user-account`);
 
     // Verify the user account was created
@@ -218,6 +222,10 @@ test.describe(`${path} API route`, () => {
     // Verify redirect to onboarding page
     await expect(
       page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page.getByText(/create your account/i)).toBeVisible();
+    await expect(
+      page.getByText(/please create your user account to get started/i),
     ).toBeVisible();
     expect(getPath(page)).toEqual(`/onboarding/user-account`);
 

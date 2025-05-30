@@ -24,7 +24,7 @@ export const createStripeEventFactory: Factory<
 > = ({
   id = `evt_${createId()}`,
   object = 'event',
-  api_version = '2025-04-30.basil',
+  api_version = '2025-05-28.basil',
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
   livemode = false,
   pending_webhooks = faker.number.int({ min: 1, max: 5 }),

@@ -79,6 +79,17 @@ test.describe('account settings', () => {
 
     await page.goto('/settings/account');
 
+    // Verify header
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page).toHaveTitle(/account | react router saas template/i);
+    await expect(page.getByText(/manage your account settings/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /back/i })).toHaveAttribute(
+      'href',
+      '/organizations',
+    );
+
     // Update name
     const newName = createPopulatedUserAccount().name;
     await expect(
@@ -111,6 +122,17 @@ test.describe('account settings', () => {
     const user = await loginAndSaveUserAccountToDatabase({ page });
 
     await page.goto('/settings/account');
+
+    // Verify header
+    await expect(
+      page.getByRole('heading', { name: /settings/i, level: 1 }),
+    ).toBeVisible();
+    await expect(page).toHaveTitle(/account | react router saas template/i);
+    await expect(page.getByText(/manage your account settings/i)).toBeVisible();
+    await expect(page.getByRole('link', { name: /back/i })).toHaveAttribute(
+      'href',
+      '/organizations',
+    );
 
     // Submit invalid name
     await expect(
@@ -266,7 +288,7 @@ test.describe('account settings', () => {
     });
 
     // Visit the account settings page
-    await page.goto('/settings/account');
+    await page.goto('/settings/account', { waitUntil: 'load' });
     await expect(
       page.getByRole('heading', { name: /danger zone/i, level: 2 }),
     ).toBeVisible();
