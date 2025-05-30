@@ -1,15 +1,23 @@
 import { GalleryVerticalEndIcon } from 'lucide-react';
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 
 import { Button } from '~/components/ui/button';
+import { cn } from '~/lib/utils';
 
-export function Header() {
+export function Header({ className, ...props }: ComponentProps<'header'>) {
   const { t } = useTranslation('landing', { keyPrefix: 'header' });
   const { t: tCommon } = useTranslation('common');
 
   return (
-    <header className="fixed top-0 left-0 z-50 w-full border-b backdrop-blur-md">
+    <header
+      className={cn(
+        'fixed top-0 left-0 z-50 w-full border-b backdrop-blur-md',
+        className,
+      )}
+      {...props}
+    >
       <div className="container mx-auto flex h-(--header-height) items-center justify-between gap-2 px-4">
         <Link
           className="flex items-center gap-2 self-center font-medium"

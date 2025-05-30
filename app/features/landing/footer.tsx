@@ -1,18 +1,23 @@
+import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
 
 import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
+import { cn } from '~/lib/utils';
 
 import { ThemeToggle } from '../color-scheme/theme-toggle';
 import { ReactsquadLogoIcon } from './svgs/reactsquad-logo-icon';
 
-export function Footer() {
+export function Footer({ className, ...props }: ComponentProps<'footer'>) {
   const { t } = useTranslation('landing', { keyPrefix: 'footer' });
 
   return (
-    <footer className="border-t">
-      <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 py-4 sm:flex-row md:h-(--header-height) md:py-0">
+    <footer
+      className={cn('border-t md:h-[var(--header-height)]', className)}
+      {...props}
+    >
+      <div className="container mx-auto flex h-full flex-col items-center justify-between gap-4 px-4 py-4 sm:flex-row md:py-0">
         <div className="flex items-center gap-2">
           <Button
             aria-label={t('social.github')}
