@@ -224,6 +224,7 @@ export const createStripeSubscriptionItemFactory: Factory<
       1000,
   ),
   tax_rates = [],
+  billing_thresholds = null,
 } = {}) => ({
   id,
   object,
@@ -237,6 +238,7 @@ export const createStripeSubscriptionItemFactory: Factory<
   current_period_start,
   current_period_end,
   tax_rates,
+  billing_thresholds,
 });
 
 /**
@@ -299,6 +301,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     },
   },
   trial_start = null,
+  billing_thresholds = null,
 } = {}) => {
   const defaultItem = createStripeSubscriptionItemFactory({
     subscription: id,
@@ -357,6 +360,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     trial_end,
     trial_settings,
     trial_start,
+    billing_thresholds,
   };
 };
 
@@ -557,6 +561,7 @@ export const createStripeSubscriptionSchedulePhaseFactory: Factory<
       price: `price_${createId()}`,
       quantity: 1,
       tax_rates: [],
+      billing_thresholds: null,
     },
   ],
   metadata = {},
@@ -565,6 +570,7 @@ export const createStripeSubscriptionSchedulePhaseFactory: Factory<
   start_date = Math.floor(faker.date.recent().getTime() / 1000),
   transfer_data = null,
   trial_end = null,
+  billing_thresholds = null,
 } = {}) => ({
   add_invoice_items,
   application_fee_percent,
@@ -585,6 +591,7 @@ export const createStripeSubscriptionSchedulePhaseFactory: Factory<
   start_date,
   transfer_data,
   trial_end,
+  billing_thresholds,
 });
 
 /**
@@ -627,6 +634,7 @@ export const createStripeSubscriptionScheduleFactory: Factory<
     },
     on_behalf_of: null,
     transfer_data: null,
+    billing_thresholds: null,
   },
   end_behavior = 'release' as const,
   livemode = false,

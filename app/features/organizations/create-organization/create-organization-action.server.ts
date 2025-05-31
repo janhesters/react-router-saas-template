@@ -8,7 +8,7 @@ import { validateFormData } from '~/utils/validate-form-data.server';
 
 import type { CreateOrganizationFormErrors } from './create-organization-form-card';
 import { createOrganizationFormSchema } from './create-organization-schemas';
-import type { Route } from '.react-router/types/app/routes/onboarding+/+types/organization';
+import type { Route } from '.react-router/types/app/routes/organizations_+/+types/new';
 
 export async function createOrganizationAction({ request }: Route.ActionArgs) {
   try {
