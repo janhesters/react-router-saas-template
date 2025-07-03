@@ -253,10 +253,11 @@ describe('/organizations/invite-link route action', () => {
           headers: { cookie: maybeToast ?? '' },
         }),
       );
+      const escapedName = organization.name.replace("'", '&#39;');
       expect(toast).toMatchObject({
         id: expect.any(String) as string,
         title: 'Already a member',
-        description: `You are already a member of ${organization.name}`,
+        description: `You are already a member of ${escapedName}`,
         type: 'info',
       });
     });

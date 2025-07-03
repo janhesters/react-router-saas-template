@@ -284,10 +284,11 @@ describe('/onboarding/user-account route action', () => {
           headers: { cookie: maybeToast ?? '' },
         }),
       );
+      const escapedName = organization.name.replace("'", '&#39;');
       expect(toast).toMatchObject({
         id: expect.any(String) as string,
         title: 'Successfully joined organization',
-        description: `You are now a member of ${organization.name}`,
+        description: `You are now a member of ${escapedName}`,
         type: 'success',
       });
     });
@@ -346,10 +347,11 @@ describe('/onboarding/user-account route action', () => {
           headers: { cookie: maybeToast ?? '' },
         }),
       );
+      const escapedName = organization.name.replace("'", '&#39;');
       expect(toast).toMatchObject({
         id: expect.any(String) as string,
         title: 'Successfully joined organization',
-        description: `You are now a member of ${organization.name}`,
+        description: `You are now a member of ${escapedName}`,
         type: 'success',
       });
     });
