@@ -18,7 +18,7 @@ export function Header({ className, ...props }: ComponentProps<'header'>) {
       )}
       {...props}
     >
-      <div className="container mx-auto flex h-(--header-height) items-center justify-between gap-2 px-4">
+      <div className="container mx-auto flex h-[var(--header-height)] items-center justify-between gap-2 px-4">
         <Link
           className="flex items-center gap-2 self-center font-medium"
           to="/"

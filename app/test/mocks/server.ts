@@ -18,7 +18,6 @@ import { remixPingHandler } from './msw-utils.server';
  * And: https://github.com/cliffordfajardo/remix-msw-node-with-playwright/blob/main/app/msw-server.ts
  */
 declare global {
-  // eslint-disable-next-line no-var
   var __MSW_SERVER: SetupServer | undefined;
 }
 

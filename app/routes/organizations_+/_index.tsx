@@ -55,7 +55,7 @@ export default function OrganizationsRoute({
 
   return (
     <>
-      <header className="flex h-(--header-height) items-center border-b">
+      <header className="flex h-[var(--header-height)] items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <h1 className="text-base font-medium">{t('page-title')}</h1>
 

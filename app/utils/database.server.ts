@@ -80,7 +80,6 @@ let prisma: ExtendedPrismaClient;
 
 // Declare the global variable with the extended type.
 declare global {
-  // eslint-disable-next-line no-var
   var __database__: ExtendedPrismaClient;
 }
 

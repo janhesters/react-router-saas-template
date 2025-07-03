@@ -12,7 +12,6 @@ import i18n from '~/utils/i18n';
 import { onUnhandledRequest } from './test/mocks/msw-utils';
 
 declare global {
-  // eslint-disable-next-line no-var
   var __ENABLE_MSW__: boolean | undefined;
 }
 

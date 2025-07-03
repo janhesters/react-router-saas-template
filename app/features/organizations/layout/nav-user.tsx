@@ -94,17 +94,17 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
 
             <Form method="post" action="/logout" replace>
-              <button
-                className="w-full"
-                name="intent"
-                value="logout"
-                type="submit"
-              >
-                <DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <button
+                  className="w-full"
+                  name="intent"
+                  value="logout"
+                  type="submit"
+                >
                   <LogOutIcon />
                   {t('log-out')}
-                </DropdownMenuItem>
-              </button>
+                </button>
+              </DropdownMenuItem>
             </Form>
           </DropdownMenuContent>
         </DropdownMenu>

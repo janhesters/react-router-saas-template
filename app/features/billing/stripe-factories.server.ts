@@ -250,6 +250,9 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   application = null,
   application_fee_percent = null,
   automatic_tax = { enabled: false, liability: null, disabled_reason: null },
+  billing_mode = {
+    type: 'flexible' as Stripe.Subscription.BillingMode.Type,
+  },
   // realistic dates: created and cycle anchor within last week
   created = Math.floor(faker.date.recent({ days: 7 }).getTime() / 1000),
   billing_cycle_anchor = created,
@@ -325,6 +328,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     automatic_tax,
     billing_cycle_anchor,
     billing_cycle_anchor_config,
+    billing_mode,
     cancel_at,
     cancel_at_period_end,
     canceled_at,
@@ -603,6 +607,9 @@ export const createStripeSubscriptionScheduleFactory: Factory<
   id = `sub_sched_${createId()}`,
   object = 'subscription_schedule' as const,
   application = null,
+  billing_mode = {
+    type: 'flexible' as Stripe.SubscriptionSchedule.BillingMode.Type,
+  },
   canceled_at = null,
   completed_at = null,
   created = Math.floor(faker.date.recent().getTime() / 1000),
@@ -649,6 +656,7 @@ export const createStripeSubscriptionScheduleFactory: Factory<
   id,
   object,
   application,
+  billing_mode,
   canceled_at,
   completed_at,
   created,

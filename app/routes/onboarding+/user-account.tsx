@@ -78,7 +78,7 @@ export default function UserAccountOnboardingRoute({
           ]}
         />
 
-        <div className="flex flex-grow flex-col items-center justify-center py-4">
+        <div className="flex flex-grow flex-col items-center justify-center px-4 py-4">
           <OnboardingUserAccountFormCard
             errors={errors}
             isCreatingUserAccount={isCreatingUserAccount}

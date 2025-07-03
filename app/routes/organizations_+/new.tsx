@@ -44,7 +44,7 @@ export default function NewOrganizationRoute({
 
   return (
     <>
-      <header className="flex h-[--header-height] items-center border-b">
+      <header className="flex h-[var(--header-height)] items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <Button asChild className="size-8" size="icon" variant="outline">

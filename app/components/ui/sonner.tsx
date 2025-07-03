@@ -1,9 +1,10 @@
-import { useTheme } from 'next-themes';
 import type { ToasterProps } from 'sonner';
 import { Toaster as Sonner } from 'sonner';
 
+import { useColorScheme } from '~/features/color-scheme/use-color-scheme';
+
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = 'system' } = useTheme();
+  const theme = useColorScheme();
 
   return (
     <Sonner

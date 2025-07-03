@@ -106,7 +106,7 @@ describe('NavUser Component', () => {
     expect(accountLink).toHaveAttribute('href', '/settings/account');
 
     // Verify logout button
-    const logoutButton = screen.getByRole('button', { name: /log out/i });
+    const logoutButton = screen.getByRole('menuitem', { name: /log out/i });
     expect(logoutButton).toHaveAttribute('name', 'intent');
     expect(logoutButton).toHaveAttribute('value', 'logout');
     expect(logoutButton).toHaveAttribute('type', 'submit');
