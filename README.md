@@ -410,14 +410,14 @@ This template uses [flat routes](https://github.com/kiliman/remix-flat-routes).
 
 ### i18n
 
-The French House Stack comes with localization support through
+This React Router SaaS template comes with localization support through
 [remix-i18next](https://github.com/sergiodxa/remix-i18next).
 
 The namespaces live in `public/locales/`.
 
 ### Toasts
 
-The French House Stack includes utilities for toast notifications based on flash
+This React Router SaaS template includes utilities for toast notifications based on flash
 sessions.
 
 **Flash Data:** Temporary session values, ideal for transferring data to the

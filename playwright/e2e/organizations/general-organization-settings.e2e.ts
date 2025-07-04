@@ -378,3 +378,5 @@ test.describe('general organization settings', () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 });
+
+// TODO: fix bug where when a user corrects spelling (e.g. Strong OFfice => Strong Office) that it still redirects to the right URL.

@@ -23,7 +23,7 @@ test.describe('pricing page', () => {
     // Check description text
     await expect(
       page.getByText(
-        /choose the plan that fits your needs\. all plans come with a 30-day money-back guarantee\./i,
+        /obviously this template is free\. but this is what your pricing could look like\./i,
       ),
     ).toBeVisible();
   });
