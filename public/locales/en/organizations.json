@@ -134,6 +134,13 @@
         "save": "Save changes",
         "saving": "Saving changes ..."
       },
+      "organization-info": {
+        "name-title": "Organization Name",
+        "name-description": "The name of your organization as it appears to others.",
+        "logo-title": "Organization Logo",
+        "logo-description": "The logo that represents your organization.",
+        "logo-alt": "Organization logo"
+      },
       "page-title": "General",
       "toast": {
         "organization-deleted": "Organization has been deleted",

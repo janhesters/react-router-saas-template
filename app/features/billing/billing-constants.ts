@@ -8,16 +8,16 @@ export const VIEW_INVOICES_INTENT = 'viewInvoices';
 
 export const priceLookupKeysByTierAndInterval = {
   low: {
-    monthly: 'monthly_hobby_plan',
-    annual: 'annual_hobby_plan',
+    monthly: 'monthly_hobby_planv2',
+    annual: 'annual_hobby_planv2',
   },
   mid: {
-    monthly: 'monthly_startup_plan',
-    annual: 'annual_startup_plan',
+    monthly: 'monthly_startup_planv2',
+    annual: 'annual_startup_planv2',
   },
   high: {
-    monthly: 'monthly_business_plan',
-    annual: 'annual_business_plan',
+    monthly: 'monthly_business_planv2',
+    annual: 'annual_business_planv2',
   },
 } as const;
 

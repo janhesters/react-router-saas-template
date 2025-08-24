@@ -85,6 +85,9 @@ test.describe('general organization settings', () => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.member,
+      organization: createPopulatedOrganization({
+        imageUrl: 'https://picsum.photos/seed/8rTyBWnE/77/2168',
+      }),
     });
 
     await page.goto(`/organizations/${organization.slug}/settings/general`);
@@ -120,6 +123,9 @@ test.describe('general organization settings', () => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.admin,
+      organization: createPopulatedOrganization({
+        imageUrl: 'https://picsum.photos/seed/8rTyBWnE/77/2168',
+      }),
     });
 
     await page.goto(`/organizations/${organization.slug}/settings/general`);

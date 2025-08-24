@@ -34,7 +34,7 @@ const rootConfig = defineConfig({
 
 const testConfig = defineConfig({
   test: {
-    workspace: [
+    projects: [
       {
         ...rootConfig,
         test: { include: ['app/**/*.test.ts'], name: 'unit-tests' },

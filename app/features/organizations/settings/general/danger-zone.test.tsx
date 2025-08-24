@@ -162,10 +162,11 @@ describe('DangerZone Component', () => {
     expect(deleteConfirmButton).toBeDisabled();
 
     // Type in the organization name
+    const escapedOrgName = props.organizationName.replace("'", '&#39;');
     await user.type(
       screen.getByLabelText(
         new RegExp(
-          `to confirm, type "${props.organizationName}" in the box below`,
+          `to confirm, type "${escapedOrgName}" in the box below`,
           'i',
         ),
       ),
@@ -186,10 +187,11 @@ describe('DangerZone Component', () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
+    const escapedOrgName = props.organizationName.replace("'", '&#39;');
     const getDialogInput = () =>
       screen.getByRole('textbox', {
         name: new RegExp(
-          `to confirm, type "${props.organizationName}" in the box below`,
+          `to confirm, type "${escapedOrgName}" in the box below`,
           'i',
         ),
       });

@@ -253,9 +253,9 @@ app and make sure your app is deployed so it will accept the webhooks of the pro
   - In the "Product Tax Code" dropdown, select "Software as a Service (SaaS) - business use".
   - Click on "More Options" and set the "Unit label" to "seat".
   - Enter a monhtly recurring price, e.g.: "$17". Make sure you set the currenty to USD in case its NOT the default.
-  - Click on "More pricing options" and enter a lookup key, e.g.: "monthly_hobby_plan".
+  - Click on "More pricing options" and enter a lookup key, e.g.: "monthly_hobby_planv2".
   - Click on "Next".
-4. Click on "Add another price" and this time choose "Yearly" as the billing period. Make sure you enter the correct yearly price, e.g.: "$180". And remember to set the lookup key to "annual_hobby_plan".
+4. Click on "Add another price" and this time choose "Yearly" as the billing period. Make sure you enter the correct yearly price, e.g.: "$180". And remember to set the lookup key to "annual_hobby_planv2".
 5. **Important:** Now enter the value: "max_seats" in the metadata field and set it to "1". This app is set up to handle ALL limits via metadata. This allows you to easily change the limits for a product without having to change the code.
 6. Finally, click "Add Product".
 7. Now write your lookup keys in the `priceLookupKeysByTierAndInterval` object in `app/features/billing/billing-constants.ts`.

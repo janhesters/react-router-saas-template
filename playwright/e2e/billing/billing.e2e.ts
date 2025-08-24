@@ -238,7 +238,7 @@ test.describe('billing page', () => {
     await expect(hobbyAnnual.getByText(/-10%/i)).toBeVisible();
     await expect(
       hobbyAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_hobby_plan');
+    ).toHaveAttribute('value', 'annual_hobby_planv2');
 
     // Startup card
     const startupAnnual = activePanel().locator(
@@ -250,7 +250,7 @@ test.describe('billing page', () => {
     await expect(startupAnnual.getByText(/-15%/i)).toBeVisible();
     await expect(
       startupAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_startup_plan');
+    ).toHaveAttribute('value', 'annual_startup_planv2');
 
     // Business card
     const businessAnnual = activePanel().locator(
@@ -262,7 +262,7 @@ test.describe('billing page', () => {
     await expect(businessAnnual.getByText(/-20%/i)).toBeVisible();
     await expect(
       businessAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_business_plan');
+    ).toHaveAttribute('value', 'annual_business_planv2');
 
     // Enterprise card
     const enterpriseAnnual = activePanel().locator(
@@ -292,7 +292,7 @@ test.describe('billing page', () => {
     await expect(hobbyMonthly.getByText(/-10%/i)).toHaveCount(0);
     await expect(
       hobbyMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_hobby_plan');
+    ).toHaveAttribute('value', 'monthly_hobby_planv2');
 
     // Startup @ $30
     const startupMonthly = monthly.locator(
@@ -304,7 +304,7 @@ test.describe('billing page', () => {
     await expect(startupMonthly.getByText(/-15%/i)).toHaveCount(0);
     await expect(
       startupMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_startup_plan');
+    ).toHaveAttribute('value', 'monthly_startup_planv2');
 
     // Business @ $55
     const businessMonthly = monthly.locator(
@@ -316,7 +316,7 @@ test.describe('billing page', () => {
     await expect(businessMonthly.getByText(/-20%/i)).toHaveCount(0);
     await expect(
       businessMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_business_plan');
+    ).toHaveAttribute('value', 'monthly_business_planv2');
 
     // Close the modal
     await modal.getByRole('button', { name: /close/i }).click();
@@ -629,13 +629,13 @@ test.describe('billing page', () => {
       planModal.locator('div[role="tabpanel"]:not([hidden])');
     await expect(
       monthlyPanel().getByRole('button', { name: /downgrade/i }),
-    ).toHaveAttribute('value', 'monthly_hobby_plan');
+    ).toHaveAttribute('value', 'monthly_hobby_planv2');
     await expect(
       monthlyPanel().getByRole('button', { name: /switch to monthly/i }),
-    ).toHaveAttribute('value', 'monthly_startup_plan');
+    ).toHaveAttribute('value', 'monthly_startup_planv2');
     await expect(
       monthlyPanel().getByRole('button', { name: /upgrade/i }),
-    ).toHaveAttribute('value', 'monthly_business_plan');
+    ).toHaveAttribute('value', 'monthly_business_planv2');
 
     // ——— OPEN AND ASSERT THE “CANCEL SUBSCRIPTION” MODAL ——————————
     await planModal

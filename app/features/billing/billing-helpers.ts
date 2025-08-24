@@ -3,7 +3,7 @@ import type { Interval, Tier } from './billing-constants';
 import { priceLookupKeysByTierAndInterval } from './billing-constants';
 
 /**
- * Given one of your lookup‐keys (e.g. 'monthly_hobby_plan'),
+ * Given one of your lookup‐keys (e.g. 'monthly_hobby_planv2'),
  * returns its associated tier and interval, or throws if the key is not found.
  *
  * @param lookupKey - The lookup key to look up.
