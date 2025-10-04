@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { includeIgnoreFile } from '@eslint/compat';
 import eslint from '@eslint/js';
 import vitest from '@vitest/eslint-plugin';
+import { defineConfig } from 'eslint/config';
 import playwright from 'eslint-plugin-playwright';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
@@ -15,8 +16,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const gitignorePath = path.resolve(__dirname, '.gitignore');
 
-export default tseslint.config(
+export default defineConfig(
   includeIgnoreFile(gitignorePath),
+  {
+    ignores: ['.cursor/**/*.md', '.cursor/**/*.mdc'],
+  },
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   tseslint.configs.stylisticTypeChecked,
@@ -106,6 +110,8 @@ export default tseslint.config(
             /.*\._index\.(tsx|ts)$/, // Files ending with ._index.tsx
             /.*\$[A-Za-z]+Slug(\.[A-Za-z]+)*\.(tsx,ts)$/, // Files with $SomethingSlug.tsx (e.g., $organizationSlug)
             /.*_\.[A-Za-z]+\.(tsx|ts)$/, // Files with _.something.tsx (e.g., projects_.active.tsx)
+            /.*\$\w+(?:\.[\w-]+)*\.(?:tsx|ts)$/, // Files with $SomethingSlug.tsx (e.g., $organizationSlug)
+            /.*\.spec\.(?:js|jsx|ts|tsx)$/, // Files with .spec.tsx (e.g., product-catalog_.new.spec.tsx)
           ],
         },
       ],
@@ -113,6 +119,7 @@ export default tseslint.config(
   },
   {
     files: ['app/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    // @ts-expect-error this is a bug in @vitest/eslint-plugin
     plugins: { vitest },
     rules: { ...vitest.configs.recommended.rules, 'unicorn/no-null': 'off' },
     settings: { vitest: { typecheck: true } },

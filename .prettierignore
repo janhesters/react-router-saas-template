@@ -1,0 +1,4 @@
+# Ignore Cursor command files
+.cursor/**/*.md
+.cursor/**/*.mdc
+
