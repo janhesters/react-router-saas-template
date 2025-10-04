@@ -112,5 +112,3 @@ interface SVGConverter {
   /example - Show a complete example of SVG conversion
   /help - Show available commands
 }
-
-welcome("Welcome to SVG to React Component Generator. Use /convert with an SVG to get started.") 

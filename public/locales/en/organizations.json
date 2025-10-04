@@ -71,13 +71,12 @@
     "form": {
       "card-description": "Tell us about your organization. You'll still remain a member of your current organization, with the ability to switch between them anytime.",
       "card-title": "Create a new organization",
+      "logo-invalid": "Logo must be valid.",
       "logo-label": "Logo",
-      "logo-must-be-string": "Logo must be a string.",
       "logo-must-be-url": "Logo must be a valid URL.",
       "name-label": "Organization name",
       "name-max-length": "Organization name must be less than 255 characters long.",
       "name-min-length": "Organization name must be at least 3 characters long.",
-      "name-must-be-string": "Organization name must be a string.",
       "name-placeholder": "Organization name ...",
       "name-required": "Organization name is required.",
       "save": "Save",
@@ -129,17 +128,17 @@
         "name-label": "Organization name",
         "name-max-length": "Organization name must be less than 255 characters long.",
         "name-min-length": "Organization name must be at least 3 characters long.",
-        "name-must-be-string": "Organization name must be a string.",
+        "name-required": "Organization name is required.",
         "name-placeholder": "Organization name ...",
         "save": "Save changes",
         "saving": "Saving changes ..."
       },
       "organization-info": {
-        "name-title": "Organization Name",
-        "name-description": "The name of your organization as it appears to others.",
-        "logo-title": "Organization Logo",
+        "logo-alt": "Organization logo",
         "logo-description": "The logo that represents your organization.",
-        "logo-alt": "Organization logo"
+        "logo-title": "Organization Logo",
+        "name-description": "The name of your organization as it appears to others.",
+        "name-title": "Organization Name"
       },
       "page-title": "General",
       "toast": {
@@ -163,7 +162,6 @@
           "email": "Email",
           "email-already-member": "{{email}} is already a member",
           "email-invalid": "A valid email consists of characters, '@' and '.'.",
-          "email-must-be-string": "A valid email address must be string.",
           "email-placeholder": "Your colleague's email ...",
           "email-required": "Please enter a valid email (required).",
           "inviting": "Sending email invitation ...",

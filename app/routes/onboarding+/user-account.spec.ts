@@ -166,7 +166,11 @@ describe('/onboarding/user-account route action', () => {
       {
         given: 'no name provided',
         body: { intent },
-        expected: badRequest({ errors: { name: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            name: { message: 'onboarding:user-account.name-required' },
+          },
+        }),
       },
       {
         given: 'a name that is too short (1 character)',

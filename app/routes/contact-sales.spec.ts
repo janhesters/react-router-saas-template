@@ -31,7 +31,7 @@ describe('/contact-sales route action', () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message: "Invalid discriminator value. Expected 'contactSales'",
+          message: 'Invalid input',
         },
       },
     });
@@ -47,7 +47,7 @@ describe('/contact-sales route action', () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message: "Invalid discriminator value. Expected 'contactSales'",
+          message: 'Invalid input',
         },
       },
     });
@@ -92,7 +92,7 @@ describe('/contact-sales route action', () => {
       override: { workEmail: '' },
       expected: badRequest({
         errors: {
-          workEmail: { message: 'billing:contact-sales.work-email-required' },
+          workEmail: { message: 'billing:contact-sales.work-email-invalid' },
         },
       }),
     },

@@ -97,7 +97,7 @@ describe('Email Invite Info Session', () => {
       expect(cookieHeader).toBeTruthy();
       expect(cookieHeader).toContain('__email_invite_info=');
       expect(cookieHeader).toMatch(/Max-Age=0|Expires=.*1970/);
-      expect(warnSpy).toHaveBeenCalledWith(
+      expect(warnSpy).toHaveBeenCalledExactlyOnceWith(
         expect.stringContaining(
           `Attempted to create email invite session cookie for already expired invite with token: ${expiredInviteInfo.emailInviteToken}`,
         ),

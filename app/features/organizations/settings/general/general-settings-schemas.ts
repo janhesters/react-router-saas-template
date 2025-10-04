@@ -13,8 +13,7 @@ export const updateOrganizationFormSchema = z.object({
   intent: z.literal(UPDATE_ORGANIZATION_INTENT),
   name: z
     .string({
-      invalid_type_error:
-        'organizations:settings.general.form.name-must-be-string',
+      error: 'organizations:settings.general.form.name-required',
     })
     .trim()
     .min(3, 'organizations:settings.general.form.name-min-length')

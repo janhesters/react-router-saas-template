@@ -80,7 +80,7 @@ describe('/organizations/invite-link route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "acceptInviteLink"',
+            message: 'Invalid input: expected "acceptInviteLink"',
           },
         },
       });
@@ -167,7 +167,7 @@ describe('/organizations/invite-link route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "acceptInviteLink"',
+            message: 'Invalid input: expected "acceptInviteLink"',
           },
         },
       });

@@ -9,7 +9,7 @@ import type { LinkNotificationData } from './notifications-schemas';
 function sortByCreatedAt(
   notifications: NotificationQueryResult[],
 ): NotificationQueryResult[] {
-  return notifications.sort(
+  return notifications.toSorted(
     (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
   );
 }

@@ -6,13 +6,13 @@ export const createOrganizationFormSchema = z.object({
   intent: z.literal(CREATE_ORGANIZATION_INTENT),
   logo: z
     .string({
-      invalid_type_error: 'organizations:new.form.logo-must-be-string',
+      error: 'organizations:new.form.logo-invalid',
     })
     .url('organizations:new.form.logo-must-be-url')
     .optional(),
   name: z
     .string({
-      invalid_type_error: 'organizations:new.form.name-must-be-string',
+      error: 'organizations:new.form.name-required',
     })
     .trim()
     .min(3, 'organizations:new.form.name-min-length')

@@ -51,7 +51,7 @@ async function setup({
       });
     })
     // Sort by createdAt descending (newest first, oldest last)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   const notificationsWithRecipients = await Promise.all(
     notifications.map(notification => {

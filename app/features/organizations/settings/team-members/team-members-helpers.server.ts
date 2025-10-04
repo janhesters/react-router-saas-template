@@ -106,7 +106,7 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
       members: [
         // Email invites first, sorted, distinct, and excluding existing members
         ...organization.organizationEmailInviteLink
-          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          .toSorted((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
           // Filter to only keep the first (most recent) invite for each email
           .filter(
             (invite, index, array) =>

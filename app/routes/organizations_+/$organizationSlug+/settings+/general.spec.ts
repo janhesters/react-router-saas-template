@@ -162,7 +162,13 @@ describe('/organizations/:organizationSlug/settings/general route action', () =>
       {
         given: 'no name provided',
         body: { intent },
-        expected: badRequest({ errors: { name: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            name: {
+              message: 'organizations:settings.general.form.name-required',
+            },
+          },
+        }),
       },
       {
         given: 'a name that is too short (2 characters)',

@@ -7,6 +7,9 @@
 
 *.env
 
+# TypeScript
+*.tsbuildinfo
+
 # Playwright
 node_modules/
 /test-results/

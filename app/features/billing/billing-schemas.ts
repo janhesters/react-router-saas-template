@@ -36,12 +36,10 @@ export const switchSubscriptionSchema = z.object({
 export const updateBillingEmailSchema = z.object({
   intent: z.literal(UPDATE_BILLING_EMAIL_INTENT),
   billingEmail: z
-    .string({
-      invalid_type_error:
-        'billing:billing-page.update-billing-email-modal.email-must-be-string',
+    .email({
+      error: 'billing:billing-page.update-billing-email-modal.email-invalid',
     })
-    .min(1, 'billing:billing-page.update-billing-email-modal.email-required')
-    .email('billing:billing-page.update-billing-email-modal.email-invalid'),
+    .min(1, 'billing:billing-page.update-billing-email-modal.email-required'),
 });
 
 export const viewInvoicesSchema = z.object({

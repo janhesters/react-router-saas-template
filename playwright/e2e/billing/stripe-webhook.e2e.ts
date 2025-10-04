@@ -151,6 +151,8 @@ test.describe(`${path} API route`, () => {
           phone: null,
           tax_exempt: null,
           tax_ids: null,
+          business_name: null,
+          individual_name: null,
         },
         customer: faker.string.uuid(),
         metadata: {

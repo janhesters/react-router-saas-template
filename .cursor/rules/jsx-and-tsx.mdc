@@ -1,0 +1,75 @@
+---
+description: When writing React code, use this guide for React best practices and guidance
+globs: **/*.js,**/*.jsx,**/*.tsx
+alwaysApply: false
+---
+
+# React guide
+
+Act as a top-tier software engineer with extensive React ecosystem knowledge to build high-quality fullstack web applications.
+
+## Before Writing Code
+
+- Observe the project's relevant existing code.
+- Conform to existing code style, patterns, and conventions unless directed otherwise. Note: these instructions count as "directed otherwise" unless the user explicitly overrides them.
+
+## Principles
+
+- Display/container component pattern
+  - Split your component into display components, which are pure functions that map props to JSX, and container components, which are (optional) stateful components that wrap one display component.
+  - Then compose them together in the parent or page/route component.
+
+Constraints {
+  Be concise.
+  You're using React Router V7 (the successor to Remix).
+  Use ShadCN/ui for components. If a component is missing, install it.
+  Modularize by feature; one concern per file or component; prefer named exports.
+  This project uses TailwindCSS V4, so you can use things like container queries and child selectors.
+}
+
+NamingConstraints {
+  Use clear, descriptive, consistent naming.
+  Components should be postfixed with `Component`.
+  Props should be the component's name, postifxed with `ComponentProps`.
+}
+
+TypeConstraints {
+  Use proper React TypeScript types: MouseEventHandler<HTMLButtonElement>, ChangeEventHandler<HTMLInputElement>, ReactNode, React.Ref<T>, ComponentProps<'element'>, etc. Never use generic () => void or (event: any) => void.
+  When extending HTML elements or existing components, use ComponentProps to inherit their props: ComponentProps<'input'>, ComponentProps<'button'>, ComponentProps<typeof ExistingComponent>.
+  This project uses Prisma. If a prop comes from a database entity, use the entities type for it, e.g.:
+    - type UserMenuProps = Pick<UserAccount, 'id' | 'name' | 'email'> & {
+        onLogout: MouseEventHandler<HTMLInputElement>;
+        organizationName: Organization['name'];
+      }
+  When using server/database return types: Awaited<ReturnType<typeof serverFunction>>, wrap with NonNullable<> if guaranteed to exist.
+}
+
+FormConstraints {
+  For react-hook-form + Zod forms:
+    - Export schema types: export type Schema = z.infer<typeof schema>
+    - Export error types: export type SchemaErrors = FieldErrors<Schema>
+    - Optionally include intent field: intent: z.literal('actionName')
+    - Pass translation keys (not translated strings) in validation error messages
+  For loading/submission states:
+    - Use consistent naming: isSubmitting = false, isLoading{Action} = false, is{Action}ing{Entity} = false
+    - Always provide default values in function signature
+    - Disable forms with fieldset disabled={isSubmitting || isLoading} instead of individual disabled props
+  For form components:
+    - Accept errors?: SchemaErrors (always optional)
+    - Accept children?: ReactNode for composition
+    - Use FormProvider for parent, useFormContext for nested components
+    - Provide complete defaultValues object to useForm with all fields initialized
+}
+
+AccessibilityConstraints {
+  For interactive components, provide aria props with defaults:
+    - *AriaLabel props for screen readers (e.g., countryAriaLabel = 'Select country')
+    - *Placeholder props for empty states
+    - FormControl handles aria-describedby and aria-invalid automatically
+}
+
+InternationalizationConstraints {
+  Use useTranslation with namespace and keyPrefix: const { t } = useTranslation('namespace', { keyPrefix: 'section' });
+  Use Trans component for interpolation with links/components.
+  FormMessage components handle translation of error keys automatically.
+}

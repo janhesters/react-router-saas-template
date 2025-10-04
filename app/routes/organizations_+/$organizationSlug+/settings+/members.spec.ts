@@ -163,8 +163,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message:
-            "Invalid discriminator value. Expected 'inviteByEmail' | 'createNewInviteLink' | 'deactivateInviteLink' | 'changeRole'",
+          message: 'Invalid input',
         },
       },
     });
@@ -421,7 +420,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       {
         given: 'no userId',
         body: { intent, role: OrganizationMembershipRole.member } as const,
-        expected: badRequest({ errors: { userId: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            userId: {
+              message: 'Invalid input: expected string, received undefined',
+            },
+          },
+        }),
       },
       {
         given: 'no role',
@@ -939,7 +944,12 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           role: OrganizationMembershipRole.member,
         } as const,
         expected: badRequest({
-          errors: { email: { message: 'Required' } },
+          errors: {
+            email: {
+              message:
+                'organizations:settings.team-members.invite-by-email.form.email-invalid',
+            },
+          },
         }),
       },
       {
@@ -961,7 +971,14 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       {
         given: 'no role',
         body: { intent, email: faker.internet.email() } as const,
-        expected: badRequest({ errors: { role: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            role: {
+              message:
+                'Invalid option: expected one of "owner"|"admin"|"member"',
+            },
+          },
+        }),
       },
       {
         given: 'invalid role value',
@@ -974,7 +991,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           errors: {
             role: {
               message:
-                "Invalid enum value. Expected 'owner' | 'admin' | 'member', received 'invalid-role'",
+                'Invalid option: expected one of "owner"|"admin"|"member"',
             },
           },
         }),
@@ -990,7 +1007,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           errors: {
             role: {
               message:
-                "Invalid enum value. Expected 'owner' | 'admin' | 'member', received 'deactivated'",
+                'Invalid option: expected one of "owner"|"admin"|"member"',
             },
           },
         }),

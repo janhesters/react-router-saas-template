@@ -267,8 +267,7 @@ describe('/organizations/:organizationSlug route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message:
-              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
+            message: 'Invalid input',
           },
         },
       });
@@ -296,8 +295,7 @@ describe('/organizations/:organizationSlug route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message:
-              "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
+            message: 'Invalid input',
           },
         },
       });
@@ -317,7 +315,11 @@ describe('/organizations/:organizationSlug route action', () => {
         organizationSlug: organization.slug,
       });
       const expected = badRequest({
-        errors: { organizationId: { message: 'Required' } },
+        errors: {
+          organizationId: {
+            message: 'Invalid input: expected string, received undefined',
+          },
+        },
       });
 
       expect(actual).toEqual(expected);
@@ -335,7 +337,11 @@ describe('/organizations/:organizationSlug route action', () => {
         organizationSlug: organization.slug,
       });
       const expected = badRequest({
-        errors: { currentPath: { message: 'Required' } },
+        errors: {
+          currentPath: {
+            message: 'Invalid input: expected string, received undefined',
+          },
+        },
       });
 
       expect(actual).toEqual(expected);
@@ -422,7 +428,11 @@ describe('/organizations/:organizationSlug route action', () => {
         formData: toFormData({ intent }),
       });
       const expected = badRequest({
-        errors: { recipientId: { message: 'Required' } },
+        errors: {
+          recipientId: {
+            message: 'Invalid input: expected string, received undefined',
+          },
+        },
       });
 
       expect(actual).toEqual(expected);

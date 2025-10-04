@@ -97,7 +97,7 @@ describe('Invite Link Info Session', () => {
       expect(cookieHeader).toBeTruthy();
       expect(cookieHeader).toContain('__invite_link_info=');
       expect(cookieHeader).toMatch(/Max-Age=0|Expires=.*1970/);
-      expect(warnSpy).toHaveBeenCalledWith(
+      expect(warnSpy).toHaveBeenCalledExactlyOnceWith(
         expect.stringContaining(
           `Attempted to create invite link session cookie for already expired link with token: ${expiredInviteInfo.inviteLinkToken}`,
         ),

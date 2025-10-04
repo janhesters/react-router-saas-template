@@ -33,11 +33,7 @@ if (colorScheme === 'system') {
 
         case 'system': {
           function check(media: MediaQueryList | MediaQueryListEvent) {
-            if (media.matches) {
-              document.documentElement.classList.add('dark');
-            } else {
-              document.documentElement.classList.remove('dark');
-            }
+            document.documentElement.classList.toggle('dark', media.matches);
           }
 
           const media = globalThis.matchMedia('(prefers-color-scheme: dark)');

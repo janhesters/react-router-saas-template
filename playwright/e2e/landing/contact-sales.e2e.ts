@@ -55,7 +55,11 @@ test.describe('contact sales page', () => {
     await expect(
       page.getByText(/please enter your company name/i),
     ).toBeVisible();
-    await expect(page.getByText(/please enter your work email/i)).toBeVisible();
+    await expect(
+      page.getByText(
+        /please enter a valid work email, including '@' and '.'./i,
+      ),
+    ).toBeVisible();
     await expect(
       page.getByText(/please enter your phone number/i),
     ).toBeVisible();

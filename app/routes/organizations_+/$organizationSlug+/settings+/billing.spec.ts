@@ -542,7 +542,11 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       {
         data: {},
         expected: badRequest({
-          errors: { lookupKey: { message: 'Required' } },
+          errors: {
+            lookupKey: {
+              message: 'Invalid input: expected string, received undefined',
+            },
+          },
         }),
       },
     ])(
@@ -642,7 +646,12 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       {
         data: {},
         expected: badRequest({
-          errors: { billingEmail: { message: 'Required' } },
+          errors: {
+            billingEmail: {
+              message:
+                'billing:billing-page.update-billing-email-modal.email-invalid',
+            },
+          },
         }),
       },
       {

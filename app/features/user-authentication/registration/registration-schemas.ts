@@ -6,11 +6,10 @@ import { registerIntents } from './registration-constants';
 export const registerWithEmailSchema = z.object({
   intent: z.literal(registerIntents.registerWithEmail),
   email: z
-    .string({
-      invalid_type_error: 'user-authentication:common.email-must-be-string',
+    .email({
+      error: 'user-authentication:common.email-invalid',
     })
-    .min(1, 'user-authentication:common.email-required')
-    .email('user-authentication:common.email-invalid'),
+    .min(1, 'user-authentication:common.email-required'),
 });
 
 export type RegisterWithEmailSchema = z.infer<typeof registerWithEmailSchema>;

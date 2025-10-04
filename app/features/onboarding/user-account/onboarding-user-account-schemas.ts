@@ -7,7 +7,7 @@ export const onboardingUserAccountSchema = z.object({
   intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
   name: z
     .string({
-      invalid_type_error: 'onboarding:user-account.name-must-be-string',
+      error: 'onboarding:user-account.name-required',
     })
     .trim()
     .min(2, 'onboarding:user-account.name-min-length')

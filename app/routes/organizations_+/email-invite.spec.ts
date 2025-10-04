@@ -84,7 +84,7 @@ describe('/organizations/email-invite route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "acceptEmailInvite"',
+            message: 'Invalid input: expected "acceptEmailInvite"',
           },
         },
       });
@@ -173,7 +173,7 @@ describe('/organizations/email-invite route action', () => {
       const expected = badRequest({
         errors: {
           intent: {
-            message: 'Invalid literal value, expected "acceptEmailInvite"',
+            message: 'Invalid input: expected "acceptEmailInvite"',
           },
         },
       });
@@ -309,10 +309,11 @@ describe('/organizations/email-invite route action', () => {
           headers: { cookie: maybeToast ?? '' },
         }),
       );
+      const escapedOrgName = organization.name.replace("'", '&#39;');
       expect(toast).toMatchObject({
         id: expect.any(String) as string,
         title: 'Already a member',
-        description: `You are already a member of ${organization.name}`,
+        description: `You are already a member of ${escapedOrgName}`,
         type: 'info',
       });
 

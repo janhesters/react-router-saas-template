@@ -67,8 +67,7 @@ describe('/register route action', () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message:
-            "Invalid discriminator value. Expected 'registerWithEmail' | 'registerWithGoogle'",
+          message: 'Invalid input',
         },
       },
     });
@@ -83,8 +82,7 @@ describe('/register route action', () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message:
-            "Invalid discriminator value. Expected 'registerWithEmail' | 'registerWithGoogle'",
+          message: 'Invalid input',
         },
       },
     });
@@ -109,7 +107,11 @@ describe('/register route action', () => {
       {
         given: 'no email',
         body: { intent },
-        expected: badRequest({ errors: { email: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            email: { message: 'user-authentication:common.email-invalid' },
+          },
+        }),
       },
       {
         given: 'an invalid email',

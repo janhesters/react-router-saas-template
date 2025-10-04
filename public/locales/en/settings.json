@@ -34,8 +34,8 @@
       "name-label": "Name",
       "name-max-length": "Your name must be at most 128 characters long.",
       "name-min-length": "Your name must be at least 2 characters long.",
-      "name-must-be-string": "Your name must be a string.",
       "name-placeholder": "Your name ...",
+      "name-required": "Please enter your name (required).",
       "save": "Save changes",
       "saving": "Saving changes ...",
       "errors": {

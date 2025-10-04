@@ -250,11 +250,12 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   application = null,
   application_fee_percent = null,
   automatic_tax = { enabled: false, liability: null, disabled_reason: null },
-  billing_mode = {
-    type: 'flexible' as Stripe.Subscription.BillingMode.Type,
-  },
   // realistic dates: created and cycle anchor within last week
   created = Math.floor(faker.date.recent({ days: 7 }).getTime() / 1000),
+  billing_mode = {
+    flexible: null,
+    type: 'flexible' as Stripe.Subscription.BillingMode.Type,
+  },
   billing_cycle_anchor = created,
   billing_cycle_anchor_config = null,
   cancel_at = null,
@@ -326,9 +327,9 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     application,
     application_fee_percent,
     automatic_tax,
+    billing_mode,
     billing_cycle_anchor,
     billing_cycle_anchor_config,
-    billing_mode,
     cancel_at,
     cancel_at_period_end,
     canceled_at,
@@ -391,7 +392,11 @@ export const createStripeCheckoutSessionFactory: Factory<
   cancel_url = faker.internet.url(),
   client_reference_id = null,
   client_secret = null,
-  collected_information = { shipping_details: null },
+  collected_information = {
+    business_name: null,
+    individual_name: null,
+    shipping_details: null,
+  },
   consent = null,
   consent_collection = null,
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
@@ -407,6 +412,8 @@ export const createStripeCheckoutSessionFactory: Factory<
   customer = createStripeCustomerFactory().id,
   customer_creation = 'always',
   customer_details = {
+    business_name: null,
+    individual_name: null,
     address: {
       city: null,
       country: 'CH',
@@ -435,7 +442,7 @@ export const createStripeCheckoutSessionFactory: Factory<
     customerEmail: createPopulatedOrganization().billingEmail,
   },
   mode = 'subscription',
-  origin_context = null,
+  origin_context = 'web',
   payment_intent = null,
   payment_link = null,
   payment_method_collection = 'always',
@@ -610,7 +617,8 @@ export const createStripeSubscriptionScheduleFactory: Factory<
   object = 'subscription_schedule' as const,
   application = null,
   billing_mode = {
-    type: 'flexible' as Stripe.SubscriptionSchedule.BillingMode.Type,
+    flexible: null,
+    type: 'flexible' as Stripe.Subscription.BillingMode.Type,
   },
   canceled_at = null,
   completed_at = null,

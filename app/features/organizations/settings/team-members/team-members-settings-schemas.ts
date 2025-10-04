@@ -9,16 +9,13 @@ import {
 
 export const inviteByEmailSchema = z.object({
   email: z
-    .string({
-      invalid_type_error:
-        'organizations:settings.team-members.invite-by-email.form.email-must-be-string',
+    .email({
+      error:
+        'organizations:settings.team-members.invite-by-email.form.email-invalid',
     })
     .min(
       1,
       'organizations:settings.team-members.invite-by-email.form.email-required',
-    )
-    .email(
-      'organizations:settings.team-members.invite-by-email.form.email-invalid',
     ),
   intent: z.literal(INVITE_BY_EMAIL_INTENT),
   role: z.nativeEnum(OrganizationMembershipRole),

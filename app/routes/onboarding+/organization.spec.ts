@@ -206,7 +206,11 @@ describe('/onboarding/organization route action', () => {
       {
         given: 'no name provided',
         body: { intent } as const,
-        expected: badRequest({ errors: { name: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            name: { message: 'onboarding:organization.name-required' },
+          },
+        }),
       },
       {
         given: 'a name that is too short (2 characters)',

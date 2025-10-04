@@ -61,7 +61,7 @@ describe('usePreviewUrl Hook', () => {
 
     const expectedUrl = 'blob:test-url-1';
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(file);
+    expect(createObjectURLSpy).toHaveBeenCalledExactlyOnceWith(file);
     expect(result.current).toEqual(expectedUrl);
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
   });
@@ -77,7 +77,7 @@ describe('usePreviewUrl Hook', () => {
 
     const initialMockUrl = 'blob:test-url-1';
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(file1);
+    expect(createObjectURLSpy).toHaveBeenCalledExactlyOnceWith(file1);
     expect(result.current).toEqual(initialMockUrl);
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
 
@@ -86,12 +86,12 @@ describe('usePreviewUrl Hook', () => {
 
     // 1. Check revocation of the *old* URL
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith(initialMockUrl);
+    expect(revokeObjectURLSpy).toHaveBeenCalledExactlyOnceWith(initialMockUrl);
 
     // 2. Check creation of the *new* URL
     const newMockUrl = 'blob:test-url-2';
     expect(createObjectURLSpy).toHaveBeenCalledTimes(2);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(file2);
+    expect(createObjectURLSpy).toHaveBeenNthCalledWith(2, file2);
 
     // 3. Check the current URL is the new one
     expect(result.current).toEqual(newMockUrl);
@@ -106,7 +106,7 @@ describe('usePreviewUrl Hook', () => {
 
     const initialMockUrl = 'blob:test-url-1';
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(file);
+    expect(createObjectURLSpy).toHaveBeenCalledExactlyOnceWith(file);
     expect(result.current).toEqual(initialMockUrl);
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
 
@@ -115,7 +115,7 @@ describe('usePreviewUrl Hook', () => {
 
     // Check revocation happened on unmount
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith(initialMockUrl);
+    expect(revokeObjectURLSpy).toHaveBeenCalledExactlyOnceWith(initialMockUrl);
   });
 
   test('given: file is removed, should: revoke URL and return to initial URL', () => {
@@ -129,7 +129,7 @@ describe('usePreviewUrl Hook', () => {
 
     const initialMockUrl = 'blob:test-url-1';
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(createObjectURLSpy).toHaveBeenCalledWith(file);
+    expect(createObjectURLSpy).toHaveBeenCalledExactlyOnceWith(file);
     expect(result.current).toEqual(initialMockUrl);
     expect(revokeObjectURLSpy).not.toHaveBeenCalled();
 
@@ -138,7 +138,7 @@ describe('usePreviewUrl Hook', () => {
 
     // 1. Check revocation of the *old* URL
     expect(revokeObjectURLSpy).toHaveBeenCalledTimes(1);
-    expect(revokeObjectURLSpy).toHaveBeenCalledWith(initialMockUrl);
+    expect(revokeObjectURLSpy).toHaveBeenCalledExactlyOnceWith(initialMockUrl);
 
     // 2. Check createObjectURL was *not* called again
     expect(createObjectURLSpy).toHaveBeenCalledTimes(1);

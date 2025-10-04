@@ -508,10 +508,10 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
             avatar: '',
             deactivatedAt: undefined,
             email: 'new@invite.com',
-            id: organization.organizationEmailInviteLink[0].id,
+            id: organization.organizationEmailInviteLink[1].id,
             isCurrentUser: false,
             name: '',
-            role: organization.organizationEmailInviteLink[0].role,
+            role: organization.organizationEmailInviteLink[1].role,
             status: 'emailInvitePending',
           },
           // then the existing member

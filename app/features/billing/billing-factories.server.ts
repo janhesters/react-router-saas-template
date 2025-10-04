@@ -200,13 +200,14 @@ export type StripePriceWithProduct = StripePrice & {
 export function createPopulatedStripePriceWithProduct(
   overrides: DeepPartial<StripePriceWithProduct> = {},
 ): StripePriceWithProduct {
-  const product = createPopulatedStripeProduct(overrides.product);
-  const base = createPopulatedStripePrice({
+  const { product: productOverrides, ...priceOverrides } = overrides;
+  const product = createPopulatedStripeProduct(productOverrides);
+  const price = createPopulatedStripePrice({
     lookupKey: getRandomLookupKey(),
-    ...overrides,
+    ...priceOverrides,
     productId: product.stripeId,
   });
-  return { ...base, ...overrides, product };
+  return { ...price, product };
 }
 
 export type StripeSubscriptionItemWithPriceAndProduct =
@@ -225,12 +226,13 @@ export type StripeSubscriptionItemWithPriceAndProduct =
 export function createPopulatedStripeSubscriptionItemWithPriceAndProduct(
   overrides: DeepPartial<StripeSubscriptionItemWithPriceAndProduct> = {},
 ): StripeSubscriptionItemWithPriceAndProduct {
-  const price = createPopulatedStripePriceWithProduct(overrides.price);
-  const base = createPopulatedStripeSubscriptionItem({
-    ...overrides,
+  const { price: priceOverrides, ...itemOverrides } = overrides;
+  const price = createPopulatedStripePriceWithProduct(priceOverrides);
+  const item = createPopulatedStripeSubscriptionItem({
+    ...itemOverrides,
     priceId: price.stripeId,
   });
-  return { ...base, ...overrides, price };
+  return { ...item, price };
 }
 
 export type StripeSubscriptionWithItemsAndPriceAndProduct =
@@ -274,14 +276,15 @@ export type StripeSubscriptionSchedulePhaseWithPrice =
 export function createPopulatedStripeSubscriptionSchedulePhaseWithPrice(
   overrides: DeepPartial<StripeSubscriptionSchedulePhaseWithPrice> = {},
 ): StripeSubscriptionSchedulePhaseWithPrice {
+  const { price: priceOverrides, ...phaseOverrides } = overrides;
   // generate the full price (no product)
-  const price = createPopulatedStripePrice(overrides.price);
+  const price = createPopulatedStripePrice(priceOverrides);
   // then build the "base" phase, syncing priceId
-  const base = createPopulatedStripeSubscriptionSchedulePhase({
-    ...overrides,
+  const phase = createPopulatedStripeSubscriptionSchedulePhase({
+    ...phaseOverrides,
     priceId: price.stripeId,
   });
-  return { ...base, ...overrides, price };
+  return { ...phase, price };
 }
 
 export type StripeSubscriptionScheduleWithPhasesAndPrice =
@@ -351,25 +354,27 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
 
   const items = Array.isArray(itemsOverride)
     ? itemsOverride.map(itemOverride => {
+        const { price: priceOverrides, ...itemBaseOverrides } =
+          itemOverride || {};
         const price = createPopulatedStripePrice({
           lookupKey: getRandomLookupKey(),
-          ...itemOverride?.price,
+          ...priceOverrides,
         });
-        const base = createPopulatedStripeSubscriptionItem({
-          ...itemOverride,
+        const item = createPopulatedStripeSubscriptionItem({
+          ...itemBaseOverrides,
           priceId: price.stripeId,
         });
-        return { ...base, ...itemOverride, price };
+        return { ...item, price };
       })
     : [
         (() => {
           const price = createPopulatedStripePrice({
             lookupKey: getRandomLookupKey(),
           });
-          const base = createPopulatedStripeSubscriptionItem({
+          const item = createPopulatedStripeSubscriptionItem({
             priceId: price.stripeId,
           });
-          return { ...base, price };
+          return { ...item, price };
         })(),
       ];
 

@@ -176,7 +176,7 @@ export function getCreateSubscriptionModalProps(
 ): { createSubscriptionModalProps: CreateSubscriptionModalContentProps } {
   const [low = 0, mid = 0, high = 0] = products
     .map(({ maxSeats }) => maxSeats)
-    .sort((a, b) => a - b);
+    .toSorted((a, b) => a - b);
 
   return {
     createSubscriptionModalProps: {

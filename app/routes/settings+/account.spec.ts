@@ -187,7 +187,11 @@ describe('/settings/account route action', () => {
       {
         given: 'no name provided',
         body: { intent },
-        expected: badRequest({ errors: { name: { message: 'Required' } } }),
+        expected: badRequest({
+          errors: {
+            name: { message: 'settings:user-account.form.name-required' },
+          },
+        }),
       },
       {
         given: 'a name that is too short (1 character)',

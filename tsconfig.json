@@ -4,32 +4,21 @@
     "baseUrl": ".",
     "checkJs": true,
     "esModuleInterop": true,
+    "incremental": true,
     "jsx": "react-jsx",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "module": "ES2022",
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
-      "~/*": [
-        "./app/*"
-      ]
+      "~/*": ["./app/*"]
     },
     "resolveJsonModule": true,
-    "rootDirs": [
-      ".",
-      "./.react-router/types"
-    ],
+    "rootDirs": [".", "./.react-router/types"],
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2022",
-    "types": [
-      "node",
-      "vite/client"
-    ],
+    "types": ["node", "vite/client"],
     "verbatimModuleSyntax": true
   },
   "include": [

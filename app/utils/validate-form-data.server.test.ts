@@ -83,8 +83,7 @@ describe('validateFormData()', () => {
     const expectedErrors = {
       errors: {
         intent: {
-          message:
-            "Invalid discriminator value. Expected 'registerWithEmail' | 'registerWithGoogle'",
+          message: 'Invalid input',
         },
       },
     };
@@ -121,7 +120,9 @@ describe('validateFormData()', () => {
       ['email', 'not-an-email'],
     ]);
 
-    const expectedErrors = { errors: { email: { message: 'Invalid email' } } };
+    const expectedErrors = {
+      errors: { email: { message: 'Invalid email address' } },
+    };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
       data: { message: 'Bad Request', ...expectedErrors },
@@ -158,7 +159,7 @@ describe('validateFormData()', () => {
 
     const expectedErrors = {
       errors: {
-        email: { message: 'Invalid email' },
+        email: { message: 'Invalid email address' },
         root: { message: 'Username "admin" is reserved' },
       },
     };

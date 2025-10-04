@@ -1,7 +1,6 @@
 {
   "common": {
     "email-invalid": "A valid email consists of characters, '@' and '.'.",
-    "email-must-be-string": "A valid email address must be string.",
     "email-required": "Please enter a valid email (required)."
   },
   "login": {

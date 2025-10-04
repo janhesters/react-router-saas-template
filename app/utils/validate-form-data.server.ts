@@ -1,13 +1,14 @@
 import { parseFormData } from '@mjackson/form-data-parser';
 import type { MultipartParserOptions } from '@mjackson/multipart-parser';
-import type { ZodError, ZodSchema } from 'zod';
+import type { ZodError, ZodType } from 'zod';
+import { z } from 'zod';
 
 import { badRequest } from './http-responses.server';
 
 type ValidationErrors = Record<string, { message: string }>;
 
 export const processErrors = (error: ZodError): ValidationErrors => {
-  const { formErrors, fieldErrors } = error.flatten();
+  const { formErrors, fieldErrors } = z.flattenError(error);
 
   // Collect only valid error objects.
   const errorObjects: Record<string, { message: string }>[] = [];
@@ -19,8 +20,8 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 
   // Add field errors only if they exist.
   for (const [field, messages] of Object.entries(fieldErrors)) {
-    if (messages?.length) {
-      errorObjects.push({ [field]: { message: messages[0] } });
+    if (Array.isArray(messages) && messages.length > 0) {
+      errorObjects.push({ [field]: { message: String(messages[0]) } });
     }
   }
 
@@ -33,7 +34,7 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 
 export async function validateFormData<T>(
   request: Request,
-  schema: ZodSchema<T>,
+  schema: ZodType<T>,
   parserOptions?: MultipartParserOptions,
 ) {
   const formData = parserOptions
