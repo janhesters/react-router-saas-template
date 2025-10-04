@@ -14,7 +14,7 @@ describe('findHeaderTitle()', () => {
         params: { organizationSlug: 'tromp---schinner' },
         data: { headerTitle: 'wrong-title' },
         loaderData: { headerTitle: 'wrong-title' },
-        handle: { i18n: 'common' },
+        handle: {},
       },
       {
         id: 'routes/organization_.$organizationSlug',
@@ -22,7 +22,7 @@ describe('findHeaderTitle()', () => {
         params: { organizationSlug: 'tromp---schinner' },
         data: { headerTitle: 'correct-title' },
         loaderData: { headerTitle: 'wrong-title' },
-        handle: { i18n: ['organizations', 'sidebar'] },
+        handle: {},
       },
       {
         id: 'routes/organization_.$organizationSlug.recordings',
@@ -30,7 +30,7 @@ describe('findHeaderTitle()', () => {
         params: { organizationSlug: 'tromp---schinner' },
         data: { currentPage: 1, organizationName: 'Tromp - Schinner' },
         loaderData: { headerTitle: 'wrong-title' },
-        handle: { i18n: 'recordings' },
+        handle: {},
       },
     ];
 

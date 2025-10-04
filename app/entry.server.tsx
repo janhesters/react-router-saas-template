@@ -1,18 +1,14 @@
-import path from 'node:path';
 import { PassThrough } from 'node:stream';
 
 import { createReadableStreamFromReadable } from '@react-router/node';
-import { createInstance } from 'i18next';
-import Backend from 'i18next-fs-backend';
 import { isbot } from 'isbot';
 import type { RenderToPipeableStreamOptions } from 'react-dom/server';
 import { renderToPipeableStream } from 'react-dom/server';
-import { I18nextProvider, initReactI18next } from 'react-i18next';
-import type { EntryContext } from 'react-router';
+import { I18nextProvider } from 'react-i18next';
+import type { EntryContext, RouterContextProvider } from 'react-router';
 import { ServerRouter } from 'react-router';
 
-import i18n from '~/utils/i18n';
-import i18next from '~/utils/i18next.server';
+import { getInstance } from './features/localization/middleware.server';
 
 export const streamTimeout = 5000;
 
@@ -42,26 +38,10 @@ export default async function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  routerContext: EntryContext,
-  // loadContext: AppLoadContext,
+  entryContext: EntryContext,
+  routerContext: RouterContextProvider,
 ) {
   await initializeMockServer();
-
-  const instance = createInstance();
-  const lng = await i18next.getLocale(request);
-  const ns = i18next.getRouteNamespaces(routerContext);
-
-  await instance
-    .use(initReactI18next)
-    .use(Backend)
-    .init({
-      ...i18n,
-      lng,
-      ns,
-      backend: {
-        loadPath: path.resolve('./public/locales/{{lng}}/{{ns}}.json'),
-      },
-    });
 
   return new Promise((resolve, reject) => {
     let shellRendered = false;
@@ -71,13 +51,13 @@ export default async function handleRequest(
     // Ensure requests from bots and SPA Mode renders wait for all content to load before responding
     // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
     const readyOption: keyof RenderToPipeableStreamOptions =
-      (userAgent && isbot(userAgent)) || routerContext.isSpaMode
+      (userAgent && isbot(userAgent)) || entryContext.isSpaMode
         ? 'onAllReady'
         : 'onShellReady';
 
     const { pipe, abort } = renderToPipeableStream(
-      <I18nextProvider i18n={instance}>
-        <ServerRouter context={routerContext} url={request.url} />
+      <I18nextProvider i18n={getInstance(routerContext)}>
+        <ServerRouter context={entryContext} url={request.url} />
       </I18nextProvider>,
       {
         [readyOption]() {

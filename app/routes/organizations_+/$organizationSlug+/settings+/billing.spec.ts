@@ -42,7 +42,10 @@ import {
   setupUserWithOrgAndAddAsMember,
   setupUserWithTrialOrgAndAddAsMember,
 } from '~/test/server-test-utils';
-import { createAuthenticatedRequest } from '~/test/test-utils';
+import {
+  createAuthenticatedRequest,
+  createTestContextProvider,
+} from '~/test/test-utils';
 import type { DataWithResponseInit } from '~/utils/http-responses.server';
 import {
   badRequest,
@@ -72,8 +75,13 @@ async function sendAuthenticatedRequest({
     method: 'POST',
     formData,
   });
+  const params = { organizationSlug };
 
-  return await action({ request, context: {}, params: { organizationSlug } });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 const server = setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
@@ -127,12 +135,13 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       method: 'POST',
       body: toFormData({}),
     });
+    const params = { organizationSlug: organization.slug };
 
     try {
       await action({
         request,
-        context: {},
-        params: { organizationSlug: organization.slug },
+        context: await createTestContextProvider({ request, params }),
+        params,
       });
     } catch (error) {
       if (error instanceof Response) {

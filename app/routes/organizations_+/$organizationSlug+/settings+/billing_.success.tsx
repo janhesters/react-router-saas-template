@@ -4,38 +4,40 @@ import { BadgeCheckIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { data, href, Link } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 
 import { Button } from '~/components/ui/button';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { getPageTitle } from '~/utils/get-page-title.server';
 import { notFound } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/billing_.success';
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const {
-    auth: { headers, role },
-    t,
-  } = await promiseHash({
-    auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
-    t: i18next.getFixedT(request, ['billing', 'common']),
-  });
+export async function loader({ request, params, context }: Route.LoaderArgs) {
+  const { headers, role } = await requireUserIsMemberOfOrganization(
+    request,
+    params.organizationSlug,
+  );
+  const i18n = getInstance(context);
 
   if (role === OrganizationMembershipRole.member) {
     throw notFound();
   }
 
   return data(
-    { title: getPageTitle(t, 'billing-success-page.page-title') },
+    {
+      title: getPageTitle(
+        i18n.t.bind(i18n),
+        'billing:billing-success-page.page-title',
+      ),
+    },
     { headers },
   );
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
   const { t } = useTranslation('billing', {

@@ -2,7 +2,6 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { useTranslation } from 'react-i18next';
 import { href, Link, redirect } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 
 import { Avatar, AvatarImage } from '~/components/ui/avatar';
 import { Badge } from '~/components/ui/badge';
@@ -15,23 +14,16 @@ import {
   CardTitle,
 } from '~/components/ui/card';
 import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireOnboardedUserAccountExists } from '~/features/onboarding/onboarding-helpers.server';
 import { cn } from '~/lib/utils';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/_index';
 
-export const handle = { i18n: 'organizations' };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const {
-    data: { user },
-    t,
-  } = await promiseHash({
-    data: requireOnboardedUserAccountExists(request),
-    t: i18next.getFixedT(request, ['organizations', 'common']),
-  });
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const { user } = await requireOnboardedUserAccountExists(request);
+  const i18n = getInstance(context);
 
   if (user.memberships.length === 1) {
     return redirect(`/organizations/${user.memberships[0].organization.slug}`);
@@ -39,11 +31,16 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   return {
     memberships: user.memberships,
-    title: getPageTitle(t, 'organizations-list.title'),
+    title: getPageTitle(
+      i18n.t.bind(i18n),
+      'organizations:organizations-list.title',
+    ),
   };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export default function OrganizationsRoute({
   loaderData,

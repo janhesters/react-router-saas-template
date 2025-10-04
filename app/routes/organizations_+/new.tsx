@@ -1,31 +1,31 @@
 import { useTranslation } from 'react-i18next';
 import { TbArrowLeft } from 'react-icons/tb';
 import { Link, useNavigation } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 
 import { Button } from '~/components/ui/button';
 import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
+import { getInstance } from '~/features/localization/middleware.server';
 import { createOrganizationAction } from '~/features/organizations/create-organization/create-organization-action.server';
 import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-organization/create-organization-constants';
 import { CreateOrganizationFormCard } from '~/features/organizations/create-organization/create-organization-form-card';
 import { requireAuthenticatedUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/new';
 
-export const handle = { i18n: ['organizations', 'dropzone'] };
+export async function loader({ request, context }: Route.LoaderArgs) {
+  await requireAuthenticatedUserExists(request);
+  const i18n = getInstance(context);
 
-export async function loader(args: Route.LoaderArgs) {
-  const { t } = await promiseHash({
-    userIsAnonymous: requireAuthenticatedUserExists(args.request),
-    t: i18next.getFixedT(args.request, ['organizations', 'common']),
-  });
-  return { title: getPageTitle(t, 'new.page-title') };
+  return {
+    title: getPageTitle(i18n.t.bind(i18n), 'organizations:new.page-title'),
+  };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await createOrganizationAction(args);

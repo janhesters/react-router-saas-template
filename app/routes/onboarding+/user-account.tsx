@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { data, href, useNavigation } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserNeedsOnboarding } from '~/features/onboarding/onboarding-helpers.server';
 import { OnboardingSteps } from '~/features/onboarding/onboarding-steps';
 import { onboardingUserAccountAction } from '~/features/onboarding/user-account/onboarding-user-account-action.server';
@@ -10,21 +10,16 @@ import { ONBOARDING_USER_ACCOUNT_INTENT } from '~/features/onboarding/user-accou
 import { OnboardingUserAccountFormCard } from '~/features/onboarding/user-account/onboarding-user-account-form-card';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/user-account';
 
-export const handle = { i18n: ['onboarding', 'dropzone'] };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const { t, auth } = await promiseHash({
-    auth: requireUserNeedsOnboarding(request),
-    t: i18next.getFixedT(request, ['onboarding', 'common']),
-  });
+export async function loader({ request, context }: Route.LoaderArgs) {
+  const auth = await requireUserNeedsOnboarding(request);
+  const i18n = getInstance(context);
 
   return data(
     {
-      title: getPageTitle(t, 'user-account.title'),
+      title: getPageTitle(i18n.t.bind(i18n), 'onboarding:user-account.title'),
       userNeedsOrganization: auth.user.memberships.length === 0,
       userId: auth.user.id,
     },
@@ -32,7 +27,9 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await onboardingUserAccountAction(args);

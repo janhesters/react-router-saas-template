@@ -15,12 +15,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+      - name: 📥 Install dependencies
+        run: npm ci
 
       - name: 🛠️ Typegen
         run: npm run typegen
@@ -36,12 +36,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+      - name: 📥 Install dependencies
+        run: npm ci
 
       - name: 🔎 Type check
         run: npm run typecheck
@@ -100,12 +100,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+      - name: 📥 Install dependencies
+        run: npm ci
 
       - name: 🛠 Setup Database
         run: npm run prisma:wipe
@@ -153,15 +153,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: ⎔ Setup node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 22
 
-      - name: 📥 Download deps
-        uses: bahmutov/npm-install@v1
+      - name: 📥 Install dependencies
+        run: npm ci
 
       - name: 🌐 Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: npx playwright install --with-deps chromium
 
       - name: 🛠 Setup Database
         run: npm run prisma:wipe

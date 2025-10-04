@@ -3,15 +3,14 @@ import type { Prisma } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { addDays } from 'date-fns';
 import { data } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
 import { adjustSeats } from '~/features/billing/stripe-helpers.server';
+import { getInstance } from '~/features/localization/middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { sendEmail } from '~/utils/email.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { badRequest, created, forbidden } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -50,10 +49,15 @@ const schema = z.discriminatedUnion('intent', [
   changeRoleSchema,
 ]);
 
-export async function teamMembersAction({ request, params }: Route.ActionArgs) {
+export async function teamMembersAction({
+  request,
+  params,
+  context,
+}: Route.ActionArgs) {
   try {
     const { user, organization, role, headers } =
       await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+    const i18n = getInstance(context);
 
     if (role === OrganizationMembershipRole.member) {
       throw forbidden();
@@ -193,13 +197,13 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           // they will now take up a seat again.
           if (targetMembership.deactivatedAt) {
             if (getOrganizationIsFull(organization)) {
-              const t = await i18next.getFixedT(request, 'organizations', {
-                keyPrefix:
-                  'organizations:settings.team-members.invite-by-email',
-              });
               const toastHeaders = await createToastHeaders({
-                title: t('organization-full-toast-title'),
-                description: t('organization-full-toast-description'),
+                title: i18n.t(
+                  'organizations:settings.team-members.invite-by-email.organization-full-toast-title',
+                ),
+                description: i18n.t(
+                  'organizations:settings.team-members.invite-by-email.organization-full-toast-description',
+                ),
                 type: 'error',
               });
               return badRequest(
@@ -259,13 +263,6 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           });
         }
 
-        const { t, commonT } = await promiseHash({
-          t: i18next.getFixedT(request, 'organizations', {
-            keyPrefix: 'organizations:settings.team-members.invite-by-email',
-          }),
-          commonT: i18next.getFixedT(request, 'common'),
-        });
-
         const existingMember =
           await retrieveActiveOrganizationMembershipByEmailAndOrganizationId({
             email: body.email,
@@ -276,7 +273,10 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
           return badRequest({
             errors: {
               email: {
-                message: t('form.email-already-member', { email: body.email }),
+                message: i18n.t(
+                  'organizations:settings.team-members.invite-by-email.form.email-already-member',
+                  { email: body.email },
+                ),
               },
             },
           });
@@ -294,24 +294,38 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
 
         const result = await sendEmail({
           to: body.email,
-          subject: t('invite-email.subject', {
-            inviteName: user.name,
-            appName: commonT('app-name'),
-          }),
+          subject: i18n.t(
+            'organizations:settings.team-members.invite-by-email.invite-email.subject',
+            {
+              inviteName: user.name,
+              appName: i18n.t('common:app-name'),
+            },
+          ),
           react: (
             <InviteEmail
-              title={t('invite-email.title', {
-                appName: commonT('app-name'),
-              })}
-              description={t('invite-email.description', {
-                appName: commonT('app-name'),
-                inviterName: user.name,
-                organizationName: organization.name,
-              })}
-              callToAction={t('invite-email.call-to-action')}
-              buttonText={t('invite-email.button-text', {
-                organizationName: organization.name,
-              })}
+              title={i18n.t(
+                'organizations:settings.team-members.invite-by-email.invite-email.title',
+                {
+                  appName: i18n.t('common:app-name'),
+                },
+              )}
+              description={i18n.t(
+                'organizations:settings.team-members.invite-by-email.invite-email.description',
+                {
+                  appName: i18n.t('common:app-name'),
+                  inviterName: user.name,
+                  organizationName: organization.name,
+                },
+              )}
+              callToAction={i18n.t(
+                'organizations:settings.team-members.invite-by-email.invite-email.call-to-action',
+              )}
+              buttonText={i18n.t(
+                'organizations:settings.team-members.invite-by-email.invite-email.button-text',
+                {
+                  organizationName: organization.name,
+                },
+              )}
               buttonUrl={joinUrl}
             />
           ),
@@ -324,7 +338,9 @@ export async function teamMembersAction({ request, params }: Route.ActionArgs) {
         }
 
         const toastHeaders = await createToastHeaders({
-          title: t('success-toast-title'),
+          title: i18n.t(
+            'organizations:settings.team-members.invite-by-email.success-toast-title',
+          ),
           type: 'success',
         });
 

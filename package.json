@@ -6,7 +6,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
+      "eslint --fix --cache",
       "prettier --write"
     ],
     "*.{json,css,md}": [
@@ -114,6 +114,7 @@
     "vitest": "^3.2.4"
   },
   "name": "reactsquad-react-router-saas-template",
+  "packageManager": "npm@10.9.2",
   "private": true,
   "scripts": {
     "build": "react-router build",
@@ -122,8 +123,8 @@
     "dev-with-mocks": "cross-env VITE_CLIENT_MOCKS=true SERVER_MOCKS=true npm run dev",
     "dev-with-server-mocks": "cross-env SERVER_MOCKS=true npm run dev",
     "format": "prettier --write .",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "lint": "eslint . --cache",
+    "lint:fix": "eslint . --fix --cache",
     "prepare": "husky || true",
     "prisma:deploy": "npx prisma migrate deploy && npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev --name",

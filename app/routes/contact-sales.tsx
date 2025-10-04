@@ -10,21 +10,19 @@ import {
 import { contactSalesAction } from '~/features/billing/contact-sales/contact-sales-action.server';
 import { CONTACT_SALES_INTENT } from '~/features/billing/contact-sales/contact-sales-constants';
 import { ContactSalesTeam } from '~/features/billing/contact-sales/contact-sales-team';
+import { getInstance } from '~/features/localization/middleware.server';
 import { cn } from '~/lib/utils';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/contact-sales';
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const t = await i18next.getFixedT(request, 'billing', {
-    keyPrefix: 'contact-sales',
-  });
-  return { title: t('page-title') };
+export function loader({ context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
+  return { title: i18n.t('billing:contact-sales.page-title') };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await contactSalesAction(args);

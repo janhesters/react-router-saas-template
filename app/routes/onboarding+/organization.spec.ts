@@ -15,7 +15,10 @@ import {
 } from '~/features/user-accounts/user-accounts-model.server';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
-import { createAuthenticatedRequest } from '~/test/test-utils';
+import {
+  createAuthenticatedRequest,
+  createTestContextProvider,
+} from '~/test/test-utils';
 import { badRequest } from '~/utils/http-responses.server';
 import { slugify } from '~/utils/slugify.server';
 import { toFormData } from '~/utils/to-form-data';
@@ -37,8 +40,13 @@ async function sendAuthenticatedRequest({
     method: 'POST',
     formData,
   });
+  const params = {};
 
-  return await action({ request, context: {}, params: {} });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 async function setup(userAccount = createPopulatedUserAccount()) {
@@ -60,9 +68,14 @@ describe('/onboarding/organization route action', () => {
       method: 'POST',
       body: toFormData({}),
     });
+    const params = {};
 
     try {
-      await action({ request, context: {}, params: {} });
+      await action({
+        request,
+        context: await createTestContextProvider({ request, params }),
+        params,
+      });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);

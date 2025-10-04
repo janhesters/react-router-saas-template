@@ -3,8 +3,6 @@ import { requireUserIsAnonymous } from '~/features/user-authentication/user-auth
 
 import type { Route } from './+types/_index';
 
-export const handle = { i18n: ['common', 'landing'] };
-
 export async function loader({ request }: Route.LoaderArgs) {
   await requireUserIsAnonymous(request);
   return {};

@@ -13,8 +13,6 @@ import { requireUserIsMemberOfOrganization } from '~/features/organizations/orga
 
 import type { Route } from './+types/_organization-settings-layout';
 
-export const handle = { i18n: 'organizations' };
-
 export async function loader({ request, params }: Route.LoaderArgs) {
   const pathname = new URL(request.url).pathname;
   if (pathname.endsWith('/settings')) {

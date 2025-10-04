@@ -1,13 +1,13 @@
 import { href } from 'react-router';
 import { z } from 'zod';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireSupabaseUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import { createSupabaseServerClient } from '~/features/user-authentication/supabase.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { badRequest } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -22,11 +22,12 @@ const acceptInviteLinkSchema = z.object({
   intent: z.literal(ACCEPT_INVITE_LINK_INTENT),
 });
 
-export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
+export async function acceptInviteLinkAction({
+  request,
+  context,
+}: Route.ActionArgs) {
   try {
-    const t = await i18next.getFixedT(request, 'organizations', {
-      keyPrefix: 'accept-invite-link',
-    });
+    const i18n = getInstance(context);
     const data = await validateFormData(request, acceptInviteLinkSchema);
 
     switch (data.intent) {
@@ -41,8 +42,12 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
 
         if (!link) {
           const toastHeaders = await createToastHeaders({
-            title: t('invite-link-invalid-toast-title'),
-            description: t('invite-link-invalid-toast-description'),
+            title: i18n.t(
+              'organizations:accept-invite-link.invite-link-invalid-toast-title',
+            ),
+            description: i18n.t(
+              'organizations:accept-invite-link.invite-link-invalid-toast-description',
+            ),
             type: 'error',
           });
 
@@ -57,6 +62,7 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
 
           try {
             await acceptInviteLink({
+              i18n,
               inviteLinkId: link.id,
               inviteLinkToken: link.token,
               organizationId: link.organization.id,
@@ -69,10 +75,15 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
                 organizationSlug: link.organization.slug,
               }),
               {
-                title: t('join-success-toast-title'),
-                description: t('join-success-toast-description', {
-                  organizationName: link.organization.name,
-                }),
+                title: i18n.t(
+                  'organizations:accept-invite-link.join-success-toast-title',
+                ),
+                description: i18n.t(
+                  'organizations:accept-invite-link.join-success-toast-description',
+                  {
+                    organizationName: link.organization.name,
+                  },
+                ),
                 type: 'success',
               },
               { headers },
@@ -93,10 +104,15 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
                   organizationSlug: link.organization.slug,
                 }),
                 {
-                  title: t('already-member-toast-title'),
-                  description: t('already-member-toast-description', {
-                    organizationName: link.organization.name,
-                  }),
+                  title: i18n.t(
+                    'organizations:accept-invite-link.already-member-toast-title',
+                  ),
+                  description: i18n.t(
+                    'organizations:accept-invite-link.already-member-toast-description',
+                    {
+                      organizationName: link.organization.name,
+                    },
+                  ),
                   type: 'info',
                 },
                 { headers },
@@ -114,8 +130,12 @@ export async function acceptInviteLinkAction({ request }: Route.ActionArgs) {
         return redirectWithToast(
           href('/register'),
           {
-            title: t('invite-link-valid-toast-title'),
-            description: t('invite-link-valid-toast-description'),
+            title: i18n.t(
+              'organizations:accept-invite-link.invite-link-valid-toast-title',
+            ),
+            description: i18n.t(
+              'organizations:accept-invite-link.invite-link-valid-toast-description',
+            ),
             type: 'info',
           },
           { headers: combineHeaders(headers, inviteLinkInfo) },

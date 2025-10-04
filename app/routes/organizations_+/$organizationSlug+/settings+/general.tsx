@@ -1,10 +1,10 @@
 import { OrganizationMembershipRole } from '@prisma/client';
 import { useTranslation } from 'react-i18next';
 import { data, useNavigation } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 
 import { GeneralErrorBoundary } from '~/components/general-error-boundary';
 import { Separator } from '~/components/ui/separator';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { DangerZone } from '~/features/organizations/settings/general/danger-zone';
 import { GeneralOrganizationSettings } from '~/features/organizations/settings/general/general-organization-settings';
@@ -16,34 +16,32 @@ import {
 import { OrganizationInfo } from '~/features/organizations/settings/general/organization-info';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/general';
 
-export const handle = { i18n: ['organizations', 'dropzone'] };
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const {
-    auth: { headers, organization, role },
-    t,
-  } = await promiseHash({
-    auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
-    t: i18next.getFixedT(request, ['organizations', 'common']),
-  });
+export async function loader({ request, params, context }: Route.LoaderArgs) {
+  const { headers, organization, role } =
+    await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+  const i18n = getInstance(context);
 
   const userIsOwner = role === OrganizationMembershipRole.owner;
 
   return data(
     {
       organization,
-      title: getPageTitle(t, 'settings.general.page-title'),
+      title: getPageTitle(
+        i18n.t.bind(i18n),
+        'organizations:settings.general.page-title',
+      ),
       userIsOwner,
     },
     { headers },
   );
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await generalOrganizationSettingsAction(args);

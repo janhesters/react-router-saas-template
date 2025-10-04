@@ -11,7 +11,10 @@ import {
   supabaseHandlers,
 } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
-import { createAuthenticatedRequest } from '~/test/test-utils';
+import {
+  createAuthenticatedRequest,
+  createTestContextProvider,
+} from '~/test/test-utils';
 import {
   badRequest,
   conflict,
@@ -28,8 +31,13 @@ async function sendRequest({ formData }: { formData: FormData }) {
     method: 'POST',
     body: formData,
   });
+  const params = {};
 
-  return await action({ request, context: {}, params: {} });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 setupMockServerLifecycle(...supabaseHandlers);
@@ -49,9 +57,14 @@ describe('/register route action', () => {
       method: 'POST',
       formData: toFormData({}),
     });
+    const params = {};
 
     try {
-      await action({ request, context: {}, params: {} });
+      await action({
+        request,
+        context: await createTestContextProvider({ request, params }),
+        params,
+      });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);

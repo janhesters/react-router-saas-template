@@ -5,6 +5,7 @@ import {
   deleteContactSalesFormSubmissionFromDatabaseById,
   retrieveContactSalesFormSubmissionsFromDatabase,
 } from '~/features/billing/contact-sales/contact-sales-form-submission-model.server';
+import { createTestContextProvider } from '~/test/test-utils';
 import { badRequest } from '~/utils/http-responses.server';
 import type { Payload } from '~/utils/to-form-data';
 import { toFormData } from '~/utils/to-form-data';
@@ -18,8 +19,13 @@ async function sendRequest({ formData }: { formData: FormData }) {
     method: 'POST',
     body: formData,
   });
+  const params = {};
 
-  return await action({ request, context: {}, params: {} });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 describe('/contact-sales route action', () => {

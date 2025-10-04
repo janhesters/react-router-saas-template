@@ -14,6 +14,7 @@ import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import {
   createAuthenticatedRequest,
+  createTestContextProvider,
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
 } from '~/test/test-utils';
@@ -41,8 +42,13 @@ async function sendAuthenticatedRequest({
     method: 'POST',
     formData,
   });
+  const params = { organizationSlug };
 
-  return await action({ request, context: {}, params: { organizationSlug } });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
@@ -56,12 +62,13 @@ describe('/organizations/:organizationSlug/settings/general route action', () =>
       method: 'POST',
       body: toFormData({}),
     });
+    const params = { organizationSlug: organization.slug };
 
     try {
       await action({
         request,
-        context: {},
-        params: { organizationSlug: organization.slug },
+        context: await createTestContextProvider({ request, params }),
+        params,
       });
     } catch (error) {
       if (error instanceof Response) {

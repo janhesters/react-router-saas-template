@@ -1,5 +1,6 @@
 import { href, redirect } from 'react-router';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { getValidEmailInviteInfo } from '~/features/organizations/accept-email-invite/accept-email-invite-helpers.server';
 import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
 import {
@@ -14,7 +15,7 @@ import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from
 
 import type { Route } from './+types/register.confirm';
 
-export async function loader({ request }: Route.LoaderArgs) {
+export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase, headers } = await requireUserIsAnonymous(request);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
@@ -45,12 +46,15 @@ export async function loader({ request }: Route.LoaderArgs) {
       supabaseUserId: user.id,
     });
 
+    const i18n = getInstance(context);
+
     if (emailInviteInfo) {
       await acceptEmailInvite({
         // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
         emailInviteId: emailInviteInfo.emailInviteId,
         emailInviteToken: emailInviteInfo.emailInviteToken,
+        i18n,
         organizationId: emailInviteInfo.organizationId,
         request,
         role: emailInviteInfo.role,
@@ -58,6 +62,7 @@ export async function loader({ request }: Route.LoaderArgs) {
       });
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
+        i18n,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
         inviteLinkToken: inviteLinkInfo.inviteLinkToken,
         organizationId: inviteLinkInfo.organizationId,

@@ -5,10 +5,8 @@ import { startTransition, StrictMode } from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import { HydratedRouter } from 'react-router/dom';
-import { getInitialNamespaces } from 'remix-i18next/client';
 
-import i18n from '~/utils/i18n';
-
+import { i18n } from './features/localization/i18n';
 import { onUnhandledRequest } from './test/mocks/msw-utils';
 
 declare global {
@@ -35,7 +33,6 @@ async function hydrate() {
     .use(Backend)
     .init({
       ...i18n,
-      ns: getInitialNamespaces(),
       backend: { loadPath: '/locales/{{lng}}/{{ns}}.json' },
       detection: {
         order: ['htmlTag'],

@@ -6,6 +6,7 @@ import { GeneralErrorBoundary } from '~/components/general-error-boundary';
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
 import { Button } from '~/components/ui/button';
 import { Separator } from '~/components/ui/separator';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { EmailInviteCard } from '~/features/organizations/settings/team-members/invite-by-email-card';
 import { InviteLinkCard } from '~/features/organizations/settings/team-members/invite-link-card';
@@ -18,24 +19,24 @@ import {
 import { TeamMembersTable } from '~/features/organizations/settings/team-members/team-members-table';
 import { getFormErrors } from '~/utils/get-form-errors';
 import { getPageTitle } from '~/utils/get-page-title.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/members';
 
-export const handle = { i18n: 'organizations' };
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const { auth, organization, t } = await promiseHash({
+export async function loader({ request, params, context }: Route.LoaderArgs) {
+  const { auth, organization } = await promiseHash({
     auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
     organization: requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug(
       params.organizationSlug,
     ),
-    t: i18next.getFixedT(request, ['organizations', 'common']),
   });
+  const i18n = getInstance(context);
 
   return data(
     {
-      title: getPageTitle(t, 'settings.team-members.page-title'),
+      title: getPageTitle(
+        i18n.t.bind(i18n),
+        'organizations:settings.team-members.page-title',
+      ),
       ...mapOrganizationDataToTeamMemberSettingsProps({
         currentUsersId: auth.user.id,
         currentUsersRole: auth.role,
@@ -47,7 +48,9 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   );
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await teamMembersAction(args);

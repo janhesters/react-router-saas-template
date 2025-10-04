@@ -1,13 +1,12 @@
 import { OrganizationMembershipRole } from '@prisma/client';
 import { data, redirect } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
 import { z } from 'zod';
 
+import { getInstance } from '~/features/localization/middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
 import { badRequest, conflict, forbidden } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
@@ -59,16 +58,16 @@ const schema = z.discriminatedUnion('intent', [
   viewInvoicesSchema,
 ]);
 
-export async function billingAction({ request, params }: Route.ActionArgs) {
+export async function billingAction({
+  request,
+  params,
+  context,
+}: Route.ActionArgs) {
   try {
-    const {
-      auth: { organization, headers, role, user },
-      t,
-    } = await promiseHash({
-      auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
-      t: i18next.getFixedT(request, 'billing', { keyPrefix: 'billing-page' }),
-    });
+    const { organization, headers, role, user } =
+      await requireUserIsMemberOfOrganization(request, params.organizationSlug);
     const body = await validateFormData(request, schema);
+    const i18n = getInstance(context);
 
     if (role === OrganizationMembershipRole.member) {
       return forbidden();
@@ -108,7 +107,9 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
         }
 
         const toast = await createToastHeaders({
-          title: t('pending-downgrade-banner.success-title'),
+          title: i18n.t(
+            'billing:billing-page.pending-downgrade-banner.success-title',
+          ),
           type: 'success',
         });
 
@@ -169,7 +170,9 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
         }
 
         const toast = await createToastHeaders({
-          title: t('cancel-at-period-end-banner.resume-success-title'),
+          title: i18n.t(
+            'billing:billing-page.cancel-at-period-end-banner.resume-success-title',
+          ),
           type: 'success',
         });
 
@@ -226,7 +229,9 @@ export async function billingAction({ request, params }: Route.ActionArgs) {
         }
 
         const toast = await createToastHeaders({
-          title: t('update-billing-email-modal.success-title'),
+          title: i18n.t(
+            'billing:billing-page.update-billing-email-modal.success-title',
+          ),
           type: 'success',
         });
 

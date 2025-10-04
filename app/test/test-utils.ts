@@ -3,6 +3,8 @@ import { faker } from '@faker-js/faker';
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { StripePriceInterval } from '@prisma/client';
+import type { Params } from 'react-router';
+import { RouterContextProvider } from 'react-router';
 
 import type { LookupKey, Tier } from '~/features/billing/billing-constants';
 import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
@@ -18,6 +20,7 @@ import {
   saveStripePriceToDatabase,
 } from '~/features/billing/stripe-prices-model.server';
 import { saveStripeProductToDatabase } from '~/features/billing/stripe-product-model.server';
+import { i18nextMiddleware } from '~/features/localization/middleware.server';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
 import {
@@ -438,4 +441,33 @@ export async function ensureStripeProductsAndPricesExist() {
   }
 
   console.log('✅ Stripe products and prices seeded successfully');
+}
+
+/**
+ * Creates a RouterContextProvider configured for use in tests.
+ *
+ * This helper initializes a new unstable_RouterContextProvider and populates it
+ * with a default locale ("en") and a corresponding i18next instance. It is
+ * useful when rendering components or routes that depend on React Router's
+ * context and i18n contexts without bootstrapping an entire application.
+ *
+ * @returns An instance of unstable_RouterContextProvider with:
+ *   - A locale context key set to "en".
+ *   - An i18next context key set to a newly created i18n instance using the
+ *     shared resources.
+ */
+export async function createTestContextProvider({
+  request,
+  params,
+}: {
+  request: Request;
+  params: Params;
+}) {
+  const context = new RouterContextProvider();
+
+  await i18nextMiddleware({ request, params, context }, () =>
+    Promise.resolve(new Response(null, { status: 200 })),
+  );
+
+  return context;
 }

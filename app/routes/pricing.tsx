@@ -23,18 +23,18 @@ import {
 } from '~/features/billing/pricing';
 import { Footer } from '~/features/landing/footer';
 import { Header } from '~/features/landing/header';
-import i18next from '~/utils/i18next.server';
+import { getInstance } from '~/features/localization/middleware.server';
 
 import type { Route } from './+types/pricing';
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request }: Route.LoaderArgs) {
-  const t = await i18next.getFixedT(request, 'billing');
-  return { title: t('pricing-page.page-title') };
+export function loader({ context }: Route.LoaderArgs) {
+  const i18n = getInstance(context);
+  return { title: i18n.t('billing:pricing-page.page-title') };
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export default function PricingRoute() {
   const { t } = useTranslation('billing', { keyPrefix: 'pricing' });

@@ -17,27 +17,22 @@ import {
 } from '~/features/billing/billing-helpers.server';
 import { BillingPage } from '~/features/billing/billing-page';
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from '~/features/billing/stripe-product-model.server';
+import { getInstance } from '~/features/localization/middleware.server';
 import { requireUserIsMemberOfOrganization } from '~/features/organizations/organizations-helpers.server';
 import { getPageTitle } from '~/utils/get-page-title.server';
 import { notFound } from '~/utils/http-responses.server';
-import i18next from '~/utils/i18next.server';
 
 import type { Route } from './+types/billing';
 
-export const handle = { i18n: 'billing' };
-
-export async function loader({ request, params }: Route.LoaderArgs) {
-  const {
-    auth: { organization, headers, role },
-    products,
-    t,
-  } = await promiseHash({
+export async function loader({ request, params, context }: Route.LoaderArgs) {
+  const { auth, products } = await promiseHash({
     auth: requireUserIsMemberOfOrganization(request, params.organizationSlug),
     products: retrieveProductsFromDatabaseByPriceLookupKeys(
       allLookupKeys as unknown as string[],
     ),
-    t: i18next.getFixedT(request, ['billing', 'common']),
   });
+  const { organization, headers, role } = auth;
+  const i18n = getInstance(context);
 
   if (role === OrganizationMembershipRole.member) {
     throw notFound();
@@ -52,13 +47,15 @@ export async function loader({ request, params }: Route.LoaderArgs) {
         }),
         ...getCreateSubscriptionModalProps(organization, products),
       },
-      title: getPageTitle(t, 'billing-page.page-title'),
+      title: getPageTitle(i18n.t.bind(i18n), 'billing:billing-page.page-title'),
     },
     { headers },
   );
 }
 
-export const meta: Route.MetaFunction = ({ data }) => [{ title: data?.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData?.title },
+];
 
 export async function action(args: Route.ActionArgs) {
   return await billingAction(args);

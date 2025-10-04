@@ -23,7 +23,10 @@ import { stripeHandlers } from '~/test/mocks/handlers/stripe';
 import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
 import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
-import { createAuthenticatedRequest } from '~/test/test-utils';
+import {
+  createAuthenticatedRequest,
+  createTestContextProvider,
+} from '~/test/test-utils';
 import {
   badRequest,
   type DataWithResponseInit,
@@ -48,8 +51,13 @@ async function sendAuthenticatedRequest({
     method: 'POST',
     formData,
   });
+  const params = {};
 
-  return await action({ request, params: {}, context: {} });
+  return await action({
+    request,
+    context: await createTestContextProvider({ request, params }),
+    params,
+  });
 }
 
 async function setup() {
@@ -73,9 +81,14 @@ describe('/settings/account route action', () => {
       method: 'POST',
       body: toFormData({}),
     });
+    const params = {};
 
     try {
-      await action({ request, params: {}, context: {} });
+      await action({
+        request,
+        context: await createTestContextProvider({ request, params }),
+        params,
+      });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
