@@ -1,6 +1,6 @@
 import type { InitOptions } from 'i18next';
 
-import { namespaces } from './namespaces';
+import { defaultNS, resources } from './resources';
 
 export const i18n = {
   // This is the list of languages your application supports
@@ -10,7 +10,7 @@ export const i18n = {
   fallbackLng: 'en',
   // The default namespace of i18next is "translation",
   // but you can customize it here
-  defaultNS: 'common',
-  // List of all available namespaces (auto-generated at build time)
-  ns: namespaces,
+  defaultNS,
+  // Resources for type-safe translations (i18next will extract namespaces automatically)
+  resources,
 } satisfies InitOptions;

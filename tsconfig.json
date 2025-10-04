@@ -7,7 +7,7 @@
     "incremental": true,
     "jsx": "react-jsx",
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
-    "module": "ES2022",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {

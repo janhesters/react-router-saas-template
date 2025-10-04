@@ -19,7 +19,7 @@ const gitignorePath = path.resolve(__dirname, '.gitignore');
 export default defineConfig(
   includeIgnoreFile(gitignorePath),
   {
-    ignores: ['.cursor/**/*.md', '.cursor/**/*.mdc'],
+    ignores: ['.cursor/**/*.md', '.cursor/**/*.mdc', 'scripts/**'],
   },
   eslint.configs.recommended,
   tseslint.configs.recommendedTypeChecked,

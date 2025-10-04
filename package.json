@@ -141,8 +141,10 @@
     "test:watch": "vitest --reporter=verbose",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",
-    "typecheck": "react-router typegen && tsc",
-    "typegen": "react-router typegen"
+    "typecheck": "npm run typegen && tsc",
+    "typegen": "npm run typegen:router && npm run typegen:prisma",
+    "typegen:prisma": "prisma generate",
+    "typegen:router": "react-router typegen"
   },
   "type": "module"
 }
