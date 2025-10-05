@@ -64,7 +64,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   );
 
   // 2. Use the first item to derive price, tier, and seats
-  const { price } = items[0];
+  const { price } = items[0]!;
 
   // 3. Parse max seats from metadata.max_seats (string or number)
   const rawMaxSeats = price.product.maxSeats;

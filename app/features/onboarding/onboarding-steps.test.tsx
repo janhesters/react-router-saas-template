@@ -70,33 +70,33 @@ describe('OnboardingSteps component', () => {
     expect(steps).toHaveLength(4);
 
     // It renders a completed step.
-    const completedStep = steps[0];
+    const completedStep = steps[0]!;
     expect(within(completedStep).getByRole('link')).toHaveAttribute(
       'href',
-      props.steps[0].href,
+      props.steps[0]!.href,
     );
 
     // It renders a current step.
-    const currentStep = steps[1];
+    const currentStep = steps[1]!;
     expect(within(currentStep).getByRole('link')).toHaveAttribute(
       'href',
-      props.steps[1].href,
+      props.steps[1]!.href,
     );
 
     // It renders an upcoming step.
-    const upcomingStep = steps[2];
+    const upcomingStep = steps[2]!;
     expect(within(upcomingStep).getByRole('link')).toHaveAttribute(
       'href',
-      props.steps[2].href,
+      props.steps[2]!.href,
     );
 
     // It renders a disabled step (only completed and upcoming can be disabled).
-    const disabledUpcomingStep = steps[3];
+    const disabledUpcomingStep = steps[3]!;
     expect(
       within(disabledUpcomingStep).queryByRole('link'),
     ).not.toBeInTheDocument();
     expect(
-      within(disabledUpcomingStep).getByText(props.steps[3].name),
+      within(disabledUpcomingStep).getByText(props.steps[3]!.name),
     ).toBeInTheDocument();
   });
 });

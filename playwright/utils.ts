@@ -248,7 +248,7 @@ export async function setupInviteLinkCookie({
   // Extract Max-Age and convert to expires (optional)
   const maxAgeMatch = /Max-Age=(\d+)/.exec(cookieHeader);
   let expires: number | undefined;
-  if (maxAgeMatch) {
+  if (maxAgeMatch?.[1]) {
     const maxAgeSeconds = Number.parseInt(maxAgeMatch[1], 10);
     expires = Math.floor(Date.now() / 1000) + maxAgeSeconds; // Convert to Unix timestamp in seconds
   }
@@ -294,7 +294,7 @@ export async function setupEmailInviteCookie({
   // Extract Max-Age and convert to expires (optional)
   const maxAgeMatch = /Max-Age=(\d+)/.exec(cookieHeader);
   let expires: number | undefined;
-  if (maxAgeMatch) {
+  if (maxAgeMatch?.[1]) {
     const maxAgeSeconds = Number.parseInt(maxAgeMatch[1], 10);
     expires = Math.floor(Date.now() / 1000) + maxAgeSeconds; // Convert to Unix timestamp in seconds
   }

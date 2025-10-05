@@ -82,7 +82,7 @@ export const handleStripeChargeDisputeClosedEvent = async (
 
     // cancel the first one (or adjust logic if you need something more nuanced)
     const cancelled = await stripeAdmin.subscriptions.cancel(
-      subsList.data[0].id,
+      subsList.data[0]!.id,
     );
 
     console.log(

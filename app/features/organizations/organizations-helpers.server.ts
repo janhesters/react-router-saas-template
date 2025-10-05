@@ -192,7 +192,11 @@ export async function acceptInviteLink({
       userId: userAccountId,
     });
 
-    if (subscription && subscription.status !== 'canceled') {
+    if (
+      subscription &&
+      subscription.status !== 'canceled' &&
+      subscription.items[0]
+    ) {
       await adjustSeats({
         subscriptionId: subscription.stripeId,
         subscriptionItemId: subscription.items[0].stripeId,
@@ -267,7 +271,11 @@ export async function acceptEmailInvite({
       emailInviteLink: { deactivatedAt },
     });
 
-    if (subscription && subscription.status !== 'canceled') {
+    if (
+      subscription &&
+      subscription.status !== 'canceled' &&
+      subscription.items[0]
+    ) {
       await adjustSeats({
         subscriptionId: subscription.stripeId,
         subscriptionItemId: subscription.items[0].stripeId,
@@ -292,6 +300,7 @@ export const getOrganizationIsFull = (
     !['canceled', 'past_due'].includes(currentSubscription.status);
   const maxSeats =
     (currentSubscriptionIsActive &&
+      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       currentSubscription.items[0]?.price.product.maxSeats) ||
     25;
   return organization._count.memberships >= maxSeats;

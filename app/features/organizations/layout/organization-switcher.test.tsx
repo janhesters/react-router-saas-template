@@ -65,7 +65,7 @@ describe('OrganizationSwitcher Component', () => {
     );
 
     // Verify dropdown menu is initially closed.
-    expect(screen.queryByText(organizations[0].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(organizations[0]!.name)).not.toBeInTheDocument();
 
     // Click the organization button to open the menu.
     const orgButton = screen.getByRole('button');
@@ -87,6 +87,6 @@ describe('OrganizationSwitcher Component', () => {
     await user.keyboard('{Escape}');
 
     // Verify menu is closed.
-    expect(screen.queryByText(organizations[0].name)).not.toBeInTheDocument();
+    expect(screen.queryByText(organizations[0]!.name)).not.toBeInTheDocument();
   });
 });

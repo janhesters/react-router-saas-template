@@ -28,7 +28,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
       organization.slug,
     );
     const expected = {
-      organization: user.memberships[0].organization,
+      organization: user.memberships[0]!.organization,
       role: OrganizationMembershipRole.member,
     };
 
@@ -52,7 +52,7 @@ describe('findOrganizationIfUserIsMemberBySlug()', () => {
       organization.slug,
     );
     const expected = {
-      organization: user.memberships[0].organization,
+      organization: user.memberships[0]!.organization,
       role: OrganizationMembershipRole.admin,
     };
 
@@ -109,7 +109,7 @@ describe('findOrganizationIfUserIsMemberById()', () => {
 
     const actual = findOrganizationIfUserIsMemberById(user, organization.id);
     const expected = {
-      organization: user.memberships[0].organization,
+      organization: user.memberships[0]!.organization,
       role: OrganizationMembershipRole.member,
     };
 
@@ -130,7 +130,7 @@ describe('findOrganizationIfUserIsMemberById()', () => {
 
     const actual = findOrganizationIfUserIsMemberById(user, organization.id);
     const expected = {
-      organization: user.memberships[0].organization,
+      organization: user.memberships[0]!.organization,
       role: OrganizationMembershipRole.admin,
     };
 

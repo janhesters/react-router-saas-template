@@ -89,7 +89,7 @@ export function OnboardingUserAccountFormCard({
           data: { publicUrl },
         } = uploadHandler.supabase.storage
           .from(BUCKET_NAME)
-          .getPublicUrl(`${path}/${uploadHandler.files[0].name}`, {
+          .getPublicUrl(`${path}/${uploadHandler.files[0]!.name}`, {
             transform: { width: 128, height: 128, resize: 'cover' },
           });
         // Submit the form with the avatar URL

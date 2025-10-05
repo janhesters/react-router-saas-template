@@ -405,7 +405,7 @@ describe('/organizations/:organizationSlug route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user,
         organizationSlug: organization.slug,
-        formData: toFormData({ intent, recipientId: recipient.id }),
+        formData: toFormData({ intent, recipientId: recipient!.id }),
       })) as DataWithResponseInit<object>;
       const expected = data({});
 
@@ -419,7 +419,7 @@ describe('/organizations/:organizationSlug route action', () => {
 
       expect(updatedRecipients.length).toEqual(2);
       expect(
-        updatedRecipients.find(r => r.id === recipient.id)?.readAt,
+        updatedRecipients.find(r => r.id === recipient!.id)?.readAt,
       ).not.toBeNull();
     });
 
@@ -475,7 +475,7 @@ describe('/organizations/:organizationSlug route action', () => {
       const actual = (await sendAuthenticatedRequest({
         user: userA,
         organizationSlug: organization.slug,
-        formData: toFormData({ intent, recipientId: recipientB.id }),
+        formData: toFormData({ intent, recipientId: recipientB!.id }),
       })) as DataWithResponseInit<{ message: string }>;
       const expected = notFound();
 

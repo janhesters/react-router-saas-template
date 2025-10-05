@@ -111,7 +111,7 @@ describe('NavGroup Component', () => {
   test('given: an active route, should: highlight the active navigation item', () => {
     const items = createItemsWithoutChildren(2);
     const props = createProps({ items });
-    const path = items[0].url;
+    const path = items[0]!.url;
     const RouterStub = createRoutesStub([
       { path, Component: () => <NavGroup {...props} /> },
     ]);
@@ -122,10 +122,10 @@ describe('NavGroup Component', () => {
       </SidebarProvider>,
     );
 
-    const homeLink = screen.getByRole('link', { name: items[0].title });
+    const homeLink = screen.getByRole('link', { name: items[0]!.title });
     expect(homeLink).toHaveAttribute('aria-current', 'page');
 
-    const settingsLink = screen.getByRole('link', { name: items[1].title });
+    const settingsLink = screen.getByRole('link', { name: items[1]!.title });
     expect(settingsLink).not.toHaveAttribute('aria-current');
   });
 

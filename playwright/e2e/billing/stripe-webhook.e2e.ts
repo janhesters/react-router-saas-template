@@ -265,7 +265,7 @@ test.describe(`${path} API route`, () => {
       expect(databaseSubscription!.purchasedById).toEqual(user.id);
       expect(databaseSubscription!.status).toEqual(subscription.status);
       expect(databaseSubscription!.items.length).toEqual(1);
-      expect(databaseSubscription!.items[0].priceId).toEqual(price.stripeId);
+      expect(databaseSubscription!.items[0]!.priceId).toEqual(price.stripeId);
 
       await deleteOrganizationFromDatabaseById(organization.id);
       await deleteUserAccountFromDatabaseById(user.id);
@@ -678,7 +678,7 @@ test.describe(`${path} API route`, () => {
         scheduleData.current_phase!.end_date * 1000,
       );
       expect(databaseSchedule!.phases.length).toEqual(1);
-      expect(databaseSchedule!.phases[0].priceId).toEqual(price.stripeId);
+      expect(databaseSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);
@@ -770,8 +770,8 @@ test.describe(`${path} API route`, () => {
         updatedEndDate * 1000,
       );
       expect(updatedSchedule!.phases.length).toEqual(1);
-      expect(updatedSchedule!.phases[0].priceId).toEqual(price.stripeId);
-      expect(updatedSchedule!.phases[0].quantity).toEqual(2);
+      expect(updatedSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
+      expect(updatedSchedule!.phases[0]!.quantity).toEqual(2);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);
@@ -863,8 +863,8 @@ test.describe(`${path} API route`, () => {
         updatedEndDate * 1000,
       );
       expect(updatedSchedule!.phases.length).toEqual(1);
-      expect(updatedSchedule!.phases[0].priceId).toEqual(price.stripeId);
-      expect(updatedSchedule!.phases[0].quantity).toEqual(2);
+      expect(updatedSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
+      expect(updatedSchedule!.phases[0]!.quantity).toEqual(2);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);

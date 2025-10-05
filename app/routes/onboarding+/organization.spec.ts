@@ -138,10 +138,10 @@ describe('/onboarding/organization route action', () => {
       expect(createdOrganization).toMatchObject({
         name: organization.name,
       });
-      expect(createdOrganization!.memberships[0].member.id).toEqual(
+      expect(createdOrganization!.memberships[0]!.member.id).toEqual(
         userAccount.id,
       );
-      expect(createdOrganization!.memberships[0].role).toEqual('owner');
+      expect(createdOrganization!.memberships[0]!.role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
     });
@@ -178,8 +178,8 @@ describe('/onboarding/organization route action', () => {
       expect(secondOrg!.name).toEqual(firstOrg.name);
       expect(secondOrg!.slug).not.toEqual(firstOrg.slug);
       expect(secondOrg!.memberships).toHaveLength(1);
-      expect(secondOrg!.memberships[0].member.id).toEqual(userAccount.id);
-      expect(secondOrg!.memberships[0].role).toEqual('owner');
+      expect(secondOrg!.memberships[0]!.member.id).toEqual(userAccount.id);
+      expect(secondOrg!.memberships[0]!.role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
     });
@@ -209,8 +209,8 @@ describe('/onboarding/organization route action', () => {
       expect(organization!.name).toEqual('New');
       expect(organization!.slug).not.toEqual('new');
       expect(organization!.memberships).toHaveLength(1);
-      expect(organization!.memberships[0].member.id).toEqual(userAccount.id);
-      expect(organization!.memberships[0].role).toEqual('owner');
+      expect(organization!.memberships[0]!.member.id).toEqual(userAccount.id);
+      expect(organization!.memberships[0]!.role).toEqual('owner');
 
       await deleteOrganizationFromDatabaseById(organization!.id);
     });
@@ -311,10 +311,10 @@ describe('/onboarding/organization route action', () => {
         imageUrl: organization.imageUrl, // Verify the logo URL was saved
       });
       expect(createdOrganization!.memberships).toHaveLength(1);
-      expect(createdOrganization!.memberships[0].member.id).toEqual(
+      expect(createdOrganization!.memberships[0]!.member.id).toEqual(
         userAccount.id,
       );
-      expect(createdOrganization!.memberships[0].role).toEqual('owner');
+      expect(createdOrganization!.memberships[0]!.role).toEqual('owner');
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);

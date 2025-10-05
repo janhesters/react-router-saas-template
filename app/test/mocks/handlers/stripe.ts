@@ -60,7 +60,7 @@ const createCheckoutSessionMock = http.post(
     const metadata: Record<string, string> = {};
     for (const [key, value] of params.entries()) {
       const m = /^metadata\[(.+)]$/.exec(key);
-      if (m) metadata[m[1]] = value;
+      if (m) metadata[m[1]!] = value;
     }
 
     // parse line_items[0][price] & line_items[0][quantity], etc.
@@ -69,7 +69,7 @@ const createCheckoutSessionMock = http.post(
       const m = /^line_items\[(\d+)]\[(price|quantity)]$/.exec(key);
       if (m) {
         const index = Number(m[1]);
-        itemsMap[index] = itemsMap[index] || {};
+        itemsMap[index] = itemsMap[index] ?? {};
         if (m[2] === 'price') itemsMap[index].price = value;
         else itemsMap[index].quantity = Number(value);
       }
@@ -108,7 +108,7 @@ const createCustomerMock = http.post(
     const metadata: Record<string, string> = {};
     for (const [key, value] of params.entries()) {
       const m = /^metadata\[(.+)]$/.exec(key);
-      if (m) metadata[m[1]] = value;
+      if (m) metadata[m[1]!] = value;
     }
 
     const customer = createStripeCustomerFactory({
@@ -133,7 +133,7 @@ const createSubscriptionMock = http.post(
     const metadata: Record<string, string> = {};
     for (const [key, value] of params.entries()) {
       const m = /^metadata\[(.+)]$/.exec(key);
-      if (m) metadata[m[1]] = value;
+      if (m) metadata[m[1]!] = value;
     }
 
     // parse items[0][price] & items[0][quantity], etc.
@@ -142,7 +142,7 @@ const createSubscriptionMock = http.post(
       const m = /^items\[(\d+)]\[(price|quantity)]$/.exec(key);
       if (m) {
         const index = Number(m[1]);
-        itemsMap[index] = itemsMap[index] || {};
+        itemsMap[index] = itemsMap[index] ?? {};
         if (m[2] === 'price') itemsMap[index].price = value;
         else itemsMap[index].quantity = Number(value);
       }
@@ -263,7 +263,7 @@ const updateCustomerMock = http.post(
     const metadata: Record<string, string> = {};
     for (const [key, value] of paramsMap.entries()) {
       const m = /^metadata\[(.+)]$/.exec(key);
-      if (m) metadata[m[1]] = value;
+      if (m) metadata[m[1]!] = value;
     }
 
     const customer = createStripeCustomerFactory({

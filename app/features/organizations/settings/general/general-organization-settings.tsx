@@ -98,7 +98,7 @@ export function GeneralOrganizationSettings({
     values: z.infer<typeof updateOrganizationFormSchema>,
   ) => {
     if (uploadHandler.files.length > 0) {
-      const newFile = uploadHandler.files[0];
+      const newFile = uploadHandler.files[0]!;
 
       try {
         // --- 1. Upload the new logo ---

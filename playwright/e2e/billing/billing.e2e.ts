@@ -496,8 +496,8 @@ test.describe('billing page', () => {
     const planDl = planForm.locator('dl');
 
     // pull subscription & price info
-    const subscription = organization.stripeSubscriptions[0];
-    const item = subscription.items[0];
+    const subscription = organization.stripeSubscriptions[0]!;
+    const item = subscription.items[0]!;
     const price = item.price;
     const interval = price.interval === 'month' ? 'monthly' : 'annually';
     const unitAmount = price.unitAmount / 100;
@@ -516,7 +516,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(
       planDl.locator('dd', {
-        hasText: new RegExp(subscription.items[0].price.product.name, 'i'),
+        hasText: new RegExp(price.product.name, 'i'),
       }),
     ).toBeVisible();
     await expect(
@@ -738,7 +738,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
 
     const endDate =
-      organization.stripeSubscriptions[0].items[0].currentPeriodEnd.toLocaleDateString(
+      organization.stripeSubscriptions[0]!.items[0]!.currentPeriodEnd.toLocaleDateString(
         'en-US',
         {
           month: 'long',
@@ -875,7 +875,7 @@ test.describe('billing page', () => {
       role,
       lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
     });
-    const subscription = organization.stripeSubscriptions[0];
+    const subscription = organization.stripeSubscriptions[0]!;
 
     // schedule a downgrade: pick a lower price
     const lowerPrice =
@@ -898,7 +898,7 @@ test.describe('billing page', () => {
     await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
 
     // build expected description
-    const phase = schedule.phases[0];
+    const phase = schedule.phases[0]!;
     const billingInterval =
       phase.price.interval === 'month' ? 'monthly' : 'annually';
     const downgradeDate = phase.startDate.toLocaleDateString('en-US', {
@@ -945,7 +945,7 @@ test.describe('billing page', () => {
       role,
       lookupKey: priceLookupKeysByTierAndInterval.high.annual,
     });
-    const subscription = organization.stripeSubscriptions[0];
+    const subscription = organization.stripeSubscriptions[0]!;
 
     // schedule a switch to the MONTHLY version of the same tier
     const monthlyPrice =
@@ -973,7 +973,7 @@ test.describe('billing page', () => {
     await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
 
     // build expected description
-    const phase = schedule.phases[0];
+    const phase = schedule.phases[0]!;
     const switchDate = phase.startDate.toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',

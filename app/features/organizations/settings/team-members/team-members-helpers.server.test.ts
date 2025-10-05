@@ -94,11 +94,11 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       memberCount: 1,
       emailInviteCount: 0,
     });
-    organization.memberships[0].role = currentUsersRole;
+    organization.memberships[0]!.role = currentUsersRole;
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: organization.memberships[0].member.id,
+      currentUsersId: organization.memberships[0]!.member.id,
       currentUsersRole,
       organization,
       request,
@@ -110,9 +110,9 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       },
       inviteLinkCard: {
         inviteLink: {
-          href: `http://localhost/organizations/invite-link?token=${organization.organizationInviteLinks[0].token}`,
+          href: `http://localhost/organizations/invite-link?token=${organization.organizationInviteLinks[0]!.token}`,
           expiryDate:
-            organization.organizationInviteLinks[0].expiresAt.toISOString(),
+            organization.organizationInviteLinks[0]!.expiresAt.toISOString(),
         },
         organizationIsFull: false,
       },
@@ -142,11 +142,11 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       memberCount: 2,
       emailInviteCount: 0,
     });
-    organization.memberships[0].role = currentUsersRole;
+    organization.memberships[0]!.role = currentUsersRole;
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: organization.memberships[0].member.id,
+      currentUsersId: organization.memberships[0]!.member.id,
       currentUsersRole,
       organization,
       request,
@@ -188,20 +188,20 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     });
 
     // Set different dates for email invites to test sorting
-    organization.organizationEmailInviteLink[0].createdAt = new Date(
+    organization.organizationEmailInviteLink[0]!.createdAt = new Date(
       '2024-03-15',
     );
-    organization.organizationEmailInviteLink[1].createdAt = new Date(
+    organization.organizationEmailInviteLink[1]!.createdAt = new Date(
       '2024-03-14',
     );
-    organization.organizationEmailInviteLink[2].createdAt = new Date(
+    organization.organizationEmailInviteLink[2]!.createdAt = new Date(
       '2024-03-13',
     );
 
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: organization.memberships[0].member.id,
+      currentUsersId: organization.memberships[0]!.member.id,
       currentUsersRole,
       organization,
       request,
@@ -258,10 +258,10 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
     });
 
     // Set different dates for email invites to test sorting
-    organization.organizationEmailInviteLink[0].createdAt = new Date(
+    organization.organizationEmailInviteLink[0]!.createdAt = new Date(
       '2024-03-15',
     );
-    organization.organizationEmailInviteLink[1].createdAt = new Date(
+    organization.organizationEmailInviteLink[1]!.createdAt = new Date(
       '2024-03-14',
     );
 
@@ -312,16 +312,16 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
 
     // Set same email for all invites but different dates
     const sameEmail = 'test@example.com';
-    organization.organizationEmailInviteLink[0].email = sameEmail;
-    organization.organizationEmailInviteLink[0].createdAt = new Date(
+    organization.organizationEmailInviteLink[0]!.email = sameEmail;
+    organization.organizationEmailInviteLink[0]!.createdAt = new Date(
       '2024-03-15',
     );
-    organization.organizationEmailInviteLink[1].email = sameEmail;
-    organization.organizationEmailInviteLink[1].createdAt = new Date(
+    organization.organizationEmailInviteLink[1]!.email = sameEmail;
+    organization.organizationEmailInviteLink[1]!.createdAt = new Date(
       '2024-03-14',
     );
-    organization.organizationEmailInviteLink[2].email = sameEmail;
-    organization.organizationEmailInviteLink[2].createdAt = new Date(
+    organization.organizationEmailInviteLink[2]!.email = sameEmail;
+    organization.organizationEmailInviteLink[2]!.createdAt = new Date(
       '2024-03-13',
     );
 
@@ -340,10 +340,10 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       avatar: '',
       deactivatedAt: undefined,
       email: sameEmail,
-      id: organization.organizationEmailInviteLink[0].id,
+      id: organization.organizationEmailInviteLink[0]!.id,
       isCurrentUser: false,
       name: '',
-      role: organization.organizationEmailInviteLink[0].role,
+      role: organization.organizationEmailInviteLink[0]!.role,
       status: 'emailInvitePending',
     });
   });
@@ -359,11 +359,11 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       emailInviteCount: 0,
       stripeSubscription: stripeSubscriptionOverride,
     });
-    organization.memberships[0].role = currentUsersRole;
+    organization.memberships[0]!.role = currentUsersRole;
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: organization.memberships[0].member.id,
+      currentUsersId: organization.memberships[0]!.member.id,
       currentUsersRole,
       organization,
       request,
@@ -409,11 +409,11 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
       emailInviteCount: 0,
       stripeSubscription: stripeSubscriptionOverride,
     });
-    organization.memberships[0].role = currentUsersRole;
+    organization.memberships[0]!.role = currentUsersRole;
     const request = new Request('http://localhost');
 
     const actual = mapOrganizationDataToTeamMemberSettingsProps({
-      currentUsersId: organization.memberships[0].member.id,
+      currentUsersId: organization.memberships[0]!.member.id,
       currentUsersRole,
       organization,
       request,
@@ -508,10 +508,10 @@ describe('mapOrganizationDataToTeamMemberSettingsProps()', () => {
             avatar: '',
             deactivatedAt: undefined,
             email: 'new@invite.com',
-            id: organization.organizationEmailInviteLink[1].id,
+            id: organization.organizationEmailInviteLink[1]!.id,
             isCurrentUser: false,
             name: '',
-            role: organization.organizationEmailInviteLink[1].role,
+            role: organization.organizationEmailInviteLink[1]!.role,
             status: 'emailInvitePending',
           },
           // then the existing member

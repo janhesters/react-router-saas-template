@@ -347,7 +347,7 @@ describe('BillingPage component', () => {
     // Open the change plan modal
     const managePlanButton = screen.getAllByRole('button', {
       name: /manage plan/i,
-    })[1];
+    })[1]!;
     await user.click(managePlanButton);
     expect(
       screen.getByRole('heading', { name: /manage plan/i, level: 2 }),

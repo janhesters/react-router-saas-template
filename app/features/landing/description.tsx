@@ -35,7 +35,7 @@ export function Description() {
 
               <dl className="text-muted-foreground mt-10 max-w-xl space-y-8 text-base/7 lg:max-w-none">
                 {features.map((feature, index) => {
-                  const Icon = featureIcons[index];
+                  const Icon = featureIcons[index]!;
                   return (
                     <div key={feature.title} className="relative pl-9">
                       <dt className="text-foreground inline font-semibold">

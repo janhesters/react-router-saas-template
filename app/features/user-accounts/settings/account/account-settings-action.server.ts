@@ -127,10 +127,10 @@ export async function accountSettingsAction({
             )
             .map(membership => {
               const subscription =
-                membership.organization.stripeSubscriptions[0];
+                membership.organization.stripeSubscriptions[0]!;
               return adjustSeats({
                 subscriptionId: subscription.stripeId,
-                subscriptionItemId: subscription.items[0].price.stripeId,
+                subscriptionItemId: subscription.items[0]!.price.stripeId,
                 newQuantity: membership.organization._count.memberships - 1,
               });
             }),

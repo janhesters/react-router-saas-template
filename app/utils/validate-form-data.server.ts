@@ -15,7 +15,7 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 
   // Add root error only if it exists.
   if (formErrors.length > 0) {
-    errorObjects.push({ root: { message: formErrors[0] } });
+    errorObjects.push({ root: { message: formErrors[0]! } });
   }
 
   // Add field errors only if they exist.

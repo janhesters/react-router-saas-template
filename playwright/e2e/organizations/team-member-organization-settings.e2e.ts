@@ -250,7 +250,7 @@ test.describe('organization settings members page', () => {
       ).toBeHidden(); // No button to change role
 
       // Check other user's row (member cannot change others' roles)
-      const otherUser = otherUsers[0];
+      const otherUser = otherUsers[0]!;
       const otherRow = table.getByRole('row', { name: otherUser.email });
       // Check that there are two cells with the name of the user (avatar &
       // actual name)
@@ -836,8 +836,8 @@ test.describe('organization settings members page', () => {
           organization.id,
         );
       expect(emailInvites).toHaveLength(1);
-      expect(emailInvites[0].email).toEqual(inviteEmail);
-      expect(emailInvites[0].role).toEqual(OrganizationMembershipRole.admin);
+      expect(emailInvites[0]!.email).toEqual(inviteEmail);
+      expect(emailInvites[0]!.role).toEqual(OrganizationMembershipRole.admin);
 
       // Check that the email input is automatically cleared after successful
       // submission
@@ -908,8 +908,8 @@ test.describe('organization settings members page', () => {
           organization.id,
         );
       expect(emailInvites).toHaveLength(1);
-      expect(emailInvites[0].email).toEqual(inviteEmail);
-      expect(emailInvites[0].role).toEqual(OrganizationMembershipRole.owner);
+      expect(emailInvites[0]!.email).toEqual(inviteEmail);
+      expect(emailInvites[0]!.role).toEqual(OrganizationMembershipRole.owner);
 
       // Check that the email input is automatically cleared after successful
       // submission
@@ -928,7 +928,7 @@ test.describe('organization settings members page', () => {
         otherMemberRoles: [OrganizationMembershipRole.member], // Need at least one other member
       });
       const { organization, otherUsers } = data;
-      const existingMember = otherUsers[0]; // Get the member we just created
+      const existingMember = otherUsers[0]!; // Get the member we just created
 
       // Navigate to the team members page
       await page.goto(getMembersPagePath(organization.slug));

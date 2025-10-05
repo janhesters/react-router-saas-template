@@ -115,15 +115,15 @@ export function CreateSubscriptionModalContent({
             {unavailable.length === 1
               ? tModal('disabled-plans-alert.description-singular', {
                   currentSeats,
-                  planTitle: t(`plans.${unavailable[0]}.title`),
-                  planCapacity: planLimits[unavailable[0]],
+                  planTitle: t(`plans.${unavailable[0]!}.title`),
+                  planCapacity: planLimits[unavailable[0]!],
                 })
               : tModal('disabled-plans-alert.description-plural', {
                   currentSeats,
-                  plan1Title: t(`plans.${unavailable[0]}.title`),
-                  plan1Capacity: planLimits[unavailable[0]],
-                  plan2Title: t(`plans.${unavailable[1]}.title`),
-                  plan2Capacity: planLimits[unavailable[1]],
+                  plan1Title: t(`plans.${unavailable[0]!}.title`),
+                  plan1Capacity: planLimits[unavailable[0]!],
+                  plan2Title: t(`plans.${unavailable[1]!}.title`),
+                  plan2Capacity: planLimits[unavailable[1]!],
                 })}
           </AlertDescription>
         </Alert>

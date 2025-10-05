@@ -53,7 +53,7 @@ export function mapOnboardingUserToOrganizationLayoutProps({
     tier: getTierAndIntervalForLookupKey(
       // Actual plan if the organization has a subscription.
       membership.organization.stripeSubscriptions.length > 0
-        ? membership.organization.stripeSubscriptions[0].items[0].price
+        ? membership.organization.stripeSubscriptions[0]!.items[0]!.price
             .lookupKey
         : // Default plan during the trial period.
           priceLookupKeysByTierAndInterval.high.annual,
@@ -110,7 +110,7 @@ export function mapOnboardingUserToBillingSidebarCardProps({
     currentMembership.role === OrganizationMembershipRole.owner;
 
   if (currentOrganization.stripeSubscriptions.length > 0) {
-    const subscription = currentOrganization.stripeSubscriptions[0];
+    const subscription = currentOrganization.stripeSubscriptions[0]!;
     const isCancelled = subscription.status === 'canceled';
     return isCancelled
       ? {

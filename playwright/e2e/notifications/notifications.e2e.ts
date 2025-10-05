@@ -181,7 +181,7 @@ test.describe('notifications', () => {
 
       // Mark the last notification as read
       const lastNotification = page.getByRole('link', {
-        name: (notifications[2].content as LinkNotificationProps).text,
+        name: (notifications[2]!.content as LinkNotificationProps).text,
       });
       await expect(lastNotification).toHaveAttribute(
         'href',
@@ -200,7 +200,7 @@ test.describe('notifications', () => {
       // Check that the notification is now read
       await expect(
         page.getByText(
-          (notifications[2].content as LinkNotificationProps).text,
+          (notifications[2]!.content as LinkNotificationProps).text,
         ),
       ).toBeHidden();
 
@@ -214,7 +214,7 @@ test.describe('notifications', () => {
 
       // Mark the second notification as read
       const secondNotification = page.getByRole('link', {
-        name: (notifications[1].content as LinkNotificationProps).text,
+        name: (notifications[1]!.content as LinkNotificationProps).text,
       });
       await expect(secondNotification).toHaveAttribute(
         'href',
@@ -234,7 +234,7 @@ test.describe('notifications', () => {
       await page.getByRole('tab', { name: /unread/i }).click();
       await expect(
         page.getByText(
-          (notifications[1].content as LinkNotificationProps).text,
+          (notifications[1]!.content as LinkNotificationProps).text,
         ),
       ).toBeHidden();
 

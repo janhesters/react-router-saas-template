@@ -142,8 +142,8 @@ test.describe('onboarding organization page', () => {
         name: newName,
         slug: newSlug,
       });
-      expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
-      expect(createdOrganization!.memberships[0].role).toEqual(
+      expect(createdOrganization!.memberships[0]!.member.id).toEqual(user.id);
+      expect(createdOrganization!.memberships[0]!.role).toEqual(
         OrganizationMembershipRole.owner,
       );
 
@@ -210,8 +210,8 @@ test.describe('onboarding organization page', () => {
         name: newName,
         slug: newSlug,
       });
-      expect(createdOrganization!.memberships[0].member.id).toEqual(user.id);
-      expect(createdOrganization!.memberships[0].role).toEqual(
+      expect(createdOrganization!.memberships[0]!.member.id).toEqual(user.id);
+      expect(createdOrganization!.memberships[0]!.role).toEqual(
         OrganizationMembershipRole.owner,
       );
 

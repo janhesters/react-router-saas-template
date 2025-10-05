@@ -178,7 +178,7 @@ export async function teamMembersAction({
           // Set deactivatedAt timestamp
           updateData = { deactivatedAt: new Date() };
 
-          if (subscription) {
+          if (subscription && subscription.items[0]) {
             await adjustSeats({
               subscriptionId: subscription.stripeId,
               subscriptionItemId: subscription.items[0].stripeId,
@@ -219,7 +219,7 @@ export async function teamMembersAction({
               );
             }
 
-            if (subscription) {
+            if (subscription && subscription.items[0]) {
               await adjustSeats({
                 subscriptionId: subscription.stripeId,
                 subscriptionItemId: subscription.items[0].stripeId,

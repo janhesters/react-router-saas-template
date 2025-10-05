@@ -30,9 +30,21 @@ type BentoCardTranslations = {
   };
 };
 
+// Must match the number of cards in public/locales/en/landing.json > features.cards
+type BentoCards = [
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+  BentoCardTranslations,
+];
+
 export function Features() {
   const { t } = useTranslation('landing', { keyPrefix: 'features' });
-  const cards = t('cards', { returnObjects: true }) as BentoCardTranslations[];
+  const cards = t('cards', { returnObjects: true }) as BentoCards;
 
   return (
     <section className="px-4 py-24">

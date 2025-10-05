@@ -38,7 +38,7 @@ const getUserMock = http.get(
     const accessToken = authHeader.split(' ')[1];
 
     // Look up the user in the mockSessions map.
-    const session = await getMockSession(accessToken);
+    const session = await getMockSession(accessToken ?? '');
 
     if (!session) {
       return HttpResponse.json(
@@ -158,7 +158,7 @@ const verifyOtpMock = http.post(
       );
     }
 
-    const { email, id } = parseTokenHashData(body.token_hash);
+    const { email, id } = parseTokenHashData(body.token_hash!);
 
     // Create a user with the provided email or phone.
     const mockUser = createPopulatedSupabaseUser({ email, id });
@@ -267,6 +267,13 @@ const logoutMock = http.post(
     }
 
     const accessToken = authHeader.split(' ')[1];
+
+    if (!accessToken) {
+      return HttpResponse.json(
+        { message: 'JWT token is missing' },
+        { status: 401 },
+      );
+    }
 
     // Remove the session from the mockSessions map.
     await deleteMockSession(accessToken);

@@ -83,7 +83,7 @@ export async function createNotificationForUserInDatabaseById({
     return null;
   }
 
-  const recipient = newNotification.recipients[0];
+  const recipient = newNotification.recipients[0]!;
 
   // Map to the desired NotificationQueryResult structure
   return {

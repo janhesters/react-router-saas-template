@@ -81,6 +81,10 @@ export async function billingAction({
           throw new Error('Organization has no Stripe customer ID');
         }
 
+        if (!organization.stripeSubscriptions[0]) {
+          throw new Error('Organization has no Stripe subscriptions');
+        }
+
         const cancelSession = await createStripeCancelSubscriptionSession({
           baseUrl,
           customerId: organization.stripeCustomerId,
@@ -155,6 +159,10 @@ export async function billingAction({
           throw new Error('Organization has no Stripe subscriptions');
         }
 
+        if (!organization.stripeSubscriptions[0]) {
+          throw new Error('Organization has no Stripe subscriptions');
+        }
+
         const subscription = await resumeStripeSubscription(
           organization.stripeSubscriptions[0].stripeId,
         );
@@ -194,6 +202,10 @@ export async function billingAction({
 
         if (!price) {
           return badRequest({ message: 'Price not found' });
+        }
+
+        if (!organization.stripeSubscriptions[0].items[0]) {
+          throw new Error('Organization has no Stripe subscription items');
         }
 
         const portalSession = await createStripeSwitchPlanSession({

@@ -82,12 +82,12 @@ describe('throwIfUserIsOnboarded()', () => {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
         expect(error.headers.get('Location')).toEqual(
-          `/organizations/${user.memberships[0].organization.slug}`,
+          `/organizations/${user.memberships[0]!.organization.slug}`,
         );
         expect([...error.headers.entries()]).toEqual([
           [
             'location',
-            `/organizations/${user.memberships[0].organization.slug}`,
+            `/organizations/${user.memberships[0]!.organization.slug}`,
           ],
           ...headers.entries(),
         ]);

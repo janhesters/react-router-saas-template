@@ -63,7 +63,7 @@ describe('Invite Link Info Session', () => {
       // Approximate check for Max-Age
       const maxAgeMatch = /Max-Age=(\d+);/.exec(cookieHeader!);
       expect(maxAgeMatch).not.toBeNull();
-      const maxAge = Number.parseInt(maxAgeMatch![1], 10);
+      const maxAge = Number.parseInt(maxAgeMatch![1]!, 10);
       expect(maxAge).toBeGreaterThan(3590); // ~1 hour minus slight delay
       expect(maxAge).toBeLessThanOrEqual(3600); // 1 hour
 

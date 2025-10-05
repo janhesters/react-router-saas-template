@@ -293,7 +293,8 @@ export async function createTestSubscriptionForUserAndOrganization({
   subscription?: StripeSubscriptionWithItemsAndPrice;
   lookupKey?: LookupKey;
 }) {
-  const finalLookupKey = lookupKey ?? subscription.items[0].price.lookupKey;
+  const finalLookupKey =
+    lookupKey ?? subscription.items[0]?.price?.lookupKey ?? '';
   const price =
     await retrieveStripePriceFromDatabaseByLookupKey(finalLookupKey);
 
@@ -352,7 +353,7 @@ export async function createUserWithOrgAndAddAsMember({
   return {
     organization,
     user,
-    subscription: orgWithSub.stripeSubscriptions[0],
+    subscription: orgWithSub.stripeSubscriptions[0]!,
   };
 }
 

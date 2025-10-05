@@ -88,7 +88,7 @@ export function asyncPipe(
 
   if (fns.length === 1) {
     // Single function: wrap its result in a Promise.
-    return (...arguments_: any[]) => Promise.resolve(fns[0](...arguments_));
+    return (...arguments_: any[]) => Promise.resolve(fns[0]!(...arguments_));
   }
 
   return (...arguments_: any[]) => {
@@ -97,7 +97,7 @@ export function asyncPipe(
     // Chain the remaining functions using Promise.then
     return rest.reduce(
       (chain, function_) => chain.then(result => function_(result)),
-      Promise.resolve(first(...arguments_)),
+      Promise.resolve(first!(...arguments_)),
     );
   };
 }

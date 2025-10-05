@@ -26,7 +26,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   if (user.memberships.length === 1) {
-    return redirect(`/organizations/${user.memberships[0].organization.slug}`);
+    return redirect(`/organizations/${user.memberships[0]!.organization.slug}`);
   }
 
   return {
