@@ -25,7 +25,7 @@ import type { NavUserProps } from './nav-user';
 import { NavUser } from './nav-user';
 import type { OrganizationSwitcherProps } from './organization-switcher';
 import { OrganizationSwitcher } from './organization-switcher';
-import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/+types/_sidebar-layout';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/+types/_sidebar-layout';
 
 type AppSidebarProps = {
   organizationSlug: Route.ComponentProps['params']['organizationSlug'];

@@ -6,6 +6,7 @@ import type {
 } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import type { i18n } from 'i18next';
+import type { RouterContextProvider } from 'react-router';
 import { href } from 'react-router';
 import { promiseHash } from 'remix-utils/promise';
 
@@ -99,11 +100,19 @@ export function findOrganizationIfUserIsMemberBySlug<
  * @throws {Response} 404 Not Found if user is not a member or organization
  * doesn't exist.
  */
-export async function requireUserIsMemberOfOrganization(
-  request: Request,
-  organizationSlug: Organization['slug'],
-) {
-  const { user, headers } = await requireOnboardedUserAccountExists(request);
+export async function requireUserIsMemberOfOrganization({
+  context,
+  request,
+  organizationSlug,
+}: {
+  context: Readonly<RouterContextProvider>;
+  request: Request;
+  organizationSlug: Organization['slug'];
+}) {
+  const { user, headers } = await requireOnboardedUserAccountExists({
+    context,
+    request,
+  });
   const { organization, role } = findOrganizationIfUserIsMemberBySlug(
     user,
     organizationSlug,

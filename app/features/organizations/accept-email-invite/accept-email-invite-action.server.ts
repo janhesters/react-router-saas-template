@@ -1,7 +1,7 @@
 import { href } from 'react-router';
 import { z } from 'zod';
 
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { requireSupabaseUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import { createSupabaseServerClient } from '~/features/user-authentication/supabase.server';
 import { combineHeaders } from '~/utils/combine-headers.server';

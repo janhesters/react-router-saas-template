@@ -3,7 +3,7 @@ import { data, href } from 'react-router';
 import { z } from 'zod';
 
 import { updateStripeCustomer } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { forbidden } from '~/utils/http-responses.server';
@@ -12,10 +12,8 @@ import { removeImageFromStorage } from '~/utils/storage-helpers.server';
 import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import {
-  deleteOrganization,
-  requireUserIsMemberOfOrganization,
-} from '../../organizations-helpers.server';
+import { deleteOrganization } from '../../organizations-helpers.server';
+import { organizationMembershipContext } from '../../organizations-middleware.server';
 import { updateOrganizationInDatabaseBySlug } from '../../organizations-model.server';
 import type { UpdateOrganizationFormErrors } from './general-organization-settings';
 import {
@@ -26,7 +24,7 @@ import {
   deleteOrganizationFormSchema,
   updateOrganizationFormSchema,
 } from './general-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/settings+/+types/general';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/general';
 
 const generalOrganizationSettingsActionSchema = z.discriminatedUnion('intent', [
   deleteOrganizationFormSchema,
@@ -39,8 +37,9 @@ export async function generalOrganizationSettingsAction({
   context,
 }: Route.ActionArgs) {
   try {
-    const { headers, organization, role } =
-      await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+    const { headers, organization, role } = context.get(
+      organizationMembershipContext,
+    );
     const body = await validateFormData(
       request,
       generalOrganizationSettingsActionSchema,

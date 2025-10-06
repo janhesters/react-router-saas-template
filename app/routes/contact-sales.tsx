@@ -10,7 +10,7 @@ import {
 import { contactSalesAction } from '~/features/billing/contact-sales/contact-sales-action.server';
 import { CONTACT_SALES_INTENT } from '~/features/billing/contact-sales/contact-sales-constants';
 import { ContactSalesTeam } from '~/features/billing/contact-sales/contact-sales-team';
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { cn } from '~/lib/utils';
 
 import type { Route } from './+types/contact-sales';

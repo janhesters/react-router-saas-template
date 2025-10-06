@@ -1,4 +1,4 @@
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { acceptInviteLinkAction } from '~/features/organizations/accept-invite-link/accept-invite-link-action.server';
 import {
   getInviteLinkToken,

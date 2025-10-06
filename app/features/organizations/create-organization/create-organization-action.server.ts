@@ -8,11 +8,17 @@ import { validateFormData } from '~/utils/validate-form-data.server';
 
 import type { CreateOrganizationFormErrors } from './create-organization-form-card';
 import { createOrganizationFormSchema } from './create-organization-schemas';
-import type { Route } from '.react-router/types/app/routes/organizations_+/+types/new';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/+types/new';
 
-export async function createOrganizationAction({ request }: Route.ActionArgs) {
+export async function createOrganizationAction({
+  context,
+  request,
+}: Route.ActionArgs) {
   try {
-    const { user, headers } = await requireAuthenticatedUserExists(request);
+    const { user, headers } = await requireAuthenticatedUserExists({
+      context,
+      request,
+    });
     const data = await validateFormData(request, createOrganizationFormSchema);
 
     const organization = await saveOrganizationWithOwnerToDatabase({

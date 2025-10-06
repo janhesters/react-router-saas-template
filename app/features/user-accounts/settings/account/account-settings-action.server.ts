@@ -2,7 +2,7 @@ import { data } from 'react-router';
 import { z } from 'zod';
 
 import { adjustSeats } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { deleteOrganization } from '~/features/organizations/organizations-helpers.server';
 import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from '~/features/user-accounts/user-accounts-helpers.server';
 import {
@@ -24,7 +24,7 @@ import {
 } from './account-settings-constants';
 import { uploadUserAvatar } from './account-settings-helpers.server';
 import { updateUserAccountFormSchema } from './account-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/settings+/+types/account';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/settings+/+types/account';
 
 const schema = z.discriminatedUnion('intent', [
   updateUserAccountFormSchema,
@@ -32,14 +32,15 @@ const schema = z.discriminatedUnion('intent', [
 ]);
 
 export async function accountSettingsAction({
-  request,
   context,
+  request,
 }: Route.ActionArgs) {
   try {
     const { user, headers, supabase } =
-      await requireAuthenticatedUserWithMembershipsAndSubscriptionsExists(
+      await requireAuthenticatedUserWithMembershipsAndSubscriptionsExists({
+        context,
         request,
-      );
+      });
     const body = await validateFormData(request, schema, {
       maxFileSize: 1024 * 1024 * 1, // 1MB
     });

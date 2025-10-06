@@ -1,23 +1,32 @@
+import type { RouterContextProvider } from 'react-router';
 import { href, redirect } from 'react-router';
 
 import { asyncPipe } from '~/utils/async-pipe.server';
 
 import { throwIfUserAccountIsMissing } from '../user-accounts/user-accounts-helpers.server';
 import { retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId } from '../user-accounts/user-accounts-model.server';
-import { requireUserIsAuthenticated } from '../user-authentication/user-authentication-helpers.server';
+import { authContext } from '../user-authentication/user-authentication-middleware.server';
 
 /**
- * Retrieves a user's account with their memberships from the database by their
- * supabase user id.
+ * Requires that a user account exists for the authenticated user.
+ * Retrieves the user's account with their memberships from the database.
  *
- * @param request - A Request object.
- * @returns The user's account with their memberships.
+ * @param context - Router context provider containing authentication data.
+ * @param request - Request object used for error handling.
+ * @returns The user's account with their memberships and authentication headers.
+ * @throws Response with appropriate error status if the user account is missing.
  */
-async function requireOnboardingUserExists(request: Request) {
+async function requireOnboardingUserExists({
+  context,
+  request,
+}: {
+  context: Readonly<RouterContextProvider>;
+  request: Request;
+}) {
   const {
     user: { id },
     headers,
-  } = await requireUserIsAuthenticated(request);
+  } = context.get(authContext);
   const user =
     await retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId(id);
   return { user: await throwIfUserAccountIsMissing(request, user), headers };
@@ -114,14 +123,24 @@ export const redirectUserToOnboardingStep = (
  * Ensures the user needs onboarding and redirects to the appropriate onboarding
  * step. If the user is onboarded, it navigates to their first organization.
  *
- * @param request - The request object containing the user's request.
- * @returns The user object if the user needs onboarding and is on the correct
- * step.
- * @throws A response with the appropriate error status or redirect based on the
- * user's onboarding status.
+ * @param context - Router context provider containing authentication data.
+ * @param request - Request object containing the user's request.
+ * @returns The user object with headers if the user needs onboarding and is on the correct step.
+ * @throws Response with redirect to the user's first organization if already onboarded.
+ * @throws Response with redirect to the appropriate onboarding step if on the wrong step.
+ * @throws Response with appropriate error status if the user account is missing.
  */
-export async function requireUserNeedsOnboarding(request: Request) {
-  const { user, headers } = await requireOnboardingUserExists(request);
+export async function requireUserNeedsOnboarding({
+  context,
+  request,
+}: {
+  context: Readonly<RouterContextProvider>;
+  request: Request;
+}) {
+  const { user, headers } = await requireOnboardingUserExists({
+    context,
+    request,
+  });
   return redirectUserToOnboardingStep(
     request,
     throwIfUserIsOnboarded(user, headers),

@@ -3,7 +3,7 @@ import { faker } from '@faker-js/faker';
 import type { Organization, UserAccount } from '@prisma/client';
 import { OrganizationMembershipRole } from '@prisma/client';
 import { StripePriceInterval } from '@prisma/client';
-import type { Params } from 'react-router';
+import type { MiddlewareFunction, Params } from 'react-router';
 import { RouterContextProvider } from 'react-router';
 
 import type { LookupKey, Tier } from '~/features/billing/billing-constants';
@@ -20,9 +20,10 @@ import {
   saveStripePriceToDatabase,
 } from '~/features/billing/stripe-prices-model.server';
 import { saveStripeProductToDatabase } from '~/features/billing/stripe-product-model.server';
-import { i18nextMiddleware } from '~/features/localization/middleware.server';
+import { i18nextMiddleware } from '~/features/localization/i18n-middleware.server';
 import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
 import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { organizationMembershipMiddleware } from '~/features/organizations/organizations-middleware.server';
 import {
   addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
@@ -38,6 +39,7 @@ import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from '~/features/user-authentication/user-authentication-factories';
+import { authMiddleware } from '~/features/user-authentication/user-authentication-middleware.server';
 import type { DeepPartial } from '~/utils/types';
 
 import { setMockSession } from './mocks/handlers/supabase/mock-sessions';
@@ -447,28 +449,92 @@ export async function ensureStripeProductsAndPricesExist() {
 /**
  * Creates a RouterContextProvider configured for use in tests.
  *
- * This helper initializes a new unstable_RouterContextProvider and populates it
- * with a default locale ("en") and a corresponding i18next instance. It is
- * useful when rendering components or routes that depend on React Router's
- * context and i18n contexts without bootstrapping an entire application.
+ * This helper initializes a new RouterContextProvider and runs the i18next
+ * middleware followed by any additional middlewares provided. It is useful when
+ * testing components or routes that depend on React Router's context with
+ * specific middleware setup.
  *
- * @returns An instance of unstable_RouterContextProvider with:
- *   - A locale context key set to "en".
- *   - An i18next context key set to a newly created i18n instance using the
- *     shared resources.
+ * @param middlewares - Array of middleware functions to run after i18next
+ * middleware.
+ * @param params - Route parameters to pass to middlewares.
+ * @param request - Request object to pass to middlewares.
+ * @returns A RouterContextProvider instance populated by the executed
+ * middlewares.
  */
 export async function createTestContextProvider({
-  request,
+  middlewares = [],
   params,
+  request,
 }: {
-  request: Request;
+  middlewares?: MiddlewareFunction[];
   params: Params;
+  request: Request;
 }) {
   const context = new RouterContextProvider();
 
+  // i18next middleware runs in root loader, so all routes have access to the
+  // i18next context.
   await i18nextMiddleware({ request, params, context }, () =>
     Promise.resolve(new Response(null, { status: 200 })),
   );
 
+  for (const middleware of middlewares) {
+    await middleware({ request, params, context }, () =>
+      Promise.resolve(new Response(null, { status: 200 })),
+    );
+  }
+
   return context;
+}
+
+/**
+ * Creates a RouterContextProvider with authentication middleware.
+ *
+ * This is a convenience wrapper around createTestContextProvider that
+ * pre-configures the auth middleware. Useful for testing authenticated routes
+ * and components that don't require organization context.
+ *
+ * @param params - Route parameters to pass to middlewares.
+ * @param request - Request object to pass to middlewares.
+ * @returns A RouterContextProvider instance with auth context.
+ */
+export async function createAuthTestContextProvider({
+  params,
+  request,
+}: {
+  params: Params;
+  request: Request;
+}) {
+  return await createTestContextProvider({
+    middlewares: [authMiddleware],
+    params,
+    request,
+  });
+}
+
+/**
+ * Creates a RouterContextProvider with authentication and organization
+ * membership middlewares.
+ *
+ * This is a convenience wrapper around createTestContextProvider that
+ * pre-configures the auth and organization membership middlewares. Useful for
+ * testing organization-specific routes and components.
+ *
+ * @param params - Route parameters to pass to middlewares.
+ * @param request - Request object to pass to middlewares.
+ * @returns A RouterContextProvider instance with auth and organization
+ * membership context.
+ */
+export async function createOrganizationMembershipTestContextProvider({
+  params,
+  request,
+}: {
+  params: Params;
+  request: Request;
+}) {
+  return await createTestContextProvider({
+    middlewares: [authMiddleware, organizationMembershipMiddleware],
+    params,
+    request,
+  });
 }

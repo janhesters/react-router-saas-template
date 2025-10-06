@@ -24,7 +24,7 @@ test.describe('organization layout', () => {
     await page.goto(`/organizations/${slug}`);
 
     const searchParameters = new URLSearchParams();
-    searchParameters.append('redirectTo', `/organizations/${slug}/dashboard`);
+    searchParameters.append('redirectTo', `/organizations/${slug}`);
     expect(getPath(page)).toEqual(`/login?${searchParameters.toString()}`);
   });
 

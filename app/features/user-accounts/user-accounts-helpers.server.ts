@@ -1,9 +1,8 @@
 import type { UserAccount } from '@prisma/client';
+import type { RouterContextProvider } from 'react-router';
 
-import {
-  logout,
-  requireUserIsAuthenticated,
-} from '../user-authentication/user-authentication-helpers.server';
+import { logout } from '../user-authentication/user-authentication-helpers.server';
+import { authContext } from '../user-authentication/user-authentication-middleware.server';
 import {
   retrieveUserAccountFromDatabaseBySupabaseUserId,
   retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId,
@@ -31,15 +30,22 @@ export const throwIfUserAccountIsMissing = async <T extends UserAccount>(
 /**
  * Ensures that a user account for the authenticated user exists.
  *
- * @param request - The incoming request object.
- * @returns The user account.
+ * @param context - Router context provider containing authentication data.
+ * @param request - Request object used for logout if user account is missing.
+ * @returns The user account and authentication headers.
  * @throws Logs the user out if the user account is missing.
  */
-export const requireAuthenticatedUserExists = async (request: Request) => {
+export const requireAuthenticatedUserExists = async ({
+  context,
+  request,
+}: {
+  context: Readonly<RouterContextProvider>;
+  request: Request;
+}) => {
   const {
     user: { id },
     headers,
-  } = await requireUserIsAuthenticated(request);
+  } = context.get(authContext);
   const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
   return { user: await throwIfUserAccountIsMissing(request, user), headers };
 };
@@ -52,17 +58,23 @@ export const requireAuthenticatedUserExists = async (request: Request) => {
  * the current slug in the URL! For that use `requireUserIsMemberOfOrganization`
  * instead.
  *
- * @param request - The incoming request object.
- * @returns The user account and their memberships.
+ * @param context - Router context provider containing authentication data.
+ * @param request - Request object used for logout if user account is missing.
+ * @returns The user account with memberships, authentication headers, and supabase client.
+ * @throws Logs the user out if the user account is missing.
  */
-export const requireAuthenticatedUserWithMembershipsExists = async (
-  request: Request,
-) => {
+export const requireAuthenticatedUserWithMembershipsExists = async ({
+  context,
+  request,
+}: {
+  context: Readonly<RouterContextProvider>;
+  request: Request;
+}) => {
   const {
     user: { id },
     headers,
     supabase,
-  } = await requireUserIsAuthenticated(request);
+  } = context.get(authContext);
   const user =
     await retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId(
       id,
@@ -82,16 +94,24 @@ export const requireAuthenticatedUserWithMembershipsExists = async (
  * the current slug in the URL! For that use `requireUserIsMemberOfOrganization`
  * instead.
  *
- * @param request - The incoming request object.
- * @returns The user account and their memberships and subscriptions.
+ * @param context - Router context provider containing authentication data.
+ * @param request - Request object used for logout if user account is missing.
+ * @returns The user account with memberships and subscriptions, authentication headers, and supabase client.
+ * @throws Logs the user out if the user account is missing.
  */
 export const requireAuthenticatedUserWithMembershipsAndSubscriptionsExists =
-  async (request: Request) => {
+  async ({
+    context,
+    request,
+  }: {
+    context: Readonly<RouterContextProvider>;
+    request: Request;
+  }) => {
     const {
       user: { id },
       headers,
       supabase,
-    } = await requireUserIsAuthenticated(request);
+    } = context.get(authContext);
     const user =
       await retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId(
         id,

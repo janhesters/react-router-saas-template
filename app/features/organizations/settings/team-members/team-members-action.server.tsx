@@ -6,7 +6,7 @@ import { data } from 'react-router';
 import { z } from 'zod';
 
 import { adjustSeats } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { sendEmail } from '~/utils/email.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
@@ -20,15 +20,13 @@ import {
   updateOrganizationMembershipInDatabase,
 } from '../../organization-membership-model.server';
 import { saveOrganizationEmailInviteLinkToDatabase } from '../../organizations-email-invite-link-model.server';
-import {
-  getOrganizationIsFull,
-  requireUserIsMemberOfOrganization,
-} from '../../organizations-helpers.server';
+import { getOrganizationIsFull } from '../../organizations-helpers.server';
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
   saveOrganizationInviteLinkToDatabase,
   updateOrganizationInviteLinkInDatabaseById,
 } from '../../organizations-invite-link-model.server';
+import { organizationMembershipContext } from '../../organizations-middleware.server';
 import { InviteEmail } from './invite-email';
 import {
   CHANGE_ROLE_INTENT,
@@ -40,7 +38,7 @@ import {
   changeRoleSchema,
   inviteByEmailSchema,
 } from './team-members-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/settings+/+types/members';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members';
 
 const schema = z.discriminatedUnion('intent', [
   inviteByEmailSchema,
@@ -51,12 +49,12 @@ const schema = z.discriminatedUnion('intent', [
 
 export async function teamMembersAction({
   request,
-  params,
   context,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, role, headers } =
-      await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+    const { user, organization, role, headers } = context.get(
+      organizationMembershipContext,
+    );
     const i18n = getInstance(context);
 
     if (role === OrganizationMembershipRole.member) {

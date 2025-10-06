@@ -23,7 +23,7 @@ import {
 } from '~/features/billing/pricing';
 import { Footer } from '~/features/landing/footer';
 import { Header } from '~/features/landing/header';
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 
 import type { Route } from './+types/pricing';
 

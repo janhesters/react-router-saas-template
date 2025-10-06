@@ -12,6 +12,7 @@ import { setupMockServerLifecycle } from '~/test/msw-test-utils';
 import { setupUserWithOrgAndAddAsMember } from '~/test/server-test-utils';
 import {
   createAuthenticatedRequest,
+  createAuthTestContextProvider,
   createTestContextProvider,
 } from '~/test/test-utils';
 import { badRequest } from '~/utils/http-responses.server';
@@ -65,7 +66,7 @@ async function sendAuthenticatedRequest({
 
   return await action({
     request,
-    context: await createTestContextProvider({ request, params }),
+    context: await createAuthTestContextProvider({ request, params }),
     params,
   });
 }

@@ -2,20 +2,20 @@ import type { AuthOtpResponse } from '@supabase/supabase-js';
 import { redirect } from 'react-router';
 import { z } from 'zod';
 
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
 import { getErrorMessage } from '~/utils/get-error-message';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { tooManyRequests, unauthorized } from '~/utils/http-responses.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import { requireUserIsAnonymous } from '../user-authentication-helpers.server';
+import { anonymousContext } from '../user-authentication-middleware.server';
 import {
   type EmailLoginErrors,
   loginWithEmailSchema,
   loginWithGoogleSchema,
 } from './login-schemas';
-import type { Route } from '.react-router/types/app/routes/_user-authentication+/+types/login';
+import type { Route } from '.react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/login';
 
 export type LoginActionData =
   | (AuthOtpResponse['data'] & { email: string })
@@ -32,7 +32,7 @@ export async function loginAction({
   context,
 }: Route.ActionArgs): Promise<LoginActionData> {
   try {
-    const { supabase, headers } = await requireUserIsAnonymous(request);
+    const { supabase, headers } = context.get(anonymousContext);
     const i18n = getInstance(context);
     const body = await validateFormData(request, loginSchema);
 

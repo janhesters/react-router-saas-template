@@ -28,7 +28,7 @@ import {
   getInstance,
   getLocale,
   i18nextMiddleware,
-} from './features/localization/middleware.server';
+} from './features/localization/i18n-middleware.server';
 import { useToast } from './hooks/use-toast';
 import { honeypot } from './utils/honeypot.server';
 import { getToast } from './utils/toast.server';

@@ -8,7 +8,7 @@ import { I18nextProvider } from 'react-i18next';
 import type { EntryContext, RouterContextProvider } from 'react-router';
 import { ServerRouter } from 'react-router';
 
-import { getInstance } from './features/localization/middleware.server';
+import { getInstance } from './features/localization/i18n-middleware.server';
 
 export const streamTimeout = 5000;
 

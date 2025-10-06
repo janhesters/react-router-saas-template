@@ -29,15 +29,13 @@ import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
 import { conflict, forbidden, notFound } from '~/utils/http-responses.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import {
-  findOrganizationIfUserIsMemberById,
-  requireUserIsMemberOfOrganization,
-} from '../organizations-helpers.server';
+import { findOrganizationIfUserIsMemberById } from '../organizations-helpers.server';
+import { organizationMembershipContext } from '../organizations-middleware.server';
 import { switchSlugInRoute } from './layout-helpers.server';
 import { createCookieForOrganizationSwitcherSession } from './organization-switcher-session.server';
 import { SWITCH_ORGANIZATION_INTENT } from './sidebar-layout-constants';
 import { switchOrganizationSchema } from './sidebar-layout-schemas';
-import type { Route } from '.react-router/types/app/routes/organizations_+/$organizationSlug+/+types/_sidebar-layout';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/+types/_sidebar-layout';
 
 const schema = z.discriminatedUnion('intent', [
   markAllAsReadSchema,
@@ -48,12 +46,13 @@ const schema = z.discriminatedUnion('intent', [
 ]);
 
 export async function sidebarLayoutAction({
+  context,
   request,
-  params,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, headers, role } =
-      await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+    const { user, organization, headers, role } = context.get(
+      organizationMembershipContext,
+    );
     const body = await validateFormData(request, schema);
 
     switch (body.intent) {

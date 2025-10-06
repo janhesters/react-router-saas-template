@@ -8,13 +8,17 @@ import { validateFormData } from '~/utils/validate-form-data.server';
 import { requireUserNeedsOnboarding } from '../onboarding-helpers.server';
 import type { OnboardingOrganizationErrors } from './onboarding-organization-schemas';
 import { onboardingOrganizationSchema } from './onboarding-organization-schemas';
-import type { Route } from '.react-router/types/app/routes/onboarding+/+types/organization';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/organization';
 
 export async function onboardingOrganizationAction({
   request,
+  context,
 }: Route.ActionArgs) {
   try {
-    const { user, headers } = await requireUserNeedsOnboarding(request);
+    const { user, headers } = await requireUserNeedsOnboarding({
+      context,
+      request,
+    });
     const data = await validateFormData(request, onboardingOrganizationSchema);
 
     const organization = await saveOrganizationWithOwnerToDatabase({

@@ -1,6 +1,6 @@
 import { useLoaderData } from 'react-router';
 
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { acceptEmailInviteAction } from '~/features/organizations/accept-email-invite/accept-email-invite-action.server';
 import {
   getEmailInviteToken,

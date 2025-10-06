@@ -2,7 +2,7 @@ import { OrganizationMembershipRole } from '@prisma/client';
 import { data, redirect } from 'react-router';
 import { z } from 'zod';
 
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { combineHeaders } from '~/utils/combine-headers.server';
 import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
 import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
@@ -10,8 +10,7 @@ import { badRequest, conflict, forbidden } from '~/utils/http-responses.server';
 import { createToastHeaders } from '~/utils/toast.server';
 import { validateFormData } from '~/utils/validate-form-data.server';
 
-import type { Route } from '../../routes/organizations_+/$organizationSlug+/settings+/+types/billing';
-import { requireUserIsMemberOfOrganization } from '../organizations/organizations-helpers.server';
+import { organizationMembershipContext } from '../organizations/organizations-middleware.server';
 import { updateOrganizationInDatabaseById } from '../organizations/organizations-model.server';
 import {
   CANCEL_SUBSCRIPTION_INTENT,
@@ -47,6 +46,7 @@ import {
 } from './stripe-prices-model.server';
 import { updateStripeSubscriptionInDatabaseById } from './stripe-subscription-model.server';
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from './stripe-subscription-schedule-model.server';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing';
 
 const schema = z.discriminatedUnion('intent', [
   cancelSubscriptionSchema,
@@ -59,13 +59,14 @@ const schema = z.discriminatedUnion('intent', [
 ]);
 
 export async function billingAction({
-  request,
-  params,
   context,
+  params,
+  request,
 }: Route.ActionArgs) {
   try {
-    const { organization, headers, role, user } =
-      await requireUserIsMemberOfOrganization(request, params.organizationSlug);
+    const { organization, headers, role, user } = context.get(
+      organizationMembershipContext,
+    );
     const body = await validateFormData(request, schema);
     const i18n = getInstance(context);
 

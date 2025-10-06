@@ -1,12 +1,7 @@
 import LandingPage from '~/features/landing/landing-page';
-import { requireUserIsAnonymous } from '~/features/user-authentication/user-authentication-helpers.server';
+import { anonymousMiddleware } from '~/features/user-authentication/user-authentication-middleware.server';
 
-import type { Route } from './+types/_index';
-
-export async function loader({ request }: Route.LoaderArgs) {
-  await requireUserIsAnonymous(request);
-  return {};
-}
+export const middleware = [anonymousMiddleware];
 
 export default function LandingRoute() {
   return <LandingPage />;

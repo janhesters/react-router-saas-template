@@ -1,6 +1,6 @@
 import { href, redirect } from 'react-router';
 
-import { getInstance } from '~/features/localization/middleware.server';
+import { getInstance } from '~/features/localization/i18n-middleware.server';
 import { destroyEmailInviteInfoSession } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
 import { destroyInviteLinkInfoSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
 import { updateEmailInviteLinkInDatabaseById } from '~/features/organizations/organizations-email-invite-link-model.server';
@@ -14,14 +14,17 @@ import { validateFormData } from '~/utils/validate-form-data.server';
 import { requireUserNeedsOnboarding } from '../onboarding-helpers.server';
 import type { OnboardingUserAccountErrors } from './onboarding-user-account-schemas';
 import { onboardingUserAccountSchema } from './onboarding-user-account-schemas';
-import type { Route } from '.react-router/types/app/routes/onboarding+/+types/user-account';
+import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/user-account';
 
 export async function onboardingUserAccountAction({
   request,
   context,
 }: Route.ActionArgs) {
   try {
-    const { headers, user } = await requireUserNeedsOnboarding(request);
+    const { headers, user } = await requireUserNeedsOnboarding({
+      context,
+      request,
+    });
     const data = await validateFormData(request, onboardingUserAccountSchema);
 
     await updateUserAccountInDatabaseById({
