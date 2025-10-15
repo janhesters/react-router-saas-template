@@ -386,7 +386,7 @@ export function useForm<T extends z4.$ZodObject>({
 
     // Form-level errors are those without a field path (or with empty path)
     return errors.issues
-      .filter(issue => !issue.path || issue.path.length === 0)
+      .filter(issue => !issue.path?.length)
       .map(issue => ({ message: issue.message }));
   }
 

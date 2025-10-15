@@ -163,7 +163,7 @@ export const useFileUpload = (
 
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
-      if (!newFiles || newFiles.length === 0) return;
+      if (!newFiles?.length) return;
 
       const newFilesArray = [...newFiles];
       const errors: string[] = [];

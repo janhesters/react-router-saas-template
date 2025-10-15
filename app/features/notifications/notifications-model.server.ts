@@ -72,7 +72,7 @@ export async function createNotificationForUserInDatabaseById({
   });
 
   // Should always have one recipient from the create operation
-  if (!newNotification.recipients || newNotification.recipients.length === 0) {
+  if (!newNotification.recipients?.length) {
     // This case is unlikely but indicates something went wrong
     // console.error(
     //   `Failed to create recipient for notification ${newNotification.id}`,
