@@ -796,15 +796,33 @@ With AIDD you can:
 - Let AI produce 90%+ of your source code (tests, UIs, state layers, etc.).
 - Iterate and refactor faster, keeping consistency across your codebase.
 
-#### Included SudoLang Metaprograms
+#### Cursor AI Commands
 
-Under `meta/`, you’ll find ready-to-use scripts that automate common workflows:
+Under `.cursor/commands/`, you'll find ready-to-use commands that automate
+common workflows:
 
-- **tdd-functions.sudo** – full TDD pipelines (gather requirements, generate
-  tests, implement)
-- **react-component.sudo** – scaffold React components with tests and docs
-- **action-tests.sudo** – test React Router action handlers
-- **svg-to-react.sudo** – convert SVG assets into React components
+- **better-writer** – Improves writing clarity and engagement using Scott Adams'
+  rules.
+- **brainstorm** – Helps ideate solutions with clear trade-offs and
+  recommendations.
+- **commit** – Commits changes using conventional commit format.
+- **debug** – Provides systematic debugging with root cause analysis.
+- **documentation** – Creates clear, example-first documentation.
+- **log** – Logs changes to CHANGELOG.md with conventional commit format.
+- **plan** – Breaks down complex requests into manageable, sequential tasks.
+- **svg-to-react** – Converts SVG files into optimized React components.
+- **unit-tests** – Generates thorough, readable unit tests using Vitest.
+- **write** – Produces clear, concise business writing with specific style
+  guidelines.
+
+#### Cursor AI Rules
+
+Under `.cursor/rules/`, you'll find coding standards that AI follows:
+
+- **js-and-ts.mdc** – JavaScript and TypeScript best practices including
+  functional programming patterns, naming conventions, and code organization.
+- **jsx-and-tsx.mdc** – React best practices including component patterns, form
+  handling, accessibility, and internationalization.
 
 Learn more about AIDD and SudoLang in
 [The Art of Effortless Programming](https://leanpub.com/effortless-programming)
