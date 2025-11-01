@@ -36,6 +36,8 @@ import { action } from './user-account';
 
 const createUrl = () => `http://localhost:3000/onboarding/user-account`;
 
+const pattern = '/onboarding/user-account';
+
 async function sendAuthenticatedRequest({
   userAccount,
   formData,
@@ -56,8 +58,9 @@ async function sendAuthenticatedRequest({
 
   return await action({
     request,
-    context: await createAuthTestContextProvider({ request, params }),
+    context: await createAuthTestContextProvider({ request, params, pattern }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -85,8 +88,13 @@ describe('/onboarding/user-account route action', () => {
     try {
       await action({
         request,
-        context: await createAuthTestContextProvider({ request, params }),
+        context: await createAuthTestContextProvider({
+          request,
+          params,
+          pattern,
+        }),
         params,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {

@@ -27,6 +27,8 @@ import { action } from './organization';
 
 const createUrl = () => `http://localhost:3000/onboarding/organization`;
 
+const pattern = '/onboarding/organization';
+
 async function sendAuthenticatedRequest({
   userAccount,
   formData,
@@ -44,8 +46,9 @@ async function sendAuthenticatedRequest({
 
   return await action({
     request,
-    context: await createAuthTestContextProvider({ request, params }),
+    context: await createAuthTestContextProvider({ request, params, pattern }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -73,8 +76,13 @@ describe('/onboarding/organization route action', () => {
     try {
       await action({
         request,
-        context: await createAuthTestContextProvider({ request, params }),
+        context: await createAuthTestContextProvider({
+          request,
+          params,
+          pattern,
+        }),
         params,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {
@@ -167,7 +175,7 @@ describe('/onboarding/organization route action', () => {
       expect(response.status).toEqual(302);
       const locationHeader = response.headers.get('Location');
       expect(locationHeader).toMatch(
-        new RegExp(`^/organizations/${firstOrg.slug}-[\\da-z]{8}$`),
+        new RegExp(String.raw`^/organizations/${firstOrg.slug}-[\da-z]{8}$`),
       );
 
       // Extract slug from redirect URL and verify organization

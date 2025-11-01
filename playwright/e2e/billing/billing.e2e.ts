@@ -522,7 +522,7 @@ test.describe('billing page', () => {
     await expect(
       planDl.locator('dd', {
         hasText: new RegExp(
-          `\\$${unitAmount}\\s*per user billed ${interval}`,
+          String.raw`\$${unitAmount}\s*per user billed ${interval}`,
           'i',
         ),
       }),
@@ -537,7 +537,7 @@ test.describe('billing page', () => {
     await expect(planDl.locator('dt', { hasText: /users/i })).toBeVisible();
     await expect(
       planDl.locator('dd', {
-        hasText: new RegExp(`^${seatsUsed} \\/ ${maxSeats}$`, 'i'),
+        hasText: new RegExp(String.raw`^${seatsUsed} \/ ${maxSeats}$`, 'i'),
       }),
     ).toBeVisible();
     await expect(
@@ -553,7 +553,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(
       planDl.locator('dd', {
-        hasText: new RegExp(`^\\$${projectedTotal}$`, 'i'),
+        hasText: new RegExp(String.raw`^\$${projectedTotal}$`, 'i'),
       }),
     ).toBeVisible();
 
@@ -748,7 +748,7 @@ test.describe('billing page', () => {
       );
     await expect(
       pendingBanner.getByText(
-        new RegExp(`Your subscription runs out on ${endDate}\\.`),
+        new RegExp(String.raw`Your subscription runs out on ${endDate}\.`),
       ),
     ).toBeVisible();
 
@@ -907,7 +907,7 @@ test.describe('billing page', () => {
       year: 'numeric',
     });
     const descRegex = new RegExp(
-      `Your subscription will downgrade to the hobby \\(${billingInterval}\\) plan on ${downgradeDate}\\.`,
+      String.raw`Your subscription will downgrade to the hobby \(${billingInterval}\) plan on ${downgradeDate}\.`,
       'i',
     );
     await expect(pendingBanner.getByText(descRegex)).toBeVisible();
@@ -980,7 +980,7 @@ test.describe('billing page', () => {
       year: 'numeric',
     });
     const descRegex = new RegExp(
-      `Your subscription will downgrade to the business \\(monthly\\) plan on ${switchDate}\\.`,
+      String.raw`Your subscription will downgrade to the business \(monthly\) plan on ${switchDate}\.`,
       'i',
     );
     await expect(pendingBanner.getByText(descRegex)).toBeVisible();

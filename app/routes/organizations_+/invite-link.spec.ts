@@ -24,6 +24,8 @@ import { action } from './invite-link';
 const createUrl = (token?: string) =>
   `http://localhost:3000/organizations/invite-link${token ? `?token=${token}` : ''}`;
 
+const pattern = '/organizations/invite-link';
+
 const createBody = ({ intent = ACCEPT_INVITE_LINK_INTENT } = {}) => ({
   intent,
 });
@@ -41,8 +43,9 @@ async function sendRequest({
 
   return await action({
     request,
-    context: await createTestContextProvider({ request, params }),
+    context: await createTestContextProvider({ request, params, pattern }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -66,8 +69,9 @@ async function sendAuthenticatedRequest({
 
   return await action({
     request,
-    context: await createAuthTestContextProvider({ request, params }),
+    context: await createAuthTestContextProvider({ request, params, pattern }),
     params,
+    unstable_pattern: pattern,
   });
 }
 

@@ -59,6 +59,8 @@ import { action } from './members';
 const createUrl = (slug: string) =>
   `http://localhost:3000/organizations/${slug}/settings/members`;
 
+const pattern = '/organizations/:organizationSlug/settings/members';
+
 async function sendAuthenticatedRequest({
   formData,
   organizationSlug,
@@ -81,8 +83,10 @@ async function sendAuthenticatedRequest({
     context: await createOrganizationMembershipTestContextProvider({
       request,
       params,
+      pattern,
     }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -135,8 +139,10 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         context: await createOrganizationMembershipTestContextProvider({
           request,
           params,
+          pattern,
         }),
         params,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {

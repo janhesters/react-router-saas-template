@@ -2,6 +2,7 @@ import { reactRouter } from '@react-router/dev/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig as defineVitestConfig } from 'vitest/config';
 
 // Custom plugin to handle .sudo files
 const sudoFilesPlugin = {
@@ -32,7 +33,7 @@ const rootConfig = defineConfig({
   server: { port: 3000 },
 });
 
-const testConfig = defineConfig({
+const testConfig = defineVitestConfig({
   test: {
     projects: [
       {

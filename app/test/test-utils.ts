@@ -447,41 +447,66 @@ export async function ensureStripeProductsAndPricesExist() {
 }
 
 /**
- * Creates a RouterContextProvider configured for use in tests.
+ * Creates and initializes a {@link RouterContextProvider} for use in tests.
  *
- * This helper initializes a new RouterContextProvider and runs the i18next
- * middleware followed by any additional middlewares provided. It is useful when
- * testing components or routes that depend on React Router's context with
- * specific middleware setup.
+ * This helper sets up a new router context and sequentially executes the
+ * i18next middleware (as done in the root loader) followed by any additional
+ * custom middlewares. It is useful for testing components or routes that depend
+ * on React Router's context and middleware side effects.
  *
- * @param middlewares - Array of middleware functions to run after i18next
- * middleware.
- * @param params - Route parameters to pass to middlewares.
- * @param request - Request object to pass to middlewares.
- * @returns A RouterContextProvider instance populated by the executed
- * middlewares.
+ * Each middleware receives an execution context object containing the router
+ * context, request, route params, and the route's `unstable_pattern`. The
+ * `unstable_pattern` simulates the route path pattern normally provided by
+ * React Router during runtime.
+ *
+ * If a middleware throws a {@link Response} (for example, to simulate a redirect
+ * or authentication failure), the function re-throws it so tests can assert on
+ * that behavior. Any other errors are also re-thrown.
+ *
+ * @param middlewares - Optional array of middleware functions to execute after
+ * the i18next middleware.
+ * @param params - Route parameters passed to each middleware.
+ * @param request - The {@link Request} object passed to each middleware.
+ * @param pattern - The route's `unstable_pattern` value (e.g. `/users/:id`),
+ * used to simulate the matched route path.
+ * @returns A {@link RouterContextProvider} instance populated with any state or
+ * mutations applied by the executed middlewares.
  */
 export async function createTestContextProvider({
   middlewares = [],
   params,
   request,
+  pattern,
 }: {
   middlewares?: MiddlewareFunction[];
   params: Params;
   request: Request;
+  pattern: string;
 }) {
   const context = new RouterContextProvider();
 
   // i18next middleware runs in root loader, so all routes have access to the
   // i18next context.
-  await i18nextMiddleware({ request, params, context }, () =>
-    Promise.resolve(new Response(null, { status: 200 })),
+  await i18nextMiddleware(
+    { context, params, request, unstable_pattern: pattern },
+    () => Promise.resolve(new Response(null, { status: 200 })),
   );
 
   for (const middleware of middlewares) {
-    await middleware({ request, params, context }, () =>
-      Promise.resolve(new Response(null, { status: 200 })),
-    );
+    try {
+      await middleware(
+        { context, params, request, unstable_pattern: pattern },
+        () => Promise.resolve(new Response(null, { status: 200 })),
+      );
+    } catch (error) {
+      // If middleware throws a Response (e.g., redirect), re-throw it
+      // This allows tests to catch authentication failures, redirects, etc.
+      if (error instanceof Response) {
+        throw error;
+      }
+      // For other errors, also re-throw
+      throw error;
+    }
   }
 
   return context;
@@ -496,18 +521,23 @@ export async function createTestContextProvider({
  *
  * @param params - Route parameters to pass to middlewares.
  * @param request - Request object to pass to middlewares.
+ * @param pattern - The route's `unstable_pattern` value (e.g. `/users/:id`),
+ * used to simulate the matched route path.
  * @returns A RouterContextProvider instance with auth context.
  */
 export async function createAuthTestContextProvider({
   params,
   request,
+  pattern,
 }: {
   params: Params;
   request: Request;
+  pattern: string;
 }) {
   return await createTestContextProvider({
     middlewares: [authMiddleware],
     params,
+    pattern,
     request,
   });
 }
@@ -528,13 +558,16 @@ export async function createAuthTestContextProvider({
 export async function createOrganizationMembershipTestContextProvider({
   params,
   request,
+  pattern,
 }: {
   params: Params;
   request: Request;
+  pattern: string;
 }) {
   return await createTestContextProvider({
     middlewares: [authMiddleware, organizationMembershipMiddleware],
     params,
     request,
+    pattern,
   });
 }

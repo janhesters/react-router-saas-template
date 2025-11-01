@@ -14,6 +14,8 @@ import { action } from './contact-sales';
 
 const createUrl = () => `http://localhost:3000/contact-sales`;
 
+const pattern = '/contact-sales';
+
 async function sendRequest({ formData }: { formData: FormData }) {
   const request = new Request(createUrl(), {
     method: 'POST',
@@ -23,8 +25,9 @@ async function sendRequest({ formData }: { formData: FormData }) {
 
   return await action({
     request,
-    context: await createTestContextProvider({ request, params }),
+    context: await createTestContextProvider({ request, params, pattern }),
     params,
+    unstable_pattern: pattern,
   });
 }
 

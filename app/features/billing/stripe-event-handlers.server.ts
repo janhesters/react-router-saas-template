@@ -24,11 +24,7 @@ import {
   updateStripeSubscriptionScheduleFromAPIInDatabase,
 } from './stripe-subscription-schedule-model.server';
 
-const ok = () =>
-  new Response(JSON.stringify({ message: 'OK' }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
+const ok = () => Response.json({ message: 'OK' });
 
 const prettyPrint = (event: Stripe.Event) => {
   console.log(

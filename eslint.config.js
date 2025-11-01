@@ -119,7 +119,6 @@ export default defineConfig(
   },
   {
     files: ['app/**/*.{test,spec}.{js,ts,jsx,tsx}'],
-    // @ts-expect-error this is a bug in @vitest/eslint-plugin
     plugins: { vitest },
     rules: { ...vitest.configs.recommended.rules, 'unicorn/no-null': 'off' },
     settings: { vitest: { typecheck: true } },

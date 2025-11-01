@@ -58,6 +58,8 @@ import { action } from './_sidebar-layout';
 const createUrl = (organizationSlug: string) =>
   `http://localhost:3000/organizations/${organizationSlug}`;
 
+const pattern = '/organizations/:organizationSlug';
+
 async function sendAuthenticatedRequest({
   formData,
   organizationSlug,
@@ -80,8 +82,10 @@ async function sendAuthenticatedRequest({
     context: await createOrganizationMembershipTestContextProvider({
       request,
       params,
+      pattern,
     }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -144,8 +148,10 @@ describe('/organizations/:organizationSlug route action', () => {
         context: await createOrganizationMembershipTestContextProvider({
           request,
           params,
+          pattern,
         }),
         params,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {

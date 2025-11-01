@@ -23,9 +23,8 @@ import { getErrorMessage } from '~/utils/get-error-message';
 import type { Route } from './+types/stripe.webhooks';
 
 const json = (payload: unknown, init?: ResponseInit) =>
-  new Response(JSON.stringify(payload), {
+  Response.json(payload, {
     status: 200,
-    headers: { 'Content-Type': 'application/json' },
     ...init,
   });
 

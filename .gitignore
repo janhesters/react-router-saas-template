@@ -1,5 +1,6 @@
 .DS_Store
 /node_modules/
+todo.md
 
 # React Router
 /.react-router/
@@ -23,3 +24,7 @@ node_modules/
 # Random
 count-lines.sh
 stripe-events.txt
+
+# Test fixtures
+/tests/fixtures/
+/app/tests/mocks/fixtures/

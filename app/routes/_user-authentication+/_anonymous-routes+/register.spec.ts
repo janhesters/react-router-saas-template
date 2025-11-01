@@ -27,6 +27,8 @@ import { action } from './register';
 
 const createUrl = () => `http://localhost:3000/register`;
 
+const pattern = '/register';
+
 async function sendRequest({ formData }: { formData: FormData }) {
   const request = new Request(createUrl(), {
     method: 'POST',
@@ -39,9 +41,11 @@ async function sendRequest({ formData }: { formData: FormData }) {
     context: await createTestContextProvider({
       request,
       params,
+      pattern,
       middlewares: [anonymousMiddleware],
     }),
     params,
+    unstable_pattern: pattern,
   });
 }
 
@@ -71,8 +75,10 @@ describe('/register route action', () => {
           request,
           params,
           middlewares: [anonymousMiddleware],
+          pattern,
         }),
         params,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {

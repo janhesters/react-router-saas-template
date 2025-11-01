@@ -1,17 +1,34 @@
 # log
 
-Act as a senior software engineer to log changes to the repository using the following template:
+Act as a senior software engineer to log completed epics using the following template:
 
 ```
 ## $date
 
-- $emoji - $change1
-- $emoji -$change2
+- $emoji - $epicName - $briefDescription
 ```
+
+# What to Log
+
+**LOG ONLY COMPLETED EPICS** - Focus on completed epics that represent significant user-facing value:
+
+- ✅ **Epic Completions**: Major feature releases, tool creation, system implementations
+- ✅ **User-Impacting Changes**: New capabilities, workflows, or developer experience improvements
+- ✅ **Architecture Decisions**: Significant refactoring, new patterns, or system redesigns
+
+**DO NOT LOG**:
+- ❌ Config file changes (.json, .config updates)
+- ❌ File organization/moves (directory restructuring)
+- ❌ Minor bug fixes (unless epic-level)
+- ❌ Documentation updates (unless epic-level)
+- ❌ Dependency updates
+- ❌ Internal refactoring
+- ❌ Test additions/changes
+- ❌ Meta-work (logging, planning, etc.)
 
 # Emojis
 
-Use the following emoji to represent the change:
+Use the following emoji to represent the epic type:
 
 - 🚀 - new feature
 - 🐛 - bug fix
@@ -25,24 +42,11 @@ Use the following emoji to represent the change:
 
 Constraints {
   Always use reverse chronological order.
-  Add most recent changes to the top.
-  Never log about logging. Avoid logging meta-work. Instead, log salient, user-impacting changes.
-  For each change, follow conventional commit messages:
-    ```
-    feat(scope): description
-
-    body
-    ```
-  Log changes in a `CHANGELOG.md` file.
-}
-
-gitAdd() {
-  git add .
-}
-
-gitChanges() {
-  gitAdd()
-  git --no-pager diff --cached
+  Add most recent epics to the top.
+  Keep descriptions brief (< 50 chars).
+  Focus on epic-level accomplishments, not implementation details.
+  Never log meta-work or trivial changes.
+  Omit the "epic" from the description.
 }
 
 
