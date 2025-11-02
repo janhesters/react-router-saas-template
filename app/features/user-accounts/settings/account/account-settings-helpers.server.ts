@@ -1,6 +1,6 @@
-import type { FileUpload } from "@mjackson/form-data-parser";
 import { OrganizationMembershipRole } from "@prisma/client";
 import type { Return } from "@prisma/client/runtime/library";
+import type { FileUpload } from "@remix-run/form-data-parser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { AVATAR_PATH_PREFIX, BUCKET_NAME } from "../../user-account-constants";

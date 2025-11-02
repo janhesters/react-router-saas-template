@@ -1,5 +1,5 @@
-import { Slot } from "@radix-ui/react-slot";
 import { ImageIcon } from "lucide-react";
+import { Slot as SlotPrimitive } from "radix-ui";
 import type { ComponentProps, PropsWithChildren } from "react";
 import { createContext, useContext } from "react";
 import type { DropzoneOptions, DropzoneState } from "react-dropzone";
@@ -92,7 +92,7 @@ export function DragAndDropIcon({
 }: ComponentProps<typeof ImageIcon> & {
   asChild?: boolean;
 }) {
-  const Comp = asChild ? Slot : ImageIcon;
+  const Comp = asChild ? SlotPrimitive.Slot : ImageIcon;
   const { acceptedFiles } = useDragAndDropContext();
   const hasFiles = acceptedFiles.length > 0;
 

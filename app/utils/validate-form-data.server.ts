@@ -1,5 +1,5 @@
-import { parseFormData } from "@mjackson/form-data-parser";
-import type { MultipartParserOptions } from "@mjackson/multipart-parser";
+import { parseFormData } from "@remix-run/form-data-parser";
+import type { MultipartParserOptions } from "@remix-run/multipart-parser";
 import type { ZodError, ZodType } from "zod";
 import { z } from "zod";
 

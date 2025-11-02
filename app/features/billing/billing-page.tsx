@@ -1,6 +1,6 @@
 import type { Organization } from "@prisma/client";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
+import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form, href, Link, useNavigation } from "react-router";
@@ -252,11 +252,11 @@ export function BillingPage({
                   {t("subscription-cancelled-banner.modal.title")}
                 </DialogTitle>
 
-                <VisuallyHidden>
+                <VisuallyHiddenPrimitive.Root>
                   <DialogDescription>
                     {t("subscription-cancelled-banner.modal.description")}
                   </DialogDescription>
-                </VisuallyHidden>
+                </VisuallyHiddenPrimitive.Root>
               </DialogHeader>
 
               <CreateSubscriptionModalContent
@@ -333,11 +333,11 @@ export function BillingPage({
                     {t("free-trial-banner.modal.title")}
                   </DialogTitle>
 
-                  <VisuallyHidden>
+                  <VisuallyHiddenPrimitive.Root>
                     <DialogDescription>
                       {t("free-trial-banner.modal.description")}
                     </DialogDescription>
-                  </VisuallyHidden>
+                  </VisuallyHiddenPrimitive.Root>
                 </DialogHeader>
 
                 <CreateSubscriptionModalContent
@@ -538,11 +538,11 @@ export function BillingPage({
             <DialogHeader>
               <DialogTitle>{t("pricing-modal.title")}</DialogTitle>
 
-              <VisuallyHidden>
+              <VisuallyHiddenPrimitive.Root>
                 <DialogDescription>
                   {t("pricing-modal.description")}
                 </DialogDescription>
-              </VisuallyHidden>
+              </VisuallyHiddenPrimitive.Root>
             </DialogHeader>
 
             {subscriptionStatus === "active" && !isOnFreeTrial ? (

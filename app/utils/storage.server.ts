@@ -2,7 +2,7 @@ import type { Readable } from "node:stream";
 import type { S3Client } from "@aws-sdk/client-s3";
 import { DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
-import type { FileUpload } from "@mjackson/form-data-parser";
+import type { FileUpload } from "@remix-run/form-data-parser";
 
 /**
  * Downloads a file from Supabase Storage using the S3 compatible API.

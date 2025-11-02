@@ -1,10 +1,9 @@
 import { OrganizationMembershipRole } from "@prisma/client";
-import { AvatarFallback } from "@radix-ui/react-avatar";
 import { useTranslation } from "react-i18next";
 import { href, Link, redirect } from "react-router";
 
 import type { Route } from "./+types/_index";
-import { Avatar, AvatarImage } from "~/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
 import {

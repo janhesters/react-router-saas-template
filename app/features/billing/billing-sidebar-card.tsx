@@ -1,5 +1,5 @@
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { formatDate } from "date-fns";
+import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useTranslation } from "react-i18next";
 
 import type { CreateSubscriptionModalContentProps } from "./create-subscription-modal-content";
@@ -106,11 +106,11 @@ export function BillingSidebarCard({
               : t("billing-modal.title")}
           </DialogTitle>
 
-          <VisuallyHidden>
+          <VisuallyHiddenPrimitive.Root>
             <DialogDescription>
               {t("billing-modal.description")}
             </DialogDescription>
-          </VisuallyHidden>
+          </VisuallyHiddenPrimitive.Root>
         </DialogHeader>
 
         <CreateSubscriptionModalContent {...createSubscriptionModalProps} />

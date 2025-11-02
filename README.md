@@ -266,7 +266,7 @@ and set the following environment variables in your `.env` file:
 - `SUPABASE_PROJECT_ID`
 
 The upload to Supabase Storage is done using `parseFormData` from
-[`@mjackson/form-data-parser`](https://github.com/mjackson/form-data-parser).
+[`@remix-run/form-data-parser`](https://github.com/remix-run/form-data-parser).
 This function is under the hood in `validateFormData` in
 `app/utils/validate-form-data.server.ts`.
 
