@@ -22,7 +22,7 @@ describe("throwIfEntityIsMissing()", () => {
     } catch (error) {
       if (getIsDataWithResponseInit(error)) {
         expect(error.init?.status).toEqual(404);
-        expect(error.data).toEqual({ message: "Not Found" });
+        expect(error.data).toEqual({});
       }
     }
   });

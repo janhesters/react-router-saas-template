@@ -12,11 +12,11 @@ import {
 } from "./http-responses.server";
 
 describe("created()", () => {
-  test("given: no arguments, should: return a 201 status with a message", () => {
+  test("given: no arguments, should: return a 201 status with an empty object", () => {
     const response = created();
 
     expect(response.init?.status).toEqual(201);
-    expect(response.data).toEqual({ message: "Created" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom data object, should: return a 201 status with the custom data object", () => {
@@ -24,7 +24,7 @@ describe("created()", () => {
     const response = created(customData);
 
     expect(response.init?.status).toEqual(201);
-    expect(response.data).toEqual({ message: "Created", ...customData });
+    expect(response.data).toEqual(customData);
   });
 
   test("given: custom data and headers, should: return a 201 status with the custom data and the headers", () => {
@@ -33,7 +33,7 @@ describe("created()", () => {
     const response = created(customData, { headers });
 
     expect(response.init?.status).toEqual(201);
-    expect(response.data).toEqual({ message: "Created", ...customData });
+    expect(response.data).toEqual(customData);
     expect((response.init?.headers as Headers).get("Location")).toEqual(
       "/api/resources/123",
     );
@@ -41,11 +41,11 @@ describe("created()", () => {
 });
 
 describe("badRequest()", () => {
-  test("given: no arguments, should: return a 400 status with a message", () => {
+  test("given: no arguments, should: return a 400 status with an empty object", () => {
     const response = badRequest();
 
     expect(response.init?.status).toEqual(400);
-    expect(response.data).toEqual({ message: "Bad Request" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 400 status with the custom error object", () => {
@@ -53,7 +53,7 @@ describe("badRequest()", () => {
     const response = badRequest(customErrors);
 
     expect(response.init?.status).toEqual(400);
-    expect(response.data).toEqual({ message: "Bad Request", ...customErrors });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 400 status with the custom data and the headers", () => {
@@ -62,7 +62,7 @@ describe("badRequest()", () => {
     const response = badRequest(customErrors, { headers });
 
     expect(response.init?.status).toEqual(400);
-    expect(response.data).toEqual({ message: "Bad Request", ...customErrors });
+    expect(response.data).toEqual(customErrors);
     expect((response.init?.headers as Headers).get("X-Custom-Header")).toEqual(
       "TestValue",
     );
@@ -70,11 +70,11 @@ describe("badRequest()", () => {
 });
 
 describe("unauthorized()", () => {
-  test("given: no arguments, should: return a 401 status with a message", () => {
+  test("given: no arguments, should: return a 401 status with an empty object", () => {
     const response = unauthorized();
 
     expect(response.init?.status).toEqual(401);
-    expect(response.data).toEqual({ message: "Unauthorized" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 401 status with the custom error object", () => {
@@ -82,7 +82,7 @@ describe("unauthorized()", () => {
     const response = unauthorized(customErrors);
 
     expect(response.init?.status).toEqual(401);
-    expect(response.data).toEqual({ message: "Unauthorized", ...customErrors });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 401 status with the custom data and the headers", () => {
@@ -91,7 +91,7 @@ describe("unauthorized()", () => {
     const response = unauthorized(customErrors, { headers });
 
     expect(response.init?.status).toEqual(401);
-    expect(response.data).toEqual({ message: "Unauthorized", ...customErrors });
+    expect(response.data).toEqual(customErrors);
     expect((response.init?.headers as Headers).get("WWW-Authenticate")).toEqual(
       "Bearer",
     );
@@ -99,11 +99,11 @@ describe("unauthorized()", () => {
 });
 
 describe("forbidden()", () => {
-  test("given: no arguments, should: return a 403 status with a message", () => {
+  test("given: no arguments, should: return a 403 status with an empty object", () => {
     const response = forbidden();
 
     expect(response.init?.status).toEqual(403);
-    expect(response.data).toEqual({ message: "Forbidden" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 403 status with the custom error object", () => {
@@ -111,7 +111,7 @@ describe("forbidden()", () => {
     const response = forbidden(customErrors);
 
     expect(response.init?.status).toEqual(403);
-    expect(response.data).toEqual({ message: "Forbidden", ...customErrors });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 403 status with the custom data and the headers", () => {
@@ -123,7 +123,7 @@ describe("forbidden()", () => {
     const response = forbidden(customErrors, { headers });
 
     expect(response.init?.status).toEqual(403);
-    expect(response.data).toEqual({ message: "Forbidden", ...customErrors });
+    expect(response.data).toEqual(customErrors);
     expect(
       (response.init?.headers as Headers).get("X-Forbidden-Reason"),
     ).toEqual("No Access");
@@ -131,11 +131,11 @@ describe("forbidden()", () => {
 });
 
 describe("methodNotAllowed()", () => {
-  test("given: no arguments, should: return a 405 status with a message", () => {
+  test("given: no arguments, should: return a 405 status with an empty object", () => {
     const response = methodNotAllowed();
 
     expect(response.init?.status).toEqual(405);
-    expect(response.data).toEqual({ message: "Method Not Allowed" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 405 status with the custom error object", () => {
@@ -143,10 +143,7 @@ describe("methodNotAllowed()", () => {
     const response = methodNotAllowed(customErrors);
 
     expect(response.init?.status).toEqual(405);
-    expect(response.data).toEqual({
-      message: "Method Not Allowed",
-      ...customErrors,
-    });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 405 status with the custom data and the headers", () => {
@@ -155,10 +152,7 @@ describe("methodNotAllowed()", () => {
     const response = methodNotAllowed(customErrors, { headers });
 
     expect(response.init?.status).toEqual(405);
-    expect(response.data).toEqual({
-      message: "Method Not Allowed",
-      ...customErrors,
-    });
+    expect(response.data).toEqual(customErrors);
     expect((response.init?.headers as Headers).get("Allow")).toEqual(
       "GET, PUT",
     );
@@ -166,11 +160,11 @@ describe("methodNotAllowed()", () => {
 });
 
 describe("conflict()", () => {
-  test("given: no arguments, should: return a 409 status with a message", () => {
+  test("given: no arguments, should: return a 409 status with an empty object", () => {
     const response = conflict();
 
     expect(response.init?.status).toEqual(409);
-    expect(response.data).toEqual({ message: "Conflict" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 409 status with the custom error object", () => {
@@ -178,7 +172,7 @@ describe("conflict()", () => {
     const response = conflict(customErrors);
 
     expect(response.init?.status).toEqual(409);
-    expect(response.data).toEqual({ message: "Conflict", ...customErrors });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 409 status with the custom data and the headers", () => {
@@ -187,7 +181,7 @@ describe("conflict()", () => {
     const response = conflict(customErrors, { headers });
 
     expect(response.init?.status).toEqual(409);
-    expect(response.data).toEqual({ message: "Conflict", ...customErrors });
+    expect(response.data).toEqual(customErrors);
     expect(
       (response.init?.headers as Headers).get("X-Conflict-Version"),
     ).toEqual("1.2.3");
@@ -195,11 +189,11 @@ describe("conflict()", () => {
 });
 
 describe("tooManyRequests()", () => {
-  test("given: no arguments, should: return a 429 status with a message", () => {
+  test("given: no arguments, should: return a 429 status with an empty object", () => {
     const response = tooManyRequests();
 
     expect(response.init?.status).toEqual(429);
-    expect(response.data).toEqual({ message: "Too Many Requests" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 429 status with the custom error object", () => {
@@ -210,10 +204,7 @@ describe("tooManyRequests()", () => {
     const response = tooManyRequests(customErrors);
 
     expect(response.init?.status).toEqual(429);
-    expect(response.data).toEqual({
-      message: "Too Many Requests",
-      ...customErrors,
-    });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 429 status with the custom data and the headers", () => {
@@ -222,10 +213,7 @@ describe("tooManyRequests()", () => {
     const response = tooManyRequests(customErrors, { headers });
 
     expect(response.init?.status).toEqual(429);
-    expect(response.data).toEqual({
-      message: "Too Many Requests",
-      ...customErrors,
-    });
+    expect(response.data).toEqual(customErrors);
     expect((response.init?.headers as Headers).get("Retry-After")).toEqual(
       "60",
     );
@@ -233,11 +221,11 @@ describe("tooManyRequests()", () => {
 });
 
 describe("notFound()", () => {
-  test("given: no arguments, should: return a 404 status with a message", () => {
+  test("given: no arguments, should: return a 404 status with an empty object", () => {
     const response = notFound();
 
     expect(response.init?.status).toEqual(404);
-    expect(response.data).toEqual({ message: "Not Found" });
+    expect(response.data).toEqual({});
   });
 
   test("given: custom error object, should: return a 404 status with the custom error object", () => {
@@ -245,7 +233,7 @@ describe("notFound()", () => {
     const response = notFound(customErrors);
 
     expect(response.init?.status).toEqual(404);
-    expect(response.data).toEqual({ message: "Not Found", ...customErrors });
+    expect(response.data).toEqual(customErrors);
   });
 
   test("given: custom data and headers, should: return a 404 status with the custom data and the headers", () => {
@@ -254,7 +242,7 @@ describe("notFound()", () => {
     const response = notFound(customErrors, { headers });
 
     expect(response.init?.status).toEqual(404);
-    expect(response.data).toEqual({ message: "Not Found", ...customErrors });
+    expect(response.data).toEqual(customErrors);
     expect((response.init?.headers as Headers).get("X-Resource-Type")).toEqual(
       "User",
     );

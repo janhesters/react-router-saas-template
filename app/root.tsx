@@ -1,5 +1,6 @@
 import "./app.css";
 
+import { FormOptionsProvider } from "@conform-to/react/future";
 import { useTranslation } from "react-i18next";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
 import {
@@ -29,6 +30,7 @@ import {
   i18nextMiddleware,
 } from "./features/localization/i18n-middleware.server";
 import { useToast } from "./hooks/use-toast";
+import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
 import { honeypot } from "./utils/honeypot.server";
 import { getToast } from "./utils/toast.server";
@@ -109,9 +111,15 @@ export function Layout({
       </head>
 
       <body className="min-h-svh">
-        <HoneypotProvider {...data?.honeypotInputProps}>
-          {children}
-        </HoneypotProvider>
+        <FormOptionsProvider
+          defineCustomMetadata={defineCustomMetadata}
+          shouldRevalidate="onBlur"
+          shouldValidate="onSubmit"
+        >
+          <HoneypotProvider {...data?.honeypotInputProps}>
+            {children}
+          </HoneypotProvider>
+        </FormOptionsProvider>
         <script
           /**
            * biome-ignore lint/security/noDangerouslySetInnerHtml: This is how

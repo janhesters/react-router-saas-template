@@ -1,213 +1,297 @@
 import { data } from "react-router";
 
-type NestedJSON = {
-  [key: string]: string | NestedJSON;
-};
-
 export type DataWithResponseInit<Data> = ReturnType<typeof data<Data>>;
 
 /**
- * Returns a 201 Created response.
+ * Returns a 201 Created response with optional data and headers.
  *
- * @returns A response with the 201 status code and a message.
- */
-export function created(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 201 Created response.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 201
+ * @returns A Response object with status 201
  *
- * @param createdData - An object containing the created resource data.
- * @returns A response with the 201 status code and the created resource data.
+ * @example
+ * ```ts
+ * // Return created resource
+ * return created({
+ *   id: "123",
+ *   name: "New Resource"
+ * });
+ *
+ * // Return with custom headers
+ * return created(
+ *   { id: "123" },
+ *   { headers: { "Location": "/api/resources/123" } }
+ * );
+ * ```
  */
-export function created<T extends NestedJSON>(
-  createdData: T,
+export function created<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function created<T extends NestedJSON>(
-  createdData?: T,
+): DataWithResponseInit<T>;
+export function created(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return createdData
-    ? data({ message: "Created", ...createdData }, { ...init, status: 201 })
-    : data({ message: "Created" }, { status: 201 });
+): DataWithResponseInit<Record<string, never>>;
+export function created<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 201 });
 }
 
 /**
- * Returns a 400 Bad Request error.
+ * Returns a 400 Bad Request response with optional data and headers.
  *
- * @returns A response with the 400 status code and a message.
- */
-export function badRequest(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 400 Bad Request error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 400
+ * @returns A Response object with status 400
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 400 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return validation errors
+ * return badRequest({
+ *   errors: {
+ *     email: { message: "Invalid email" }
+ *   }
+ * });
+ *
+ * // Return with custom headers
+ * return badRequest(
+ *   { error: "Invalid request" },
+ *   { headers: { "X-Custom": "value" } }
+ * );
+ * ```
  */
-export function badRequest<T extends NestedJSON>(
-  errors: T,
+export function badRequest<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function badRequest<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function badRequest(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data({ message: "Bad Request", ...errors }, { ...init, status: 400 })
-    : data({ message: "Bad Request" }, { status: 400 });
+): DataWithResponseInit<Record<string, never>>;
+export function badRequest<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 400 });
 }
 
 /**
- * Returns a 401 Unauthorized error.
+ * Returns a 401 Unauthorized response with optional data and headers.
  *
- * @returns A response with the 401 status code and a message.
- */
-export function unauthorized(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 401 Unauthorized error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 401
+ * @returns A Response object with status 401
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 401 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return unauthorized error
+ * return unauthorized({
+ *   error: "Invalid credentials"
+ * });
+ *
+ * // Return with custom headers
+ * return unauthorized(
+ *   { error: "Token expired" },
+ *   { headers: { "WWW-Authenticate": "Bearer" } }
+ * );
+ * ```
  */
-export function unauthorized<T extends NestedJSON>(
-  errors: T,
+export function unauthorized<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function unauthorized<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function unauthorized(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data({ message: "Unauthorized", ...errors }, { ...init, status: 401 })
-    : data({ message: "Unauthorized" }, { status: 401 });
+): DataWithResponseInit<Record<string, never>>;
+export function unauthorized<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 401 });
 }
 
 /**
- * Returns a 403 Forbidden error.
+ * Returns a 403 Forbidden response with optional data and headers.
  *
- * @returns A response with the 403 status code and a message.
- */
-export function forbidden(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 403 Forbidden error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 403
+ * @returns A Response object with status 403
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 403 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return forbidden error
+ * return forbidden({
+ *   error: "Insufficient permissions"
+ * });
+ *
+ * // Return with custom headers
+ * return forbidden(
+ *   { error: "Access denied" },
+ *   { headers: { "X-Custom": "value" } }
+ * );
+ * ```
  */
-export function forbidden<T extends NestedJSON>(
-  errors: T,
+export function forbidden<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function forbidden<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function forbidden(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data({ message: "Forbidden", ...errors }, { ...init, status: 403 })
-    : data({ message: "Forbidden" }, { status: 403 });
+): DataWithResponseInit<Record<string, never>>;
+export function forbidden<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 403 });
 }
 
 /**
- * Returns a 404 Not Found error.
+ * Returns a 404 Not Found response with optional data and headers.
  *
- * @returns A response with the 404 status code and a message.
- */
-export function notFound(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 404 Not Found error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 404
+ * @returns A Response object with status 404
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 404 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return not found error
+ * return notFound({
+ *   error: "Resource not found"
+ * });
+ *
+ * // Return with custom headers
+ * return notFound(
+ *   { error: "User not found" },
+ *   { headers: { "X-Custom": "value" } }
+ * );
+ * ```
  */
-export function notFound<T extends NestedJSON>(
-  errors: T,
+export function notFound<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function notFound<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function notFound(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data({ message: "Not Found", ...errors }, { ...init, status: 404 })
-    : data({ message: "Not Found" }, { status: 404 });
+): DataWithResponseInit<Record<string, never>>;
+export function notFound<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 404 });
 }
 
 /**
- * Returns a 405 Method Not Allowed error.
+ * Returns a 405 Method Not Allowed response with optional data and headers.
  *
- * @returns A response with the 405 status code and a message.
- */
-export function methodNotAllowed(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 405 Method Not Allowed error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 405
+ * @returns A Response object with status 405
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 405 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return method not allowed error
+ * return methodNotAllowed({
+ *   error: "POST not allowed",
+ *   allowedMethods: ["GET", "PUT"]
+ * });
+ *
+ * // Return with custom headers
+ * return methodNotAllowed(
+ *   { error: "Method not supported" },
+ *   { headers: { "Allow": "GET, PUT" } }
+ * );
+ * ```
  */
-export function methodNotAllowed<T extends NestedJSON>(
-  errors: T,
+export function methodNotAllowed<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function methodNotAllowed<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function methodNotAllowed(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data(
-        { message: "Method Not Allowed", ...errors },
-        { ...init, status: 405 },
-      )
-    : data({ message: "Method Not Allowed" }, { status: 405 });
+): DataWithResponseInit<Record<string, never>>;
+export function methodNotAllowed<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 405 });
 }
 
 /**
- * Returns a 409 Conflict error.
+ * Returns a 409 Conflict response with optional data and headers.
  *
- * @returns A response with the 409 status code and a message.
- */
-export function conflict(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 409 Conflict error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 409
+ * @returns A Response object with status 409
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 409 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return conflict error
+ * return conflict({
+ *   error: "Resource already exists",
+ *   resource: "user"
+ * });
+ *
+ * // Return with custom headers
+ * return conflict(
+ *   { error: "Version conflict" },
+ *   { headers: { "X-Conflict-Version": "1.2.3" } }
+ * );
+ * ```
  */
-export function conflict<T extends NestedJSON>(
-  errors: T,
+export function conflict<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function conflict<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function conflict(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data({ message: "Conflict", ...errors }, { ...init, status: 409 })
-    : data({ message: "Conflict" }, { status: 409 });
+): DataWithResponseInit<Record<string, never>>;
+export function conflict<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 409 });
 }
 
 /**
- * Returns a 429 Too Many Requests error.
+ * Returns a 429 Too Many Requests response with optional data and headers.
  *
- * @returns A response with the 429 status code and a message.
- */
-export function tooManyRequests(): DataWithResponseInit<{ message: string }>;
-/**
- * Returns a 429 Too Many Requests error.
+ * @param responseData - The data to return in the response body
+ * @param init - Optional response init (headers, etc.) - status is always set to 429
+ * @returns A Response object with status 429
  *
- * @param errors - An object containing custom error messages.
- * @returns A response with the 429 status code and the error messages.
+ * @example
+ * ```ts
+ * // Return rate limit error
+ * return tooManyRequests({
+ *   error: "Rate limit exceeded",
+ *   retryAfter: 60
+ * });
+ *
+ * // Return with custom headers
+ * return tooManyRequests(
+ *   { error: "Too many requests" },
+ *   { headers: { "Retry-After": "60" } }
+ * );
+ * ```
  */
-export function tooManyRequests<T extends NestedJSON>(
-  errors: T,
+export function tooManyRequests<T>(
+  responseData: T,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } & T>;
-export function tooManyRequests<T extends NestedJSON>(
-  errors?: T,
+): DataWithResponseInit<T>;
+export function tooManyRequests(
+  responseData?: undefined,
   init?: Omit<ResponseInit, "status">,
-): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
-  return errors
-    ? data(
-        { message: "Too Many Requests", ...errors },
-        { ...init, status: 429 },
-      )
-    : data({ message: "Too Many Requests" }, { status: 429 });
+): DataWithResponseInit<Record<string, never>>;
+export function tooManyRequests<T>(
+  responseData?: T,
+  init?: Omit<ResponseInit, "status">,
+) {
+  return data(responseData ?? {}, { ...init, status: 429 });
 }

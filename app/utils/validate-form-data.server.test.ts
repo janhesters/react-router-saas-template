@@ -89,7 +89,7 @@ describe("validateFormData()", () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: "Bad Request", ...expectedErrors },
+      data: expectedErrors,
       init: { status: 400 },
       type: "DataWithResponseInit",
     });
@@ -107,7 +107,7 @@ describe("validateFormData()", () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: "Bad Request", ...expectedErrors },
+      data: expectedErrors,
       init: { status: 400 },
       type: "DataWithResponseInit",
     });
@@ -125,7 +125,7 @@ describe("validateFormData()", () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: "Bad Request", ...expectedErrors },
+      data: expectedErrors,
       init: { status: 400 },
       type: "DataWithResponseInit",
     });
@@ -144,7 +144,7 @@ describe("validateFormData()", () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: "Bad Request", ...expectedErrors },
+      data: expectedErrors,
       init: { status: 400 },
       type: "DataWithResponseInit",
     });
@@ -165,7 +165,7 @@ describe("validateFormData()", () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: "Bad Request", ...expectedErrors },
+      data: expectedErrors,
       init: { status: 400 },
       type: "DataWithResponseInit",
     });
