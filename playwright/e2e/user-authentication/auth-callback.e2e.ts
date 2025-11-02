@@ -33,8 +33,9 @@ const path = '/auth/callback';
  * This simulates what happens when a user initiates OAuth login.
  */
 async function setupCodeVerifierCookie({ page }: { page: Page }) {
+  const regex = /https:\/\/([^.]+)/;
   const projectReference =
-    process.env.VITE_SUPABASE_URL?.match(/https:\/\/([^.]+)/)?.[1] ?? 'default';
+    regex.exec(process.env.VITE_SUPABASE_URL ?? '')?.[1] ?? 'default';
 
   await page.context().addCookies([
     {

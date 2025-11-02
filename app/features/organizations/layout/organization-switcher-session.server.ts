@@ -1,7 +1,4 @@
 import { createCookieSessionStorage } from 'react-router';
-import invariant from 'tiny-invariant';
-
-invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 
 const ORGANIZATION_SWITCHER_SESSION_KEY = 'currentOrganizationId';
 const ORGANIZATION_SWITCHER_SESSION_NAME = '__organization_switcher';
@@ -17,7 +14,7 @@ const organizationSwitcherSession = createCookieSessionStorage<{
     sameSite: 'lax', // Helps mitigate CSRF attacks
     secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
     maxAge: 0,
-    secrets: [process.env.SESSION_SECRET], // Secret to sign the cookie (replace with a secure value)
+    secrets: [process.env.COOKIE_SECRET], // Secret to sign the cookie (replace with a secure value)
   },
 });
 

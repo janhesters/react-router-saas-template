@@ -1,11 +1,8 @@
 import type { OrganizationEmailInviteLink } from '@prisma/client';
 import { createCookieSessionStorage } from 'react-router';
-import invariant from 'tiny-invariant';
 import { z } from 'zod';
 
 import { EMAIL_INVITE_INFO_SESSION_NAME } from './accept-email-invite-constants';
-
-invariant(process.env.SESSION_SECRET, 'SESSION_SECRET must be set');
 
 // Define keys for the session data
 const EMAIL_INVITE_TOKEN_KEY = 'emailInviteToken'; // This is the token NOT the id
@@ -27,7 +24,7 @@ const { commitSession, getSession, destroySession } =
       path: '/',
       sameSite: 'lax',
       secure: process.env.NODE_ENV === 'production',
-      secrets: [process.env.SESSION_SECRET],
+      secrets: [process.env.COOKIE_SECRET],
     },
   });
 

@@ -1,9 +1,4 @@
 import Stripe from 'stripe';
-import invariant from 'tiny-invariant';
-
-const { STRIPE_SECRET_KEY } = process.env;
-
-invariant(STRIPE_SECRET_KEY, 'STRIPE_SECRET_KEY is not set');
 
 // Why is this needed?
 // See: https://github.com/nock/nock/issues/2785#issuecomment-2427076034
@@ -36,7 +31,7 @@ const isTestEnvironment = Boolean(
  */
 const passthroughFetch = (...args: Parameters<typeof fetch>) => fetch(...args);
 
-export const stripeAdmin = new Stripe(STRIPE_SECRET_KEY, {
+export const stripeAdmin = new Stripe(process.env.STRIPE_SECRET_KEY, {
   httpClient: isTestEnvironment
     ? Stripe.createFetchHttpClient(passthroughFetch)
     : undefined,

@@ -82,10 +82,8 @@ setting up a service:
   download the [Postgres.app](https://postgresapp.com/) and use it to create a
   local database.
 - `APP_URL` – The URL of your app, e.g. `http://localhost:3000`.
-- `SESSION_SECRET` – A random string of characters. This is used for the
-  authentication session.
-- `COOKIE_SECRET` – A random string of characters. This is used for the dark
-  mode cookie.
+- `COOKIE_SECRET` – A random string of characters. This is used for signing
+  cookies including sessions, toast notifications, and other cookie-based data.
 - `HONEYPOT_SECRET` – A random string of characters. This is used for the
   honeypot field in the contact sales form.
 

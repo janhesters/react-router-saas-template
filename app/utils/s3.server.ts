@@ -13,8 +13,8 @@ export function createAdminS3Client() {
     region: process.env.STORAGE_REGION,
     endpoint: `${process.env.VITE_SUPABASE_URL}/storage/v1/s3`,
     credentials: {
-      accessKeyId: process.env.STORAGE_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY!,
+      accessKeyId: process.env.STORAGE_ACCESS_KEY_ID,
+      secretAccessKey: process.env.STORAGE_SECRET_ACCESS_KEY,
     },
   });
 }
@@ -33,8 +33,8 @@ export function createUserS3Client(accessToken: Session['access_token']) {
     region: process.env.STORAGE_REGION,
     endpoint: `${process.env.VITE_SUPABASE_URL}/storage/v1/s3`,
     credentials: {
-      accessKeyId: process.env.SUPABASE_PROJECT_ID!, // project ref
-      secretAccessKey: process.env.VITE_SUPABASE_ANON_KEY!,
+      accessKeyId: process.env.SUPABASE_PROJECT_ID, // project ref
+      secretAccessKey: process.env.VITE_SUPABASE_ANON_KEY,
       sessionToken: accessToken,
     },
   });

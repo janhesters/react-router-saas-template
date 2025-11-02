@@ -29,6 +29,7 @@ import {
   i18nextMiddleware,
 } from './features/localization/i18n-middleware.server';
 import { useToast } from './hooks/use-toast';
+import { getEnv } from './utils/env.server';
 import { honeypot } from './utils/honeypot.server';
 import { getToast } from './utils/toast.server';
 
@@ -67,6 +68,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return data(
     {
       colorScheme,
+      ENV: getEnv(),
       honeypotInputProps,
       locale,
       title,
@@ -110,9 +112,14 @@ export function Layout({
         <HoneypotProvider {...data?.honeypotInputProps}>
           {children}
         </HoneypotProvider>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {})}`,
+          }}
+        />
         <ScrollRestoration />
-        <Toaster position="bottom-right" />
         <Scripts />
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );

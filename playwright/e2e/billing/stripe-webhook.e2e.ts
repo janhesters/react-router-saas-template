@@ -82,7 +82,7 @@ async function sendStripeWebhookRequest({
 }) {
   const signatureHeader = stripeAdmin.webhooks.generateTestHeaderString({
     payload: JSON.stringify(event),
-    secret: process.env.STRIPE_WEBHOOK_SECRET!,
+    secret: process.env.STRIPE_WEBHOOK_SECRET,
   });
 
   const response = await request.post(path, {

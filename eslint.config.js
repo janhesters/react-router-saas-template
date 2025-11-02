@@ -96,6 +96,7 @@ export default defineConfig(
         {
           replacements: {
             args: false,
+            env: false,
             params: false,
             props: false,
             utils: false,

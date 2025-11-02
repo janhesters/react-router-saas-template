@@ -82,7 +82,7 @@ jobs:
       POSTGRES_PRISMA_URL: postgresql://postgres:postgres@localhost:5432/postgres
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@localhost:5432/postgres
       APP_URL: http://localhost:3000
-      SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
+      COOKIE_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
       VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       STORAGE_ACCESS_KEY_ID: ${{ secrets.STORAGE_ACCESS_KEY_ID }}
@@ -134,7 +134,7 @@ jobs:
       POSTGRES_PRISMA_URL: postgresql://postgres:postgres@localhost:5432/postgres
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@localhost:5432/postgres
       APP_URL: http://localhost:3000
-      SESSION_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
+      COOKIE_SECRET: a-sufficiently-long-secret-ideally-32-characters-or-more
       VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
       STORAGE_ACCESS_KEY_ID: ${{ secrets.STORAGE_ACCESS_KEY_ID }}

@@ -1,5 +1,3 @@
-import invariant from 'tiny-invariant';
-
 import { stripeAdmin } from '~/features/billing/stripe-admin.server';
 import {
   handleStripeChargeDisputeClosedEvent,
@@ -48,11 +46,6 @@ export async function action({ request }: Route.ActionArgs) {
   if (!signature) {
     return badRequest({ message: 'Missing stripe-signature header' });
   }
-
-  invariant(
-    process.env.STRIPE_WEBHOOK_SECRET,
-    'STRIPE_WEBHOOK_SECRET environment variable is not set',
-  );
 
   const payload = await request.text();
 

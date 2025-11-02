@@ -9,6 +9,9 @@ import type { EntryContext, RouterContextProvider } from 'react-router';
 import { ServerRouter } from 'react-router';
 
 import { getInstance } from './features/localization/i18n-middleware.server';
+import { init } from './utils/env.server';
+
+init();
 
 export const streamTimeout = 5000;
 

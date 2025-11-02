@@ -1,14 +1,9 @@
 /* eslint-disable unicorn/no-null */
 import { createId } from '@paralleldrive/cuid2';
 import { createCookieSessionStorage, redirect } from 'react-router';
-import invariant from 'tiny-invariant';
 import { z } from 'zod';
 
 import { combineHeaders } from './combine-headers.server';
-
-const { NODE_ENV, SESSION_SECRET } = process.env;
-
-invariant(SESSION_SECRET, 'SESSION_SECRET is required');
 
 const { commitSession, destroySession, getSession } =
   createCookieSessionStorage({
@@ -17,8 +12,8 @@ const { commitSession, destroySession, getSession } =
       name: '__toast',
       path: '/',
       sameSite: 'lax',
-      secrets: [SESSION_SECRET],
-      secure: NODE_ENV === 'production',
+      secrets: [process.env.COOKIE_SECRET],
+      secure: process.env.NODE_ENV === 'production',
     },
   });
 
