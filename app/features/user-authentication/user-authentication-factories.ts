@@ -1,8 +1,8 @@
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
-import type { Session, User } from '@supabase/supabase-js';
+import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
+import type { Session, User } from "@supabase/supabase-js";
 
-import type { Factory } from '~/utils/types';
+import type { Factory } from "~/utils/types";
 
 /**
  * Creates a populated Supabase user with default values.
@@ -15,31 +15,31 @@ export const createPopulatedSupabaseUser: Factory<User> = ({
   email = faker.internet.email(),
   app_metadata = {},
   user_metadata = {},
-  aud = 'authenticated',
+  aud = "authenticated",
   updated_at = faker.date.recent({ days: 10 }).toISOString(),
-  created_at = faker.date.past({ years: 1, refDate: updated_at }).toISOString(),
-  role = 'authenticated',
+  created_at = faker.date.past({ refDate: updated_at, years: 1 }).toISOString(),
+  role = "authenticated",
   phone,
   confirmed_at = faker.date
-    .past({ years: 0.9, refDate: updated_at })
+    .past({ refDate: updated_at, years: 0.9 })
     .toISOString(),
   last_sign_in_at = faker.date
     .recent({ days: 5, refDate: updated_at })
     .toISOString(),
   factors,
 } = {}) => ({
-  id,
-  email,
   app_metadata,
-  user_metadata,
   aud,
-  created_at,
-  updated_at,
-  role,
-  phone,
   confirmed_at,
-  last_sign_in_at,
+  created_at,
+  email,
   factors,
+  id,
+  last_sign_in_at,
+  phone,
+  role,
+  updated_at,
+  user_metadata,
 });
 
 /**
@@ -53,13 +53,13 @@ export const createPopulatedSupabaseSession: Factory<Session> = ({
   refresh_token = `refresh_token_${createId()}`,
   expires_in = 3600,
   expires_at = Math.floor(Date.now() / 1000) + 3600,
-  token_type = 'bearer',
+  token_type = "bearer",
   user = createPopulatedSupabaseUser(),
 } = {}) => ({
   access_token,
-  refresh_token,
-  expires_in,
   expires_at,
+  expires_in,
+  refresh_token,
   token_type,
   user,
 });

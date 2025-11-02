@@ -1,13 +1,12 @@
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { acceptInviteLinkAction } from '~/features/organizations/accept-invite-link/accept-invite-link-action.server';
+import type { Route } from "./+types/invite-link";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { acceptInviteLinkAction } from "~/features/organizations/accept-invite-link/accept-invite-link-action.server";
 import {
   getInviteLinkToken,
   requireCreatorAndOrganizationByTokenExists,
-} from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
-import { AcceptInviteLinkPage } from '~/features/organizations/accept-invite-link/accept-invite-link-page';
-import { getPageTitle } from '~/utils/get-page-title.server';
-
-import type { Route } from './+types/invite-link';
+} from "~/features/organizations/accept-invite-link/accept-invite-link-helpers.server";
+import { AcceptInviteLinkPage } from "~/features/organizations/accept-invite-link/accept-invite-link-page";
+import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const token = getInviteLinkToken(request);
@@ -17,7 +16,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return {
     title: getPageTitle(
       i18n.t.bind(i18n),
-      'organizations:accept-invite-link.page-title',
+      "organizations:accept-invite-link.page-title",
     ),
     token,
     ...data,

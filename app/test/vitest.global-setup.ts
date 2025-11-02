@@ -1,7 +1,7 @@
-import { config } from 'dotenv';
+import { config } from "dotenv";
 
-import { clearMockSessions } from './mocks/handlers/supabase/mock-sessions';
-import { ensureStripeProductsAndPricesExist } from './test-utils';
+import { clearMockSessions } from "./mocks/handlers/supabase/mock-sessions";
+import { ensureStripeProductsAndPricesExist } from "./test-utils";
 
 // Load environment variables from .env file.
 config();
@@ -9,8 +9,8 @@ config();
 let teardownHappened = false;
 
 export default function setupVitest() {
-  void ensureStripeProductsAndPricesExist().catch(error => {
-    console.error('✨ Failed to seed Stripe pricing:', error);
+  void ensureStripeProductsAndPricesExist().catch((error) => {
+    console.error("✨ Failed to seed Stripe pricing:", error);
     process.exit(1);
   });
 

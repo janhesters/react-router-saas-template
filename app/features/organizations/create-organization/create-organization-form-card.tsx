@@ -1,19 +1,23 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createId } from '@paralleldrive/cuid2';
-import { Loader2Icon } from 'lucide-react';
-import { useRef } from 'react';
-import type { FieldErrors } from 'react-hook-form';
-import { useForm } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form, href, Link, useSubmit } from 'react-router';
-import type { z } from 'zod';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createId } from "@paralleldrive/cuid2";
+import { Loader2Icon } from "lucide-react";
+import { useRef } from "react";
+import type { FieldErrors } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
+import { Form, href, Link, useSubmit } from "react-router";
+import type { z } from "zod";
 
+import { BUCKET_NAME, LOGO_PATH_PREFIX } from "../organization-constants";
+import { CREATE_ORGANIZATION_INTENT } from "./create-organization-constants";
+import type { CreateOrganizationFormSchema } from "./create-organization-schemas";
+import { createOrganizationFormSchema } from "./create-organization-schemas";
 import {
   Dropzone,
   DropzoneContent,
   DropzoneEmptyState,
-} from '~/components/dropzone';
-import { Button } from '~/components/ui/button';
+} from "~/components/dropzone";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -21,7 +25,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+} from "~/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -29,15 +33,10 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
-import { useSupabaseUpload } from '~/hooks/use-supabase-upload';
-import { toFormData } from '~/utils/to-form-data';
-
-import { BUCKET_NAME, LOGO_PATH_PREFIX } from '../organization-constants';
-import { CREATE_ORGANIZATION_INTENT } from './create-organization-constants';
-import type { CreateOrganizationFormSchema } from './create-organization-schemas';
-import { createOrganizationFormSchema } from './create-organization-schemas';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { useSupabaseUpload } from "~/hooks/use-supabase-upload";
+import { toFormData } from "~/utils/to-form-data";
 
 export type CreateOrganizationFormErrors =
   FieldErrors<CreateOrganizationFormSchema>;
@@ -51,7 +50,7 @@ export function CreateOrganizationFormCard({
   errors,
   isCreatingOrganization = false,
 }: CreateOrganizationFormCardProps) {
-  const { t } = useTranslation('organizations', { keyPrefix: 'new.form' });
+  const { t } = useTranslation("organizations", { keyPrefix: "new.form" });
   const submit = useSubmit();
 
   // Since you upload the logo before creating the organization, we need to
@@ -59,23 +58,23 @@ export function CreateOrganizationFormCard({
   const organizationId = useRef(createId());
   const path = `${LOGO_PATH_PREFIX}/${organizationId.current}`;
   const uploadHandler = useSupabaseUpload({
+    allowedMimeTypes: ["image/*"],
     bucketName: BUCKET_NAME,
-    path,
-    maxFiles: 1,
     maxFileSize: 1000 * 1000, // 1MB
-    allowedMimeTypes: ['image/*'],
+    maxFiles: 1,
+    path,
     upsert: false,
   });
 
   const form = useForm<CreateOrganizationFormSchema>({
-    resolver: zodResolver(createOrganizationFormSchema),
     defaultValues: {
       intent: CREATE_ORGANIZATION_INTENT,
-      name: '',
-      organizationId: organizationId.current,
       logo: undefined,
+      name: "",
+      organizationId: organizationId.current,
     },
     errors,
+    resolver: zodResolver(createOrganizationFormSchema),
   });
 
   const handleSubmit = async (
@@ -90,17 +89,18 @@ export function CreateOrganizationFormCard({
           data: { publicUrl },
         } = uploadHandler.supabase.storage
           .from(BUCKET_NAME)
+          // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a file
           .getPublicUrl(`${path}/${uploadHandler.files[0]!.name}`, {
-            transform: { width: 128, height: 128, resize: 'cover' },
+            transform: { height: 128, resize: "cover", width: 128 },
           });
         // Submit the form with the logo URL
         await submit(toFormData({ ...values, logo: publicUrl }), {
-          method: 'POST',
+          method: "POST",
         });
       }
     } else {
       // No logo to upload, just submit the form as is
-      await submit(toFormData(values), { method: 'POST' });
+      await submit(toFormData(values), { method: "POST" });
     }
   };
 
@@ -110,8 +110,8 @@ export function CreateOrganizationFormCard({
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t('card-title')}</CardTitle>
-          <CardDescription>{t('card-description')}</CardDescription>
+          <CardTitle>{t("card-title")}</CardTitle>
+          <CardDescription>{t("card-description")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -130,13 +130,13 @@ export function CreateOrganizationFormCard({
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('name-label')}</FormLabel>
+                      <FormLabel>{t("name-label")}</FormLabel>
 
                       <FormControl>
                         <Input
                           autoComplete="organization"
                           autoFocus
-                          placeholder={t('name-placeholder')}
+                          placeholder={t("name-placeholder")}
                           required
                           {...field}
                         />
@@ -153,16 +153,16 @@ export function CreateOrganizationFormCard({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel htmlFor="organizationLogo">
-                        {t('logo-label')}
+                        {t("logo-label")}
                       </FormLabel>
 
                       <FormControl>
                         <Dropzone
                           {...uploadHandler}
-                          getInputProps={props => ({
+                          getInputProps={(props) => ({
                             ...field,
                             ...uploadHandler.getInputProps(props),
-                            id: 'organizationLogo',
+                            id: "organizationLogo",
                           })}
                         >
                           <DropzoneEmptyState />
@@ -190,10 +190,10 @@ export function CreateOrganizationFormCard({
             {isFormDisabled ? (
               <>
                 <Loader2Icon className="animate-spin" />
-                {t('saving')}
+                {t("saving")}
               </>
             ) : (
-              <>{t('submit-button')}</>
+              t("submit-button")
             )}
           </Button>
         </CardFooter>
@@ -202,8 +202,8 @@ export function CreateOrganizationFormCard({
       <div className="text-muted-foreground [&_a]:hover:text-primary text-center text-xs text-balance [&_a]:underline [&_a]:underline-offset-4">
         <Trans
           components={{
-            1: <Link to={href('/terms-of-service')} />,
-            2: <Link to={href('/privacy-policy')} />,
+            1: <Link to={href("/terms-of-service")} />,
+            2: <Link to={href("/privacy-policy")} />,
           }}
           i18nKey="organizations:new.form.terms-and-privacy"
         />

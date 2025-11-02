@@ -1,7 +1,9 @@
-import type { Organization, UserAccount } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import { describe, expect, onTestFinished, test } from 'vitest';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import type { Organization, UserAccount } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import { describe, expect, onTestFinished, test } from "vitest";
 
+import { action } from "./billing";
 import {
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
@@ -11,56 +13,49 @@ import {
   SWITCH_SUBSCRIPTION_INTENT,
   UPDATE_BILLING_EMAIL_INTENT,
   VIEW_INVOICES_INTENT,
-} from '~/features/billing/billing-constants';
+} from "~/features/billing/billing-constants";
 import {
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
   createPopulatedStripeSubscriptionWithItemsAndPrice,
   getRandomLookupKey,
-} from '~/features/billing/billing-factories.server';
-import { retrieveStripePriceFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
-import { retrieveStripeSubscriptionFromDatabaseById } from '~/features/billing/stripe-subscription-model.server';
+} from "~/features/billing/billing-factories.server";
+import { retrieveStripePriceFromDatabaseByLookupKey } from "~/features/billing/stripe-prices-model.server";
+import { retrieveStripeSubscriptionFromDatabaseById } from "~/features/billing/stripe-subscription-model.server";
 import {
   retrieveStripeSubscriptionScheduleFromDatabaseById,
   saveSubscriptionScheduleWithPhasesAndPriceToDatabase,
-} from '~/features/billing/stripe-subscription-schedule-model.server';
-import {
-  createPopulatedNotification,
-  createPopulatedNotificationRecipient,
-} from '~/features/notifications/notifications-factories.server';
-import { saveNotificationWithRecipientForUserAndOrganizationInDatabaseById } from '~/features/notifications/notifications-model.server';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
-import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+} from "~/features/billing/stripe-subscription-schedule-model.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
+import { addMembersToOrganizationInDatabaseById } from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { stripeHandlers } from '~/test/mocks/handlers/stripe';
-import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
-import { setupMockServerLifecycle } from '~/test/msw-test-utils';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { stripeHandlers } from "~/test/mocks/handlers/stripe";
+import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
+import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import {
   setupUserWithOrgAndAddAsMember,
   setupUserWithTrialOrgAndAddAsMember,
-} from '~/test/server-test-utils';
+} from "~/test/server-test-utils";
 import {
   createAuthenticatedRequest,
   createOrganizationMembershipTestContextProvider,
-} from '~/test/test-utils';
-import type { DataWithResponseInit } from '~/utils/http-responses.server';
+} from "~/test/test-utils";
+import type { DataWithResponseInit } from "~/utils/http-responses.server";
 import {
   badRequest,
   conflict,
   forbidden,
   notFound,
-} from '~/utils/http-responses.server';
-import { toFormData } from '~/utils/to-form-data';
-
-import { action } from './billing';
+} from "~/utils/http-responses.server";
+import { toFormData } from "~/utils/to-form-data";
 
 const createUrl = (organizationSlug: string) =>
   `http://localhost:3000/organizations/${organizationSlug}/settings/billing`;
 
-const pattern = '/organizations/:organizationSlug/settings/billing';
+const pattern = "/organizations/:organizationSlug/settings/billing";
 
 async function sendAuthenticatedRequest({
   formData,
@@ -68,104 +63,64 @@ async function sendAuthenticatedRequest({
   user,
 }: {
   formData: FormData;
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
   user: UserAccount;
 }) {
   const request = await createAuthenticatedRequest({
+    formData,
+    method: "POST",
     url: createUrl(organizationSlug),
     user,
-    method: 'POST',
-    formData,
   });
   const params = { organizationSlug };
 
   return await action({
-    request,
     context: await createOrganizationMembershipTestContextProvider({
-      request,
       params,
       pattern,
+      request,
     }),
     params,
+    request,
     unstable_pattern: pattern,
   });
 }
 
 const server = setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
-/**
- * Seed `count` notifications (each with one recipient) into the test database
- * for the given user and organization.
- */
-export async function setupNotificationsForUserAndOrganization({
-  user,
-  organization,
-  count = 1,
-}: {
-  user: UserAccount;
-  organization: Organization;
-  count?: number;
-}) {
-  const notifications = Array.from({ length: count }).map(() =>
-    createPopulatedNotification({ organizationId: organization.id }),
-  );
-  const notificationsWithRecipients = await Promise.all(
-    notifications.map(notification => {
-      const { notificationId: _, ...recipient } =
-        createPopulatedNotificationRecipient({
-          notificationId: notification.id,
-          userId: user.id,
-          readAt: null,
-        });
-
-      return saveNotificationWithRecipientForUserAndOrganizationInDatabaseById({
-        notification,
-        recipient,
-      });
-    }),
-  );
-
-  return {
-    notifications,
-    recipients: notificationsWithRecipients.map(
-      ({ recipients }) => recipients[0],
-    ),
-  };
-}
-
-describe('/organizations/:organizationSlug/settings/billing route action', () => {
-  test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
+describe("/organizations/:organizationSlug/settings/billing route action", () => {
+  test("given: an unauthenticated request, should: throw a redirect to the login page", async () => {
     expect.assertions(2);
 
     const organization = createPopulatedOrganization();
     const request = new Request(createUrl(organization.slug), {
-      method: 'POST',
       body: toFormData({}),
+      method: "POST",
     });
     const params = { organizationSlug: organization.slug };
 
     try {
       await action({
-        request,
         context: await createOrganizationMembershipTestContextProvider({
-          request,
           params,
           pattern,
+          request,
         }),
         params,
+        request,
         unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
-        expect(error.headers.get('Location')).toEqual(
+        expect(error.headers.get("Location")).toEqual(
           `/login?redirectTo=%2Forganizations%2F${organization.slug}%2Fsettings%2Fbilling`,
         );
       }
     }
   });
 
-  test('given: a user who is not a member of the organization, should: throw a 404', async () => {
+  test("given: a user who is not a member of the organization, should: throw a 404", async () => {
     expect.assertions(1);
     // Create a user with an organization.
     const { user } = await setupUserWithOrgAndAddAsMember();
@@ -174,9 +129,9 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
 
     try {
       await sendAuthenticatedRequest({
-        user,
         formData: toFormData({}),
         organizationSlug: organization.slug,
+        user,
       });
     } catch (error) {
       const expected = notFound();
@@ -188,15 +143,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${CANCEL_SUBSCRIPTION_INTENT} intent`, () => {
     const intent = CANCEL_SUBSCRIPTION_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -207,18 +162,18 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
-      async role => {
+      "given: a valid request from a %s, should: return a 302 and redirect to the customer portal",
+      async (role) => {
         // listen for the Stripe "cancel subscription" POST
         let stripeCancelCalled = false;
         const cancelListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/billing_portal/sessions') {
+          if (new URL(request.url).pathname === "/v1/billing_portal/sessions") {
             stripeCancelCalled = true;
           }
         };
-        server.events.on('response:mocked', cancelListener);
+        server.events.on("response:mocked", cancelListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', cancelListener);
+          server.events.removeListener("response:mocked", cancelListener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -226,13 +181,13 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         });
 
         const actual = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
         })) as Response;
 
         expect(actual.status).toEqual(302);
-        expect(actual.headers.get('Location')).toMatch(
+        expect(actual.headers.get("Location")).toMatch(
           /^https:\/\/billing\.stripe\.com\/p\/session\/\w+(?:\?.*)?$/,
         );
         expect(stripeCancelCalled).toEqual(true);
@@ -243,15 +198,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${KEEP_CURRENT_SUBSCRIPTION_INTENT} intent`, () => {
     const intent = KEEP_CURRENT_SUBSCRIPTION_INTENT;
 
-    test('given: a member role, should: return a 403', async () => {
+    test("given: a member role, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
 
       expect(actual.init?.status).toEqual(forbidden().init?.status);
@@ -261,8 +216,8 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a %s role without pending schedule, should: return a 200 and NOT call the release endpoint',
-      async role => {
+      "given: a %s role without pending schedule, should: return a 200 and NOT call the release endpoint",
+      async (role) => {
         let releaseCalled = false;
         const listener = ({ request }: { request: Request }) => {
           if (
@@ -273,9 +228,9 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
             releaseCalled = true;
           }
         };
-        server.events.on('response:mocked', listener);
+        server.events.on("response:mocked", listener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', listener);
+          server.events.removeListener("response:mocked", listener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -283,9 +238,9 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(response.data).toEqual({});
@@ -297,8 +252,8 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a %s role with pending schedule, should: return a 200, call the release endpoint and delete the schedule from the database',
-      async role => {
+      "given: a %s role with pending schedule, should: return a 200, call the release endpoint and delete the schedule from the database",
+      async (role) => {
         let releaseCalled = false;
         const listener = ({ request }: { request: Request }) => {
           if (
@@ -309,32 +264,32 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
             releaseCalled = true;
           }
         };
-        server.events.on('response:mocked', listener);
+        server.events.on("response:mocked", listener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', listener);
+          server.events.removeListener("response:mocked", listener);
         });
 
         const { user, organization, subscription } =
           await setupUserWithOrgAndAddAsMember({
-            role,
             lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
+            role,
           });
         const price = await retrieveStripePriceFromDatabaseByLookupKey(
           priceLookupKeysByTierAndInterval.low.monthly,
         );
         const subscriptionSchedule =
           createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-            subscriptionId: subscription.stripeId,
             phases: [{ price: price! }],
+            subscriptionId: subscription.stripeId,
           });
         await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
           subscriptionSchedule,
         );
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(response.data).toEqual({});
@@ -351,15 +306,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${OPEN_CHECKOUT_SESSION_INTENT} intent`, () => {
     const intent = OPEN_CHECKOUT_SESSION_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -370,30 +325,30 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
-      async role => {
+      "given: a valid request from a %s, should: return a 302 and redirect to the customer portal",
+      async (role) => {
         let checkoutSessionCalled = false;
         const checkoutListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/checkout/sessions') {
+          if (new URL(request.url).pathname === "/v1/checkout/sessions") {
             checkoutSessionCalled = true;
           }
         };
-        server.events.on('response:mocked', checkoutListener);
+        server.events.on("response:mocked", checkoutListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', checkoutListener);
+          server.events.removeListener("response:mocked", checkoutListener);
         });
 
         const { user, organization } =
           await setupUserWithTrialOrgAndAddAsMember({ role });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+          organizationSlug: organization.slug,
+          user,
         })) as Response;
 
         expect(response.status).toEqual(302);
-        expect(response.headers.get('Location')).toMatch(
+        expect(response.headers.get("Location")).toMatch(
           /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
         );
         expect(checkoutSessionCalled).toEqual(true);
@@ -404,17 +359,17 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409',
-      async role => {
+      "given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409",
+      async (role) => {
         let checkoutSessionCalled = false;
         const checkoutListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/checkout/sessions') {
+          if (new URL(request.url).pathname === "/v1/checkout/sessions") {
             checkoutSessionCalled = true;
           }
         };
-        server.events.on('response:mocked', checkoutListener);
+        server.events.on("response:mocked", checkoutListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', checkoutListener);
+          server.events.removeListener("response:mocked", checkoutListener);
         });
 
         const { user, organization } =
@@ -430,12 +385,12 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         });
 
         const actual = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({
             intent,
             lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
           }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<{ message: string }>;
         const expected = conflict();
 
@@ -448,17 +403,17 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, but their organization already has a subscription, should: return a 409',
-      async role => {
+      "given: a valid request from a %s, but their organization already has a subscription, should: return a 409",
+      async (role) => {
         let checkoutSessionCalled = false;
         const checkoutListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/checkout/sessions') {
+          if (new URL(request.url).pathname === "/v1/checkout/sessions") {
             checkoutSessionCalled = true;
           }
         };
-        server.events.on('response:mocked', checkoutListener);
+        server.events.on("response:mocked", checkoutListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', checkoutListener);
+          server.events.removeListener("response:mocked", checkoutListener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -466,12 +421,12 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         });
 
         const actual = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({
             intent,
             lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
           }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<{ message: string }>;
         const expected = conflict();
 
@@ -484,15 +439,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${RESUME_SUBSCRIPTION_INTENT} intent`, () => {
     const intent = RESUME_SUBSCRIPTION_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -503,8 +458,8 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s and a subscription that is set to cancel at period end, should: return a 200 and call the update endpoint and update the subscription in the database',
-      async role => {
+      "given: a valid request from a %s and a subscription that is set to cancel at period end, should: return a 200 and call the update endpoint and update the subscription in the database",
+      async (role) => {
         let resumeCalled = false;
         const listener = ({ request }: { request: Request }) => {
           if (
@@ -514,9 +469,9 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
             resumeCalled = true;
           }
         };
-        server.events.on('response:mocked', listener);
+        server.events.on("response:mocked", listener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', listener);
+          server.events.removeListener("response:mocked", listener);
         });
 
         const { user, organization, subscription } =
@@ -528,9 +483,9 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
           });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(response.data).toEqual({});
@@ -548,15 +503,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${SWITCH_SUBSCRIPTION_INTENT} intent`, () => {
     const intent = SWITCH_SUBSCRIPTION_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -569,79 +524,79 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         expected: badRequest({
           errors: {
             lookupKey: {
-              message: 'Invalid input: expected string, received undefined',
+              message: "Invalid input: expected string, received undefined",
             },
           },
         }),
       },
     ])(
-      'given: invalid data $data, should: return validation errors',
+      "given: invalid data $data, should: return validation errors",
       async ({ data, expected }) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
 
         const actual = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent, ...data }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(actual).toEqual(expected);
       },
     );
 
-    test('given: an invalid lookup key, should: return a bad request', async () => {
+    test("given: an invalid lookup key, should: return a bad request", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.admin,
       });
 
       const response = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({
           intent,
-          lookupKey: 'invalid_lookup_key',
+          lookupKey: "invalid_lookup_key",
         }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
 
       expect(response.init?.status).toEqual(400);
-      expect(response.data).toEqual({ message: 'Price not found' });
+      expect(response.data).toEqual({ message: "Price not found" });
     });
 
     test.each([
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
-      async role => {
+      "given: a valid request from a %s, should: return a 302 and redirect to the customer portal",
+      async (role) => {
         let switchSessionCalled = false;
         const switchListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/billing_portal/sessions') {
+          if (new URL(request.url).pathname === "/v1/billing_portal/sessions") {
             switchSessionCalled = true;
           }
         };
-        server.events.on('response:mocked', switchListener);
+        server.events.on("response:mocked", switchListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', switchListener);
+          server.events.removeListener("response:mocked", switchListener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
           lookupKey: getRandomLookupKey(),
+          role,
         });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({
             intent,
             lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
           }),
+          organizationSlug: organization.slug,
+          user,
         })) as Response;
 
         expect(response.status).toEqual(302);
-        expect(response.headers.get('Location')).toMatch(
+        expect(response.headers.get("Location")).toMatch(
           /^https:\/\/billing\.stripe\.com\/p\/session\/\w+(?:\?.*)?$/,
         );
         expect(switchSessionCalled).toEqual(true);
@@ -652,15 +607,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${UPDATE_BILLING_EMAIL_INTENT} intent`, () => {
     const intent = UPDATE_BILLING_EMAIL_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
+        formData: toFormData({ billingEmail: "new@example.com", intent }),
         organizationSlug: organization.slug,
-        formData: toFormData({ intent, billingEmail: 'new@example.com' }),
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -674,33 +629,33 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
           errors: {
             billingEmail: {
               message:
-                'billing:billing-page.update-billing-email-modal.email-invalid',
+                "billing:billing-page.update-billing-email-modal.email-invalid",
             },
           },
         }),
       },
       {
-        data: { billingEmail: 'not-an-email' },
+        data: { billingEmail: "not-an-email" },
         expected: badRequest({
           errors: {
             billingEmail: {
               message:
-                'billing:billing-page.update-billing-email-modal.email-invalid',
+                "billing:billing-page.update-billing-email-modal.email-invalid",
             },
           },
         }),
       },
     ])(
-      'given: invalid data $data, should: return validation errors',
+      "given: invalid data $data, should: return validation errors",
       async ({ data, expected }) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
 
         const actual = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent, ...data }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(actual).toEqual(expected);
@@ -711,33 +666,33 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s with a new email, should: update the billing email and return a 200',
-      async role => {
+      "given: a valid request from a %s with a new email, should: update the billing email and return a 200",
+      async (role) => {
         let updateCustomerCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/customers')) {
+          if (new URL(request.url).pathname.startsWith("/v1/customers")) {
             updateCustomerCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
           organization: createPopulatedOrganization({
-            billingEmail: 'old@example.com',
+            billingEmail: "old@example.com",
           }),
+          role,
         });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({
+            billingEmail: "new@example.com",
             intent,
-            billingEmail: 'new@example.com',
           }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(response.data).toEqual({});
@@ -749,34 +704,34 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s with the same email, should: skip the update and return a 200',
-      async role => {
+      "given: a valid request from a %s with the same email, should: skip the update and return a 200",
+      async (role) => {
         let updateCustomerCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/customers')) {
+          if (new URL(request.url).pathname.startsWith("/v1/customers")) {
             updateCustomerCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
-        const currentEmail = 'same@example.com';
+        const currentEmail = "same@example.com";
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
           organization: createPopulatedOrganization({
             billingEmail: currentEmail,
           }),
+          role,
         });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({
-            intent,
             billingEmail: currentEmail,
+            intent,
           }),
+          organizationSlug: organization.slug,
+          user,
         })) as DataWithResponseInit<object>;
 
         expect(response.data).toEqual({});
@@ -788,15 +743,15 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
   describe(`${VIEW_INVOICES_INTENT} intent`, () => {
     const intent = VIEW_INVOICES_INTENT;
 
-    test('given: a valid request from a member, should: return a 403', async () => {
+    test("given: a valid request from a member, should: return a 403", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
       const actual = (await sendAuthenticatedRequest({
-        user,
-        organizationSlug: organization.slug,
         formData: toFormData({ intent }),
+        organizationSlug: organization.slug,
+        user,
       })) as DataWithResponseInit<object>;
       const expected = forbidden();
 
@@ -807,17 +762,17 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a valid request from a %s, should: return a 302 and redirect to the customer portal',
-      async role => {
+      "given: a valid request from a %s, should: return a 302 and redirect to the customer portal",
+      async (role) => {
         let portalSessionCalled = false;
         const portalListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === '/v1/billing_portal/sessions') {
+          if (new URL(request.url).pathname === "/v1/billing_portal/sessions") {
             portalSessionCalled = true;
           }
         };
-        server.events.on('response:mocked', portalListener);
+        server.events.on("response:mocked", portalListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', portalListener);
+          server.events.removeListener("response:mocked", portalListener);
         });
 
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -825,13 +780,13 @@ describe('/organizations/:organizationSlug/settings/billing route action', () =>
         });
 
         const response = (await sendAuthenticatedRequest({
-          user,
-          organizationSlug: organization.slug,
           formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
         })) as Response;
 
         expect(response.status).toEqual(302);
-        expect(response.headers.get('Location')).toMatch(
+        expect(response.headers.get("Location")).toMatch(
           /^https:\/\/billing\.stripe\.com\/p\/session\/\w+(?:\?.*)?$/,
         );
         expect(portalSessionCalled).toEqual(true);

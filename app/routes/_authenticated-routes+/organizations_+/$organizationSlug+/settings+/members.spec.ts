@@ -1,65 +1,64 @@
-import { faker } from '@faker-js/faker';
-import type { Organization, UserAccount } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import { addDays, subSeconds } from 'date-fns';
-import { data } from 'react-router';
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import type { Organization, UserAccount } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import { addDays, subSeconds } from "date-fns";
+import { data } from "react-router";
+import { describe, expect, onTestFinished, test } from "vitest";
 
-import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import { action } from "./members";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import {
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
-} from '~/features/organizations/organization-membership-model.server';
-import { retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId } from '~/features/organizations/organizations-email-invite-link-model.server';
+} from "~/features/organizations/organization-membership-model.server";
+import { retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId } from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
   createPopulatedOrganization,
   createPopulatedOrganizationInviteLink,
-} from '~/features/organizations/organizations-factories.server';
+} from "~/features/organizations/organizations-factories.server";
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
   retrieveOrganizationInviteLinkFromDatabaseById,
   saveOrganizationInviteLinkToDatabase,
-} from '~/features/organizations/organizations-invite-link-model.server';
-import { addMembersToOrganizationInDatabaseById } from '~/features/organizations/organizations-model.server';
+} from "~/features/organizations/organizations-invite-link-model.server";
+import { addMembersToOrganizationInDatabaseById } from "~/features/organizations/organizations-model.server";
 import {
   CHANGE_ROLE_INTENT,
   CREATE_NEW_INVITE_LINK_INTENT,
   DEACTIVATE_INVITE_LINK_INTENT,
   INVITE_BY_EMAIL_INTENT,
-} from '~/features/organizations/settings/team-members/team-members-constants';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+} from "~/features/organizations/settings/team-members/team-members-constants";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { resendHandlers } from '~/test/mocks/handlers/resend';
-import { stripeHandlers } from '~/test/mocks/handlers/stripe';
-import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
-import { setupMockServerLifecycle } from '~/test/msw-test-utils';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { resendHandlers } from "~/test/mocks/handlers/resend";
+import { stripeHandlers } from "~/test/mocks/handlers/stripe";
+import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
+import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import {
   setupUserWithOrgAndAddAsMember,
   setupUserWithTrialOrgAndAddAsMember,
-} from '~/test/server-test-utils';
+} from "~/test/server-test-utils";
 import {
   createAuthenticatedRequest,
   createOrganizationMembershipTestContextProvider,
-} from '~/test/test-utils';
-import type { DataWithResponseInit } from '~/utils/http-responses.server';
+} from "~/test/test-utils";
+import type { DataWithResponseInit } from "~/utils/http-responses.server";
 import {
   badRequest,
   created,
   forbidden,
   notFound,
-} from '~/utils/http-responses.server';
-import { toFormData } from '~/utils/to-form-data';
-import { getToast } from '~/utils/toast.server';
-
-import { action } from './members';
+} from "~/utils/http-responses.server";
+import { toFormData } from "~/utils/to-form-data";
+import { getToast } from "~/utils/toast.server";
 
 const createUrl = (slug: string) =>
   `http://localhost:3000/organizations/${slug}/settings/members`;
 
-const pattern = '/organizations/:organizationSlug/settings/members';
+const pattern = "/organizations/:organizationSlug/settings/members";
 
 async function sendAuthenticatedRequest({
   formData,
@@ -67,25 +66,25 @@ async function sendAuthenticatedRequest({
   user,
 }: {
   formData: FormData;
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
   user: UserAccount;
 }) {
   const request = await createAuthenticatedRequest({
+    formData,
+    method: "POST",
     url: createUrl(organizationSlug),
     user,
-    method: 'POST',
-    formData,
   });
   const params = { organizationSlug };
 
   return await action({
-    request,
     context: await createOrganizationMembershipTestContextProvider({
-      request,
       params,
       pattern,
+      request,
     }),
     params,
+    request,
     unstable_pattern: pattern,
   });
 }
@@ -95,21 +94,21 @@ async function setupMultipleMembers({
   organizationId,
 }: {
   memberCount: number;
-  organizationId: Organization['id'];
+  organizationId: Organization["id"];
 }) {
   const users = Array.from({ length: memberCount }, () =>
     createPopulatedUserAccount(),
   );
-  await Promise.all(users.map(user => saveUserAccountToDatabase(user)));
+  await Promise.all(users.map((user) => saveUserAccountToDatabase(user)));
   await addMembersToOrganizationInDatabaseById({
     id: organizationId,
-    members: users.map(user => user.id),
+    members: users.map((user) => user.id),
     role: OrganizationMembershipRole.member,
   });
 
   onTestFinished(async () => {
     await Promise.all(
-      users.map(user => deleteUserAccountFromDatabaseById(user.id)),
+      users.map((user) => deleteUserAccountFromDatabaseById(user.id)),
     );
   });
 
@@ -122,48 +121,48 @@ const server = setupMockServerLifecycle(
   ...stripeHandlers,
 );
 
-describe(`${createUrl(':organizationSlug')} route action`, () => {
-  test('given: an authenticated request, should: throw a redirect to the organizations page', async () => {
+describe(`${createUrl(":organizationSlug")} route action`, () => {
+  test("given: an authenticated request, should: throw a redirect to the organizations page", async () => {
     expect.assertions(2);
 
     const organization = createPopulatedOrganization();
     const request = new Request(createUrl(organization.slug), {
-      method: 'POST',
       body: toFormData({}),
+      method: "POST",
     });
     const params = { organizationSlug: organization.slug };
 
     try {
       await action({
-        request,
         context: await createOrganizationMembershipTestContextProvider({
-          request,
           params,
           pattern,
+          request,
         }),
         params,
+        request,
         unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
-        expect(error.headers.get('Location')).toEqual(
+        expect(error.headers.get("Location")).toEqual(
           `/login?redirectTo=%2Forganizations%2F${organization.slug}%2Fsettings%2Fmembers`,
         );
       }
     }
   });
 
-  test('given: a user who is not a member of the organization, should: throw a 404', async () => {
+  test("given: a user who is not a member of the organization, should: throw a 404", async () => {
     expect.assertions(1);
     const { user } = await setupUserWithOrgAndAddAsMember();
     const { organization } = await setupUserWithOrgAndAddAsMember();
 
     try {
       await sendAuthenticatedRequest({
-        user,
         formData: toFormData({}),
         organizationSlug: organization.slug,
+        user,
       });
     } catch (error) {
       const expected = notFound();
@@ -172,7 +171,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     }
   });
 
-  test('given: an invalid intent, should: return a 400', async () => {
+  test("given: an invalid intent, should: return a 400", async () => {
     const { user, organization } = await setupUserWithOrgAndAddAsMember({
       role: faker.helpers.arrayElement([
         OrganizationMembershipRole.admin,
@@ -181,14 +180,14 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     });
 
     const actual = await sendAuthenticatedRequest({
-      user,
       formData: toFormData({}),
       organizationSlug: organization.slug,
+      user,
     });
     const expected = badRequest({
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     });
@@ -196,15 +195,15 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a user who has the role of member, should: return a 403', async () => {
+  test("given: a user who has the role of member, should: return a 403", async () => {
     const { user, organization } = await setupUserWithOrgAndAddAsMember({
       role: OrganizationMembershipRole.member,
     });
 
     const actual = await sendAuthenticatedRequest({
-      user,
       formData: toFormData({}),
       organizationSlug: organization.slug,
+      user,
     });
     const expected = forbidden();
 
@@ -219,17 +218,17 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: an %s and no link exists for the organization, should: create a new invite link that expires in two days',
-      async role => {
+      "given: an %s and no link exists for the organization, should: create a new invite link that expires in two days",
+      async (role) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
           lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
+          role,
         });
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData({ intent }),
           organizationSlug: organization.slug,
+          user,
         });
         const expected = created();
 
@@ -255,23 +254,23 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: an %s and a link already exists for the organization, should: deactivate the old link and creates a new invite link that expires in two days',
-      async role => {
+      "given: an %s and a link already exists for the organization, should: deactivate the old link and creates a new invite link that expires in two days",
+      async (role) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
           lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
+          role,
         });
         const existingInviteLink = createPopulatedOrganizationInviteLink({
-          organizationId: organization.id,
           creatorId: user.id,
+          organizationId: organization.id,
         });
 
         await saveOrganizationInviteLinkToDatabase(existingInviteLink);
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData({ intent }),
           organizationSlug: organization.slug,
+          user,
         });
         const expected = created();
 
@@ -300,22 +299,22 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       },
     );
 
-    test('given: a user on the lowest plan (low.monthly) and only one existing member, should: return 400 because the org is full', async () => {
+    test("given: a user on the lowest plan (low.monthly) and only one existing member, should: return 400 because the org is full", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
-        role: OrganizationMembershipRole.owner,
         lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+        role: OrganizationMembershipRole.owner,
       });
 
       const actual = await sendAuthenticatedRequest({
-        user,
         formData: toFormData({ intent: CREATE_NEW_INVITE_LINK_INTENT }),
         organizationSlug: organization.slug,
+        user,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });
@@ -323,7 +322,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       expect(actual).toEqual(expected);
     });
 
-    test('given: a user on a trial plan with 25 members, should: return 400 because the org is full', async () => {
+    test("given: a user on a trial plan with 25 members, should: return 400 because the org is full", async () => {
       const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
@@ -333,15 +332,15 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       });
 
       const actual = await sendAuthenticatedRequest({
-        user,
         formData: toFormData({ intent: CREATE_NEW_INVITE_LINK_INTENT }),
         organizationSlug: organization.slug,
+        user,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });
@@ -357,16 +356,16 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: no active link exists for the organization and user is %s, should: return a 200 and do nothing',
-      async role => {
+      "given: no active link exists for the organization and user is %s, should: return a 200 and do nothing",
+      async (role) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData({ intent }),
           organizationSlug: organization.slug,
+          user,
         });
         const expected = created();
 
@@ -386,23 +385,23 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: a link exists and is active for the organization and user is %s, should: deactivate the link',
-      async role => {
+      "given: a link exists and is active for the organization and user is %s, should: deactivate the link",
+      async (role) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
         // Create an active invite link
         const existingInviteLink = createPopulatedOrganizationInviteLink({
-          organizationId: organization.id,
           creatorId: user.id,
+          organizationId: organization.id,
         });
         await saveOrganizationInviteLinkToDatabase(existingInviteLink);
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData({ intent }),
           organizationSlug: organization.slug,
+          user,
         });
         const expected = created();
 
@@ -443,36 +442,36 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
 
     test.each([
       {
-        given: 'no userId',
         body: { intent, role: OrganizationMembershipRole.member } as const,
         expected: badRequest({
           errors: {
             userId: {
-              message: 'Invalid input: expected string, received undefined',
+              message: "Invalid input: expected string, received undefined",
             },
           },
         }),
+        given: "no userId",
       },
       {
-        given: 'no role',
-        body: { intent, userId: 'some-user-id' } as const,
+        body: { intent, userId: "some-user-id" } as const,
         expected: badRequest({
-          errors: { role: { message: 'Invalid input' } },
+          errors: { role: { message: "Invalid input" } },
         }),
+        given: "no role",
       },
       {
-        given: 'invalid role value',
         body: {
           intent,
-          userId: 'some-user-id',
-          role: 'invalid-role',
+          role: "invalid-role",
+          userId: "some-user-id",
         } as const,
         expected: badRequest({
-          errors: { role: { message: 'Invalid input' } },
+          errors: { role: { message: "Invalid input" } },
         }),
+        given: "invalid role value",
       },
     ])(
-      'given: invalid form data ($given), should: return a 400 bad request',
+      "given: invalid form data ($given), should: return a 400 bad request",
       async ({ body, expected }) => {
         // Need an owner/admin to attempt the action, even with bad data,
         // to get past the initial permission check.
@@ -481,9 +480,9 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData(body),
           organizationSlug: organization.slug,
+          user,
         });
 
         expect(actual).toEqual(expected);
@@ -501,26 +500,26 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       },
       {
         requestingUserRole: OrganizationMembershipRole.owner,
-        targetRoleChange: 'deactivated' as const, // Explicitly type 'deactivated'
+        targetRoleChange: "deactivated" as const, // Explicitly type 'deactivated'
       },
     ])(
-      'given: the user is an $requestingUserRole and tries to change their own role to $targetRoleChange, should: return a 403 forbidden',
+      "given: the user is an $requestingUserRole and tries to change their own role to $targetRoleChange, should: return a 403 forbidden",
       async ({ requestingUserRole, targetRoleChange }) => {
         const { user, organization } = await setupUserWithOrgAndAddAsMember({
           role: requestingUserRole,
         });
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData({
             intent,
-            userId: user.id, // Targeting self
             role: targetRoleChange,
+            userId: user.id, // Targeting self
           }),
           organizationSlug: organization.slug,
+          user,
         });
         const expected = forbidden({
-          errors: { form: 'You cannot change your own role or status.' }, // Update message if needed
+          errors: { form: "You cannot change your own role or status." }, // Update message if needed
         });
 
         expect(actual).toEqual(expected);
@@ -529,17 +528,17 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
 
     test.each([
       {
+        description: "change owner role to admin",
         initialTargetRole: OrganizationMembershipRole.owner,
         newRole: OrganizationMembershipRole.admin,
-        description: 'change owner role to admin',
       },
       {
+        description: "deactivate owner",
         initialTargetRole: OrganizationMembershipRole.owner,
-        newRole: 'deactivated' as const,
-        description: 'deactivate owner',
+        newRole: "deactivated" as const,
       },
     ])(
-      'given: the user is an admin and tries to $description, should: return a 403 forbidden',
+      "given: the user is an admin and tries to $description, should: return a 403 forbidden",
       async ({ initialTargetRole, newRole }) => {
         const { user: adminUser, organization } =
           await setupUserWithOrgAndAddAsMember({
@@ -551,17 +550,17 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         );
 
         const actual = await sendAuthenticatedRequest({
-          user: adminUser,
           formData: toFormData({
             intent,
-            userId: targetUser.id,
             role: newRole,
+            userId: targetUser.id,
           }),
           organizationSlug: organization.slug,
+          user: adminUser,
         });
         const expected = forbidden({
           errors: {
-            form: 'Administrators cannot modify the role or status of owners.',
+            form: "Administrators cannot modify the role or status of owners.",
           },
         });
 
@@ -570,7 +569,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         // Verify target user's role/status is unchanged
         const membership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            { userId: targetUser.id, organizationId: organization.id },
+            { organizationId: organization.id, userId: targetUser.id },
           );
         expect(membership?.role).toEqual(initialTargetRole);
         expect(membership?.deactivatedAt).toBeNull();
@@ -588,18 +587,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         newRole: OrganizationMembershipRole.member,
       },
     ])(
-      'given: the user is an admin and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role',
+      "given: the user is an admin and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role",
       async ({ initialTargetRole, newRole }) => {
         // Add MSW event listener for Stripe subscription update - but it shouldn't be called
         let stripeUpdateCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          if (new URL(request.url).pathname.startsWith("/v1/subscriptions/")) {
             stripeUpdateCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
         const { user: adminUser, organization } =
@@ -612,13 +611,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         );
 
         const actual = await sendAuthenticatedRequest({
-          user: adminUser,
           formData: toFormData({
             intent,
-            userId: targetUser.id,
             role: newRole,
+            userId: targetUser.id,
           }),
           organizationSlug: organization.slug,
+          user: adminUser,
         });
         const expected = data({});
 
@@ -628,7 +627,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         // Verify target user's role is updated
         const membership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            { userId: targetUser.id, organizationId: organization.id },
+            { organizationId: organization.id, userId: targetUser.id },
           );
         expect(membership?.role).toEqual(newRole);
         expect(membership?.deactivatedAt).toBeNull();
@@ -642,18 +641,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.member,
       OrganizationMembershipRole.admin,
     ])(
-      'given: the user is an admin and deactivates another member with role %s, should: return 200 ok and deactivate the membership',
-      async initialTargetRole => {
+      "given: the user is an admin and deactivates another member with role %s, should: return 200 ok and deactivate the membership",
+      async (initialTargetRole) => {
         // Add MSW event listener for Stripe subscription update
         let stripeUpdateCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          if (new URL(request.url).pathname.startsWith("/v1/subscriptions/")) {
             stripeUpdateCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
         const { user: adminUser, organization } =
@@ -667,13 +666,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         const snapshot = new Date();
 
         const actual = await sendAuthenticatedRequest({
-          user: adminUser,
           formData: toFormData({
             intent,
+            role: "deactivated",
             userId: targetUser.id,
-            role: 'deactivated',
           }),
           organizationSlug: organization.slug,
+          user: adminUser,
         });
         const expected = data({});
 
@@ -683,7 +682,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         // Verify target user is deactivated
         const membership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            { userId: targetUser.id, organizationId: organization.id },
+            { organizationId: organization.id, userId: targetUser.id },
           );
         expect(membership?.role).toEqual(initialTargetRole); // Role shouldn't change on deactivation
         expect(membership?.deactivatedAt).not.toBeNull();
@@ -723,18 +722,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         newRole: OrganizationMembershipRole.member,
       },
     ])(
-      'given: the user is an owner and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role',
+      "given: the user is an owner and changes another member from $initialTargetRole to $newRole, should: return 200 ok and update the role",
       async ({ initialTargetRole, newRole }) => {
         // Add MSW event listener for Stripe subscription update - but it shouldn't be called
         let stripeUpdateCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          if (new URL(request.url).pathname.startsWith("/v1/subscriptions/")) {
             stripeUpdateCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
         const { user: ownerUser, organization } =
@@ -747,13 +746,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         );
 
         const actual = await sendAuthenticatedRequest({
-          user: ownerUser,
           formData: toFormData({
             intent,
-            userId: targetUser.id,
             role: newRole,
+            userId: targetUser.id,
           }),
           organizationSlug: organization.slug,
+          user: ownerUser,
         });
         const expected = data({});
 
@@ -763,7 +762,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         // Verify target user's role is updated
         const membership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            { userId: targetUser.id, organizationId: organization.id },
+            { organizationId: organization.id, userId: targetUser.id },
           );
         expect(membership?.role).toEqual(newRole);
         expect(membership?.deactivatedAt).toBeNull();
@@ -778,18 +777,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
     ])(
-      'given: the user is an owner and deactivates another member with role %s, should: return 200 ok and deactivate the membership',
-      async initialTargetRole => {
+      "given: the user is an owner and deactivates another member with role %s, should: return 200 ok and deactivate the membership",
+      async (initialTargetRole) => {
         // Add MSW event listener for Stripe subscription update
         let stripeUpdateCalled = false;
         const updateListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname.startsWith('/v1/subscriptions/')) {
+          if (new URL(request.url).pathname.startsWith("/v1/subscriptions/")) {
             stripeUpdateCalled = true;
           }
         };
-        server.events.on('response:mocked', updateListener);
+        server.events.on("response:mocked", updateListener);
         onTestFinished(() => {
-          server.events.removeListener('response:mocked', updateListener);
+          server.events.removeListener("response:mocked", updateListener);
         });
 
         const { user: ownerUser, organization } =
@@ -803,13 +802,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         const snapshot = new Date();
 
         const actual = await sendAuthenticatedRequest({
-          user: ownerUser,
           formData: toFormData({
             intent,
+            role: "deactivated",
             userId: targetUser.id,
-            role: 'deactivated',
           }),
           organizationSlug: organization.slug,
+          user: ownerUser,
         });
         const expected = data({});
 
@@ -819,7 +818,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         // Verify target user is deactivated
         const membership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            { userId: targetUser.id, organizationId: organization.id },
+            { organizationId: organization.id, userId: targetUser.id },
           );
         expect(membership?.role).toEqual(initialTargetRole); // Role shouldn't change on deactivation
         expect(membership?.deactivatedAt).not.toBeNull();
@@ -832,11 +831,11 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       },
     );
 
-    test('given: an owner on the lowest plan (low.monthly) reactivating a deactivated member, should: return 400 because the org is full', async () => {
+    test("given: an owner on the lowest plan (low.monthly) reactivating a deactivated member, should: return 400 because the org is full", async () => {
       const { user: ownerUser, organization } =
         await setupUserWithOrgAndAddAsMember({
-          role: OrganizationMembershipRole.owner,
           lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+          role: OrganizationMembershipRole.owner,
         });
 
       const targetUser = await setupTargetMember(
@@ -844,25 +843,25 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         OrganizationMembershipRole.member,
       );
       await updateOrganizationMembershipInDatabase({
-        userId: targetUser.id,
-        organizationId: organization.id,
         data: { deactivatedAt: new Date() },
+        organizationId: organization.id,
+        userId: targetUser.id,
       });
 
       const actual = await sendAuthenticatedRequest({
-        user: ownerUser,
         formData: toFormData({
           intent: CHANGE_ROLE_INTENT,
-          userId: targetUser.id,
           role: OrganizationMembershipRole.member,
+          userId: targetUser.id,
         }),
         organizationSlug: organization.slug,
+        user: ownerUser,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });
@@ -871,29 +870,29 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       expect(actual.init?.status).toEqual(expected.init?.status);
 
       // Verify toast
-      const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+      const maybeToast = (actual.init?.headers as Headers)?.get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(organization.slug), {
-          headers: { cookie: maybeToast ?? '' },
+          headers: { cookie: maybeToast ?? "" },
         }),
       );
       expect(toast).toMatchObject({
-        title: 'Organization is full',
         description: "You've used up all your available seats.",
-        type: 'error',
+        title: "Organization is full",
+        type: "error",
       });
 
       const membership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
           {
-            userId: targetUser.id,
             organizationId: organization.id,
+            userId: targetUser.id,
           },
         );
       expect(membership?.deactivatedAt).not.toBeNull();
     });
 
-    test('given: an owner on a trial plan with 25 members reactivating someone, should: return 400 because the org is full', async () => {
+    test("given: an owner on a trial plan with 25 members reactivating someone, should: return 400 because the org is full", async () => {
       const { user: ownerUser, organization } =
         await setupUserWithTrialOrgAndAddAsMember({
           role: OrganizationMembershipRole.owner,
@@ -908,25 +907,25 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         OrganizationMembershipRole.member,
       );
       await updateOrganizationMembershipInDatabase({
-        userId: targetUser.id,
-        organizationId: organization.id,
         data: { deactivatedAt: new Date() },
+        organizationId: organization.id,
+        userId: targetUser.id,
       });
 
       const actual = await sendAuthenticatedRequest({
-        user: ownerUser,
         formData: toFormData({
           intent: CHANGE_ROLE_INTENT,
-          userId: targetUser.id,
           role: OrganizationMembershipRole.member,
+          userId: targetUser.id,
         }),
         organizationSlug: organization.slug,
+        user: ownerUser,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });
@@ -935,23 +934,23 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       expect(actual.init?.status).toEqual(expected.init?.status);
 
       // Verify toast
-      const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+      const maybeToast = (actual.init?.headers as Headers)?.get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(organization.slug), {
-          headers: { cookie: maybeToast ?? '' },
+          headers: { cookie: maybeToast ?? "" },
         }),
       );
       expect(toast).toMatchObject({
-        title: 'Organization is full',
         description: "You've used up all your available seats.",
-        type: 'error',
+        title: "Organization is full",
+        type: "error",
       });
 
       const membership =
         await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
           {
-            userId: targetUser.id,
             organizationId: organization.id,
+            userId: targetUser.id,
           },
         );
       expect(membership?.deactivatedAt).not.toBeNull();
@@ -963,7 +962,6 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
 
     test.each([
       {
-        given: 'no email',
         body: {
           intent,
           role: OrganizationMembershipRole.member,
@@ -972,30 +970,30 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
           errors: {
             email: {
               message:
-                'organizations:settings.team-members.invite-by-email.form.email-invalid',
+                "organizations:settings.team-members.invite-by-email.form.email-invalid",
             },
           },
         }),
+        given: "no email",
       },
       {
-        given: 'invalid email format',
         body: {
+          email: "not-an-email",
           intent,
-          email: 'not-an-email',
           role: OrganizationMembershipRole.member,
         } as const,
         expected: badRequest({
           errors: {
             email: {
               message:
-                'organizations:settings.team-members.invite-by-email.form.email-invalid',
+                "organizations:settings.team-members.invite-by-email.form.email-invalid",
             },
           },
         }),
+        given: "invalid email format",
       },
       {
-        given: 'no role',
-        body: { intent, email: faker.internet.email() } as const,
+        body: { email: faker.internet.email(), intent } as const,
         expected: badRequest({
           errors: {
             role: {
@@ -1004,13 +1002,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
             },
           },
         }),
+        given: "no role",
       },
       {
-        given: 'invalid role value',
         body: {
-          intent,
           email: faker.internet.email(),
-          role: 'invalid-role',
+          intent,
+          role: "invalid-role",
         } as const,
         expected: badRequest({
           errors: {
@@ -1020,25 +1018,26 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
             },
           },
         }),
+        given: "invalid role value",
       },
       {
+        body: {
+          email: faker.internet.email(),
+          intent,
+          role: "deactivated",
+        } as const,
+        expected: badRequest({
+          errors: {
+            role: {
+              message:
+                'Invalid option: expected one of "owner"|"admin"|"member"',
+            },
+          },
+        }),
         given: 'role is "deactivated"', // This shouldn't be possible for invites
-        body: {
-          intent,
-          email: faker.internet.email(),
-          role: 'deactivated',
-        } as const,
-        expected: badRequest({
-          errors: {
-            role: {
-              message:
-                'Invalid option: expected one of "owner"|"admin"|"member"',
-            },
-          },
-        }),
       },
     ])(
-      'given: invalid form data ($given), should: return a 400 bad request',
+      "given: invalid form data ($given), should: return a 400 bad request",
       async ({ body, expected }) => {
         // Need an owner/admin to attempt the action, even with bad data,
         // to get past the initial permission check.
@@ -1050,16 +1049,16 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         });
 
         const actual = await sendAuthenticatedRequest({
-          user,
           formData: toFormData(body),
           organizationSlug: organization.slug,
+          user,
         });
 
         expect(actual).toEqual(expected);
       },
     );
 
-    test('given: user is admin and tries to invite as owner, should: return 403 forbidden', async () => {
+    test("given: user is admin and tries to invite as owner, should: return 403 forbidden", async () => {
       const { user: adminUser, organization } =
         await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
@@ -1067,18 +1066,18 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       const targetEmail = faker.internet.email();
 
       const actual = await sendAuthenticatedRequest({
-        user: adminUser,
         formData: toFormData({
-          intent,
           email: targetEmail,
+          intent,
           role: OrganizationMembershipRole.owner,
         }),
         organizationSlug: organization.slug,
+        user: adminUser,
       });
 
       const expected = forbidden({
         errors: {
-          message: 'Only organization owners can invite as owners.',
+          message: "Only organization owners can invite as owners.",
         },
       });
 
@@ -1092,7 +1091,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       expect(invites).toEqual([]);
     });
 
-    test('given: inviting a user that is already a member of the organization, should: return a 400 bad request', async () => {
+    test("given: inviting a user that is already a member of the organization, should: return a 400 bad request", async () => {
       const { user: adminUser, organization } =
         await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
@@ -1101,13 +1100,13 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       const targeEmail = adminUser.email;
 
       const actual = await sendAuthenticatedRequest({
-        user: adminUser,
         formData: toFormData({
-          intent,
           email: targeEmail,
+          intent,
           role: OrganizationMembershipRole.member,
         }),
         organizationSlug: organization.slug,
+        user: adminUser,
       });
       const expected = badRequest({
         errors: {
@@ -1120,40 +1119,40 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
 
     test.each([
       {
-        inviterRole: OrganizationMembershipRole.admin,
         inviteeRole: OrganizationMembershipRole.member,
-      },
-      {
         inviterRole: OrganizationMembershipRole.admin,
-        inviteeRole: OrganizationMembershipRole.admin,
       },
       {
-        inviterRole: OrganizationMembershipRole.owner,
+        inviteeRole: OrganizationMembershipRole.admin,
+        inviterRole: OrganizationMembershipRole.admin,
+      },
+      {
         inviteeRole: OrganizationMembershipRole.member,
+        inviterRole: OrganizationMembershipRole.owner,
       },
       {
-        inviterRole: OrganizationMembershipRole.owner,
         inviteeRole: OrganizationMembershipRole.admin,
+        inviterRole: OrganizationMembershipRole.owner,
       },
       {
-        inviterRole: OrganizationMembershipRole.owner,
         inviteeRole: OrganizationMembershipRole.owner,
+        inviterRole: OrganizationMembershipRole.owner,
       },
     ])(
-      'given: the user is an $inviterRole and invites as $inviteeRole, should: create an email invite, send email (mocked), and return 200 ok with success toast',
+      "given: the user is an $inviterRole and invites as $inviteeRole, should: create an email invite, send email (mocked), and return 200 ok with success toast",
       async ({ inviterRole, inviteeRole }) => {
         const { user: inviterUser, organization } =
           await setupUserWithOrgAndAddAsMember({ role: inviterRole });
         const targetEmail = faker.internet.email();
 
         const actual = (await sendAuthenticatedRequest({
-          user: inviterUser,
           formData: toFormData({
-            intent,
             email: targetEmail,
+            intent,
             role: inviteeRole,
           }),
           organizationSlug: organization.slug,
+          user: inviterUser,
         })) as DataWithResponseInit<Record<string, never>>;
         const expected = data({ success: targetEmail });
 
@@ -1167,7 +1166,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
             organization.id,
           );
         const createdInvite = invites.find(
-          invite => invite.email === targetEmail,
+          (invite) => invite.email === targetEmail,
         );
 
         expect(createdInvite).toBeDefined();
@@ -1183,40 +1182,40 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
         );
 
         // Verify success toast header
-        const maybeToast = (actual.init?.headers as Headers)?.get('Set-Cookie');
+        const maybeToast = (actual.init?.headers as Headers)?.get("Set-Cookie");
         const { toast } = await getToast(
           new Request(createUrl(organization.slug), {
-            headers: { cookie: maybeToast ?? '' },
+            headers: { cookie: maybeToast ?? "" },
           }),
         );
         expect(toast).toMatchObject({
           id: expect.any(String) as string,
-          title: 'Email invitation sent',
-          type: 'success',
+          title: "Email invitation sent",
+          type: "success",
         });
       },
     );
 
-    test('given: a user on the lowest plan (low.monthly) trying to invite anyone, should: return 400 because the org is full', async () => {
+    test("given: a user on the lowest plan (low.monthly) trying to invite anyone, should: return 400 because the org is full", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
-        role: OrganizationMembershipRole.owner,
         lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+        role: OrganizationMembershipRole.owner,
       });
 
       const actual = await sendAuthenticatedRequest({
-        user,
         formData: toFormData({
-          intent: INVITE_BY_EMAIL_INTENT,
           email: faker.internet.email(),
+          intent: INVITE_BY_EMAIL_INTENT,
           role: OrganizationMembershipRole.member,
         }),
         organizationSlug: organization.slug,
+        user,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });
@@ -1224,7 +1223,7 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       expect(actual).toEqual(expected);
     });
 
-    test('given: a user on a trial plan with 25 members trying to invite, should: return 400 because the org is full', async () => {
+    test("given: a user on a trial plan with 25 members trying to invite, should: return 400 because the org is full", async () => {
       const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
@@ -1234,19 +1233,19 @@ describe(`${createUrl(':organizationSlug')} route action`, () => {
       });
 
       const actual = await sendAuthenticatedRequest({
-        user,
         formData: toFormData({
-          intent: INVITE_BY_EMAIL_INTENT,
           email: faker.internet.email(),
+          intent: INVITE_BY_EMAIL_INTENT,
           role: OrganizationMembershipRole.member,
         }),
         organizationSlug: organization.slug,
+        user,
       });
       const expected = badRequest({
         errors: {
           email: {
             message:
-              'organizations:settings.team-members.invite-by-email.form.organization-full',
+              "organizations:settings.team-members.invite-by-email.form.organization-full",
           },
         },
       });

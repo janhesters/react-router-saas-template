@@ -1,13 +1,12 @@
-import type { OrganizationMembership, UserAccount } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
+import type { OrganizationMembership, UserAccount } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
 
-import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from '~/features/organizations/organizations-model.server';
-import { asyncPipe } from '~/utils/async-pipe.server';
-import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
-
-import type { EmailInviteCardProps } from './invite-by-email-card';
-import type { InviteLinkCardProps } from './invite-link-card';
-import type { TeamMembersTableProps } from './team-members-table';
+import type { EmailInviteCardProps } from "./invite-by-email-card";
+import type { InviteLinkCardProps } from "./invite-link-card";
+import type { TeamMembersTableProps } from "./team-members-table";
+import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from "~/features/organizations/organizations-model.server";
+import { asyncPipe } from "~/utils/async-pipe.server";
+import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 
 /**
  * Converts a token to an invite link.
@@ -18,8 +17,8 @@ import type { TeamMembersTableProps } from './team-members-table';
  */
 export const tokenToInviteLink = (token: string, request: Request) => {
   const requestUrl = new URL(request.url);
-  const url = new URL('/organizations/invite-link', requestUrl.origin);
-  url.searchParams.set('token', token);
+  const url = new URL("/organizations/invite-link", requestUrl.origin);
+  url.searchParams.set("token", token);
   return url.toString();
 };
 
@@ -43,9 +42,9 @@ type Member = {
   id: string;
   isCurrentUser: boolean;
   name: string;
-  role: OrganizationMembership['role'];
+  role: OrganizationMembership["role"];
   deactivatedAt: Date | undefined;
-  status: 'createdTheOrganization' | 'joinedViaLink' | 'emailInvitePending';
+  status: "createdTheOrganization" | "joinedViaLink" | "emailInvitePending";
 };
 
 /**
@@ -62,14 +61,14 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
   organization,
   request,
 }: {
-  currentUsersId: UserAccount['id'];
-  currentUsersRole: OrganizationMembership['role'];
+  currentUsersId: UserAccount["id"];
+  currentUsersRole: OrganizationMembership["role"];
   organization: OrganizationWithMembers;
   request: Request;
 }): {
   emailInviteCard: Pick<
     EmailInviteCardProps,
-    'currentUserIsOwner' | 'organizationIsFull'
+    "currentUserIsOwner" | "organizationIsFull"
   >;
   inviteLinkCard: InviteLinkCardProps;
   organizationIsFull: boolean;
@@ -82,7 +81,7 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
 
   // Exclude invites for users who are already members
   const membershipEmails = new Set(
-    organization.memberships.map(m => m.member.email),
+    organization.memberships.map((m) => m.member.email),
   );
 
   return {
@@ -94,8 +93,8 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
       inviteLink:
         link && !organizationIsFull
           ? {
-              href: tokenToInviteLink(link.token, request),
               expiryDate: link.expiresAt.toISOString(),
+              href: tokenToInviteLink(link.token, request),
             }
           : undefined,
       organizationIsFull,
@@ -110,20 +109,20 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
           // Filter to only keep the first (most recent) invite for each email
           .filter(
             (invite, index, array) =>
-              array.findIndex(index_ => index_.email === invite.email) ===
+              array.findIndex((index_) => index_.email === invite.email) ===
               index,
           )
-          .filter(invite => !membershipEmails.has(invite.email))
+          .filter((invite) => !membershipEmails.has(invite.email))
           .map(
             (invite): Member => ({
-              avatar: '',
+              avatar: "",
+              deactivatedAt: undefined,
               email: invite.email,
               id: invite.id,
               isCurrentUser: false,
-              name: '',
+              name: "",
               role: invite.role,
-              deactivatedAt: undefined,
-              status: 'emailInvitePending',
+              status: "emailInvitePending",
             }),
           ),
 
@@ -132,13 +131,13 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
           const isCurrentUser = membership.member.id === currentUsersId;
           return {
             avatar: membership.member.imageUrl,
+            deactivatedAt: membership.deactivatedAt ?? undefined,
             email: membership.member.email,
             id: membership.member.id,
             isCurrentUser,
             name: membership.member.name,
             role: membership.role,
-            deactivatedAt: membership.deactivatedAt ?? undefined,
-            status: isCurrentUser ? 'createdTheOrganization' : 'joinedViaLink',
+            status: isCurrentUser ? "createdTheOrganization" : "joinedViaLink",
           };
         }),
       ],

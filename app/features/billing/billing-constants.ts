@@ -1,23 +1,23 @@
-export const CANCEL_SUBSCRIPTION_INTENT = 'cancelSubscription';
-export const KEEP_CURRENT_SUBSCRIPTION_INTENT = 'keepCurrentSubscription';
-export const OPEN_CHECKOUT_SESSION_INTENT = 'openCheckoutSession';
-export const RESUME_SUBSCRIPTION_INTENT = 'resumeSubscription';
-export const SWITCH_SUBSCRIPTION_INTENT = 'switchSubscription';
-export const UPDATE_BILLING_EMAIL_INTENT = 'updateBillingEmail';
-export const VIEW_INVOICES_INTENT = 'viewInvoices';
+export const CANCEL_SUBSCRIPTION_INTENT = "cancelSubscription";
+export const KEEP_CURRENT_SUBSCRIPTION_INTENT = "keepCurrentSubscription";
+export const OPEN_CHECKOUT_SESSION_INTENT = "openCheckoutSession";
+export const RESUME_SUBSCRIPTION_INTENT = "resumeSubscription";
+export const SWITCH_SUBSCRIPTION_INTENT = "switchSubscription";
+export const UPDATE_BILLING_EMAIL_INTENT = "updateBillingEmail";
+export const VIEW_INVOICES_INTENT = "viewInvoices";
 
 export const priceLookupKeysByTierAndInterval = {
+  high: {
+    annual: "annual_business_planv2",
+    monthly: "monthly_business_planv2",
+  },
   low: {
-    monthly: 'monthly_hobby_planv2',
-    annual: 'annual_hobby_planv2',
+    annual: "annual_hobby_planv2",
+    monthly: "monthly_hobby_planv2",
   },
   mid: {
-    monthly: 'monthly_startup_planv2',
-    annual: 'annual_startup_planv2',
-  },
-  high: {
-    monthly: 'monthly_business_planv2',
-    annual: 'annual_business_planv2',
+    annual: "annual_startup_planv2",
+    monthly: "monthly_startup_planv2",
   },
 } as const;
 
@@ -43,4 +43,4 @@ export const allLookupKeys = [
 
 export type LookupKey = (typeof allLookupKeys)[number];
 
-export const allTiers = ['low', 'mid', 'high'] as const;
+export const allTiers = ["low", "mid", "high"] as const;

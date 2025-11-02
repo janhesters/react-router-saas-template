@@ -1,16 +1,16 @@
-import type { OrganizationMembership, UserAccount } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import type { ColumnDef } from '@tanstack/react-table';
+import type { OrganizationMembership, UserAccount } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from '@tanstack/react-table';
-import type { TFunction } from 'i18next';
-import { ChevronDownIcon } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+} from "@tanstack/react-table";
+import type { TFunction } from "i18next";
+import { ChevronDownIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TbChevronLeft,
   TbChevronRight,
@@ -18,12 +18,13 @@ import {
   TbChevronsRight,
   TbCircleCheckFilled,
   TbLoader,
-} from 'react-icons/tb';
-import { useFetcher } from 'react-router';
+} from "react-icons/tb";
+import { useFetcher } from "react-router";
 
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import { CHANGE_ROLE_INTENT } from "./team-members-constants";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -32,20 +33,20 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '~/components/ui/command';
-import { Label } from '~/components/ui/label';
+} from "~/components/ui/command";
+import { Label } from "~/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '~/components/ui/popover';
+} from "~/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui/select';
+} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -53,23 +54,21 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '~/components/ui/table';
-
-import { CHANGE_ROLE_INTENT } from './team-members-constants';
+} from "~/components/ui/table";
 
 export type Member = {
-  avatar: UserAccount['imageUrl'];
-  deactivatedAt?: OrganizationMembership['deactivatedAt'];
-  email: UserAccount['email'];
-  id: UserAccount['id'];
+  avatar: UserAccount["imageUrl"];
+  deactivatedAt?: OrganizationMembership["deactivatedAt"];
+  email: UserAccount["email"];
+  id: UserAccount["id"];
   isCurrentUser?: boolean;
-  name: UserAccount['name'];
-  role: OrganizationMembership['role'];
+  name: UserAccount["name"];
+  role: OrganizationMembership["role"];
   status:
-    | 'createdTheOrganization'
-    | 'emailInvitePending'
-    | 'joinedViaEmailInvite'
-    | 'joinedViaLink';
+    | "createdTheOrganization"
+    | "emailInvitePending"
+    | "joinedViaEmailInvite"
+    | "joinedViaLink";
 };
 
 type RoleSwitcherProps = {
@@ -78,18 +77,18 @@ type RoleSwitcherProps = {
 };
 
 function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'settings.team-members.table.role-switcher',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "settings.team-members.table.role-switcher",
   });
 
   const [open, setOpen] = useState(false);
   const fetcher = useFetcher();
   const role =
-    (fetcher.formData?.get('role') as string) ||
-    (member.deactivatedAt ? 'deactivated' : member.role);
+    (fetcher.formData?.get("role") as string) ||
+    (member.deactivatedAt ? "deactivated" : member.role);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
         <Button className="w-36 justify-between" size="sm" variant="outline">
           {t(role)}
@@ -101,34 +100,34 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent asChild align="end" className="p-0">
+      <PopoverContent align="end" asChild className="p-0">
         <fetcher.Form
           method="POST"
           onSubmit={() => {
             setOpen(false);
           }}
         >
-          <input name="userId" value={member.id} type="hidden" />
-          <input name="intent" value={CHANGE_ROLE_INTENT} type="hidden" />
+          <input name="userId" type="hidden" value={member.id} />
+          <input name="intent" type="hidden" value={CHANGE_ROLE_INTENT} />
 
-          <Command label={t('command-label')}>
-            <CommandInput placeholder={t('roles-placeholder')} />
+          <Command label={t("command-label")}>
+            <CommandInput placeholder={t("roles-placeholder")} />
 
             <CommandList>
-              <CommandEmpty>{t('no-roles-found')}</CommandEmpty>
+              <CommandEmpty>{t("no-roles-found")}</CommandEmpty>
 
               <CommandGroup>
                 <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
                   <button
                     className="text-start"
                     name="role"
-                    value={OrganizationMembershipRole.member}
                     type="submit"
+                    value={OrganizationMembershipRole.member}
                   >
-                    <p>{t('member')}</p>
+                    <p>{t("member")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t('member-description')}
+                      {t("member-description")}
                     </p>
                   </button>
                 </CommandItem>
@@ -137,13 +136,13 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   <button
                     className="text-start"
                     name="role"
-                    value={OrganizationMembershipRole.admin}
                     type="submit"
+                    value={OrganizationMembershipRole.admin}
                   >
-                    <p>{t('admin')}</p>
+                    <p>{t("admin")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t('admin-description')}
+                      {t("admin-description")}
                     </p>
                   </button>
                 </CommandItem>
@@ -153,13 +152,13 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                     <button
                       className="text-start"
                       name="role"
-                      value={OrganizationMembershipRole.owner}
                       type="submit"
+                      value={OrganizationMembershipRole.owner}
                     >
-                      <p>{t('owner')}</p>
+                      <p>{t("owner")}</p>
 
                       <p className="text-muted-foreground text-sm">
-                        {t('owner-description')}
+                        {t("owner-description")}
                       </p>
                     </button>
                   </CommandItem>
@@ -171,13 +170,13 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   <button
                     className="text-start"
                     name="role"
-                    value="deactivated"
                     type="submit"
+                    value="deactivated"
                   >
-                    <p>{t('deactivated')}</p>
+                    <p>{t("deactivated")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t('deactivated-description')}
+                      {t("deactivated-description")}
                     </p>
                   </button>
                 </CommandItem>
@@ -194,44 +193,43 @@ const createColumns = ({
   currentUsersRole,
   t,
 }: {
-  currentUsersRole: OrganizationMembership['role'];
+  currentUsersRole: OrganizationMembership["role"];
   t: TFunction;
 }): ColumnDef<Member>[] => [
   {
-    header: () => <div className="sr-only">{t('avatar-header')}</div>,
-    accessorKey: 'avatar',
+    accessorKey: "avatar",
     cell: ({ row }) => {
       return (
         <Avatar>
-          <AvatarImage src={row.original.avatar} alt={row.original.name} />
+          <AvatarImage alt={row.original.name} src={row.original.avatar} />
           <AvatarFallback>
             {row.original.name.slice(0, 2).toUpperCase()}
           </AvatarFallback>
         </Avatar>
       );
     },
+    header: () => <div className="sr-only">{t("avatar-header")}</div>,
   },
   {
-    header: t('name-header'),
-    accessorKey: 'name',
+    accessorKey: "name",
     cell: ({ row }) => {
       return <div className="text-sm font-medium">{row.original.name}</div>;
     },
+    header: t("name-header"),
   },
   {
-    header: t('email-header'),
-    accessorKey: 'email',
+    accessorKey: "email",
+    header: t("email-header"),
   },
   {
-    header: t('status-header'),
-    accessorKey: 'status',
+    accessorKey: "status",
     cell: ({ row }) => {
       return (
         <Badge
-          variant="outline"
           className="text-muted-foreground px-1.5 font-normal"
+          variant="outline"
         >
-          {row.original.status === 'emailInvitePending' ? (
+          {row.original.status === "emailInvitePending" ? (
             <TbLoader />
           ) : (
             <TbCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
@@ -240,24 +238,24 @@ const createColumns = ({
         </Badge>
       );
     },
+    header: t("status-header"),
   },
   {
-    header: t('role-header'),
-    accessorKey: 'role',
+    accessorKey: "role",
     cell: ({ row }) =>
       // Hide the role switcher if:
       // 1. Its the current user's own role (can't change your own role)
       row.original.isCurrentUser ||
       // 2. If the current user is a member (members can't change roles)
-      currentUsersRole === 'member' ||
+      currentUsersRole === "member" ||
       // 3. If the current user is an admin and the row is an owner (admins
       // can't change owners' roles)
-      (currentUsersRole === 'admin' && row.original.role === 'owner') ||
+      (currentUsersRole === "admin" && row.original.role === "owner") ||
       // 4. If the member is pending email invite (can't change roles of pending invites)
-      row.original.status === 'emailInvitePending' ? (
+      row.original.status === "emailInvitePending" ? (
         <div className="text-muted-foreground">
           {row.original.deactivatedAt
-            ? t('role-switcher.deactivated')
+            ? t("role-switcher.deactivated")
             : t(`role-switcher.${row.original.role}`)}
         </div>
       ) : (
@@ -268,11 +266,12 @@ const createColumns = ({
           member={row.original}
         />
       ),
+    header: t("role-header"),
   },
 ];
 
 export type TeamMembersTableProps = {
-  currentUsersRole: OrganizationMembership['role'];
+  currentUsersRole: OrganizationMembership["role"];
   members: Member[];
 };
 
@@ -280,8 +279,8 @@ export function TeamMembersTable({
   currentUsersRole,
   members,
 }: TeamMembersTableProps) {
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'settings.team-members.table',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "settings.team-members.table",
   });
 
   const columns = useMemo(
@@ -290,8 +289,8 @@ export function TeamMembersTable({
   );
 
   const table = useReactTable({
-    data: members,
     columns,
+    data: members,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
@@ -301,9 +300,9 @@ export function TeamMembersTable({
       <div className="overflow-hidden rounded-lg border">
         <Table>
           <TableHeader className="bg-muted sticky top-0 z-10 rounded-lg">
-            {table.getHeaderGroups().map(headerGroup => (
+            {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
+                {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
                       {header.isPlaceholder
@@ -321,12 +320,12 @@ export function TeamMembersTable({
 
           <TableBody className="**:data-[slot=table-cell]:font-light **:data-[slot=table-cell]:first:w-12 **:data-[slot=table-cell]:last:w-40">
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
+              table.getRowModel().rows.map((row) => (
                 <TableRow
+                  data-state={row.getIsSelected() && "selected"}
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
                 >
-                  {row.getVisibleCells().map(cell => (
+                  {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -339,10 +338,10 @@ export function TeamMembersTable({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
-                  {t('no-results')}
+                  {t("no-results")}
                 </TableCell>
               </TableRow>
             )}
@@ -352,22 +351,22 @@ export function TeamMembersTable({
 
       <div className="flex items-center justify-between px-4">
         <div className="hidden items-center gap-2 lg:flex">
-          <Label htmlFor="rows-per-page" className="text-sm font-medium">
-            {t('pagination.rows-per-page')}
+          <Label className="text-sm font-medium" htmlFor="rows-per-page">
+            {t("pagination.rows-per-page")}
           </Label>
 
           <Select
-            value={`${table.getState().pagination.pageSize}`}
-            onValueChange={value => {
+            onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
+            value={`${table.getState().pagination.pageSize}`}
           >
-            <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+            <SelectTrigger className="w-20" id="rows-per-page" size="sm">
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
 
             <SelectContent side="top">
-              {[10, 20, 30, 40, 50].map(pageSize => (
+              {[10, 20, 30, 40, 50].map((pageSize) => (
                 <SelectItem key={pageSize} value={`${pageSize}`}>
                   {pageSize}
                 </SelectItem>
@@ -378,7 +377,7 @@ export function TeamMembersTable({
 
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="flex w-fit items-center justify-center text-sm font-medium">
-            {t('pagination.page-info', {
+            {t("pagination.page-info", {
               current: table.getState().pagination.pageIndex + 1,
               total: table.getPageCount(),
             })}
@@ -386,45 +385,45 @@ export function TeamMembersTable({
 
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Button
-              variant="outline"
               className="hidden h-8 w-8 p-0 lg:flex"
-              onClick={() => table.setPageIndex(0)}
               disabled={!table.getCanPreviousPage()}
+              onClick={() => table.setPageIndex(0)}
+              variant="outline"
             >
-              <span className="sr-only">{t('pagination.go-to-first')}</span>
+              <span className="sr-only">{t("pagination.go-to-first")}</span>
               <TbChevronsLeft />
             </Button>
 
             <Button
-              variant="outline"
               className="size-8"
-              size="icon"
-              onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
+              onClick={() => table.previousPage()}
+              size="icon"
+              variant="outline"
             >
-              <span className="sr-only">{t('pagination.go-to-previous')}</span>
+              <span className="sr-only">{t("pagination.go-to-previous")}</span>
               <TbChevronLeft />
             </Button>
 
             <Button
-              variant="outline"
               className="size-8"
-              size="icon"
-              onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
+              onClick={() => table.nextPage()}
+              size="icon"
+              variant="outline"
             >
-              <span className="sr-only">{t('pagination.go-to-next')}</span>
+              <span className="sr-only">{t("pagination.go-to-next")}</span>
               <TbChevronRight />
             </Button>
 
             <Button
-              variant="outline"
               className="hidden size-8 lg:flex"
-              size="icon"
-              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
               disabled={!table.getCanNextPage()}
+              onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+              size="icon"
+              variant="outline"
             >
-              <span className="sr-only">{t('pagination.go-to-last')}</span>
+              <span className="sr-only">{t("pagination.go-to-last")}</span>
               <TbChevronsRight />
             </Button>
           </div>

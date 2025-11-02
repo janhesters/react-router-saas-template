@@ -1,25 +1,24 @@
-import { useTranslation } from 'react-i18next';
-import { data, href, Link, useNavigation } from 'react-router';
+import { useTranslation } from "react-i18next";
+import { data, href, Link, useNavigation } from "react-router";
 
-import { GeneralErrorBoundary } from '~/components/general-error-boundary';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { organizationMembershipContext } from '~/features/organizations/organizations-middleware.server';
-import { EmailInviteCard } from '~/features/organizations/settings/team-members/invite-by-email-card';
-import { InviteLinkCard } from '~/features/organizations/settings/team-members/invite-link-card';
-import { teamMembersAction } from '~/features/organizations/settings/team-members/team-members-action.server';
-import { INVITE_BY_EMAIL_INTENT } from '~/features/organizations/settings/team-members/team-members-constants';
+import type { Route } from "./+types/members";
+import { GeneralErrorBoundary } from "~/components/general-error-boundary";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { EmailInviteCard } from "~/features/organizations/settings/team-members/invite-by-email-card";
+import { InviteLinkCard } from "~/features/organizations/settings/team-members/invite-link-card";
+import { teamMembersAction } from "~/features/organizations/settings/team-members/team-members-action.server";
+import { INVITE_BY_EMAIL_INTENT } from "~/features/organizations/settings/team-members/team-members-constants";
 import {
   mapOrganizationDataToTeamMemberSettingsProps,
   requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug,
-} from '~/features/organizations/settings/team-members/team-members-helpers.server';
-import { TeamMembersTable } from '~/features/organizations/settings/team-members/team-members-table';
-import { getFormErrors } from '~/utils/get-form-errors';
-import { getPageTitle } from '~/utils/get-page-title.server';
-
-import type { Route } from './+types/members';
+} from "~/features/organizations/settings/team-members/team-members-helpers.server";
+import { TeamMembersTable } from "~/features/organizations/settings/team-members/team-members-table";
+import { getFormErrors } from "~/utils/get-form-errors";
+import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
   const { user, role, headers } = context.get(organizationMembershipContext);
@@ -33,7 +32,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     {
       title: getPageTitle(
         i18n.t.bind(i18n),
-        'organizations:settings.team-members.page-title',
+        "organizations:settings.team-members.page-title",
       ),
       ...mapOrganizationDataToTeamMemberSettingsProps({
         currentUsersId: user.id,
@@ -59,8 +58,8 @@ export default function OrganizationMembersRoute({
   loaderData,
   params,
 }: Route.ComponentProps) {
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'settings.team-members',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "settings.team-members",
   });
   const {
     emailInviteCard,
@@ -72,18 +71,18 @@ export default function OrganizationMembersRoute({
 
   const navigation = useNavigation();
   const isInvitingByEmail =
-    navigation.formData?.get('intent') === INVITE_BY_EMAIL_INTENT;
+    navigation.formData?.get("intent") === INVITE_BY_EMAIL_INTENT;
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="@container/main mx-auto flex w-full max-w-5xl flex-col gap-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t('page-title')}</h2>
+          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
 
           <p className="text-muted-foreground text-sm">
-            {teamMemberTable.currentUsersRole === 'member'
-              ? t('description-member')
-              : t('description')}
+            {teamMemberTable.currentUsersRole === "member"
+              ? t("description-member")
+              : t("description")}
           </p>
         </div>
 
@@ -95,10 +94,10 @@ export default function OrganizationMembersRoute({
               className="flex flex-col gap-2 @2xl/alert:block"
               variant="destructive"
             >
-              <AlertTitle>{t('organization-is-full-alert.title')}</AlertTitle>
+              <AlertTitle>{t("organization-is-full-alert.title")}</AlertTitle>
 
               <AlertDescription>
-                {t('organization-is-full-alert.description')}
+                {t("organization-is-full-alert.description")}
               </AlertDescription>
 
               <Button
@@ -108,18 +107,18 @@ export default function OrganizationMembersRoute({
               >
                 <Link
                   to={href(
-                    '/organizations/:organizationSlug/settings/billing',
+                    "/organizations/:organizationSlug/settings/billing",
                     { organizationSlug: params.organizationSlug },
                   )}
                 >
-                  {t('organization-is-full-alert.button')}
+                  {t("organization-is-full-alert.button")}
                 </Link>
               </Button>
             </Alert>
           </div>
         )}
 
-        {teamMemberTable.currentUsersRole !== 'member' && (
+        {teamMemberTable.currentUsersRole !== "member" && (
           <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2">
             <EmailInviteCard
               {...emailInviteCard}

@@ -1,1 +1,1 @@
-export const ONBOARDING_USER_ACCOUNT_INTENT = 'createUserAccount';
+export const ONBOARDING_USER_ACCOUNT_INTENT = "createUserAccount";

@@ -1,29 +1,28 @@
-import { faker } from '@faker-js/faker';
-import { describe, expect, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { describe, expect, test } from "vitest";
 
-import { createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import type { AccountSettingsProps } from './account-settings';
-import { AccountSettings } from './account-settings';
+import type { AccountSettingsProps } from "./account-settings";
+import { AccountSettings } from "./account-settings";
+import { createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<AccountSettingsProps> = ({
   errors,
   isUpdatingUserAccount = false,
   user = {
-    id: faker.string.uuid(),
-    name: faker.person.fullName(),
     email: faker.internet.email(),
+    id: faker.string.uuid(),
     imageUrl: faker.image.avatar(),
+    name: faker.person.fullName(),
   },
 } = {}) => ({ errors, isUpdatingUserAccount, user });
 
-describe('AccountSettings Component', () => {
-  test('given: component renders with default props, should: render account settings form with name, email (disabled), and avatar fields', () => {
+describe("AccountSettings Component", () => {
+  test("given: component renders with default props, should: render account settings form with name, email (disabled), and avatar fields", () => {
     const props = createProps();
-    const path = '/settings/account';
+    const path = "/settings/account";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <AccountSettings {...props} /> },
+      { Component: () => <AccountSettings {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -32,7 +31,7 @@ describe('AccountSettings Component', () => {
     const nameInput = screen.getByLabelText(/name/i);
     const emailInput = screen.getByLabelText(/email/i);
     const avatarDropzone = screen.getByLabelText(/avatar/i);
-    const saveButton = screen.getByRole('button', { name: /save changes/i });
+    const saveButton = screen.getByRole("button", { name: /save changes/i });
 
     expect(nameInput).toBeInTheDocument();
     expect(emailInput).toBeInTheDocument();
@@ -46,11 +45,11 @@ describe('AccountSettings Component', () => {
     expect(saveButton).toBeEnabled();
   });
 
-  test('given: isUpdatingUserAccount is true, should: disable form and show loading state', () => {
+  test("given: isUpdatingUserAccount is true, should: disable form and show loading state", () => {
     const props = createProps({ isUpdatingUserAccount: true });
-    const path = '/settings/account';
+    const path = "/settings/account";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <AccountSettings {...props} /> },
+      { Component: () => <AccountSettings {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -59,29 +58,29 @@ describe('AccountSettings Component', () => {
     expect(screen.getByLabelText(/name/i)).toBeDisabled();
     expect(screen.getByLabelText(/email/i)).toBeDisabled();
     expect(
-      screen.getByRole('button', { name: /saving changes/i }),
+      screen.getByRole("button", { name: /saving changes/i }),
     ).toBeDisabled();
 
     // Verify loading state in button
-    const saveButton = screen.getByRole('button', { name: /saving changes/i });
+    const saveButton = screen.getByRole("button", { name: /saving changes/i });
     expect(saveButton).toBeDisabled();
     expect(saveButton).toHaveTextContent(/saving changes/i);
     expect(
-      screen.queryByRole('button', { name: /save changes/i }),
+      screen.queryByRole("button", { name: /save changes/i }),
     ).not.toBeInTheDocument();
   });
 
-  test('given: form has errors, should: display error messages', () => {
+  test("given: form has errors, should: display error messages", () => {
     const errors = {
       name: {
-        type: 'manual',
-        message: 'settings:user-account.form.name-min-length',
+        message: "settings:user-account.form.name-min-length",
+        type: "manual",
       },
     };
     const props = createProps({ errors });
-    const path = '/settings/account';
+    const path = "/settings/account";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <AccountSettings {...props} /> },
+      { Component: () => <AccountSettings {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -93,8 +92,8 @@ describe('AccountSettings Component', () => {
 
     // Optional: Check aria-invalid attribute on the input
     expect(screen.getByLabelText(/name/i)).toHaveAttribute(
-      'aria-invalid',
-      'true',
+      "aria-invalid",
+      "true",
     );
   });
 });

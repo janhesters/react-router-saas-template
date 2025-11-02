@@ -11,9 +11,6 @@ todo.md
 # TypeScript
 *.tsbuildinfo
 
-# ESLint
-.eslintcache
-
 # Playwright
 node_modules/
 /test-results/

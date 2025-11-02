@@ -1,11 +1,11 @@
-import { CTA } from './cta';
-import { Description } from './description';
-import { FAQ } from './faq';
-import { Features } from './features';
-import { Footer } from './footer';
-import { Header } from './header';
-import { Hero } from './hero';
-import { Logos } from './logos';
+import { CTA } from "./cta";
+import { Description } from "./description";
+import { FAQ } from "./faq";
+import { Features } from "./features";
+import { Footer } from "./footer";
+import { Header } from "./header";
+import { Hero } from "./hero";
+import { Logos } from "./logos";
 
 export default function LandingPage() {
   return (

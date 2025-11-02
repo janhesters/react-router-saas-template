@@ -1,9 +1,8 @@
-import type { Readable } from 'node:stream';
-
-import type { S3Client } from '@aws-sdk/client-s3';
-import { DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { Upload } from '@aws-sdk/lib-storage';
-import type { FileUpload } from '@mjackson/form-data-parser';
+import type { Readable } from "node:stream";
+import type { S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+import type { FileUpload } from "@mjackson/form-data-parser";
 
 /**
  * Downloads a file from Supabase Storage using the S3 compatible API.
@@ -43,7 +42,7 @@ export type Uploadable =
  * Type‐guard to detect your FileUpload objects.
  */
 function isFileUpload(file: Uploadable): file is FileUpload {
-  return typeof (file as FileUpload).stream === 'function';
+  return typeof (file as FileUpload).stream === "function";
 }
 
 /**
@@ -77,10 +76,10 @@ export async function uploadToStorage({
   const uploader = new Upload({
     client,
     params: {
-      Bucket: bucket,
-      Key: key,
       Body: body,
+      Bucket: bucket,
       ContentType: contentType,
+      Key: key,
     },
   });
 

@@ -1,4 +1,4 @@
-import type { IconProps } from '~/utils/types';
+import type { IconProps } from "~/utils/types";
 
 export function GooggleIcon({ className, ...props }: IconProps) {
   return (

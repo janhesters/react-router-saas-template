@@ -3,18 +3,18 @@ import type {
   NotificationRecipient,
   Organization,
   UserAccount,
-} from '@prisma/client';
-import { Prisma } from '@prisma/client';
+} from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 // Define the structure of the notification data we expect from the raw query
 export type NotificationQueryResult = {
-  recipientId: NotificationRecipient['id'];
-  readAt: NotificationRecipient['readAt'];
-  notificationId: Notification['id'];
-  content: Notification['content'];
-  createdAt: Notification['createdAt'];
+  recipientId: NotificationRecipient["id"];
+  readAt: NotificationRecipient["readAt"];
+  notificationId: Notification["id"];
+  content: Notification["content"];
+  createdAt: Notification["createdAt"];
 };
 
 /* CREATE */
@@ -26,7 +26,7 @@ export async function saveNotificationWithRecipientForUserAndOrganizationInDatab
   notification: Prisma.NotificationUncheckedCreateInput;
   recipient: Omit<
     Prisma.NotificationRecipientUncheckedCreateInput,
-    'notificationId'
+    "notificationId"
   >;
 }) {
   return prisma.notification.create({
@@ -51,22 +51,22 @@ export async function createNotificationForUserInDatabaseById({
   organizationId,
   content,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
   content: Prisma.InputJsonValue; // Use Prisma's specific JSON type for input
 }): Promise<NotificationQueryResult | null> {
   const newNotification = await prisma.notification.create({
     data: {
-      organizationId: organizationId,
       content: content,
+      organizationId: organizationId,
       // Create the recipient record simultaneously
       recipients: { create: { userId: userId } },
     },
     // Include the newly created recipient details
     include: {
       recipients: {
-        where: { userId: userId }, // Ensure we only get the one we just created
         select: { id: true, readAt: true },
+        where: { userId: userId }, // Ensure we only get the one we just created
       },
     },
   });
@@ -79,19 +79,19 @@ export async function createNotificationForUserInDatabaseById({
     // );
     // Optionally delete the orphaned notification here if needed
     await prisma.notification.delete({ where: { id: newNotification.id } });
-    // eslint-disable-next-line unicorn/no-null
     return null;
   }
 
+  // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a recipient
   const recipient = newNotification.recipients[0]!;
 
   // Map to the desired NotificationQueryResult structure
   return {
-    recipientId: recipient.id,
-    readAt: recipient.readAt, // Will be null initially
-    notificationId: newNotification.id,
     content: newNotification.content,
     createdAt: newNotification.createdAt,
+    notificationId: newNotification.id,
+    readAt: recipient.readAt, // Will be null initially
+    recipientId: recipient.id,
   };
 }
 
@@ -111,27 +111,26 @@ export async function createNotificationForUsersInDatabaseById({
   organizationId,
   content,
 }: {
-  userIds: UserAccount['id'][];
-  organizationId: Organization['id'];
+  userIds: UserAccount["id"][];
+  organizationId: Organization["id"];
   content: Prisma.InputJsonValue; // Use Prisma's specific JSON type for input
 }): Promise<{ notification: Notification | null; recipientCount: number }> {
   // Avoid unnecessary database call if no users are provided
   if (userIds.length === 0) {
     // console.warn('Attempted to create notification with zero recipients.');
     return {
-      // eslint-disable-next-line unicorn/no-null
       notification: null, // Indicate no notification was created
       recipientCount: 0,
     };
   }
 
   // Map user IDs to the structure required by createMany
-  const recipientData = userIds.map(id => ({ userId: id }));
+  const recipientData = userIds.map((id) => ({ userId: id }));
 
   const newNotification = await prisma.notification.create({
     data: {
-      organizationId: organizationId,
       content: content,
+      organizationId: organizationId,
       // Create multiple recipient records simultaneously
       recipients: {
         createMany: {
@@ -171,12 +170,12 @@ export async function retrieveNotificationRecipientForUserAndOrganizationFromDat
   organizationId,
   recipientId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
-  recipientId: NotificationRecipient['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
+  recipientId: NotificationRecipient["id"];
 }) {
   return await prisma.notificationRecipient.findUnique({
-    where: { id: recipientId, userId, notification: { organizationId } },
+    where: { id: recipientId, notification: { organizationId }, userId },
   });
 }
 
@@ -195,11 +194,11 @@ export async function retrieveNotificationRecipientsForUserAndOrganizationFromDa
   userId,
   organizationId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
 }) {
   return await prisma.notificationRecipient.findMany({
-    where: { userId, notification: { organizationId } },
+    where: { notification: { organizationId }, userId },
   });
 }
 
@@ -218,11 +217,11 @@ export async function retrieveNotificationPanelForUserAndOrganizationFromDatabas
   userId,
   organizationId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
 }) {
   return await prisma.notificationPanel.findUnique({
-    where: { userId_organizationId: { userId, organizationId } },
+    where: { userId_organizationId: { organizationId, userId } },
   });
 }
 
@@ -260,11 +259,11 @@ export async function retrieveInitialNotificationsDataForUserAndOrganizationFrom
   allNotificationsLimit = 50, // Default limit per category
   unreadNotificationsLimit = 20, // Default limit per category
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
   allNotificationsLimit?: number;
   unreadNotificationsLimit?: number;
-}): Promise<InitialNotificationsData | null> {
+}): Promise<InitialNotificationsData> {
   // Ensure limit is a positive integer
   const safeAllNotificationsLimit = Math.max(
     1,
@@ -340,7 +339,6 @@ export async function retrieveInitialNotificationsDataForUserAndOrganizationFrom
     allNotifications: [],
     hasMoreAll: false,
     hasMoreUnread: false,
-    // eslint-disable-next-line unicorn/no-null
     lastOpenedAt: null,
     unreadNotifications: [],
   };
@@ -372,49 +370,49 @@ export async function retrieveMoreAllNotificationsForUserAndOrganizationFromData
   limit = 10,
   cursor,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
   limit?: number;
-  cursor: NotificationRecipient['id']; // Cursor is the ID of the last item fetched
+  cursor: NotificationRecipient["id"]; // Cursor is the ID of the last item fetched
 }): Promise<PaginatedNotificationsResult> {
   const safeLimit = Math.max(1, Math.floor(limit));
 
   const results = await prisma.notificationRecipient.findMany({
-    // Filter through the related Notification
-    where: { userId, notification: { organizationId } },
-    // Order must be consistent with the initial fetch and across pagination calls
-    orderBy: [{ notification: { createdAt: 'desc' } }, { id: 'desc' }],
     cursor: { id: cursor },
-    skip: 1,
-    take: safeLimit + 1,
+    // Order must be consistent with the initial fetch and across pagination calls
+    orderBy: [{ notification: { createdAt: "desc" } }, { id: "desc" }],
     select: {
       id: true, // = recipientId
-      readAt: true,
       notification: {
         select: {
-          id: true, // = notificationId
           content: true,
           createdAt: true,
+          id: true, // = notificationId
           // No need to select organizationId here unless specifically needed in the result
         },
       },
+      readAt: true,
     },
+    skip: 1,
+    take: safeLimit + 1,
+    // Filter through the related Notification
+    where: { notification: { organizationId }, userId },
   });
 
   const hasMore = results.length > safeLimit;
   const notificationsToReturn = results.slice(0, safeLimit);
 
   const notifications: NotificationQueryResult[] = notificationsToReturn.map(
-    recipients => ({
-      recipientId: recipients.id,
-      readAt: recipients.readAt,
-      notificationId: recipients.notification.id,
+    (recipients) => ({
       content: recipients.notification.content,
       createdAt: recipients.notification.createdAt,
+      notificationId: recipients.notification.id,
+      readAt: recipients.readAt,
+      recipientId: recipients.id,
     }),
   );
 
-  return { notifications, hasMore };
+  return { hasMore, notifications };
 }
 
 /**
@@ -436,39 +434,38 @@ export async function retrieveMoreUnreadNotificationsForUserAndOrganizationFromD
   limit = 10,
   cursor,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
   limit?: number;
-  cursor: NotificationRecipient['id']; // Cursor is the ID of the last item fetched
+  cursor: NotificationRecipient["id"]; // Cursor is the ID of the last item fetched
 }): Promise<PaginatedNotificationsResult> {
   const safeLimit = Math.max(1, Math.floor(limit));
 
   const results = await prisma.notificationRecipient.findMany({
-    where: {
-      userId,
-      // eslint-disable-next-line unicorn/no-null
-      readAt: null, // Filter for unread
-      // Corrected: Filter through the related Notification
-      notification: { organizationId },
-    },
-    // Order must be consistent with the initial fetch and across pagination calls
-    orderBy: [{ notification: { createdAt: 'desc' } }, { id: 'desc' }],
     cursor: {
       id: cursor,
     },
-    skip: 1,
-    take: safeLimit + 1,
+    // Order must be consistent with the initial fetch and across pagination calls
+    orderBy: [{ notification: { createdAt: "desc" } }, { id: "desc" }],
     select: {
       id: true, // = recipientId
-      readAt: true, // Will be null, but select for consistent structure
       notification: {
         select: {
-          id: true, // = notificationId
           content: true,
           createdAt: true,
+          id: true, // = notificationId
           // No need to select organizationId here unless specifically needed in the result
         },
       },
+      readAt: true, // Will be null, but select for consistent structure
+    },
+    skip: 1,
+    take: safeLimit + 1,
+    where: {
+      // Corrected: Filter through the related Notification
+      notification: { organizationId },
+      readAt: null, // Filter for unread
+      userId,
     },
   });
 
@@ -476,16 +473,16 @@ export async function retrieveMoreUnreadNotificationsForUserAndOrganizationFromD
   const notificationsToReturn = results.slice(0, safeLimit);
 
   const notifications: NotificationQueryResult[] = notificationsToReturn.map(
-    recipient => ({
-      recipientId: recipient.id,
-      readAt: recipient.readAt, // Should be null here
-      notificationId: recipient.notification.id,
+    (recipient) => ({
       content: recipient.notification.content,
       createdAt: recipient.notification.createdAt,
+      notificationId: recipient.notification.id,
+      readAt: recipient.readAt, // Should be null here
+      recipientId: recipient.id,
     }),
   );
 
-  return { notifications, hasMore };
+  return { hasMore, notifications };
 }
 
 /* UPDATE */
@@ -503,23 +500,22 @@ export async function updateNotificationPanelLastOpenedAtForUserAndOrganizationI
   userId,
   organizationId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
 }) {
   try {
     return await prisma.notificationPanel.update({
-      where: { userId_organizationId: { userId, organizationId } },
       data: { lastOpenedAt: new Date() },
+      where: { userId_organizationId: { organizationId, userId } },
     });
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2025'
+      error.code === "P2025"
     ) {
       // This shouldn't happen because the action should check that the user
       // is a member and if they're a member, they also have a notification
       // panel for the organization.
-      // eslint-disable-next-line unicorn/no-null
       return null;
     }
 
@@ -545,19 +541,12 @@ export async function markNotificationAsReadForUserAndOrganizationInDatabaseById
   organizationId,
   recipientId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
-  recipientId: NotificationRecipient['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
+  recipientId: NotificationRecipient["id"];
 }): Promise<NotificationQueryResult | null> {
   try {
     const updatedRecipient = await prisma.notificationRecipient.update({
-      where: {
-        // Ensure the recipient exists and belongs to the correct user
-        id: recipientId,
-        userId: userId,
-        // Ensure the related notification belongs to the correct organization
-        notification: { organizationId: organizationId },
-      },
       data: {
         // Set readAt to the current time
         readAt: new Date(),
@@ -565,18 +554,25 @@ export async function markNotificationAsReadForUserAndOrganizationInDatabaseById
       // Select the fields needed to return NotificationQueryResult
       select: {
         id: true,
+        notification: { select: { content: true, createdAt: true, id: true } },
         readAt: true,
-        notification: { select: { id: true, content: true, createdAt: true } },
+      },
+      where: {
+        // Ensure the recipient exists and belongs to the correct user
+        id: recipientId,
+        // Ensure the related notification belongs to the correct organization
+        notification: { organizationId: organizationId },
+        userId: userId,
       },
     });
 
     // Map the Prisma result to the desired NotificationQueryResult structure
     return {
-      recipientId: updatedRecipient.id,
-      readAt: updatedRecipient.readAt,
-      notificationId: updatedRecipient.notification.id,
       content: updatedRecipient.notification.content,
       createdAt: updatedRecipient.notification.createdAt,
+      notificationId: updatedRecipient.notification.id,
+      readAt: updatedRecipient.readAt,
+      recipientId: updatedRecipient.id,
     };
   } catch (error) {
     // Prisma throws an error (P2025) if the record to update is not found
@@ -584,12 +580,11 @@ export async function markNotificationAsReadForUserAndOrganizationInDatabaseById
     // You might want more specific error handling depending on requirements.
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2025'
+      error.code === "P2025"
     ) {
       // console.warn(
       //   `NotificationRecipient ${recipientId} not found or access denied for user ${userId} in org ${organizationId}.`,
       // );
-      // eslint-disable-next-line unicorn/no-null
       return null;
     }
     // Re-throw other unexpected errors
@@ -615,22 +610,21 @@ export async function markAllUnreadNotificationsAsReadForUserAndOrganizationInDa
   userId,
   organizationId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
 }): Promise<{ count: number }> {
   const result = await prisma.notificationRecipient.updateMany({
-    where: {
-      // Target records for the specific user
-      userId: userId,
-      // Target only unread records
-      // eslint-disable-next-line unicorn/no-null
-      readAt: null,
-      // Ensure the related notification belongs to the correct organization
-      notification: { organizationId: organizationId },
-    },
     data: {
       // Set readAt to the current time
       readAt: new Date(),
+    },
+    where: {
+      // Ensure the related notification belongs to the correct organization
+      notification: { organizationId: organizationId },
+      // Target only unread records
+      readAt: null,
+      // Target records for the specific user
+      userId: userId,
     },
   });
 

@@ -1,32 +1,31 @@
-import { OrganizationMembershipRole } from '@prisma/client';
-import { data, href } from 'react-router';
-import { z } from 'zod';
+import { OrganizationMembershipRole } from "@prisma/client";
+import { data, href } from "react-router";
+import { z } from "zod";
 
-import { updateStripeCustomer } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { forbidden } from '~/utils/http-responses.server';
-import { slugify } from '~/utils/slugify.server';
-import { removeImageFromStorage } from '~/utils/storage-helpers.server';
-import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import { deleteOrganization } from '../../organizations-helpers.server';
-import { organizationMembershipContext } from '../../organizations-middleware.server';
-import { updateOrganizationInDatabaseBySlug } from '../../organizations-model.server';
-import type { UpdateOrganizationFormErrors } from './general-organization-settings';
+import { deleteOrganization } from "../../organizations-helpers.server";
+import { organizationMembershipContext } from "../../organizations-middleware.server";
+import { updateOrganizationInDatabaseBySlug } from "../../organizations-model.server";
+import type { UpdateOrganizationFormErrors } from "./general-organization-settings";
 import {
   DELETE_ORGANIZATION_INTENT,
   UPDATE_ORGANIZATION_INTENT,
-} from './general-settings-constants';
+} from "./general-settings-constants";
 import {
   deleteOrganizationFormSchema,
   updateOrganizationFormSchema,
-} from './general-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/general';
+} from "./general-settings-schemas";
+import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/general";
+import { updateStripeCustomer } from "~/features/billing/stripe-helpers.server";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { forbidden } from "~/utils/http-responses.server";
+import { slugify } from "~/utils/slugify.server";
+import { removeImageFromStorage } from "~/utils/storage-helpers.server";
+import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
-const generalOrganizationSettingsActionSchema = z.discriminatedUnion('intent', [
+const generalOrganizationSettingsActionSchema = z.discriminatedUnion("intent", [
   deleteOrganizationFormSchema,
   updateOrganizationFormSchema,
 ]);
@@ -67,8 +66,8 @@ export async function generalOrganizationSettingsAction({
 
         if (Object.keys(updates).length > 0) {
           await updateOrganizationInDatabaseBySlug({
-            slug: params.organizationSlug,
             organization: updates,
+            slug: params.organizationSlug,
           });
 
           if (updates.name && organization.stripeCustomerId) {
@@ -85,9 +84,9 @@ export async function generalOrganizationSettingsAction({
               }),
               {
                 title: i18n.t(
-                  'organizations:settings.general.toast.organization-profile-updated',
+                  "organizations:settings.general.toast.organization-profile-updated",
                 ),
-                type: 'success',
+                type: "success",
               },
               { headers },
             );
@@ -96,9 +95,9 @@ export async function generalOrganizationSettingsAction({
 
         const toastHeaders = await createToastHeaders({
           title: i18n.t(
-            'organizations:settings.general.toast.organization-profile-updated',
+            "organizations:settings.general.toast.organization-profile-updated",
           ),
-          type: 'success',
+          type: "success",
         });
         return data({}, { headers: combineHeaders(headers, toastHeaders) });
       }
@@ -106,12 +105,12 @@ export async function generalOrganizationSettingsAction({
       case DELETE_ORGANIZATION_INTENT: {
         await deleteOrganization(organization.id);
         return redirectWithToast(
-          href('/organizations'),
+          href("/organizations"),
           {
             title: i18n.t(
-              'organizations:settings.general.toast.organization-deleted',
+              "organizations:settings.general.toast.organization-deleted",
             ),
-            type: 'success',
+            type: "success",
           },
           { headers },
         );

@@ -1,26 +1,25 @@
-import type { ComponentProps } from 'react';
-import { useTranslation } from 'react-i18next';
-import { FaGithub, FaLinkedin, FaXTwitter } from 'react-icons/fa6';
+import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
+import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 
-import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
-import { cn } from '~/lib/utils';
+import { ThemeToggle } from "../color-scheme/theme-toggle";
+import { ReactsquadLogoIcon } from "./svgs/reactsquad-logo-icon";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import { cn } from "~/lib/utils";
 
-import { ThemeToggle } from '../color-scheme/theme-toggle';
-import { ReactsquadLogoIcon } from './svgs/reactsquad-logo-icon';
-
-export function Footer({ className, ...props }: ComponentProps<'footer'>) {
-  const { t } = useTranslation('landing', { keyPrefix: 'footer' });
+export function Footer({ className, ...props }: ComponentProps<"footer">) {
+  const { t } = useTranslation("landing", { keyPrefix: "footer" });
 
   return (
     <footer
-      className={cn('border-t md:h-[var(--header-height)]', className)}
+      className={cn("border-t md:h-[var(--header-height)]", className)}
       {...props}
     >
       <div className="container mx-auto flex h-full flex-col items-center justify-between gap-4 px-4 py-4 sm:flex-row md:py-0">
         <div className="flex items-center gap-2">
           <Button
-            aria-label={t('social.github')}
+            aria-label={t("social.github")}
             asChild
             className="size-8"
             size="icon"
@@ -32,7 +31,7 @@ export function Footer({ className, ...props }: ComponentProps<'footer'>) {
           </Button>
 
           <Button
-            aria-label={t('social.twitter')}
+            aria-label={t("social.twitter")}
             asChild
             className="size-8"
             size="icon"
@@ -44,7 +43,7 @@ export function Footer({ className, ...props }: ComponentProps<'footer'>) {
           </Button>
 
           <Button
-            aria-label={t('social.linkedin')}
+            aria-label={t("social.linkedin")}
             asChild
             className="size-8"
             size="icon"
@@ -64,9 +63,9 @@ export function Footer({ className, ...props }: ComponentProps<'footer'>) {
 
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-2">
-            {t('made-with-love')}
+            {t("made-with-love")}
             <a
-              aria-label={t('reactsquad')}
+              aria-label={t("reactsquad")}
               className="text-foreground h-6 w-auto"
               href="https://reactsquad.io"
             >

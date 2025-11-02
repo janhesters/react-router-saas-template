@@ -1,7 +1,7 @@
-import type { LinkProps } from 'react-router';
-import { Link } from 'react-router';
+import type { LinkProps } from "react-router";
+import { Link } from "react-router";
 
-import { cn } from '~/lib/utils';
+import { cn } from "~/lib/utils";
 
 export type DisableableLinkComponentProps = LinkProps & { disabled?: boolean };
 
@@ -11,7 +11,7 @@ export function DisableableLink(props: DisableableLinkComponentProps) {
   return disabled ? (
     <span
       aria-disabled="true"
-      className={cn('pointer-events-none', className)}
+      className={cn("pointer-events-none", className)}
       tabIndex={-1}
       {...rest}
     >

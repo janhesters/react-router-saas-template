@@ -1,12 +1,12 @@
-import { createId } from '@paralleldrive/cuid2';
-import { Honeypot, SpamError } from 'remix-utils/honeypot/server';
+import { createId } from "@paralleldrive/cuid2";
+import { Honeypot, SpamError } from "remix-utils/honeypot/server";
 
-import type { Payload } from './to-form-data';
-import { toFormData } from './to-form-data';
+import type { Payload } from "./to-form-data";
+import { toFormData } from "./to-form-data";
 
 export const honeypot = new Honeypot({
-  validFromFieldName: 'from__confirm',
   encryptionSeed: createId(), // Ideally it should be unique even between processes.
+  validFromFieldName: "from__confirm",
 });
 
 /**
@@ -21,7 +21,7 @@ export async function checkHoneypot(data: Payload) {
     await honeypot.check(toFormData(data));
   } catch (error) {
     if (error instanceof SpamError) {
-      throw new Response('Form not submitted properly', { status: 400 });
+      throw new Response("Form not submitted properly", { status: 400 });
     }
 
     throw error;

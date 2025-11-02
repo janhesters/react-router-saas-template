@@ -1,27 +1,26 @@
-import { OrganizationMembershipRole } from '@prisma/client';
-import { data, useNavigation } from 'react-router';
+import { OrganizationMembershipRole } from "@prisma/client";
+import { data, useNavigation } from "react-router";
 
-import { GeneralErrorBoundary } from '~/components/general-error-boundary';
-import { billingAction } from '~/features/billing/billing-action.server';
+import type { Route } from "./+types/billing";
+import { GeneralErrorBoundary } from "~/components/general-error-boundary";
+import { billingAction } from "~/features/billing/billing-action.server";
 import {
   allLookupKeys,
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
   RESUME_SUBSCRIPTION_INTENT,
   VIEW_INVOICES_INTENT,
-} from '~/features/billing/billing-constants';
+} from "~/features/billing/billing-constants";
 import {
   getCreateSubscriptionModalProps,
   mapStripeSubscriptionDataToBillingPageProps,
-} from '~/features/billing/billing-helpers.server';
-import { BillingPage } from '~/features/billing/billing-page';
-import { retrieveProductsFromDatabaseByPriceLookupKeys } from '~/features/billing/stripe-product-model.server';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { organizationMembershipContext } from '~/features/organizations/organizations-middleware.server';
-import { getPageTitle } from '~/utils/get-page-title.server';
-import { notFound } from '~/utils/http-responses.server';
-
-import type { Route } from './+types/billing';
+} from "~/features/billing/billing-helpers.server";
+import { BillingPage } from "~/features/billing/billing-page";
+import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { getPageTitle } from "~/utils/get-page-title.server";
+import { notFound } from "~/utils/http-responses.server";
 
 export async function loader({ context }: Route.LoaderArgs) {
   const { organization, headers, role } = context.get(
@@ -40,12 +39,12 @@ export async function loader({ context }: Route.LoaderArgs) {
     {
       billingPageProps: {
         ...mapStripeSubscriptionDataToBillingPageProps({
-          organization,
           now: new Date(),
+          organization,
         }),
         ...getCreateSubscriptionModalProps(organization, products),
       },
-      title: getPageTitle(i18n.t.bind(i18n), 'billing:billing-page.page-title'),
+      title: getPageTitle(i18n.t.bind(i18n), "billing:billing-page.page-title"),
     },
     { headers },
   );
@@ -66,13 +65,13 @@ export default function OrganizationBillingSettingsRoute({
 
   const navigation = useNavigation();
   const isCancellingSubscription =
-    navigation.formData?.get('intent') === CANCEL_SUBSCRIPTION_INTENT;
+    navigation.formData?.get("intent") === CANCEL_SUBSCRIPTION_INTENT;
   const isKeepingCurrentSubscription =
-    navigation.formData?.get('intent') === KEEP_CURRENT_SUBSCRIPTION_INTENT;
+    navigation.formData?.get("intent") === KEEP_CURRENT_SUBSCRIPTION_INTENT;
   const isResumingSubscription =
-    navigation.formData?.get('intent') === RESUME_SUBSCRIPTION_INTENT;
+    navigation.formData?.get("intent") === RESUME_SUBSCRIPTION_INTENT;
   const isViewingInvoices =
-    navigation.formData?.get('intent') === VIEW_INVOICES_INTENT;
+    navigation.formData?.get("intent") === VIEW_INVOICES_INTENT;
 
   return (
     <BillingPage

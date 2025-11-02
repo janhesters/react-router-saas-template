@@ -1,16 +1,16 @@
-import { BookOpenIcon, SlidersIcon, TestTubeIcon, ZapIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { BookOpenIcon, SlidersIcon, TestTubeIcon, ZapIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-import { cn } from '~/lib/utils';
+import { cn } from "~/lib/utils";
 
 const featureIcons = [ZapIcon, TestTubeIcon, BookOpenIcon, SlidersIcon];
 
 const imageClassNames =
-  'border-border w-3xl max-w-none rounded-xl border sm:w-228 md:-ml-4 lg:-ml-0';
+  "border-border w-3xl max-w-none rounded-xl border sm:w-228 md:-ml-4 lg:-ml-0";
 
 export function Description() {
-  const { t } = useTranslation('landing', { keyPrefix: 'description' });
-  const features = t('features', { returnObjects: true }) as {
+  const { t } = useTranslation("landing", { keyPrefix: "description" });
+  const features = t("features", { returnObjects: true }) as {
     title: string;
     description: string;
   }[];
@@ -22,29 +22,34 @@ export function Description() {
           <div className="lg:pr-8">
             <div className="lg:max-w-xl">
               <h2 className="text-primary text-base font-semibold">
-                {t('eyebrow')}
+                {t("eyebrow")}
               </h2>
 
               <p className="text-foreground mt-2 text-4xl font-semibold tracking-tight text-pretty sm:text-5xl">
-                {t('title')}
+                {t("title")}
               </p>
 
               <p className="text-muted-foreground mt-6 text-lg/8">
-                {t('subtitle')}
+                {t("subtitle")}
               </p>
 
               <dl className="text-muted-foreground mt-10 max-w-xl space-y-8 text-base/7 lg:max-w-none">
                 {features.map((feature, index) => {
-                  const Icon = featureIcons[index]!;
+                  const Icon = featureIcons[index];
+
+                  if (!Icon) {
+                    return null;
+                  }
+
                   return (
-                    <div key={feature.title} className="relative pl-9">
+                    <div className="relative pl-9" key={feature.title}>
                       <dt className="text-foreground inline font-semibold">
                         <Icon
                           aria-hidden="true"
                           className="text-primary absolute top-1 left-1 size-5"
                         />
                         {feature.title}
-                      </dt>{' '}
+                      </dt>{" "}
                       <dd className="inline">{feature.description}</dd>
                     </div>
                   );
@@ -54,16 +59,16 @@ export function Description() {
           </div>
 
           <img
-            alt={t('image.light')}
-            className={cn(imageClassNames, 'dark:hidden')}
+            alt={t("image.light")}
+            className={cn(imageClassNames, "dark:hidden")}
             height={1442}
             src="/images/app-light-members.png"
             width={2432}
           />
 
           <img
-            alt={t('image.dark')}
-            className={cn(imageClassNames, 'hidden dark:block')}
+            alt={t("image.dark")}
+            className={cn(imageClassNames, "hidden dark:block")}
             height={1442}
             src="/images/app-dark-members.png"
             width={2432}

@@ -1,19 +1,26 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import type { Organization, UserAccount } from '@prisma/client';
-import { Loader2Icon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { Form, href, Link, useSubmit } from 'react-router';
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Organization, UserAccount } from "@prisma/client";
+import { Loader2Icon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Form, href, Link, useSubmit } from "react-router";
 
-import { GooggleIcon } from '~/components/svgs/google-icon';
-import { Button, buttonVariants } from '~/components/ui/button';
+import { LOGIN_INTENTS } from "./login-constants";
+import type {
+  EmailLoginErrors,
+  LoginWithEmailSchema,
+  LoginWithGoogleSchema,
+} from "./login-schemas";
+import { loginWithEmailSchema, loginWithGoogleSchema } from "./login-schemas";
+import { GooggleIcon } from "~/components/svgs/google-icon";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+} from "~/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -21,23 +28,15 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
-import { cn } from '~/lib/utils';
-
-import { LOGIN_INTENTS } from './login-constants';
-import type {
-  EmailLoginErrors,
-  LoginWithEmailSchema,
-  LoginWithGoogleSchema,
-} from './login-schemas';
-import { loginWithEmailSchema, loginWithGoogleSchema } from './login-schemas';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { cn } from "~/lib/utils";
 
 export type LoginFormCardProps = {
   errors?: EmailLoginErrors;
   inviteLinkInfo?: {
-    creatorName: UserAccount['name'];
-    organizationName: Organization['name'];
+    creatorName: UserAccount["name"];
+    organizationName: Organization["name"];
   };
   isLoggingInWithEmail?: boolean;
   isLoggingInWithGoogle?: boolean;
@@ -51,33 +50,33 @@ export function LoginFormCard({
   isLoggingInWithGoogle = false,
   isSubmitting = false,
 }: LoginFormCardProps) {
-  const { t } = useTranslation('user-authentication');
+  const { t } = useTranslation("user-authentication");
   const submit = useSubmit();
 
   /* Email Login Form */
 
   const emailForm = useForm<LoginWithEmailSchema>({
-    resolver: zodResolver(loginWithEmailSchema),
     defaultValues: {
+      email: "",
       intent: LOGIN_INTENTS.loginWithEmail,
-      email: '',
     },
     errors,
+    resolver: zodResolver(loginWithEmailSchema),
   });
 
   const handleEmailSubmit = async (values: LoginWithEmailSchema) => {
-    await submit(values, { method: 'POST' });
+    await submit(values, { method: "POST" });
   };
 
   /* Google Login Form */
 
   const googleForm = useForm<LoginWithGoogleSchema>({
-    resolver: zodResolver(loginWithGoogleSchema),
     defaultValues: { intent: LOGIN_INTENTS.loginWithGoogle },
+    resolver: zodResolver(loginWithGoogleSchema),
   });
 
   const handleGoogleSubmit = async (values: LoginWithGoogleSchema) => {
-    await submit(values, { method: 'POST' });
+    await submit(values, { method: "POST" });
   };
 
   return (
@@ -85,22 +84,22 @@ export function LoginFormCard({
       <CardHeader className="text-center">
         <CardTitle className="text-xl">
           {inviteLinkInfo
-            ? t('login.form.join-organization', {
-                organizationName: inviteLinkInfo.organizationName,
+            ? t("login.form.join-organization", {
                 creatorName: inviteLinkInfo.creatorName,
                 interpolation: { escapeValue: false },
+                organizationName: inviteLinkInfo.organizationName,
               })
-            : t('login.form.card-title')}
+            : t("login.form.card-title")}
         </CardTitle>
 
         <CardDescription>
           {inviteLinkInfo
-            ? t('login.form.join-organization-description', {
-                organizationName: inviteLinkInfo.organizationName,
+            ? t("login.form.join-organization-description", {
                 creatorName: inviteLinkInfo.creatorName,
                 interpolation: { escapeValue: false },
+                organizationName: inviteLinkInfo.organizationName,
               })
-            : t('login.form.card-description')}
+            : t("login.form.card-description")}
         </CardDescription>
       </CardHeader>
 
@@ -118,12 +117,12 @@ export function LoginFormCard({
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('login.form.email')}</FormLabel>
+                      <FormLabel>{t("login.form.email")}</FormLabel>
 
                       <FormControl>
                         <Input
                           autoComplete="email"
-                          placeholder={t('login.form.email-placeholder')}
+                          placeholder={t("login.form.email-placeholder")}
                           required
                           type="email"
                           {...field}
@@ -138,16 +137,16 @@ export function LoginFormCard({
                 <Button
                   className="w-full"
                   name="intent"
-                  value={LOGIN_INTENTS.loginWithEmail}
                   type="submit"
+                  value={LOGIN_INTENTS.loginWithEmail}
                 >
                   {isLoggingInWithEmail ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t('login.form.submit-button-loading')}
+                      {t("login.form.submit-button-loading")}
                     </>
                   ) : (
-                    t('login.form.submit-button')
+                    t("login.form.submit-button")
                   )}
                 </Button>
               </fieldset>
@@ -156,7 +155,7 @@ export function LoginFormCard({
 
           <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
             <span className="bg-card text-muted-foreground relative z-10 px-2">
-              {t('login.form.divider-text')}
+              {t("login.form.divider-text")}
             </span>
           </div>
 
@@ -177,12 +176,12 @@ export function LoginFormCard({
                   {isLoggingInWithGoogle ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t('login.form.google')}
+                      {t("login.form.google")}
                     </>
                   ) : (
                     <>
                       <GooggleIcon />
-                      {t('login.form.google')}
+                      {t("login.form.google")}
                     </>
                   )}
                 </Button>
@@ -191,15 +190,15 @@ export function LoginFormCard({
           </FormProvider>
 
           <div className="text-center text-sm">
-            {t('login.form.register-prompt')}{' '}
+            {t("login.form.register-prompt")}{" "}
             <Link
-              to={href('/register')}
               className={cn(
-                buttonVariants({ variant: 'link' }),
-                'text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4',
+                buttonVariants({ variant: "link" }),
+                "text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4",
               )}
+              to={href("/register")}
             >
-              {t('login.form.register-link')}
+              {t("login.form.register-link")}
             </Link>
           </div>
         </div>

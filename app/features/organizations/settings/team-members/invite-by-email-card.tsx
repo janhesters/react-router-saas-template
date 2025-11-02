@@ -1,12 +1,18 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { OrganizationMembershipRole } from '@prisma/client';
-import { Loader2Icon } from 'lucide-react';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { Form, useSubmit } from 'react-router';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { OrganizationMembershipRole } from "@prisma/client";
+import { Loader2Icon } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Form, useSubmit } from "react-router";
 
-import { Button } from '~/components/ui/button';
+import { INVITE_BY_EMAIL_INTENT } from "./team-members-constants";
+import type {
+  InviteByEmailErrors,
+  InviteByEmailSchema,
+} from "./team-members-settings-schemas";
+import { inviteByEmailSchema } from "./team-members-settings-schemas";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,7 +20,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+} from "~/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -22,23 +28,16 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui/select';
-import { toFormData } from '~/utils/to-form-data';
-
-import { INVITE_BY_EMAIL_INTENT } from './team-members-constants';
-import type {
-  InviteByEmailErrors,
-  InviteByEmailSchema,
-} from './team-members-settings-schemas';
-import { inviteByEmailSchema } from './team-members-settings-schemas';
+} from "~/components/ui/select";
+import { toFormData } from "~/utils/to-form-data";
 
 export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;
@@ -55,48 +54,48 @@ export function EmailInviteCard({
   organizationIsFull = false,
   successEmail,
 }: EmailInviteCardProps) {
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'settings.team-members.invite-by-email',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "settings.team-members.invite-by-email",
   });
 
   const submit = useSubmit();
 
   const form = useForm<InviteByEmailSchema>({
-    resolver: zodResolver(inviteByEmailSchema),
     defaultValues: {
-      email: '',
+      email: "",
       intent: INVITE_BY_EMAIL_INTENT,
       role: OrganizationMembershipRole.member,
     },
     errors,
+    resolver: zodResolver(inviteByEmailSchema),
   });
 
   const handleSubmit = async (values: InviteByEmailSchema) => {
-    await submit(toFormData(values), { method: 'POST' });
+    await submit(toFormData(values), { method: "POST" });
   };
 
   // If the invite was successful, clear the email input
   useEffect(() => {
     if (successEmail) {
-      form.setValue('email', '');
+      form.setValue("email", "");
     }
-  }, [successEmail]);
+  }, [form.setValue, successEmail]);
 
   const disabled = isInvitingByEmail || organizationIsFull;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('card-title')}</CardTitle>
+        <CardTitle>{t("card-title")}</CardTitle>
 
-        <CardDescription>{t('card-description')}</CardDescription>
+        <CardDescription>{t("card-description")}</CardDescription>
       </CardHeader>
 
       <CardContent>
         <FormProvider {...form}>
           <Form
-            method="POST"
             id="invite-by-email-form"
+            method="POST"
             onSubmit={form.handleSubmit(handleSubmit)}
           >
             <fieldset disabled={disabled}>
@@ -106,12 +105,12 @@ export function EmailInviteCard({
                   name="email"
                   render={({ field }) => (
                     <FormItem className="min-w-0 flex-1">
-                      <FormLabel>{t('form.email')}</FormLabel>
+                      <FormLabel>{t("form.email")}</FormLabel>
 
                       <FormControl>
                         <Input
                           autoComplete="email"
-                          placeholder={t('form.email-placeholder')}
+                          placeholder={t("form.email-placeholder")}
                           required
                           type="email"
                           {...field}
@@ -126,7 +125,7 @@ export function EmailInviteCard({
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('form.role')}</FormLabel>
+                      <FormLabel>{t("form.role")}</FormLabel>
 
                       <Select
                         onValueChange={field.onChange}
@@ -135,25 +134,25 @@ export function EmailInviteCard({
                         <FormControl>
                           <SelectTrigger className="min-w-28">
                             <SelectValue
-                              placeholder={t('form.role-placeholder')}
+                              placeholder={t("form.role-placeholder")}
                             />
                           </SelectTrigger>
                         </FormControl>
 
                         <SelectContent align="end">
                           <SelectItem value={OrganizationMembershipRole.member}>
-                            {t('form.role-member')}
+                            {t("form.role-member")}
                           </SelectItem>
 
                           <SelectItem value={OrganizationMembershipRole.admin}>
-                            {t('form.role-admin')}
+                            {t("form.role-admin")}
                           </SelectItem>
 
                           {currentUserIsOwner && (
                             <SelectItem
                               value={OrganizationMembershipRole.owner}
                             >
-                              {t('form.role-owner')}
+                              {t("form.role-owner")}
                             </SelectItem>
                           )}
                         </SelectContent>
@@ -186,10 +185,10 @@ export function EmailInviteCard({
           {isInvitingByEmail ? (
             <>
               <Loader2Icon className="animate-spin" />
-              {t('form.inviting')}
+              {t("form.inviting")}
             </>
           ) : (
-            <>{t('form.submit-button')}</>
+            t("form.submit-button")
           )}
         </Button>
       </CardFooter>

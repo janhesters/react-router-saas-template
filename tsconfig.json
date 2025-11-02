@@ -33,7 +33,6 @@
     "**/.client/**/*",
     ".react-router/types/**/*",
     "commitlint.config.mjs",
-    "eslint.config.js",
     "prettier.config.js"
   ]
 }

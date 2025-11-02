@@ -1,5 +1,5 @@
-import type { FieldErrors } from 'react-hook-form';
-import { z } from 'zod';
+import type { FieldErrors } from "react-hook-form";
+import { z } from "zod";
 
 import {
   CANCEL_SUBSCRIPTION_INTENT,
@@ -9,7 +9,7 @@ import {
   SWITCH_SUBSCRIPTION_INTENT,
   UPDATE_BILLING_EMAIL_INTENT,
   VIEW_INVOICES_INTENT,
-} from './billing-constants';
+} from "./billing-constants";
 
 export const cancelSubscriptionSchema = z.object({
   intent: z.literal(CANCEL_SUBSCRIPTION_INTENT),
@@ -34,12 +34,12 @@ export const switchSubscriptionSchema = z.object({
 });
 
 export const updateBillingEmailSchema = z.object({
-  intent: z.literal(UPDATE_BILLING_EMAIL_INTENT),
   billingEmail: z
     .email({
-      error: 'billing:billing-page.update-billing-email-modal.email-invalid',
+      error: "billing:billing-page.update-billing-email-modal.email-invalid",
     })
-    .min(1, 'billing:billing-page.update-billing-email-modal.email-required'),
+    .min(1, "billing:billing-page.update-billing-email-modal.email-required"),
+  intent: z.literal(UPDATE_BILLING_EMAIL_INTENT),
 });
 
 export const viewInvoicesSchema = z.object({

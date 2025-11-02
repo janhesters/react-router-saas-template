@@ -1,5 +1,5 @@
 export function loader() {
-  return { headerTitle: 'Active Projects' };
+  return { headerTitle: "Active Projects" };
 }
 
 export default function ProjectsActiveRoute() {

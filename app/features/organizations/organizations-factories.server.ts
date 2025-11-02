@@ -1,20 +1,19 @@
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
+import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
 import type {
   InviteLinkUse,
   Organization,
   OrganizationEmailInviteLink,
   OrganizationInviteLink,
   OrganizationMembership,
-} from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import { addDays } from 'date-fns';
+} from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import { addDays } from "date-fns";
 
-import { slugify } from '~/utils/slugify.server';
-import type { Factory } from '~/utils/types';
-
-import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from '../billing/billing-factories.server';
-import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
+import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from "../billing/billing-factories.server";
+import type { OrganizationWithMembershipsAndSubscriptions } from "../onboarding/onboarding-helpers.server";
+import { slugify } from "~/utils/slugify.server";
+import type { Factory } from "~/utils/types";
 
 /* BASE */
 
@@ -29,21 +28,21 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   name = faker.company.name(),
   slug = slugify(name),
   updatedAt = faker.date.recent({ days: 10 }),
-  createdAt = faker.date.past({ years: 1, refDate: updatedAt }),
+  createdAt = faker.date.past({ refDate: updatedAt, years: 1 }),
   imageUrl = faker.image.url(),
   billingEmail = faker.internet.email(),
   stripeCustomerId = `cus_${createId()}`,
   trialEnd = addDays(createdAt, 14),
 } = {}) => ({
+  billingEmail,
+  createdAt,
   id,
+  imageUrl,
   name,
   slug,
-  createdAt,
-  updatedAt,
-  imageUrl,
-  billingEmail,
   stripeCustomerId,
   trialEnd,
+  updatedAt,
 });
 
 /**
@@ -62,17 +61,16 @@ export const createPopulatedOrganizationInviteLink: Factory<
   creatorId = createId(),
   expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
   token = createId(),
-  // eslint-disable-next-line unicorn/no-null
   deactivatedAt = null,
 } = {}) => ({
-  id,
   createdAt,
-  updatedAt,
-  organizationId,
   creatorId,
-  expiresAt,
-  token,
   deactivatedAt,
+  expiresAt,
+  id,
+  organizationId,
+  token,
+  updatedAt,
 });
 
 /**
@@ -87,7 +85,7 @@ export const createPopulatedInviteLinkUse: Factory<InviteLinkUse> = ({
   id = createId(),
   inviteLinkId = createId(),
   userId = createId(),
-} = {}) => ({ id, createdAt, updatedAt, inviteLinkId, userId });
+} = {}) => ({ createdAt, id, inviteLinkId, updatedAt, userId });
 
 /**
  * Creates an organization membership with populated values.
@@ -102,16 +100,15 @@ export const createPopulatedOrganizationMembership: Factory<
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
   memberId = createId(),
   organizationId = createId(),
-  role = 'member',
-  // eslint-disable-next-line unicorn/no-null
+  role = "member",
   deactivatedAt = null,
 } = {}) => ({
   createdAt,
-  updatedAt,
+  deactivatedAt,
   memberId,
   organizationId,
   role,
-  deactivatedAt,
+  updatedAt,
 });
 
 /**
@@ -132,19 +129,18 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
   token = createId(),
   role = OrganizationMembershipRole.member,
   expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
-  // eslint-disable-next-line unicorn/no-null
   deactivatedAt = null,
 } = {}) => ({
-  id,
   createdAt,
-  updatedAt,
-  organizationId,
-  invitedById,
-  email,
-  token,
-  role,
-  expiresAt,
   deactivatedAt,
+  email,
+  expiresAt,
+  id,
+  invitedById,
+  organizationId,
+  role,
+  token,
+  updatedAt,
 });
 
 /* COMPOUND */
@@ -161,7 +157,7 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
  */
 export const createOrganizationWithMembershipsAndSubscriptions = ({
   organization = createPopulatedOrganization(),
-  memberCount = faker.number.int({ min: 1, max: 10 }),
+  memberCount = faker.number.int({ max: 10, min: 1 }),
   stripeSubscriptions = [
     createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(),
   ],

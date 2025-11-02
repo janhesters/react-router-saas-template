@@ -1,21 +1,20 @@
-import { href } from 'react-router';
-import { describe, expect, test, vi } from 'vitest';
+import { href } from "react-router";
+import { describe, expect, test, vi } from "vitest";
 
+import type { CancelOrModifySubscriptionModalContentProps } from "./cancel-or-modify-subscription-modal-content";
+import { CancelOrModifySubscriptionModalContent } from "./cancel-or-modify-subscription-modal-content";
 import {
   createRoutesStub,
   render,
   screen,
   userEvent,
-} from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
-import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
+} from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<CancelOrModifySubscriptionModalContentProps> = ({
   canCancelSubscription = false,
-  currentTier = 'low',
-  currentTierInterval = 'annual' as const,
+  currentTier = "low",
+  currentTierInterval = "annual" as const,
   isSwitchingToHigh = false,
   isSwitchingToLow = false,
   isSwitchingToMid = false,
@@ -30,30 +29,30 @@ const createProps: Factory<CancelOrModifySubscriptionModalContentProps> = ({
   onCancelSubscriptionClick,
 });
 
-describe('CancelOrModifySubscriptionModalContent component', () => {
-  test('given: any props, should: render tab buttons to switch between monthly and annual', async () => {
+describe("CancelOrModifySubscriptionModalContent component", () => {
+  test("given: any props, should: render tab buttons to switch between monthly and annual", async () => {
     const user = userEvent.setup();
     const props = createProps();
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
     // Check initial state (annual by default)
-    expect(screen.getByRole('tab', { name: /annual/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    expect(screen.getByRole("tab", { name: /annual/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
 
     // Switch to monthly
-    await user.click(screen.getByRole('tab', { name: /monthly/i }));
-    expect(screen.getByRole('tab', { name: /monthly/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    await user.click(screen.getByRole("tab", { name: /monthly/i }));
+    expect(screen.getByRole("tab", { name: /monthly/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
 
     // Verify save monthly message appears only on annual tab
@@ -63,244 +62,244 @@ describe('CancelOrModifySubscriptionModalContent component', () => {
     expect(saveMonthlyText).toBeInTheDocument();
 
     // Switch back to annual and verify message appears
-    await user.click(screen.getByRole('tab', { name: /annual/i }));
+    await user.click(screen.getByRole("tab", { name: /annual/i }));
     expect(
       screen.queryByText(/save 20% on the annual plan/i),
     ).not.toBeInTheDocument();
   });
 
-  test('given: user is on low tier, should: show current plan and upgrade buttons', () => {
-    const props = createProps({ currentTier: 'low' });
+  test("given: user is on low tier, should: show current plan and upgrade buttons", () => {
+    const props = createProps({ currentTier: "low" });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
     // Current plan should be marked
     expect(
-      screen.getByRole('button', { name: /current plan/i }),
+      screen.getByRole("button", { name: /current plan/i }),
     ).toBeDisabled();
 
     // Should show upgrade buttons for mid and high tiers
-    expect(screen.getAllByRole('button', { name: /upgrade/i })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: /upgrade/i })).toHaveLength(2);
 
     // Enterprise should be a link
     expect(
-      screen.getByRole('link', { name: /contact sales/i }),
-    ).toHaveAttribute('href', href('/contact-sales'));
+      screen.getByRole("link", { name: /contact sales/i }),
+    ).toHaveAttribute("href", href("/contact-sales"));
   });
 
-  test('given: user is on mid tier, should: show current plan, upgrade and downgrade buttons', () => {
-    const props = createProps({ currentTier: 'mid' });
+  test("given: user is on mid tier, should: show current plan, upgrade and downgrade buttons", () => {
+    const props = createProps({ currentTier: "mid" });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
     // Current plan should be marked
     expect(
-      screen.getByRole('button', { name: /current plan/i }),
+      screen.getByRole("button", { name: /current plan/i }),
     ).toBeDisabled();
 
     // Should show downgrade button for low tier
     expect(
-      screen.getByRole('button', { name: /downgrade/i }),
+      screen.getByRole("button", { name: /downgrade/i }),
     ).toBeInTheDocument();
 
     // Should show upgrade button for high tier
     expect(
-      screen.getByRole('button', { name: /upgrade/i }),
+      screen.getByRole("button", { name: /upgrade/i }),
     ).toBeInTheDocument();
 
     // Enterprise should be a link
     expect(
-      screen.getByRole('link', { name: /contact sales/i }),
-    ).toHaveAttribute('href', href('/contact-sales'));
+      screen.getByRole("link", { name: /contact sales/i }),
+    ).toHaveAttribute("href", href("/contact-sales"));
   });
 
-  test('given: user is on high tier, should: show current plan and downgrade buttons', () => {
-    const props = createProps({ currentTier: 'high' });
+  test("given: user is on high tier, should: show current plan and downgrade buttons", () => {
+    const props = createProps({ currentTier: "high" });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
     // Current plan should be marked
     expect(
-      screen.getByRole('button', { name: /current plan/i }),
+      screen.getByRole("button", { name: /current plan/i }),
     ).toBeDisabled();
 
     // Should show downgrade buttons for low and mid tiers
-    expect(screen.getAllByRole('button', { name: /downgrade/i })).toHaveLength(
+    expect(screen.getAllByRole("button", { name: /downgrade/i })).toHaveLength(
       2,
     );
 
     // Enterprise should be a link
     expect(
-      screen.getByRole('link', { name: /contact sales/i }),
-    ).toHaveAttribute('href', href('/contact-sales'));
+      screen.getByRole("link", { name: /contact sales/i }),
+    ).toHaveAttribute("href", href("/contact-sales"));
   });
 
-  test.each(['mid', 'high'] as const)(
-    'given: user is switching to low tier, should: show downgrading status',
-    currentTier => {
+  test.each(["mid", "high"] as const)(
+    "given: user is switching to low tier, should: show downgrading status",
+    (currentTier) => {
       const props = createProps({ currentTier, isSwitchingToLow: true });
       const RouterStub = createRoutesStub([
         {
-          path: '/',
           Component: () => (
             <CancelOrModifySubscriptionModalContent {...props} />
           ),
+          path: "/",
         },
       ]);
 
-      render(<RouterStub initialEntries={['/']} />);
+      render(<RouterStub initialEntries={["/"]} />);
 
       expect(
-        screen.getByRole('button', { name: /downgrading/i }),
+        screen.getByRole("button", { name: /downgrading/i }),
       ).toBeDisabled();
     },
   );
 
-  test('given: user is switching to mid tier from low tier, should: show upgrading status', () => {
-    const props = createProps({ currentTier: 'low', isSwitchingToMid: true });
+  test("given: user is switching to mid tier from low tier, should: show upgrading status", () => {
+    const props = createProps({ currentTier: "low", isSwitchingToMid: true });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
-    expect(screen.getByRole('button', { name: /upgrading/i })).toBeDisabled();
+    expect(screen.getByRole("button", { name: /upgrading/i })).toBeDisabled();
   });
 
-  test('given: user is switching to mid tier from high tier, should: show downgrading status', () => {
-    const props = createProps({ currentTier: 'high', isSwitchingToMid: true });
+  test("given: user is switching to mid tier from high tier, should: show downgrading status", () => {
+    const props = createProps({ currentTier: "high", isSwitchingToMid: true });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
-    const downgradingButton = screen.getByRole('button', {
+    const downgradingButton = screen.getByRole("button", {
       name: /downgrading/i,
     });
     expect(downgradingButton).toBeInTheDocument();
     expect(downgradingButton).toBeDisabled();
   });
 
-  test.each(['low', 'mid'] as const)(
-    'given: user is switching to high tier, should: show upgrading status',
-    currentTier => {
+  test.each(["low", "mid"] as const)(
+    "given: user is switching to high tier, should: show upgrading status",
+    (currentTier) => {
       const props = createProps({ currentTier, isSwitchingToHigh: true });
       const RouterStub = createRoutesStub([
         {
-          path: '/',
           Component: () => (
             <CancelOrModifySubscriptionModalContent {...props} />
           ),
+          path: "/",
         },
       ]);
 
-      render(<RouterStub initialEntries={['/']} />);
+      render(<RouterStub initialEntries={["/"]} />);
 
-      expect(screen.getByRole('button', { name: /upgrading/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /upgrading/i })).toBeDisabled();
     },
   );
 
-  test('given: the user has a subscription they can cancel, should: show cancellation option', () => {
+  test("given: the user has a subscription they can cancel, should: show cancellation option", () => {
     const props = createProps({ canCancelSubscription: true });
     const RouterStub = createRoutesStub([
       {
-        path: '/',
         Component: () => <CancelOrModifySubscriptionModalContent {...props} />,
+        path: "/",
       },
     ]);
 
-    render(<RouterStub initialEntries={['/']} />);
+    render(<RouterStub initialEntries={["/"]} />);
 
     expect(
-      screen.getByRole('button', { name: /cancel subscription/i }),
+      screen.getByRole("button", { name: /cancel subscription/i }),
     ).toBeInTheDocument();
   });
 
-  test.each(['low', 'mid', 'high'] as const)(
+  test.each(["low", "mid", "high"] as const)(
     "given: the user is on the monthly plan, should: show 'switch to annual' button for their current tier",
-    currentTier => {
+    (currentTier) => {
       const props = createProps({
         currentTier,
-        currentTierInterval: 'monthly',
+        currentTierInterval: "monthly",
       });
       const RouterStub = createRoutesStub([
         {
-          path: '/',
           Component: () => (
             <CancelOrModifySubscriptionModalContent {...props} />
           ),
+          path: "/",
         },
       ]);
 
-      render(<RouterStub initialEntries={['/']} />);
+      render(<RouterStub initialEntries={["/"]} />);
 
       // Should show "Switch to annual and save 20%" button
       expect(
-        screen.getByRole('button', { name: /switch to annual/i }),
+        screen.getByRole("button", { name: /switch to annual/i }),
       ).toBeInTheDocument();
 
       // Should NOT show the "current plan" button
       expect(
-        screen.queryByRole('button', { name: /current plan/i }),
+        screen.queryByRole("button", { name: /current plan/i }),
       ).not.toBeInTheDocument();
     },
   );
 
-  test.each(['low', 'mid', 'high'] as const)(
+  test.each(["low", "mid", "high"] as const)(
     "given: the user is on the annual plan, should: show 'switch to monthly' button for their current tier",
-    async currentTier => {
+    async (currentTier) => {
       const user = userEvent.setup();
       const props = createProps({
         currentTier,
-        currentTierInterval: 'annual',
+        currentTierInterval: "annual",
       });
       const RouterStub = createRoutesStub([
         {
-          path: '/',
           Component: () => (
             <CancelOrModifySubscriptionModalContent {...props} />
           ),
+          path: "/",
         },
       ]);
 
-      render(<RouterStub initialEntries={['/']} />);
+      render(<RouterStub initialEntries={["/"]} />);
 
       // Switch to the monthly plan
-      await user.click(screen.getByRole('tab', { name: /monthly/i }));
+      await user.click(screen.getByRole("tab", { name: /monthly/i }));
 
       // Should show "Switch to monthly" button
       expect(
-        screen.getByRole('button', { name: /switch to monthly/i }),
+        screen.getByRole("button", { name: /switch to monthly/i }),
       ).toBeInTheDocument();
 
       // Should NOT show the "current plan" button
       expect(
-        screen.queryByRole('button', { name: /current plan/i }),
+        screen.queryByRole("button", { name: /current plan/i }),
       ).not.toBeInTheDocument();
     },
   );

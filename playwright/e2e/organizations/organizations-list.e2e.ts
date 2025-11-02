@@ -1,52 +1,51 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
-import { OrganizationMembershipRole } from '@prisma/client';
-
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
-import {
-  addMembersToOrganizationInDatabaseById,
-  deleteOrganizationFromDatabaseById,
-  saveOrganizationToDatabase,
-} from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { deleteUserAccountFromDatabaseById } from '~/features/user-accounts/user-accounts-model.server';
-import { teardownOrganizationAndMember } from '~/test/test-utils';
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
+import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
-} from '../../utils';
+} from "../../utils";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
+import {
+  addMembersToOrganizationInDatabaseById,
+  deleteOrganizationFromDatabaseById,
+  saveOrganizationToDatabase,
+} from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
+import { teardownOrganizationAndMember } from "~/test/test-utils";
 
-const path = '/organizations';
+const path = "/organizations";
 
-test.describe('organizations list page', () => {
-  test('given: a logged out user, should: redirect to login page with redirectTo parameter', async ({
+test.describe("organizations list page", () => {
+  test("given: a logged out user, should: redirect to login page with redirectTo parameter", async ({
     page,
   }) => {
     await page.goto(path);
 
     const searchParameters = new URLSearchParams();
-    searchParameters.append('redirectTo', path);
+    searchParameters.append("redirectTo", path);
     expect(getPath(page)).toEqual(`/login?${searchParameters.toString()}`);
   });
 
-  test('given: a logged in user who is NOT onboarded, should: redirect to onboarding page', async ({
+  test("given: a logged in user who is NOT onboarded, should: redirect to onboarding page", async ({
     page,
   }) => {
     const { id } = await loginAndSaveUserAccountToDatabase({
-      user: createPopulatedUserAccount({ name: '' }),
       page,
+      user: createPopulatedUserAccount({ name: "" }),
     });
 
     await page.goto(path);
 
-    expect(getPath(page)).toEqual('/onboarding/user-account');
+    expect(getPath(page)).toEqual("/onboarding/user-account");
 
     await deleteUserAccountFromDatabaseById(id);
   });
 
-  test('given: a logged in user with one organization, should: redirect to that organization', async ({
+  test("given: a logged in user with one organization, should: redirect to that organization", async ({
     page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
@@ -62,7 +61,7 @@ test.describe('organizations list page', () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: a logged in user with multiple organizations, should: show the organizations list with correct role badges', async ({
+  test("given: a logged in user with multiple organizations, should: show the organizations list with correct role badges", async ({
     page,
   }) => {
     // Create and login with a user that will be a member in multiple organizations
@@ -98,7 +97,7 @@ test.describe('organizations list page', () => {
     // Verify page content
     await expect(page).toHaveTitle(/organization list/i);
     await expect(
-      page.getByRole('heading', { name: /organization list/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /organization list/i }),
     ).toBeVisible();
     await expect(page.getByText(/your organizations/i)).toBeVisible();
     await expect(
@@ -108,38 +107,38 @@ test.describe('organizations list page', () => {
     ).toBeVisible();
 
     // Verify organizations are listed
-    const organizationsList = page.getByRole('list');
+    const organizationsList = page.getByRole("list");
     await expect(organizationsList).toBeVisible();
 
     // Verify first organization (member)
-    const firstOrgLink = organizationsList.getByRole('link', {
+    const firstOrgLink = organizationsList.getByRole("link", {
       name: firstOrg.name,
     });
     await expect(firstOrgLink).toBeVisible();
     await expect(firstOrgLink).toHaveAttribute(
-      'href',
+      "href",
       `/organizations/${firstOrg.slug}`,
     );
     await expect(organizationsList.getByText(/member/i)).toBeVisible();
 
     // Verify second organization (admin)
-    const secondOrgLink = organizationsList.getByRole('link', {
+    const secondOrgLink = organizationsList.getByRole("link", {
       name: secondOrg.name,
     });
     await expect(secondOrgLink).toBeVisible();
     await expect(secondOrgLink).toHaveAttribute(
-      'href',
+      "href",
       `/organizations/${secondOrg.slug}`,
     );
     await expect(organizationsList.getByText(/admin/i)).toBeVisible();
 
     // Verify third organization (owner)
-    const thirdOrgLink = organizationsList.getByRole('link', {
+    const thirdOrgLink = organizationsList.getByRole("link", {
       name: thirdOrg.name,
     });
     await expect(thirdOrgLink).toBeVisible();
     await expect(thirdOrgLink).toHaveAttribute(
-      'href',
+      "href",
       `/organizations/${thirdOrg.slug}`,
     );
     await expect(organizationsList.getByText(/owner/i)).toBeVisible();
@@ -150,7 +149,7 @@ test.describe('organizations list page', () => {
     await deleteOrganizationFromDatabaseById(thirdOrg.id);
   });
 
-  test('given: a logged in user with multiple organizations, should: lack any automatically detectable accessibility issues', async ({
+  test("given: a logged in user with multiple organizations, should: lack any automatically detectable accessibility issues", async ({
     page,
   }) => {
     // Create and login with a user that will be a member in multiple organizations
@@ -184,7 +183,7 @@ test.describe('organizations list page', () => {
     await page.goto(path);
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules('color-contrast')
+      .disableRules("color-contrast")
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

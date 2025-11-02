@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router';
+import { Outlet } from "react-router";
 
-import { authMiddleware } from '~/features/user-authentication/user-authentication-middleware.server';
+import { authMiddleware } from "~/features/user-authentication/user-authentication-middleware.server";
 
 export const middleware = [authMiddleware];
 

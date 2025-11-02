@@ -1,18 +1,17 @@
-import { useTranslation } from 'react-i18next';
-import { TbArrowLeft } from 'react-icons/tb';
-import { Link, useNavigation } from 'react-router';
+import { useTranslation } from "react-i18next";
+import { TbArrowLeft } from "react-icons/tb";
+import { Link, useNavigation } from "react-router";
 
-import { Button } from '~/components/ui/button';
-import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { createOrganizationAction } from '~/features/organizations/create-organization/create-organization-action.server';
-import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-organization/create-organization-constants';
-import { CreateOrganizationFormCard } from '~/features/organizations/create-organization/create-organization-form-card';
-import { requireAuthenticatedUserExists } from '~/features/user-accounts/user-accounts-helpers.server';
-import { getFormErrors } from '~/utils/get-form-errors';
-import { getPageTitle } from '~/utils/get-page-title.server';
-
-import type { Route } from './+types/new';
+import type { Route } from "./+types/new";
+import { Button } from "~/components/ui/button";
+import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { createOrganizationAction } from "~/features/organizations/create-organization/create-organization-action.server";
+import { CREATE_ORGANIZATION_INTENT } from "~/features/organizations/create-organization/create-organization-constants";
+import { CreateOrganizationFormCard } from "~/features/organizations/create-organization/create-organization-form-card";
+import { requireAuthenticatedUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
+import { getFormErrors } from "~/utils/get-form-errors";
+import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   await requireAuthenticatedUserExists({
@@ -22,7 +21,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   return {
-    title: getPageTitle(i18n.t.bind(i18n), 'organizations:new.page-title'),
+    title: getPageTitle(i18n.t.bind(i18n), "organizations:new.page-title"),
   };
 }
 
@@ -37,13 +36,13 @@ export async function action(args: Route.ActionArgs) {
 export default function NewOrganizationRoute({
   actionData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation('organizations', { keyPrefix: 'new' });
+  const { t } = useTranslation("organizations", { keyPrefix: "new" });
 
   const errors = getFormErrors(actionData);
 
   const navigation = useNavigation();
   const isCreatingOrganization =
-    navigation.formData?.get('intent') === CREATE_ORGANIZATION_INTENT;
+    navigation.formData?.get("intent") === CREATE_ORGANIZATION_INTENT;
 
   return (
     <>
@@ -51,12 +50,12 @@ export default function NewOrganizationRoute({
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <Button asChild className="size-8" size="icon" variant="outline">
-              <Link aria-label={t('back-button-label')} to="/organizations">
+              <Link aria-label={t("back-button-label")} to="/organizations">
                 <TbArrowLeft />
               </Link>
             </Button>
 
-            <h1 className="text-base font-medium">{t('page-title')}</h1>
+            <h1 className="text-base font-medium">{t("page-title")}</h1>
           </div>
 
           <ThemeToggle />

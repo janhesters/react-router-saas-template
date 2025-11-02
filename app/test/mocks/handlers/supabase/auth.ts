@@ -1,18 +1,18 @@
-import { createId } from '@paralleldrive/cuid2';
-import type { RequestHandler } from 'msw';
-import { http, HttpResponse } from 'msw';
-import { z } from 'zod';
-
-import {
-  createPopulatedSupabaseSession,
-  createPopulatedSupabaseUser,
-} from '~/features/user-authentication/user-authentication-factories';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { createId } from "@paralleldrive/cuid2";
+import type { RequestHandler } from "msw";
+import { HttpResponse, http } from "msw";
+import { z } from "zod";
 
 import {
   deleteMockSession,
   getMockSession,
   setMockSession,
-} from './mock-sessions';
+} from "./mock-sessions";
+import {
+  createPopulatedSupabaseSession,
+  createPopulatedSupabaseUser,
+} from "~/features/user-authentication/user-authentication-factories";
 
 /*
 Auth handlers
@@ -24,25 +24,25 @@ const getUserMock = http.get(
   `${process.env.VITE_SUPABASE_URL}/auth/v1/user`,
   async ({ request }) => {
     // Check for the presence of an Authorization header.
-    const authHeader = request.headers.get('Authorization');
+    const authHeader = request.headers.get("Authorization");
 
     // If no Authorization header or it doesn't start with 'Bearer ',
     // return unauthenticated response.
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return HttpResponse.json(
-        { message: 'JWT token is missing' },
+        { message: "JWT token is missing" },
         { status: 401 },
       );
     }
 
-    const accessToken = authHeader.split(' ')[1];
+    const accessToken = authHeader.split(" ")[1];
 
     // Look up the user in the mockSessions map.
-    const session = await getMockSession(accessToken ?? '');
+    const session = await getMockSession(accessToken ?? "");
 
     if (!session) {
       return HttpResponse.json(
-        { message: 'Invalid access token' },
+        { message: "Invalid access token" },
         { status: 401 },
       );
     }
@@ -54,7 +54,7 @@ const getUserMock = http.get(
 
 // supabase.auth.signInWithOtp
 
-const rateLimitPrefix = 'rate-limited';
+const rateLimitPrefix = "rate-limited";
 
 /**
  * Creates a rate limited email for testing purposes. The Supabase MSW handler
@@ -78,7 +78,7 @@ const signInWithOtpMock = http.post(
         return HttpResponse.json(
           {
             message:
-              'For security purposes, you can only request this after 60 seconds.',
+              "For security purposes, you can only request this after 60 seconds.",
           },
           { status: 429 },
         );
@@ -90,12 +90,12 @@ const signInWithOtpMock = http.post(
     } else if (body.phone) {
       // Phone OTP response
       return HttpResponse.json({
-        message_id: 'mock-message-id-123456',
+        message_id: "mock-message-id-123456",
       });
     } else {
       // Invalid request
       return HttpResponse.json(
-        { message: 'You must provide either an email or phone number.' },
+        { message: "You must provide either an email or phone number." },
         { status: 400 },
       );
     }
@@ -125,34 +125,34 @@ const verifyOtpMock = http.post(
     const body = (await request.json()) as Record<string, string>;
 
     // Check for invalid cases
-    if (body.token_hash === 'invalid_token_hash') {
+    if (body.token_hash === "invalid_token_hash") {
       return HttpResponse.json(
         {
-          error: 'Invalid OTP',
-          message: 'Invalid token_hash provided.',
+          error: "Invalid OTP",
+          message: "Invalid token_hash provided.",
         },
         { status: 401 },
       );
     }
 
-    if (body.type === 'email' && !body.token_hash) {
+    if (body.type === "email" && !body.token_hash) {
       return HttpResponse.json(
         {
-          error: 'Invalid parameters',
-          message: 'Missing token_hash parameter.',
+          error: "Invalid parameters",
+          message: "Missing token_hash parameter.",
         },
         { status: 400 },
       );
     }
 
     // The token_hash in tests is the email and the supabase user id stringified.
-    const isValid = typeof body.token_hash === 'string';
+    const isValid = typeof body.token_hash === "string";
 
     if (!isValid) {
       return HttpResponse.json(
         {
-          error: 'Invalid OTP',
-          message: 'Invalid verification parameters.',
+          error: "Invalid OTP",
+          message: "Invalid verification parameters.",
         },
         { status: 401 },
       );
@@ -175,9 +175,9 @@ const verifyOtpMock = http.post(
 // supabase.auth.exchangeCodeForSession
 
 const authCodeDataSchema = z.object({
-  provider: z.string(),
   email: z.string(),
   id: z.string().optional(),
+  provider: z.string(),
 });
 
 type AuthCodeData = z.infer<typeof authCodeDataSchema>;
@@ -195,13 +195,13 @@ const exchangeCodeForSessionMock = http.post(
   async ({ request }) => {
     // Access query parameters dynamically
     const url = new URL(request.url);
-    const grantType = url.searchParams.get('grant_type');
+    const grantType = url.searchParams.get("grant_type");
 
     // Optionally, validate the grant_type if needed.
-    if (grantType !== 'pkce') {
+    if (grantType !== "pkce") {
       return HttpResponse.json(
         {
-          error: 'Invalid grant_type',
+          error: "Invalid grant_type",
           message: 'grant_type must be "pkce"',
         },
         { status: 400 },
@@ -215,7 +215,7 @@ const exchangeCodeForSessionMock = http.post(
     // Validate the request.
     if (!auth_code) {
       return HttpResponse.json(
-        { error: 'Invalid code', message: 'code is required' },
+        { error: "Invalid code", message: "code is required" },
         { status: 400 },
       );
     }
@@ -223,8 +223,8 @@ const exchangeCodeForSessionMock = http.post(
     if (!code_verifier) {
       return HttpResponse.json(
         {
-          error: 'Invalid code_verifier',
-          message: 'code_verifier is required',
+          error: "Invalid code_verifier",
+          message: "code_verifier is required",
         },
         { status: 400 },
       );
@@ -241,9 +241,9 @@ const exchangeCodeForSessionMock = http.post(
     // Return the session data in the format expected by _sessionResponse.
     return HttpResponse.json({
       access_token: mockSession.access_token,
-      refresh_token: mockSession.refresh_token,
-      expires_in: mockSession.expires_in,
       expires_at: mockSession.expires_at,
+      expires_in: mockSession.expires_in,
+      refresh_token: mockSession.refresh_token,
       token_type: mockSession.token_type,
       user: mockUser,
     });
@@ -256,21 +256,21 @@ const logoutMock = http.post(
   `${process.env.VITE_SUPABASE_URL}/auth/v1/logout`,
   async ({ request }) => {
     // Check for the presence of an Authorization header
-    const authHeader = request.headers.get('Authorization');
+    const authHeader = request.headers.get("Authorization");
 
     // If no Authorization header or it doesn't start with 'Bearer ', return unauthenticated response
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return HttpResponse.json(
-        { message: 'JWT token is missing' },
+        { message: "JWT token is missing" },
         { status: 401 },
       );
     }
 
-    const accessToken = authHeader.split(' ')[1];
+    const accessToken = authHeader.split(" ")[1];
 
     if (!accessToken) {
       return HttpResponse.json(
-        { message: 'JWT token is missing' },
+        { message: "JWT token is missing" },
         { status: 401 },
       );
     }
@@ -289,12 +289,12 @@ const deleteUserMock = http.delete(
   `${process.env.VITE_SUPABASE_URL}/auth/v1/admin/users/:id`,
   async ({ request, params }) => {
     // Check for the presence of an Authorization header
-    const authHeader = request.headers.get('Authorization');
+    const authHeader = request.headers.get("Authorization");
 
     // If no Authorization header or it doesn't start with 'Bearer ', return unauthenticated response
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!authHeader?.startsWith("Bearer ")) {
       return HttpResponse.json(
-        { message: 'JWT token is missing' },
+        { message: "JWT token is missing" },
         { status: 401 },
       );
     }
@@ -304,7 +304,7 @@ const deleteUserMock = http.delete(
 
     if (!id) {
       return HttpResponse.json(
-        { message: 'User ID is required' },
+        { message: "User ID is required" },
         { status: 400 },
       );
     }
@@ -315,8 +315,8 @@ const deleteUserMock = http.delete(
     // Return a successful response with a mock user
     return HttpResponse.json({
       user: {
-        id,
         deleted_at: new Date().toISOString(),
+        id,
         soft_delete: body.should_soft_delete ?? false,
       },
     });

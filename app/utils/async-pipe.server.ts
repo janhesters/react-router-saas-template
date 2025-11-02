@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/** biome-ignore-all lint/suspicious/noExplicitAny: asyncPipe is hard to type */
+/** biome-ignore-all lint/style/noNonNullAssertion: We check for null values */
 // A type that represents either a value or a promise of that value.
 type MaybePromise<T> = T | Promise<T>;
 
@@ -96,7 +95,7 @@ export function asyncPipe(
     const [first, ...rest] = fns;
     // Chain the remaining functions using Promise.then
     return rest.reduce(
-      (chain, function_) => chain.then(result => function_(result)),
+      (chain, function_) => chain.then((result) => function_(result)),
       Promise.resolve(first!(...arguments_)),
     );
   };

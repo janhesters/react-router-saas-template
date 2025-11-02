@@ -1,4 +1,4 @@
-import type { DataWithResponseInit } from './http-responses.server';
+import type { DataWithResponseInit } from "./http-responses.server";
 
 /**
  * Checks if the given value is a response.
@@ -14,10 +14,10 @@ export function getIsResponse(
   }
 
   if (
-    typeof response === 'object' &&
+    typeof response === "object" &&
     response !== null &&
-    'data' in response &&
-    'init' in response
+    "data" in response &&
+    "init" in response
   ) {
     return true;
   }

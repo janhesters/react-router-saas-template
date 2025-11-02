@@ -1,19 +1,18 @@
-import { Loader2Icon, TriangleAlertIcon } from 'lucide-react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form } from 'react-router';
+import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
+import { Form } from "react-router";
 
-import { Alert, AlertDescription } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
+import { useCountdown } from "../use-countdown";
+import { registerIntents } from "../user-authentication-constants";
+import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
-
-import { useCountdown } from '../use-countdown';
-import { registerIntents } from '../user-authentication-constants';
+} from "~/components/ui/card";
 
 export type RegistrationVerificationAwaitingProps = {
   email: string;
@@ -26,8 +25,8 @@ export function RegistrationVerificationAwaiting({
   isResending = false,
   isSubmitting = false,
 }: RegistrationVerificationAwaitingProps) {
-  const { t } = useTranslation('user-authentication', {
-    keyPrefix: 'register.magic-link',
+  const { t } = useTranslation("user-authentication", {
+    keyPrefix: "register.magic-link",
   });
 
   const { secondsLeft, reset } = useCountdown(60);
@@ -37,10 +36,10 @@ export function RegistrationVerificationAwaiting({
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">{t('card-title')}</CardTitle>
+        <CardTitle className="text-xl">{t("card-title")}</CardTitle>
 
         <CardDescription className="text-center">
-          {t('card-description')}
+          {t("card-description")}
         </CardDescription>
       </CardHeader>
 
@@ -48,15 +47,15 @@ export function RegistrationVerificationAwaiting({
         <div className="grid gap-4">
           <p className="text-muted-foreground text-xs">
             <Trans
-              i18nKey="user-authentication:register.magic-link.countdown-message"
-              count={secondsLeft}
               components={{ 1: <b /> }}
+              count={secondsLeft}
+              i18nKey="user-authentication:register.magic-link.countdown-message"
             />
           </p>
 
           <Form method="post" onSubmit={() => reset()}>
             <fieldset disabled={waitingToResend || isSubmitting || isResending}>
-              <input type="hidden" name="email" value={email} />
+              <input name="email" type="hidden" value={email} />
 
               <Button
                 className="w-full"
@@ -67,10 +66,10 @@ export function RegistrationVerificationAwaiting({
                 {isResending ? (
                   <>
                     <Loader2Icon className="animate-spin" />
-                    {t('resend-button-loading')}
+                    {t("resend-button-loading")}
                   </>
                 ) : (
-                  t('resend-button')
+                  t("resend-button")
                 )}
               </Button>
             </fieldset>
@@ -79,7 +78,7 @@ export function RegistrationVerificationAwaiting({
           <Alert>
             <TriangleAlertIcon />
 
-            <AlertDescription>{t('alert-description')}</AlertDescription>
+            <AlertDescription>{t("alert-description")}</AlertDescription>
           </Alert>
         </div>
       </CardContent>

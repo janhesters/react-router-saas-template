@@ -1,44 +1,45 @@
-import AxeBuilder from '@axe-core/playwright';
-import { faker } from '@faker-js/faker';
-import type { Organization } from '@prisma/client';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import AxeBuilder from "@axe-core/playwright";
+import { faker } from "@faker-js/faker";
+import type { Organization } from "@prisma/client";
 import {
   OrganizationMembershipRole,
   StripeSubscriptionStatus,
-} from '@prisma/client';
-import { expect, test } from 'playwright/test';
+} from "@prisma/client";
+import { expect, test } from "playwright/test";
 import {
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
   setupTrialOrganizationAndLoginAsMember,
-} from 'playwright/utils';
+} from "playwright/utils";
 
-import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import {
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
   createPopulatedStripeSubscriptionWithItemsAndPrice,
-} from '~/features/billing/billing-factories.server';
-import { retrieveStripePriceWithProductFromDatabaseByLookupKey } from '~/features/billing/stripe-prices-model.server';
-import { saveSubscriptionScheduleWithPhasesAndPriceToDatabase } from '~/features/billing/stripe-subscription-schedule-model.server';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+} from "~/features/billing/billing-factories.server";
+import { retrieveStripePriceWithProductFromDatabaseByLookupKey } from "~/features/billing/stripe-prices-model.server";
+import { saveSubscriptionScheduleWithPhasesAndPriceToDatabase } from "~/features/billing/stripe-subscription-schedule-model.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import {
   addMembersToOrganizationInDatabaseById,
   deleteOrganizationFromDatabaseById,
   retrieveOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
-} from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+} from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { teardownOrganizationAndMember } from '~/test/test-utils';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { teardownOrganizationAndMember } from "~/test/test-utils";
 
-const createPath = (organizationSlug: Organization['slug']) =>
+const createPath = (organizationSlug: Organization["slug"]) =>
   `/organizations/${organizationSlug}/settings/billing`;
 
-test.describe('billing page', () => {
-  test('given: a logged out user, should: redirect to login page with redirectTo parameter', async ({
+test.describe("billing page", () => {
+  test("given: a logged out user, should: redirect to login page with redirectTo parameter", async ({
     page,
   }) => {
     const { slug } = createPopulatedOrganization();
@@ -46,17 +47,17 @@ test.describe('billing page', () => {
     await page.goto(path);
 
     const searchParameters = new URLSearchParams();
-    searchParameters.append('redirectTo', path);
+    searchParameters.append("redirectTo", path);
     expect(getPath(page)).toEqual(`/login?${searchParameters.toString()}`);
   });
 
-  test('given: a logged in user who is NOT onboarded, should: redirect to onboarding', async ({
+  test("given: a logged in user who is NOT onboarded, should: redirect to onboarding", async ({
     page,
   }) => {
     // Setup user without name (implies not onboarded)
     const user = await loginAndSaveUserAccountToDatabase({
-      user: createPopulatedUserAccount({ name: '' }),
       page,
+      user: createPopulatedUserAccount({ name: "" }),
     });
     // Create an org manually they _could_ belong to, but they aren't onboarded
     const organization = createPopulatedOrganization();
@@ -72,7 +73,7 @@ test.describe('billing page', () => {
     await deleteUserAccountFromDatabaseById(user.id);
   });
 
-  test('given: a user who is NOT a member of the organization, should: show 404 page', async ({
+  test("given: a user who is NOT a member of the organization, should: show 404 page", async ({
     page,
   }) => {
     // User 1 and their org
@@ -87,7 +88,7 @@ test.describe('billing page', () => {
 
     // Assert 404 content
     await expect(
-      page.getByRole('heading', { name: /page not found/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /page not found/i }),
     ).toBeVisible();
     await expect(page).toHaveTitle(/404/i);
 
@@ -96,7 +97,7 @@ test.describe('billing page', () => {
     await deleteOrganizationFromDatabaseById(org2.id);
   });
 
-  test('given: the user is a member (NOT an admin / owner), should: show a 404', async ({
+  test("given: the user is a member (NOT an admin / owner), should: show a 404", async ({
     page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
@@ -109,14 +110,14 @@ test.describe('billing page', () => {
 
     // Assert 404 content
     await expect(
-      page.getByRole('heading', { name: /page not found/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /page not found/i }),
     ).toBeVisible();
     await expect(page).toHaveTitle(/404/i);
 
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: the user is an admin or owner and the organization is on a free trial, should: show a free-trial CTA to start paying in the sidebar', async ({
+  test("given: the user is an admin or owner and the organization is on a free trial, should: show a free-trial CTA to start paying in the sidebar", async ({
     page,
   }) => {
     const role = faker.helpers.arrayElement([
@@ -135,24 +136,24 @@ test.describe('billing page', () => {
 
     // Verify headings
     await expect(
-      page.getByRole('heading', { name: /settings/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /settings/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: /billing/i, level: 2 }),
+      page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();
 
     // Sidebar CTA card
-    const sidebarNav = page.getByRole('navigation', { name: /sidebar/i });
+    const sidebarNav = page.getByRole("navigation", { name: /sidebar/i });
     await expect(
       sidebarNav.getByText(/business plan \(trial\)/i),
     ).toBeVisible();
     await expect(sidebarNav.getByText(/trial ends on/i)).toBeVisible();
     await expect(
-      sidebarNav.getByRole('button', { name: /add payment information/i }),
+      sidebarNav.getByRole("button", { name: /add payment information/i }),
     ).toBeVisible();
 
     // Alert CTA banner
-    const alertBanner = page.getByRole('alert');
+    const alertBanner = page.getByRole("alert");
     await expect(
       alertBanner.getByText(/your organization is currently on a free trial/i),
     ).toBeVisible();
@@ -160,59 +161,59 @@ test.describe('billing page', () => {
       alertBanner.getByText(/your free trial will end on/i),
     ).toBeVisible();
     await expect(
-      alertBanner.getByRole('button', { name: /add payment information/i }),
+      alertBanner.getByRole("button", { name: /add payment information/i }),
     ).toBeVisible();
 
     // Verify the regular UI
-    const dl = page.locator('dl');
+    const dl = page.locator("dl");
 
     // Current Plan → Business
-    await expect(dl.locator('dt', { hasText: /current plan/i })).toBeVisible();
-    await expect(dl.locator('dd', { hasText: /business/i })).toBeVisible();
+    await expect(dl.locator("dt", { hasText: /current plan/i })).toBeVisible();
+    await expect(dl.locator("dd", { hasText: /business/i })).toBeVisible();
     await expect(
-      dl.locator('dd', { hasText: /\$85 per user billed monthly/i }),
+      dl.locator("dd", { hasText: /\$85 per user billed monthly/i }),
     ).toBeVisible();
 
     // Users → 1 / 25
-    await expect(dl.locator('dt', { hasText: /users/i })).toBeVisible();
-    await expect(dl.locator('dd', { hasText: /1 \/ 25/i })).toBeVisible();
+    await expect(dl.locator("dt", { hasText: /users/i })).toBeVisible();
+    await expect(dl.locator("dd", { hasText: /1 \/ 25/i })).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /manage plan/i }),
+      page.getByRole("button", { name: /manage plan/i }),
     ).toBeVisible();
 
     // Projected Total → $85
     await expect(
-      dl.locator('dt', { hasText: /projected total/i }),
+      dl.locator("dt", { hasText: /projected total/i }),
     ).toBeVisible();
-    await expect(dl.locator('dd', { hasText: /^\$85$/i })).toBeVisible();
+    await expect(dl.locator("dd", { hasText: /^\$85$/i })).toBeVisible();
     await expect(
-      page.getByRole('link', { name: /manage users/i }),
+      page.getByRole("link", { name: /manage users/i }),
     ).toHaveAttribute(
-      'href',
+      "href",
       `/organizations/${organization.slug}/settings/members`,
     );
 
     // Next Billing Date → trial end date
     await expect(
-      dl.locator('dt', { hasText: /next billing date/i }),
+      dl.locator("dt", { hasText: /next billing date/i }),
     ).toBeVisible();
     const nextBillingDateText = organization.trialEnd.toLocaleDateString(
-      'en-US',
-      { month: 'long', day: 'numeric', year: 'numeric' },
+      "en-US",
+      { day: "numeric", month: "long", year: "numeric" },
     );
     await expect(
-      dl.locator('dd', { hasText: nextBillingDateText }),
+      dl.locator("dd", { hasText: nextBillingDateText }),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /view invoices/i }),
+      page.getByRole("button", { name: /view invoices/i }),
     ).toBeDisabled();
 
     // Open the modal to pick a plan
     await page
-      .getByRole('button', { name: /add payment information/i })
+      .getByRole("button", { name: /add payment information/i })
       .first()
       .click();
-    const modal = page.getByRole('dialog', { name: /choose your plan/i });
+    const modal = page.getByRole("dialog", { name: /choose your plan/i });
     await expect(modal).toBeVisible();
     await expect(
       modal.getByText(/pick a plan that fits your needs\./i),
@@ -223,9 +224,9 @@ test.describe('billing page', () => {
       modal.locator('div[role="tabpanel"]:not([hidden])');
 
     // --- 1. ANNUAL (default) ---
-    await expect(page.getByRole('tab', { name: /annual/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    await expect(page.getByRole("tab", { name: /annual/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
 
     // Hobby card
@@ -237,8 +238,8 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(hobbyAnnual.getByText(/-10%/i)).toBeVisible();
     await expect(
-      hobbyAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_hobby_planv2');
+      hobbyAnnual.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "annual_hobby_planv2");
 
     // Startup card
     const startupAnnual = activePanel().locator(
@@ -249,8 +250,8 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(startupAnnual.getByText(/-15%/i)).toBeVisible();
     await expect(
-      startupAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_startup_planv2');
+      startupAnnual.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "annual_startup_planv2");
 
     // Business card
     const businessAnnual = activePanel().locator(
@@ -261,8 +262,8 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(businessAnnual.getByText(/-20%/i)).toBeVisible();
     await expect(
-      businessAnnual.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'annual_business_planv2');
+      businessAnnual.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "annual_business_planv2");
 
     // Enterprise card
     const enterpriseAnnual = activePanel().locator(
@@ -270,14 +271,14 @@ test.describe('billing page', () => {
     );
     await expect(enterpriseAnnual.getByText(/^custom$/i)).toBeVisible();
     await expect(
-      enterpriseAnnual.getByRole('link', { name: /contact sales/i }),
-    ).toHaveAttribute('href', '/contact-sales');
+      enterpriseAnnual.getByRole("link", { name: /contact sales/i }),
+    ).toHaveAttribute("href", "/contact-sales");
 
     // --- 2. MONTHLY ---
-    await page.getByRole('tab', { name: /monthly/i }).click();
-    await expect(page.getByRole('tab', { name: /monthly/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    await page.getByRole("tab", { name: /monthly/i }).click();
+    await expect(page.getByRole("tab", { name: /monthly/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
 
     const monthly = activePanel();
@@ -291,8 +292,8 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(hobbyMonthly.getByText(/-10%/i)).toHaveCount(0);
     await expect(
-      hobbyMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_hobby_planv2');
+      hobbyMonthly.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "monthly_hobby_planv2");
 
     // Startup @ $30
     const startupMonthly = monthly.locator(
@@ -303,8 +304,8 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(startupMonthly.getByText(/-15%/i)).toHaveCount(0);
     await expect(
-      startupMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_startup_planv2');
+      startupMonthly.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "monthly_startup_planv2");
 
     // Business @ $55
     const businessMonthly = monthly.locator(
@@ -315,35 +316,35 @@ test.describe('billing page', () => {
     ).toBeVisible();
     await expect(businessMonthly.getByText(/-20%/i)).toHaveCount(0);
     await expect(
-      businessMonthly.getByRole('button', { name: /subscribe now/i }),
-    ).toHaveAttribute('value', 'monthly_business_planv2');
+      businessMonthly.getByRole("button", { name: /subscribe now/i }),
+    ).toHaveAttribute("value", "monthly_business_planv2");
 
     // Close the modal
-    await modal.getByRole('button', { name: /close/i }).click();
+    await modal.getByRole("button", { name: /close/i }).click();
 
     // 2) Open via alert CTA
     await alertBanner
-      .getByRole('button', { name: /add payment information/i })
+      .getByRole("button", { name: /add payment information/i })
       .click();
-    const modalFromAlert = page.getByRole('dialog', {
+    const modalFromAlert = page.getByRole("dialog", {
       name: /choose your plan/i,
     });
     await expect(modalFromAlert).toBeVisible();
-    await modalFromAlert.getByRole('button', { name: /close/i }).click();
+    await modalFromAlert.getByRole("button", { name: /close/i }).click();
 
     // 3) Open via Manage Plan
-    await page.getByRole('button', { name: /manage plan/i }).click();
-    const modalFromManagePlan = page.getByRole('dialog', {
+    await page.getByRole("button", { name: /manage plan/i }).click();
+    const modalFromManagePlan = page.getByRole("dialog", {
       name: /manage plan/i,
     });
     await expect(modalFromManagePlan).toBeVisible();
-    await modalFromManagePlan.getByRole('button', { name: /close/i }).click();
+    await modalFromManagePlan.getByRole("button", { name: /close/i }).click();
     await expect(modalFromManagePlan).toBeHidden();
 
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: the user is an admin or an owner and the organization is on a free trial and has more members than a plan allows, should: NOT let the user subscribe to a plan that allows less seats', async ({
+  test("given: the user is an admin or an owner and the organization is on a free trial and has more members than a plan allows, should: NOT let the user subscribe to a plan that allows less seats", async ({
     page,
   }) => {
     const role = faker.helpers.arrayElement([
@@ -374,14 +375,14 @@ test.describe('billing page', () => {
 
     // Verify headings
     await expect(
-      page.getByRole('heading', { name: /settings/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /settings/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: /billing/i, level: 2 }),
+      page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();
 
     // Alert CTA banner
-    const alertBanner = page.getByRole('alert');
+    const alertBanner = page.getByRole("alert");
     await expect(
       alertBanner.getByText(/your organization is currently on a free trial/i),
     ).toBeVisible();
@@ -389,14 +390,14 @@ test.describe('billing page', () => {
       alertBanner.getByText(/your free trial will end on/i),
     ).toBeVisible();
     await expect(
-      alertBanner.getByRole('button', { name: /add payment information/i }),
+      alertBanner.getByRole("button", { name: /add payment information/i }),
     ).toBeVisible();
 
     // Open modal to pick a plan
     await alertBanner
-      .getByRole('button', { name: /add payment information/i })
+      .getByRole("button", { name: /add payment information/i })
       .click();
-    const modal = page.getByRole('dialog', { name: /choose your plan/i });
+    const modal = page.getByRole("dialog", { name: /choose your plan/i });
     await expect(modal).toBeVisible();
 
     // helper: current tab panel
@@ -409,7 +410,7 @@ test.describe('billing page', () => {
       '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
     );
     await expect(
-      hobbyAnnual.getByRole('button', { name: /subscribe now/i }),
+      hobbyAnnual.getByRole("button", { name: /subscribe now/i }),
     ).toBeDisabled();
 
     // And the explanatory copy appears
@@ -430,22 +431,22 @@ test.describe('billing page', () => {
       '[data-slot=card]:has([data-slot=card-title]:has-text("Startup"))',
     );
     await expect(
-      startupAnnual.getByRole('button', { name: /subscribe now/i }),
+      startupAnnual.getByRole("button", { name: /subscribe now/i }),
     ).toBeEnabled();
 
     const businessAnnual = activePanel().locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Business"))',
     );
     await expect(
-      businessAnnual.getByRole('button', { name: /subscribe now/i }),
+      businessAnnual.getByRole("button", { name: /subscribe now/i }),
     ).toBeEnabled();
 
     // --- MONTHLY ---
     // Switch to monthly tab
-    await page.getByRole('tab', { name: /monthly/i }).click();
-    await expect(page.getByRole('tab', { name: /monthly/i })).toHaveAttribute(
-      'aria-selected',
-      'true',
+    await page.getByRole("tab", { name: /monthly/i }).click();
+    await expect(page.getByRole("tab", { name: /monthly/i })).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
     const monthlyPanel = activePanel();
 
@@ -454,7 +455,7 @@ test.describe('billing page', () => {
       '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
     );
     await expect(
-      hobbyMonthly.getByRole('button', { name: /subscribe now/i }),
+      hobbyMonthly.getByRole("button", { name: /subscribe now/i }),
     ).toBeDisabled();
 
     // Teardown
@@ -462,7 +463,7 @@ test.describe('billing page', () => {
     await deleteUserAccountFromDatabaseById(otherUser.id);
   });
 
-  test('given: the user is an admin or an owner and the organization is NOT on a free trial, should: let the user switch plans, view their invoices, and switch their billing email', async ({
+  test("given: the user is an admin or an owner and the organization is NOT on a free trial, should: let the user switch plans, view their invoices, and switch their billing email", async ({
     page,
   }) => {
     const role = faker.helpers.arrayElement([
@@ -470,9 +471,9 @@ test.describe('billing page', () => {
       OrganizationMembershipRole.owner,
     ]);
     const { organization, user } = await setupOrganizationAndLoginAsMember({
+      lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
       page,
       role,
-      lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
     });
 
     // Navigate to billing page
@@ -481,145 +482,145 @@ test.describe('billing page', () => {
     // Verify page title + headings
     await expect(page).toHaveTitle(/billing | react router saas template/i);
     await expect(
-      page.getByRole('heading', { name: /settings/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /settings/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole('heading', { name: /billing/i, level: 2 }),
+      page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();
 
     // "Your Plan" section
     await expect(
-      page.getByRole('heading', { name: /your plan/i, level: 3 }),
+      page.getByRole("heading", { level: 3, name: /your plan/i }),
     ).toBeVisible();
 
     const planForm = page.locator('form[action*="/settings/billing"]');
-    const planDl = planForm.locator('dl');
+    const planDl = planForm.locator("dl");
 
     // pull subscription & price info
     const subscription = organization.stripeSubscriptions[0]!;
     const item = subscription.items[0]!;
     const price = item.price;
-    const interval = price.interval === 'month' ? 'monthly' : 'annually';
+    const interval = price.interval === "month" ? "monthly" : "annually";
     const unitAmount = price.unitAmount / 100;
     const maxSeats = price.product.maxSeats;
     const seatsUsed = 1;
     const projectedTotal = unitAmount * seatsUsed;
-    const nextDate = item.currentPeriodEnd.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
+    const nextDate = item.currentPeriodEnd.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
 
     // Current Plan → name + price/interval
     await expect(
-      planDl.locator('dt', { hasText: /current plan/i }),
+      planDl.locator("dt", { hasText: /current plan/i }),
     ).toBeVisible();
     await expect(
-      planDl.locator('dd', {
-        hasText: new RegExp(price.product.name, 'i'),
+      planDl.locator("dd", {
+        hasText: new RegExp(price.product.name, "i"),
       }),
     ).toBeVisible();
     await expect(
-      planDl.locator('dd', {
+      planDl.locator("dd", {
         hasText: new RegExp(
           String.raw`\$${unitAmount}\s*per user billed ${interval}`,
-          'i',
+          "i",
         ),
       }),
     ).toBeVisible();
 
     // Manage plan button
     await expect(
-      planForm.getByRole('button', { name: /manage plan/i }),
+      planForm.getByRole("button", { name: /manage plan/i }),
     ).toBeVisible();
 
     // Users → seatsUsed / maxSeats
-    await expect(planDl.locator('dt', { hasText: /users/i })).toBeVisible();
+    await expect(planDl.locator("dt", { hasText: /users/i })).toBeVisible();
     await expect(
-      planDl.locator('dd', {
-        hasText: new RegExp(String.raw`^${seatsUsed} \/ ${maxSeats}$`, 'i'),
+      planDl.locator("dd", {
+        hasText: new RegExp(String.raw`^${seatsUsed} \/ ${maxSeats}$`, "i"),
       }),
     ).toBeVisible();
     await expect(
-      page.getByRole('link', { name: /manage users/i }),
+      page.getByRole("link", { name: /manage users/i }),
     ).toHaveAttribute(
-      'href',
+      "href",
       `/organizations/${organization.slug}/settings/members`,
     );
 
     // Projected Total
     await expect(
-      planDl.locator('dt', { hasText: /projected total/i }),
+      planDl.locator("dt", { hasText: /projected total/i }),
     ).toBeVisible();
     await expect(
-      planDl.locator('dd', {
-        hasText: new RegExp(String.raw`^\$${projectedTotal}$`, 'i'),
+      planDl.locator("dd", {
+        hasText: new RegExp(String.raw`^\$${projectedTotal}$`, "i"),
       }),
     ).toBeVisible();
 
     // Next Billing Date
     await expect(
-      planDl.locator('dt', { hasText: /next billing date/i }),
+      planDl.locator("dt", { hasText: /next billing date/i }),
     ).toBeVisible();
-    await expect(planDl.locator('dd', { hasText: nextDate })).toBeVisible();
+    await expect(planDl.locator("dd", { hasText: nextDate })).toBeVisible();
 
     // View Invoices
-    const viewInvoices = planForm.getByRole('button', {
+    const viewInvoices = planForm.getByRole("button", {
       name: /view invoices/i,
     });
     await expect(viewInvoices).toBeVisible();
-    await expect(viewInvoices).toHaveAttribute('name', 'intent');
-    await expect(viewInvoices).toHaveAttribute('value', 'viewInvoices');
+    await expect(viewInvoices).toHaveAttribute("name", "intent");
+    await expect(viewInvoices).toHaveAttribute("value", "viewInvoices");
 
     // "Payment Information" section
     await expect(
-      page.getByRole('heading', { name: /payment information/i, level: 3 }),
+      page.getByRole("heading", { level: 3, name: /payment information/i }),
     ).toBeVisible();
-    const paymentDl = page.locator('dl').nth(1);
+    const paymentDl = page.locator("dl").nth(1);
 
     // Billing Email
     await expect(
-      paymentDl.locator('dt', { hasText: /billing email/i }),
+      paymentDl.locator("dt", { hasText: /billing email/i }),
     ).toBeVisible();
-    await expect(paymentDl.locator('dd')).toHaveText(organization.billingEmail);
+    await expect(paymentDl.locator("dd")).toHaveText(organization.billingEmail);
     await expect(
-      paymentDl.getByRole('button', { name: /edit/i }),
+      paymentDl.getByRole("button", { name: /edit/i }),
     ).toBeVisible();
 
     //
     // ——— OPEN AND ASSERT THE “MANAGE PLAN” MODAL ——————————————
     //
-    await planForm.getByRole('button', { name: /manage plan/i }).click();
-    const planModal = page.getByRole('dialog', { name: /manage plan/i });
+    await planForm.getByRole("button", { name: /manage plan/i }).click();
+    const planModal = page.getByRole("dialog", { name: /manage plan/i });
     await expect(planModal).toBeVisible();
 
     // Annual tab selected by default
     await expect(
-      planModal.getByRole('tab', { name: /annual/i }),
-    ).toHaveAttribute('aria-selected', 'true');
+      planModal.getByRole("tab", { name: /annual/i }),
+    ).toHaveAttribute("aria-selected", "true");
     await expect(
-      planModal.getByRole('tab', { name: /monthly/i }),
+      planModal.getByRole("tab", { name: /monthly/i }),
     ).toBeVisible();
 
     // Annual panel: 1 Current Plan, 1 Upgrade, Contact Sales, Cancel subscription
     await expect(
-      planModal.getByRole('button', { name: /current plan/i }),
+      planModal.getByRole("button", { name: /current plan/i }),
     ).toHaveCount(1);
     await expect(
-      planModal.getByRole('button', { name: /upgrade/i }),
+      planModal.getByRole("button", { name: /upgrade/i }),
     ).toHaveCount(1);
     await expect(
-      planModal.getByRole('link', { name: /contact sales/i }),
+      planModal.getByRole("link", { name: /contact sales/i }),
     ).toBeVisible();
     await expect(
-      planModal.getByRole('button', { name: /cancel subscription/i }),
+      planModal.getByRole("button", { name: /cancel subscription/i }),
     ).toBeVisible();
 
     // ——— SWITCH TO MONTHLY TAB ——————————————————————————————
-    await planModal.getByRole('tab', { name: /monthly/i }).click();
+    await planModal.getByRole("tab", { name: /monthly/i }).click();
     await expect(
-      planModal.getByRole('tab', { name: /monthly/i }),
-    ).toHaveAttribute('aria-selected', 'true');
+      planModal.getByRole("tab", { name: /monthly/i }),
+    ).toHaveAttribute("aria-selected", "true");
     await expect(
       planModal.getByText(/save up to 20% on the annual plan\./i),
     ).toBeVisible();
@@ -628,27 +629,27 @@ test.describe('billing page', () => {
     const monthlyPanel = () =>
       planModal.locator('div[role="tabpanel"]:not([hidden])');
     await expect(
-      monthlyPanel().getByRole('button', { name: /downgrade/i }),
-    ).toHaveAttribute('value', 'monthly_hobby_planv2');
+      monthlyPanel().getByRole("button", { name: /downgrade/i }),
+    ).toHaveAttribute("value", "monthly_hobby_planv2");
     await expect(
-      monthlyPanel().getByRole('button', { name: /switch to monthly/i }),
-    ).toHaveAttribute('value', 'monthly_startup_planv2');
+      monthlyPanel().getByRole("button", { name: /switch to monthly/i }),
+    ).toHaveAttribute("value", "monthly_startup_planv2");
     await expect(
-      monthlyPanel().getByRole('button', { name: /upgrade/i }),
-    ).toHaveAttribute('value', 'monthly_business_planv2');
+      monthlyPanel().getByRole("button", { name: /upgrade/i }),
+    ).toHaveAttribute("value", "monthly_business_planv2");
 
     // ——— OPEN AND ASSERT THE “CANCEL SUBSCRIPTION” MODAL ——————————
     await planModal
-      .getByRole('button', { name: /cancel subscription/i })
+      .getByRole("button", { name: /cancel subscription/i })
       .click();
-    const cancelPlanModal = page.getByRole('dialog', {
+    const cancelPlanModal = page.getByRole("dialog", {
       name: /are you sure you want to cancel your subscription\?/i,
     });
     await expect(cancelPlanModal).toBeVisible();
 
     // Cancel dialog header & description
     await expect(
-      cancelPlanModal.getByRole('heading', {
+      cancelPlanModal.getByRole("heading", {
         name: /are you sure you want to cancel your subscription\?/i,
       }),
     ).toBeVisible();
@@ -659,27 +660,27 @@ test.describe('billing page', () => {
     ).toBeVisible();
 
     // List of features (4 items)
-    const features = cancelPlanModal.locator('ul > li');
+    const features = cancelPlanModal.locator("ul > li");
     await expect(features).toHaveCount(4);
 
     // Footer buttons: "Select a different plan" + Cancel subscription form button
     await expect(
-      cancelPlanModal.getByRole('button', { name: /select a different plan/i }),
+      cancelPlanModal.getByRole("button", { name: /select a different plan/i }),
     ).toBeVisible();
-    const confirmCancel = cancelPlanModal.getByRole('button', {
+    const confirmCancel = cancelPlanModal.getByRole("button", {
       name: /cancel subscription/i,
     });
-    await expect(confirmCancel).toHaveAttribute('name', 'intent');
-    await expect(confirmCancel).toHaveAttribute('value', 'cancelSubscription');
+    await expect(confirmCancel).toHaveAttribute("name", "intent");
+    await expect(confirmCancel).toHaveAttribute("value", "cancelSubscription");
 
     // Close the manage-plan modal
-    await cancelPlanModal.getByRole('button', { name: /close/i }).click();
+    await cancelPlanModal.getByRole("button", { name: /close/i }).click();
 
     //
     // ——— OPEN AND ASSERT THE “EDIT BILLING EMAIL” MODAL —————————
     //
-    await paymentDl.getByRole('button', { name: /edit/i }).click();
-    const emailModal = page.getByRole('dialog', {
+    await paymentDl.getByRole("button", { name: /edit/i }).click();
+    const emailModal = page.getByRole("dialog", {
       name: /edit your billing email/i,
     });
     await expect(emailModal).toBeVisible();
@@ -688,19 +689,19 @@ test.describe('billing page', () => {
     const newEmail = faker.internet.email();
     const emailInput = emailModal.getByLabel(/email/i);
     await emailInput.fill(newEmail);
-    await emailModal.getByRole('button', { name: /save changes/i }).click();
+    await emailModal.getByRole("button", { name: /save changes/i }).click();
 
     // Toast should appear then close the modal
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/billing email updated/i),
     ).toBeVisible();
-    await emailModal.getByRole('button', { name: /close/i }).click();
+    await emailModal.getByRole("button", { name: /close/i }).click();
     await expect(emailModal).toBeHidden();
 
     // UI should update
-    await expect(paymentDl.locator('dd')).toHaveText(newEmail);
+    await expect(paymentDl.locator("dd")).toHaveText(newEmail);
 
     // DB should persist new email
     const updatedOrg = await retrieveOrganizationFromDatabaseById(
@@ -729,7 +730,7 @@ test.describe('billing page', () => {
     await page.goto(createPath(organization.slug));
 
     // banner container
-    const pendingBanner = page.getByRole('alert');
+    const pendingBanner = page.getByRole("alert");
     await expect(pendingBanner).toBeVisible();
 
     // title & description slots
@@ -739,11 +740,11 @@ test.describe('billing page', () => {
 
     const endDate =
       organization.stripeSubscriptions[0]!.items[0]!.currentPeriodEnd.toLocaleDateString(
-        'en-US',
+        "en-US",
         {
-          month: 'long',
-          day: 'numeric',
-          year: 'numeric',
+          day: "numeric",
+          month: "long",
+          year: "numeric",
         },
       );
     await expect(
@@ -753,7 +754,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
 
     // resume button
-    const resumeButton = pendingBanner.getByRole('button', {
+    const resumeButton = pendingBanner.getByRole("button", {
       name: /resume subscription/i,
     });
     await expect(resumeButton).toBeVisible();
@@ -762,7 +763,7 @@ test.describe('billing page', () => {
     await resumeButton.click();
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/subscription resumed/i),
     ).toBeVisible();
     await expect(pendingBanner).toBeHidden();
@@ -784,13 +785,13 @@ test.describe('billing page', () => {
       page,
       role,
       subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
-        status: StripeSubscriptionStatus.canceled,
         items: [
           {
             // make sure there's a currentPeriodEnd in the past
             currentPeriodEnd: faker.date.past(),
           },
         ],
+        status: StripeSubscriptionStatus.canceled,
       }),
     });
 
@@ -800,7 +801,7 @@ test.describe('billing page', () => {
     //
     // — alert banner —
     //
-    const inactiveBanner = page.getByRole('alert');
+    const inactiveBanner = page.getByRole("alert");
     await expect(inactiveBanner).toBeVisible();
     await expect(
       inactiveBanner.getByText(/your subscription is inactive\./i),
@@ -810,7 +811,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
 
     // banner "Reactivate subscription" button
-    const bannerReactivate = inactiveBanner.getByRole('button', {
+    const bannerReactivate = inactiveBanner.getByRole("button", {
       name: /reactivate subscription/i,
     });
     await expect(bannerReactivate).toBeVisible();
@@ -818,7 +819,7 @@ test.describe('billing page', () => {
     //
     // — sidebar card —
     //
-    const sidebar = page.getByRole('navigation', { name: /sidebar/i });
+    const sidebar = page.getByRole("navigation", { name: /sidebar/i });
     const inactiveCard = sidebar.locator('[data-slot="card"]');
 
     await expect(
@@ -829,7 +830,7 @@ test.describe('billing page', () => {
     ).toBeVisible();
 
     // sidebar "Choose plan" button
-    const choosePlanButton = inactiveCard.getByRole('button', {
+    const choosePlanButton = inactiveCard.getByRole("button", {
       name: /choose plan/i,
     });
     await expect(choosePlanButton).toBeVisible();
@@ -838,12 +839,12 @@ test.describe('billing page', () => {
     // clicking the sidebar button opens the reactivate modal
     //
     await choosePlanButton.click();
-    const reactivateModal = page.getByRole('dialog', {
+    const reactivateModal = page.getByRole("dialog", {
       name: /choose your plan to reactivate your subscription/i,
     });
     await expect(reactivateModal).toBeVisible();
     // close it to reset state
-    await reactivateModal.getByRole('button', { name: /close/i }).click();
+    await reactivateModal.getByRole("button", { name: /close/i }).click();
     await expect(reactivateModal).toBeHidden();
 
     //
@@ -851,7 +852,7 @@ test.describe('billing page', () => {
     //
     await bannerReactivate.click();
     await expect(
-      page.getByRole('dialog', {
+      page.getByRole("dialog", {
         name: /choose your plan to reactivate your subscription/i,
       }),
     ).toBeVisible();
@@ -871,9 +872,9 @@ test.describe('billing page', () => {
 
     // seed an org with an active subscription
     const { organization, user } = await setupOrganizationAndLoginAsMember({
+      lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
       page,
       role,
-      lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
     });
     const subscription = organization.stripeSubscriptions[0]!;
 
@@ -884,8 +885,8 @@ test.describe('billing page', () => {
       );
     const schedule =
       createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-        subscriptionId: subscription.stripeId,
         phases: [{ price: lowerPrice!, startDate: faker.date.soon() }],
+        subscriptionId: subscription.stripeId,
       });
     await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(schedule);
 
@@ -893,27 +894,27 @@ test.describe('billing page', () => {
     await page.goto(createPath(organization.slug));
 
     // — pending-downgrade banner —
-    const pendingBanner = page.getByRole('alert');
+    const pendingBanner = page.getByRole("alert");
     await expect(pendingBanner).toBeVisible();
     await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
 
     // build expected description
     const phase = schedule.phases[0]!;
     const billingInterval =
-      phase.price.interval === 'month' ? 'monthly' : 'annually';
-    const downgradeDate = phase.startDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
+      phase.price.interval === "month" ? "monthly" : "annually";
+    const downgradeDate = phase.startDate.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
     const descRegex = new RegExp(
       String.raw`Your subscription will downgrade to the hobby \(${billingInterval}\) plan on ${downgradeDate}\.`,
-      'i',
+      "i",
     );
     await expect(pendingBanner.getByText(descRegex)).toBeVisible();
 
     // “Keep current subscription” CTA
-    const keepButton = pendingBanner.getByRole('button', {
+    const keepButton = pendingBanner.getByRole("button", {
       name: /keep current subscription/i,
     });
     await expect(keepButton).toBeVisible();
@@ -922,7 +923,7 @@ test.describe('billing page', () => {
     await keepButton.click();
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/current subscription kept/i),
     ).toBeVisible();
     await expect(pendingBanner).toBeHidden();
@@ -930,7 +931,7 @@ test.describe('billing page', () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: the user is on an annual subscription and has a plan change for the same tier but monthly scheduled, should: show the pending downgrade banner', async ({
+  test("given: the user is on an annual subscription and has a plan change for the same tier but monthly scheduled, should: show the pending downgrade banner", async ({
     page,
   }) => {
     // pick an admin or owner role
@@ -941,9 +942,9 @@ test.describe('billing page', () => {
 
     // seed an org with an ANNUAL “high” (e.g. Business) subscription
     const { organization, user } = await setupOrganizationAndLoginAsMember({
+      lookupKey: priceLookupKeysByTierAndInterval.high.annual,
       page,
       role,
-      lookupKey: priceLookupKeysByTierAndInterval.high.annual,
     });
     const subscription = organization.stripeSubscriptions[0]!;
 
@@ -954,13 +955,13 @@ test.describe('billing page', () => {
       );
     const schedule =
       createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-        subscriptionId: subscription.stripeId,
         phases: [
           {
             price: monthlyPrice!,
             startDate: faker.date.soon(),
           },
         ],
+        subscriptionId: subscription.stripeId,
       });
     await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(schedule);
 
@@ -968,25 +969,25 @@ test.describe('billing page', () => {
     await page.goto(createPath(organization.slug));
 
     // — pending-downgrade banner —
-    const pendingBanner = page.getByRole('alert');
+    const pendingBanner = page.getByRole("alert");
     await expect(pendingBanner).toBeVisible();
     await expect(pendingBanner.getByText(/downgrade scheduled/i)).toBeVisible();
 
     // build expected description
     const phase = schedule.phases[0]!;
-    const switchDate = phase.startDate.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
+    const switchDate = phase.startDate.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
     const descRegex = new RegExp(
       String.raw`Your subscription will downgrade to the business \(monthly\) plan on ${switchDate}\.`,
-      'i',
+      "i",
     );
     await expect(pendingBanner.getByText(descRegex)).toBeVisible();
 
     // “Keep current subscription” CTA
-    const keepButton = pendingBanner.getByRole('button', {
+    const keepButton = pendingBanner.getByRole("button", {
       name: /keep current subscription/i,
     });
     await expect(keepButton).toBeVisible();
@@ -995,7 +996,7 @@ test.describe('billing page', () => {
     await keepButton.click();
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/current subscription kept/i),
     ).toBeVisible();
     await expect(pendingBanner).toBeHidden();
@@ -1007,7 +1008,7 @@ test.describe('billing page', () => {
   // ========================================================================
   // Accessibility Tests
   // ========================================================================
-  test('given: an owner user, should: lack automatically detectable accessibility issues', async ({
+  test("given: an owner user, should: lack automatically detectable accessibility issues", async ({
     page,
   }) => {
     const data = await setupOrganizationAndLoginAsMember({
@@ -1018,7 +1019,7 @@ test.describe('billing page', () => {
     await page.goto(createPath(data.organization.slug));
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules(['color-contrast', 'definition-list', 'dlitem'])
+      .disableRules(["color-contrast", "definition-list", "dlitem"])
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

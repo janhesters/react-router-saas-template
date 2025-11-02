@@ -1,8 +1,5 @@
-import type { CSSProperties } from 'react';
-import { useTranslation } from 'react-i18next';
-
-import { Iphone15Pro } from '~/components/magicui/iphone-15-pro';
-import { cn } from '~/lib/utils';
+import type { CSSProperties } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   BentoCard,
@@ -12,12 +9,14 @@ import {
   BentoCardMedia,
   BentoCardTitle,
   BentoGrid,
-} from './bento-grid';
+} from "./bento-grid";
+import { Iphone15Pro } from "~/components/magicui/iphone-15-pro";
+import { cn } from "~/lib/utils";
 
-const imageClassNames = 'w-full rounded-t-lg h-full object-cover object-left';
+const imageClassNames = "w-full rounded-t-lg h-full object-cover object-left";
 const imageFadeStyle: CSSProperties = {
-  WebkitMaskImage: 'linear-gradient(to bottom, black 75%, transparent)',
-  maskImage: 'linear-gradient(to bottom, black 75%, transparent)',
+  maskImage: "linear-gradient(to bottom, black 75%, transparent)",
+  WebkitMaskImage: "linear-gradient(to bottom, black 75%, transparent)",
 };
 
 type BentoCardTranslations = {
@@ -43,15 +42,15 @@ type BentoCards = [
 ];
 
 export function Features() {
-  const { t } = useTranslation('landing', { keyPrefix: 'features' });
-  const cards = t('cards', { returnObjects: true }) as BentoCards;
+  const { t } = useTranslation("landing", { keyPrefix: "features" });
+  const cards = t("cards", { returnObjects: true }) as BentoCards;
 
   return (
     <section className="px-4 py-24">
-      <h2 className="text-primary text-base font-semibold">{t('eyebrow')}</h2>
+      <h2 className="text-primary text-base font-semibold">{t("eyebrow")}</h2>
 
       <p className="text-foreground mt-2 max-w-lg text-4xl font-semibold text-pretty sm:text-5xl">
-        {t('title')}
+        {t("title")}
       </p>
 
       <BentoGrid className="mt-10 max-lg:[&_>*:first-child]:rounded-t-4xl max-lg:[&_>*:last-child]:rounded-b-4xl">
@@ -85,8 +84,8 @@ export function Features() {
               alt={cards[1].image?.light}
               className={cn(
                 imageClassNames,
-                'lg:rounded-tr-4xl',
-                'dark:hidden',
+                "lg:rounded-tr-4xl",
+                "dark:hidden",
               )}
               src="/images/app-billing-light.png"
               style={imageFadeStyle}
@@ -95,8 +94,8 @@ export function Features() {
               alt={cards[1].image?.dark}
               className={cn(
                 imageClassNames,
-                'lg:rounded-tr-4xl',
-                'hidden dark:block',
+                "lg:rounded-tr-4xl",
+                "hidden dark:block",
               )}
               src="/images/app-billing-dark.png"
               style={imageFadeStyle}
@@ -115,7 +114,7 @@ export function Features() {
           <BentoCardMedia className="h-64 lg:h-88">
             <img
               alt={cards[2].image?.light}
-              className={cn(imageClassNames, 'object-center', 'dark:hidden')}
+              className={cn(imageClassNames, "object-center", "dark:hidden")}
               src="/images/authentication-light.png"
               style={imageFadeStyle}
             />
@@ -123,8 +122,8 @@ export function Features() {
               alt={cards[2].image?.dark}
               className={cn(
                 imageClassNames,
-                'object-center',
-                'hidden dark:block',
+                "object-center",
+                "hidden dark:block",
               )}
               src="/images/authentication-dark.png"
               style={imageFadeStyle}
@@ -143,14 +142,14 @@ export function Features() {
           <BentoCardMedia>
             <img
               alt={cards[3].image?.light}
-              className={cn('rounded-t-lg', 'dark:hidden')}
+              className={cn("rounded-t-lg", "dark:hidden")}
               src="/images/notifications-light.png"
               style={imageFadeStyle}
             />
 
             <img
               alt={cards[3].image?.dark}
-              className={cn('rounded-t-lg', 'hidden dark:block')}
+              className={cn("rounded-t-lg", "hidden dark:block")}
               src="/images/notifications-dark.png"
               style={imageFadeStyle}
             />

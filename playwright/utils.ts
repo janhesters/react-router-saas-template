@@ -1,32 +1,32 @@
-import { faker } from '@faker-js/faker';
-import type { APIResponse, Page } from '@playwright/test';
-import { request } from '@playwright/test';
-import type { Organization, UserAccount } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import dotenv from 'dotenv';
-import { promiseHash } from 'remix-utils/promise';
+import { faker } from "@faker-js/faker";
+import type { APIResponse, Page } from "@playwright/test";
+import { request } from "@playwright/test";
+import type { Organization, UserAccount } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import dotenv from "dotenv";
+import { promiseHash } from "remix-utils/promise";
 
-import type { LookupKey } from '~/features/billing/billing-constants';
-import type { StripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
-import { createPopulatedStripeSubscriptionWithItemsAndPrice } from '~/features/billing/billing-factories.server';
-import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
-import type { CreateEmailInviteInfoCookieParams } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
-import { createEmailInviteInfoCookie } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
-import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
-import type { CreateInviteLinkInfoCookieParams } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
-import { createInviteLinkInfoCookie } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import type { LookupKey } from "~/features/billing/billing-constants";
+import type { StripeSubscriptionWithItemsAndPrice } from "~/features/billing/billing-factories.server";
+import { createPopulatedStripeSubscriptionWithItemsAndPrice } from "~/features/billing/billing-factories.server";
+import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
+import type { CreateEmailInviteInfoCookieParams } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
+import { createEmailInviteInfoCookie } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
+import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
+import type { CreateInviteLinkInfoCookieParams } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
+import { createInviteLinkInfoCookie } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import {
   addMembersToOrganizationInDatabaseById,
   saveOrganizationToDatabase,
-} from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
-import { setMockSession } from '~/test/mocks/handlers/supabase/mock-sessions';
+} from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { saveUserAccountToDatabase } from "~/features/user-accounts/user-accounts-model.server";
+import { setMockSession } from "~/test/mocks/handlers/supabase/mock-sessions";
 import {
   createMockSupabaseSession,
   createTestSubscriptionForUserAndOrganization,
-} from '~/test/test-utils';
+} from "~/test/test-utils";
 
 dotenv.config();
 
@@ -70,15 +70,15 @@ export async function loginByCookie({
 
   // Set the Supabase session cookie
   const projectReference =
-    /https:\/\/([^.]+)/.exec(process.env.VITE_SUPABASE_URL)?.[1] ?? 'default';
+    /https:\/\/([^.]+)/.exec(process.env.VITE_SUPABASE_URL)?.[1] ?? "default";
 
   // Set the cookie with the session data
   await page.context().addCookies([
     {
+      domain: "localhost",
       name: `sb-${projectReference}-auth-token`,
+      path: "/",
       value: JSON.stringify(mockSession),
-      domain: 'localhost',
-      path: '/',
     },
   ]);
 }
@@ -96,17 +96,17 @@ export async function createAuthenticatedRequest({
   supabaseUserId,
   email,
 }: {
-  supabaseUserId: UserAccount['supabaseUserId'];
-  email: UserAccount['email'];
+  supabaseUserId: UserAccount["supabaseUserId"];
+  email: UserAccount["email"];
 }) {
   // Create a mock session with the provided user details
-  const user = createPopulatedUserAccount({ supabaseUserId, email });
+  const user = createPopulatedUserAccount({ email, supabaseUserId });
   const mockSession = createMockSupabaseSession({ user });
   await setMockSession(mockSession.access_token, mockSession);
 
   // Determine the Supabase project reference for the cookie name
   const projectReference =
-    /https:\/\/([^.]+)/.exec(process.env.VITE_SUPABASE_URL)?.[1] ?? 'default';
+    /https:\/\/([^.]+)/.exec(process.env.VITE_SUPABASE_URL)?.[1] ?? "default";
   const cookieName = `sb-${projectReference}-auth-token`;
   const cookieValue = JSON.stringify(mockSession);
 
@@ -137,7 +137,7 @@ export async function loginAndSaveUserAccountToDatabase({
 }) {
   const [userAccount] = await Promise.all([
     saveUserAccountToDatabase(user),
-    loginByCookie({ user, page }),
+    loginByCookie({ page, user }),
   ]);
 
   return userAccount;
@@ -152,9 +152,8 @@ export async function loginAndSaveUserAccountToDatabase({
  */
 export async function setupTrialOrganizationAndLoginAsMember({
   organization = createPopulatedOrganization({
-    billingEmail: '',
+    billingEmail: "",
     createdAt: faker.date.recent({ days: 3 }),
-    // eslint-disable-next-line unicorn/no-null
     stripeCustomerId: null,
   }),
   page,
@@ -168,7 +167,7 @@ export async function setupTrialOrganizationAndLoginAsMember({
 }) {
   const data = await promiseHash({
     organization: saveOrganizationToDatabase(organization),
-    user: loginAndSaveUserAccountToDatabase({ user, page }),
+    user: loginAndSaveUserAccountToDatabase({ page, user }),
   });
   await addMembersToOrganizationInDatabaseById({
     id: data.organization.id,
@@ -210,11 +209,12 @@ export async function setupOrganizationAndLoginAsMember({
   });
   const organizationWithSubscription =
     await createTestSubscriptionForUserAndOrganization({
-      user: data.user,
+      lookupKey,
       organization: data.organization,
+      // biome-ignore lint/style/noNonNullAssertion: The mocks have a stripe customer id
       stripeCustomerId: data.organization.stripeCustomerId!,
       subscription,
-      lookupKey,
+      user: data.user,
     });
 
   return { ...data, organization: organizationWithSubscription };
@@ -241,7 +241,7 @@ export async function setupInviteLinkCookie({
     `^${INVITE_LINK_INFO_SESSION_NAME}=([^;]+)`,
   ).exec(cookieHeader);
   if (!cookieValueMatch?.[1]) {
-    throw new Error('Failed to extract cookie value from Set-Cookie header');
+    throw new Error("Failed to extract cookie value from Set-Cookie header");
   }
   const cookieValue = cookieValueMatch[1];
 
@@ -255,13 +255,13 @@ export async function setupInviteLinkCookie({
 
   await page.context().addCookies([
     {
-      name: INVITE_LINK_INFO_SESSION_NAME,
-      value: cookieValue, // Only the raw signed value
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true, // Match your cookie config
-      sameSite: 'Lax', // Match your cookie config
+      domain: "localhost",
       expires, // Use expires instead of maxAge
+      httpOnly: true, // Match your cookie config
+      name: INVITE_LINK_INFO_SESSION_NAME,
+      path: "/",
+      sameSite: "Lax", // Match your cookie config
+      value: cookieValue, // Only the raw signed value
     },
   ]);
 }
@@ -287,7 +287,7 @@ export async function setupEmailInviteCookie({
     `^${EMAIL_INVITE_INFO_SESSION_NAME}=([^;]+)`,
   ).exec(cookieHeader);
   if (!cookieValueMatch?.[1]) {
-    throw new Error('Failed to extract cookie value from Set-Cookie header');
+    throw new Error("Failed to extract cookie value from Set-Cookie header");
   }
   const cookieValue = cookieValueMatch[1];
 
@@ -301,13 +301,13 @@ export async function setupEmailInviteCookie({
 
   await page.context().addCookies([
     {
-      name: EMAIL_INVITE_INFO_SESSION_NAME,
-      value: cookieValue, // Only the raw signed value
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true, // Match your cookie config
-      sameSite: 'Lax', // Match your cookie config
+      domain: "localhost",
       expires, // Use expires instead of maxAge
+      httpOnly: true, // Match your cookie config
+      name: EMAIL_INVITE_INFO_SESSION_NAME,
+      path: "/",
+      sameSite: "Lax", // Match your cookie config
+      value: cookieValue, // Only the raw signed value
     },
   ]);
 }
@@ -335,7 +335,7 @@ export async function enableClientMswMocks({ page }: { page: Page }) {
     globalThis.__ENABLE_MSW__ = true;
 
     // Add a console log inside the browser context for confirmation
-    console.log('Playwright init script: Set globalThis.__ENABLE_MSW__ = true');
+    console.log("Playwright init script: Set globalThis.__ENABLE_MSW__ = true");
   });
 }
 

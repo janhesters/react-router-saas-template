@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/only-throw-error */
-import { faker } from '@faker-js/faker';
-import { describe, expect, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { describe, expect, test } from "vitest";
 
-import { getErrorMessage } from './get-error-message';
+import { getErrorMessage } from "./get-error-message";
 
-describe('getErrorMessage()', () => {
+describe("getErrorMessage()", () => {
   test("given: an error, should: return the error's message", () => {
     const message = faker.word.words();
 
@@ -14,7 +13,7 @@ describe('getErrorMessage()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a string is thrown, should: return the string', () => {
+  test("given: a string is thrown, should: return the string", () => {
     expect.assertions(1);
 
     const someString = faker.lorem.words();
@@ -29,7 +28,7 @@ describe('getErrorMessage()', () => {
     }
   });
 
-  test('given: a number is thrown, should: return the number as a string', () => {
+  test("given: a number is thrown, should: return the number as a string", () => {
     expect.assertions(1);
 
     const someNumber = 1;
@@ -46,6 +45,7 @@ describe('getErrorMessage()', () => {
 
   test("given: an error that extends a custom error class, should: return the error's message", () => {
     class CustomError extends Error {
+      // biome-ignore lint/complexity/noUselessConstructor: test code
       public constructor(message: string) {
         super(message);
       }
@@ -68,7 +68,7 @@ describe('getErrorMessage()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: circular references, should: handle them gracefully', () => {
+  test("given: circular references, should: handle them gracefully", () => {
     expect.assertions(1);
 
     const object = { circular: this };
@@ -77,7 +77,7 @@ describe('getErrorMessage()', () => {
       throw object;
     } catch (error) {
       const actual = getErrorMessage(error);
-      const expected = '[object Object]';
+      const expected = "[object Object]";
 
       expect(actual).toEqual(expected);
     }

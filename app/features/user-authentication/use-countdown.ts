@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /**
  * A React hook that provides a countdown timer functionality.
@@ -25,7 +25,7 @@ export function useCountdown(initialSeconds: number) {
     if (secondsLeft <= 0) return;
 
     intervalIdReference.current = setInterval(() => {
-      setSecondsLeft(previous => {
+      setSecondsLeft((previous) => {
         if (previous <= 1) {
           if (intervalIdReference.current) {
             clearInterval(intervalIdReference.current);
@@ -62,7 +62,7 @@ export function useCountdown(initialSeconds: number) {
         intervalIdReference.current = undefined;
       }
     };
-  }, [secondsLeft, startCountdown]);
+  }, [startCountdown]);
 
-  return { secondsLeft, reset };
+  return { reset, secondsLeft };
 }

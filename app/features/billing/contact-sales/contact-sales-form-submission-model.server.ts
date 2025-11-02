@@ -1,6 +1,6 @@
-import type { ContactSalesFormSubmission, Prisma } from '@prisma/client';
+import type { ContactSalesFormSubmission, Prisma } from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -26,7 +26,7 @@ export async function saveContactSalesFormSubmissionToDatabase(
  */
 export async function retrieveContactSalesFormSubmissionsFromDatabase() {
   return await prisma.contactSalesFormSubmission.findMany({
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 }
 
@@ -37,7 +37,7 @@ export async function retrieveContactSalesFormSubmissionsFromDatabase() {
  * @returns The contact sales form submission or null if not found.
  */
 export async function retrieveContactSalesFormSubmissionFromDatabaseById(
-  id: ContactSalesFormSubmission['id'],
+  id: ContactSalesFormSubmission["id"],
 ) {
   return await prisma.contactSalesFormSubmission.findUnique({ where: { id } });
 }
@@ -51,7 +51,7 @@ export async function retrieveContactSalesFormSubmissionFromDatabaseById(
  * @returns The deleted contact sales form submission.
  */
 export async function deleteContactSalesFormSubmissionFromDatabaseById(
-  id: ContactSalesFormSubmission['id'],
+  id: ContactSalesFormSubmission["id"],
 ) {
   return await prisma.contactSalesFormSubmission.delete({ where: { id } });
 }

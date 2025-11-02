@@ -1,36 +1,37 @@
-import { expect, test } from '@playwright/test';
-import { href } from 'react-router';
-
-import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
-import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
-import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
-import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
-import { createPopulatedOrganizationEmailInviteLink } from '~/features/organizations/organizations-factories.server';
-import { createPopulatedOrganizationInviteLink } from '~/features/organizations/organizations-factories.server';
-import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import {
-  deleteUserAccountFromDatabaseById,
-  retrieveUserAccountFromDatabaseByEmail,
-  saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { stringifyTokenHashData } from '~/test/mocks/handlers/supabase/auth';
-import {
-  createUserWithOrgAndAddAsMember,
-  teardownOrganizationAndMember,
-} from '~/test/test-utils';
+import { expect, test } from "@playwright/test";
+import { href } from "react-router";
 
 import {
   getPath,
   loginByCookie,
   setupEmailInviteCookie,
   setupInviteLinkCookie,
-} from '../../utils';
+} from "../../utils";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
+import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
+import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
+import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
+import {
+  createPopulatedOrganizationEmailInviteLink,
+  createPopulatedOrganizationInviteLink,
+} from "~/features/organizations/organizations-factories.server";
+import { saveOrganizationInviteLinkToDatabase } from "~/features/organizations/organizations-invite-link-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import {
+  deleteUserAccountFromDatabaseById,
+  retrieveUserAccountFromDatabaseByEmail,
+  saveUserAccountToDatabase,
+} from "~/features/user-accounts/user-accounts-model.server";
+import { stringifyTokenHashData } from "~/test/mocks/handlers/supabase/auth";
+import {
+  createUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from "~/test/test-utils";
 
-const path = '/login/confirm';
+const path = "/login/confirm";
 
 test.describe(`${path} API route`, () => {
-  test('given: a valid token_hash for an existing user, should: verify OTP and redirect to organizations page', async ({
+  test("given: a valid token_hash for an existing user, should: verify OTP and redirect to organizations page", async ({
     page,
   }) => {
     // Create a test user account.
@@ -51,7 +52,7 @@ test.describe(`${path} API route`, () => {
     );
 
     // Clean up.
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
   test("given: a valid token_hash for a new user (this can happen if the user is sent here from the register route because they missed or didn't click the first link), should: create user account, verify OTP and redirect to the onboarding page", async ({
@@ -67,7 +68,7 @@ test.describe(`${path} API route`, () => {
     await page.goto(`${path}?token_hash=${tokenHash}`);
 
     // Verify the user is redirected to the onboarding page.
-    expect(getPath(page)).toEqual('/onboarding/user-account');
+    expect(getPath(page)).toEqual("/onboarding/user-account");
 
     // Verify the user account was created in the database.
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -80,7 +81,7 @@ test.describe(`${path} API route`, () => {
     }
   });
 
-  test('given: an invalid token_hash, should: return an error', async ({
+  test("given: an invalid token_hash, should: return an error", async ({
     request,
   }) => {
     // Make request with invalid token
@@ -90,7 +91,7 @@ test.describe(`${path} API route`, () => {
     expect(response.status()).toEqual(500);
   });
 
-  test('given: no token_hash parameter, should: return an error', async ({
+  test("given: no token_hash parameter, should: return an error", async ({
     request,
   }) => {
     // Make request without token hash
@@ -100,7 +101,7 @@ test.describe(`${path} API route`, () => {
     expect(response.status()).toEqual(500);
   });
 
-  test('given: a logged in user, should: redirect to organizations page', async ({
+  test("given: a logged in user, should: redirect to organizations page", async ({
     page,
   }) => {
     // Create a test user account.
@@ -118,18 +119,18 @@ test.describe(`${path} API route`, () => {
     );
 
     // Clean up.
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: a valid token hast for an existing user with an active invite link cookie, should: add them to the organization after login and show success toast', async ({
+  test("given: a valid token hast for an existing user with an active invite link cookie, should: add them to the organization after login and show success toast", async ({
     page,
   }) => {
     // Create organization and invite link
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
@@ -139,8 +140,8 @@ test.describe(`${path} API route`, () => {
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Go to login confirm with token hash
@@ -152,7 +153,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify redirect to organization dashboard
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
@@ -161,7 +162,7 @@ test.describe(`${path} API route`, () => {
     // Verify success toast
     await expect(
       page
-        .getByRole('region', {
+        .getByRole("region", {
           name: /notifications/i,
         })
         .getByText(/successfully joined organization/i),
@@ -170,31 +171,31 @@ test.describe(`${path} API route`, () => {
     // Verify invite link cookie is cleared
     const cookies = await page.context().cookies();
     const inviteLinkCookie = cookies.find(
-      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+      (cookie) => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
 
     // Cleanup
     await deleteUserAccountFromDatabaseById(userAccount.id);
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
-  test('given: a valid token hash for a new user with an active invite link cookie, should: create their account, add them to the organization, show a success toast, and clear the invite link cookie', async ({
+  test("given: a valid token hash for a new user with an active invite link cookie, should: create their account, add them to the organization, show a success toast, and clear the invite link cookie", async ({
     page,
   }) => {
     // Create organization and invite link
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Generate a unique email for testing.
@@ -208,9 +209,9 @@ test.describe(`${path} API route`, () => {
 
     // Verify the user is redirected to the onboarding page.
     await expect(
-      page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /onboarding/i }),
     ).toBeVisible();
-    expect(getPath(page)).toEqual('/onboarding/user-account');
+    expect(getPath(page)).toEqual("/onboarding/user-account");
 
     // Verify the user account was created in the database.
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -219,19 +220,19 @@ test.describe(`${path} API route`, () => {
 
     // Enter the account details
     const { name } = createPopulatedUserAccount();
-    await page.getByRole('textbox', { name: /name/i }).fill(name);
-    await page.getByRole('button', { name: /save/i }).click();
+    await page.getByRole("textbox", { name: /name/i }).fill(name);
+    await page.getByRole("button", { name: /save/i }).click();
 
     // Verify success toast
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
     );
     await expect(
       page
-        .getByRole('region', {
+        .getByRole("region", {
           name: /notifications/i,
         })
         .getByText(/successfully joined organization/i),
@@ -240,7 +241,7 @@ test.describe(`${path} API route`, () => {
     // Verify invite link cookie is cleared
     const cookies = await page.context().cookies();
     const inviteLinkCookie = cookies.find(
-      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+      (cookie) => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
 
@@ -248,7 +249,7 @@ test.describe(`${path} API route`, () => {
     if (userAccount) {
       await deleteUserAccountFromDatabaseById(userAccount.id);
     }
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
   test("given: a valid token hash for an existing user with an active invite link cookie for an organization they're already a member of, should: redirect to the organization's dashboard and show a toast", async ({
@@ -259,15 +260,15 @@ test.describe(`${path} API route`, () => {
 
     // Create an invite link for the same organization
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: user.id,
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Go to login confirm with token hash for the same user
@@ -279,7 +280,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify redirect to organization dashboard
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
@@ -288,32 +289,32 @@ test.describe(`${path} API route`, () => {
     // Verify toast message
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(
-          new RegExp(`You are already a member of ${organization.name}`, 'i'),
+          new RegExp(`You are already a member of ${organization.name}`, "i"),
         ),
     ).toBeVisible();
 
     // Verify invite link cookie is cleared
     const cookies = await page.context().cookies();
     const inviteLinkCookie = cookies.find(
-      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+      (cookie) => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
 
     // Cleanup
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: a valid token hash for an existing user with an active email invite cookie, should: add them to the organization after login and show success toast', async ({
+  test("given: a valid token hash for an existing user with an active email invite cookie, should: add them to the organization after login and show success toast", async ({
     page,
   }) => {
     // Create organization and email invite
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
       invitedById: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
@@ -323,8 +324,8 @@ test.describe(`${path} API route`, () => {
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
     });
 
     // Go to login confirm with token hash
@@ -336,7 +337,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify redirect to organization dashboard
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
@@ -345,7 +346,7 @@ test.describe(`${path} API route`, () => {
     // Verify success toast
     await expect(
       page
-        .getByRole('region', {
+        .getByRole("region", {
           name: /notifications/i,
         })
         .getByText(/successfully joined organization/i),
@@ -354,31 +355,31 @@ test.describe(`${path} API route`, () => {
     // Verify email invite cookie is cleared
     const cookies = await page.context().cookies();
     const emailInviteCookie = cookies.find(
-      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+      (cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
     );
     expect(emailInviteCookie).toBeUndefined();
 
     // Cleanup
     await deleteUserAccountFromDatabaseById(userAccount.id);
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
-  test('given: a valid token hash for a new user with an active email invite cookie, should: create their account, add them to the organization, show a success toast, and clear the email invite cookie', async ({
+  test("given: a valid token hash for a new user with an active email invite cookie, should: create their account, add them to the organization, show a success toast, and clear the email invite cookie", async ({
     page,
   }) => {
     // Create organization and email invite
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
       invitedById: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
     });
 
     // Generate a unique email for testing.
@@ -392,9 +393,9 @@ test.describe(`${path} API route`, () => {
 
     // Verify the user is redirected to the onboarding page.
     await expect(
-      page.getByRole('heading', { name: /onboarding/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /onboarding/i }),
     ).toBeVisible();
-    expect(getPath(page)).toEqual('/onboarding/user-account');
+    expect(getPath(page)).toEqual("/onboarding/user-account");
 
     // Verify the user account was created in the database.
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -403,19 +404,19 @@ test.describe(`${path} API route`, () => {
 
     // Enter the account details
     const { name } = createPopulatedUserAccount();
-    await page.getByRole('textbox', { name: /name/i }).fill(name);
-    await page.getByRole('button', { name: /save/i }).click();
+    await page.getByRole("textbox", { name: /name/i }).fill(name);
+    await page.getByRole("button", { name: /save/i }).click();
 
     // Verify success toast
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
     );
     await expect(
       page
-        .getByRole('region', {
+        .getByRole("region", {
           name: /notifications/i,
         })
         .getByText(/successfully joined organization/i),
@@ -424,7 +425,7 @@ test.describe(`${path} API route`, () => {
     // Verify email invite cookie is cleared
     const cookies = await page.context().cookies();
     const emailInviteCookie = cookies.find(
-      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+      (cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
     );
     expect(emailInviteCookie).toBeUndefined();
 
@@ -432,7 +433,7 @@ test.describe(`${path} API route`, () => {
     if (userAccount) {
       await deleteUserAccountFromDatabaseById(userAccount.id);
     }
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
   test("given: a valid token hash for an existing user with an active email invite cookie for an organization they're already a member of, should: redirect to the organization's dashboard and show a toast", async ({
@@ -443,16 +444,16 @@ test.describe(`${path} API route`, () => {
 
     // Create an email invite for the same organization
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
-      invitedById: user.id,
       email: user.email,
+      invitedById: user.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
     });
 
     // Go to login confirm with token hash for the same user
@@ -464,7 +465,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify redirect to organization dashboard
     await expect(
-      page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/dashboard`,
@@ -473,24 +474,24 @@ test.describe(`${path} API route`, () => {
     // Verify toast message
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(
-          new RegExp(`You are already a member of ${organization.name}`, 'i'),
+          new RegExp(`You are already a member of ${organization.name}`, "i"),
         ),
     ).toBeVisible();
 
     // Verify email invite cookie is cleared
     const cookies = await page.context().cookies();
     const emailInviteCookie = cookies.find(
-      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+      (cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
     );
     expect(emailInviteCookie).toBeUndefined();
 
     // Cleanup
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: a valid token_hash for an existing user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+  test("given: a valid token_hash for an existing user with an active invite link cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening", async ({
     page,
   }) => {
     // Create organization with the low tier plan (1 seat limit)
@@ -501,8 +502,8 @@ test.describe(`${path} API route`, () => {
 
     // Create an invite link for this organization
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
@@ -512,8 +513,8 @@ test.describe(`${path} API route`, () => {
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     // Create token hash for existing user
@@ -528,24 +529,24 @@ test.describe(`${path} API route`, () => {
     // Verify toast message
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/organization has reached its member limit/i),
     ).toBeVisible();
 
     // Verify we're still on the same page (not redirected)
     expect(getPath(page)).toEqual(
-      `${href('/organizations/invite-link')}?token=${link.token}`,
+      `${href("/organizations/invite-link")}?token=${link.token}`,
     );
 
     // Cleanup
     await teardownOrganizationAndMember({
-      user: existingUser,
       organization: existingOrg,
+      user: existingUser,
     });
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
-  test('given: a valid token_hash for an existing user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+  test("given: a valid token_hash for an existing user with an active email invite cookie for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening", async ({
     page,
   }) => {
     // Create organization with the low tier plan (1 seat limit)
@@ -556,8 +557,8 @@ test.describe(`${path} API route`, () => {
 
     // Create an email invite for this organization
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
       invitedById: invitingUser.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
@@ -567,8 +568,8 @@ test.describe(`${path} API route`, () => {
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
     });
 
     // Create token hash for existing user
@@ -583,20 +584,20 @@ test.describe(`${path} API route`, () => {
     // Verify toast message
     await expect(
       page
-        .getByRole('region', { name: /notifications/i })
+        .getByRole("region", { name: /notifications/i })
         .getByText(/organization has reached its member limit/i),
     ).toBeVisible();
 
     // Verify we're still on the same page (not redirected)
     expect(getPath(page)).toEqual(
-      `${href('/organizations/email-invite')}?token=${invite.token}`,
+      `${href("/organizations/email-invite")}?token=${invite.token}`,
     );
 
     // Cleanup
     await teardownOrganizationAndMember({
-      user: existingUser,
       organization: existingOrg,
+      user: existingUser,
     });
-    await teardownOrganizationAndMember({ user: invitingUser, organization });
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 });

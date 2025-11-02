@@ -1,9 +1,9 @@
-import { parseFormData } from '@mjackson/form-data-parser';
-import type { MultipartParserOptions } from '@mjackson/multipart-parser';
-import type { ZodError, ZodType } from 'zod';
-import { z } from 'zod';
+import { parseFormData } from "@mjackson/form-data-parser";
+import type { MultipartParserOptions } from "@mjackson/multipart-parser";
+import type { ZodError, ZodType } from "zod";
+import { z } from "zod";
 
-import { badRequest } from './http-responses.server';
+import { badRequest } from "./http-responses.server";
 
 type ValidationErrors = Record<string, { message: string }>;
 
@@ -15,6 +15,7 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 
   // Add root error only if it exists.
   if (formErrors.length > 0) {
+    // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a root error
     errorObjects.push({ root: { message: formErrors[0]! } });
   }
 
@@ -27,6 +28,7 @@ export const processErrors = (error: ZodError): ValidationErrors => {
 
   // Merge all error objects into one.
   return errorObjects.reduce(
+    // biome-ignore lint/performance/noAccumulatingSpread: We need to merge the error objects
     (accumulator, current) => ({ ...accumulator, ...current }),
     {},
   );

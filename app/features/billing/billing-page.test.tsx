@@ -1,41 +1,40 @@
-import { faker } from '@faker-js/faker';
-import { href } from 'react-router';
-import { describe, expect, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { href } from "react-router";
+import { describe, expect, test } from "vitest";
 
+import { getRandomTier } from "./billing-factories.server";
+import type { BillingPageProps } from "./billing-page";
+import { BillingPage } from "./billing-page";
 import {
   createRoutesStub,
   render,
   screen,
   userEvent,
-} from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
+} from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
-import { getRandomTier } from './billing-factories.server';
-import type { BillingPageProps } from './billing-page';
-import { BillingPage } from './billing-page';
-
-const path = '/organizations/:organizationSlug/settings/billing';
+const path = "/organizations/:organizationSlug/settings/billing";
 
 const createProps: Factory<BillingPageProps> = ({
   billingEmail = faker.internet.email(),
   cancelAtPeriodEnd = false,
   cancelOrModifySubscriptionModalProps = {
     canCancelSubscription: true,
-    currentTier: 'high' as const,
-    currentTierInterval: 'annual' as const,
+    currentTier: "high" as const,
+    currentTierInterval: "annual" as const,
   },
   createSubscriptionModalProps = {
     currentSeats: 1,
     planLimits: {
+      high: 25,
       low: 1,
       mid: 10,
-      high: 25,
     },
   },
-  currentInterval = 'monthly',
-  currentMonthlyRatePerUser = faker.number.int({ min: 5, max: 50 }),
+  currentInterval = "monthly",
+  currentMonthlyRatePerUser = faker.number.int({ max: 50, min: 5 }),
   currentPeriodEnd = faker.date.future(),
-  currentSeats = faker.number.int({ min: 1, max: 50 }),
+  currentSeats = faker.number.int({ max: 50, min: 1 }),
   currentTier = getRandomTier(),
   isCancellingSubscription = false,
   isEnterprisePlan = false,
@@ -43,11 +42,11 @@ const createProps: Factory<BillingPageProps> = ({
   isOnFreeTrial = false,
   isResumingSubscription = false,
   isViewingInvoices = false,
-  maxSeats = faker.number.int({ min: currentSeats, max: 200 }),
+  maxSeats = faker.number.int({ max: 200, min: currentSeats }),
   organizationSlug = faker.string.uuid(),
   pendingChange,
   projectedTotal = currentMonthlyRatePerUser * maxSeats,
-  subscriptionStatus = 'active',
+  subscriptionStatus = "active",
 } = {}) => ({
   billingEmail,
   cancelAtPeriodEnd,
@@ -71,30 +70,30 @@ const createProps: Factory<BillingPageProps> = ({
   subscriptionStatus,
 });
 
-describe('BillingPage component', () => {
-  test('given: any props, should: render a heading and a description', () => {
+describe("BillingPage component", () => {
+  test("given: any props, should: render a heading and a description", () => {
     const props = createProps();
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     expect(
-      screen.getByRole('heading', { name: /billing/i, level: 2 }),
+      screen.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByText(/manage your billing information/i),
     ).toBeInTheDocument();
   });
 
-  test('given: the user is on a free trial plan, should: show an alert banner with the end date of the free trial and a button to enter their payment information', () => {
+  test("given: the user is on a free trial plan, should: show an alert banner with the end date of the free trial and a button to enter their payment information", () => {
     const props = createProps({
+      currentPeriodEnd: new Date("2025-02-12T00:00:00.000Z"),
       isOnFreeTrial: true,
-      currentPeriodEnd: new Date('2025-02-12T00:00:00.000Z'),
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -106,28 +105,28 @@ describe('BillingPage component', () => {
       screen.getByText(/your free trial will end on february 12, 2025/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /add payment information/i }),
+      screen.getByRole("button", { name: /add payment information/i }),
     ).toBeInTheDocument();
   });
 
-  test('given: a current monthly rate per user, seats, tier name and projected total, should: show plan details, seats info, projected total, and management buttons', () => {
+  test("given: a current monthly rate per user, seats, tier name and projected total, should: show plan details, seats info, projected total, and management buttons", () => {
     const props = createProps({
       currentMonthlyRatePerUser: 10,
+      currentPeriodEnd: new Date("2025-03-15T00:00:00.000Z"),
       currentSeats: 3,
+      currentTier: "mid",
       maxSeats: 5,
-      currentTier: 'mid',
       projectedTotal: 10 * 5,
-      currentPeriodEnd: new Date('2025-03-15T00:00:00.000Z'),
     });
 
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
     render(<RouterStub initialEntries={[path]} />);
 
     // "Plan" heading must be an <h3>
     expect(
-      screen.getByRole('heading', { name: /your plan/i, level: 3 }),
+      screen.getByRole("heading", { level: 3, name: /your plan/i }),
     ).toBeInTheDocument();
 
     // Tier name and rate
@@ -138,39 +137,39 @@ describe('BillingPage component', () => {
     // One button for mobile and one for desktop. In a real browser, one of
     // the two button will be hidden using `display: none`.
     expect(
-      screen.getAllByRole('button', { name: /manage plan/i }),
+      screen.getAllByRole("button", { name: /manage plan/i }),
     ).toHaveLength(2);
 
     // Users row shows current/max
     expect(screen.getByText(/^users$/i)).toBeInTheDocument();
     expect(screen.getByText(/3 \/ 5/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /manage users/i })).toHaveAttribute(
-      'href',
-      href('/organizations/:organizationSlug/settings/members', {
+    expect(screen.getByRole("link", { name: /manage users/i })).toHaveAttribute(
+      "href",
+      href("/organizations/:organizationSlug/settings/members", {
         organizationSlug: props.organizationSlug,
       }),
     );
 
     // Projected total
     expect(screen.getByText(/projected total/i)).toBeInTheDocument();
-    expect(screen.getByText('$50')).toBeInTheDocument();
+    expect(screen.getByText("$50")).toBeInTheDocument();
 
     // Next billing date
     expect(screen.getByText(/next billing date/i)).toBeInTheDocument();
     expect(screen.getByText(/march 15, 2025/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /view invoices/i }),
+      screen.getByRole("button", { name: /view invoices/i }),
     ).toBeInTheDocument();
   });
 
-  test('given: the user has their subscription cancelled at the period end, should: show an alert banner with a button to resume their subscription', () => {
+  test("given: the user has their subscription cancelled at the period end, should: show an alert banner with a button to resume their subscription", () => {
     const props = createProps({
       cancelAtPeriodEnd: true,
-      currentPeriodEnd: new Date('2025-02-12T00:00:00.000Z'),
+      currentPeriodEnd: new Date("2025-02-12T00:00:00.000Z"),
       isOnFreeTrial: faker.datatype.boolean(),
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -183,7 +182,7 @@ describe('BillingPage component', () => {
       screen.getByText(/your subscription runs out on february 12, 2025/i),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /resume subscription/i }),
+      screen.getByRole("button", { name: /resume subscription/i }),
     ).toBeInTheDocument();
 
     // It hides any free trial banner
@@ -194,19 +193,19 @@ describe('BillingPage component', () => {
       screen.queryByText(/your free trial will end on february 12, 2025/i),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /add payment information/i }),
+      screen.queryByRole("button", { name: /add payment information/i }),
     ).not.toBeInTheDocument();
   });
 
   test("given: the user's subscription is inactive, should: show an alert banner with a button to reactivate their subscription", () => {
     const props = createProps({
-      subscriptionStatus: 'inactive',
       cancelAtPeriodEnd: faker.datatype.boolean(),
-      currentPeriodEnd: new Date('2025-02-12T00:00:00.000Z'),
+      currentPeriodEnd: new Date("2025-02-12T00:00:00.000Z"),
       isOnFreeTrial: faker.datatype.boolean(),
+      subscriptionStatus: "inactive",
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -219,7 +218,7 @@ describe('BillingPage component', () => {
       screen.getByText(/your subscription has been cancelled./i),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /reactivate subscription/i }),
+      screen.getByRole("button", { name: /reactivate subscription/i }),
     ).toBeInTheDocument();
 
     // It hides any cancel at period end banner
@@ -230,7 +229,7 @@ describe('BillingPage component', () => {
       screen.queryByText(/your subscription runs out on february 12, 2025/i),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /resume subscription/i }),
+      screen.queryByRole("button", { name: /resume subscription/i }),
     ).not.toBeInTheDocument();
 
     // It hides any free trial banner
@@ -241,28 +240,28 @@ describe('BillingPage component', () => {
       screen.queryByText(/your free trial will end on february 12, 2025/i),
     ).not.toBeInTheDocument();
     expect(
-      screen.queryByRole('button', { name: /add payment information/i }),
+      screen.queryByRole("button", { name: /add payment information/i }),
     ).not.toBeInTheDocument();
   });
 
-  test.skip('given: the user is on trial & adding their payment information, should: disable all other buttons and render a loading state on the clicked button', () => {
+  test.skip("given: the user is on trial & adding their payment information, should: disable all other buttons and render a loading state on the clicked button", () => {
     const props = createProps({
       // isAddingPaymentInformation: true,
       isOnFreeTrial: true,
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // It shows the loading state on the clicked button
     expect(
-      screen.getByRole('button', { name: /opening customer portal/i }),
+      screen.getByRole("button", { name: /opening customer portal/i }),
     ).toBeDisabled();
 
     // It disables all other buttons
-    const managePlanButtons = screen.getAllByRole('button', {
+    const managePlanButtons = screen.getAllByRole("button", {
       name: /manage plan/i,
     });
     expect(managePlanButtons).toHaveLength(2);
@@ -270,7 +269,7 @@ describe('BillingPage component', () => {
       expect(button).toBeDisabled();
     }
     expect(
-      screen.getByRole('button', { name: /view invoices/i }),
+      screen.getByRole("button", { name: /view invoices/i }),
     ).toBeDisabled();
   });
 
@@ -281,18 +280,18 @@ describe('BillingPage component', () => {
       isResumingSubscription: true,
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // It shows the loading state on the clicked button
     expect(
-      screen.getByRole('button', { name: /resuming subscription/i }),
+      screen.getByRole("button", { name: /resuming subscription/i }),
     ).toBeDisabled();
 
     // It disables all other buttons
-    const managePlanButtons = screen.getAllByRole('button', {
+    const managePlanButtons = screen.getAllByRole("button", {
       name: /manage plan/i,
     });
     expect(managePlanButtons).toHaveLength(2);
@@ -300,30 +299,30 @@ describe('BillingPage component', () => {
       expect(button).toBeDisabled();
     }
     expect(
-      screen.getByRole('button', { name: /view invoices/i }),
+      screen.getByRole("button", { name: /view invoices/i }),
     ).toBeDisabled();
   });
 
   test.skip("given: the user's subscription is inactive and the user is reactivating their subscription, should: disable all other buttons and render a loading state on the clicked button", () => {
     const props = createProps({
-      subscriptionStatus: 'inactive',
       // isReactivatingSubscription: true,
       cancelAtPeriodEnd: faker.datatype.boolean(),
       isOnFreeTrial: faker.datatype.boolean(),
+      subscriptionStatus: "inactive",
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // It shows the loading state on the clicked button
     expect(
-      screen.getByRole('button', { name: /opening customer portal/i }),
+      screen.getByRole("button", { name: /opening customer portal/i }),
     ).toBeDisabled();
 
     // It disables all other buttons
-    const managePlanButtons = screen.getAllByRole('button', {
+    const managePlanButtons = screen.getAllByRole("button", {
       name: /manage plan/i,
     });
     expect(managePlanButtons).toHaveLength(2);
@@ -331,39 +330,40 @@ describe('BillingPage component', () => {
       expect(button).toBeDisabled();
     }
     expect(
-      screen.getByRole('button', { name: /view invoices/i }),
+      screen.getByRole("button", { name: /view invoices/i }),
     ).toBeDisabled();
   });
 
-  test('given: the user opens the cancel subscription modal, should: show a dialog with a title, description, a list of features, a button to cancel their subscription and a button to change their plan instead', async () => {
+  test("given: the user opens the cancel subscription modal, should: show a dialog with a title, description, a list of features, a button to cancel their subscription and a button to change their plan instead", async () => {
     const user = userEvent.setup();
     const props = createProps();
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Open the change plan modal
-    const managePlanButton = screen.getAllByRole('button', {
+    // biome-ignore lint/style/noNonNullAssertion: test code
+    const managePlanButton = screen.getAllByRole("button", {
       name: /manage plan/i,
     })[1]!;
     await user.click(managePlanButton);
     expect(
-      screen.getByRole('heading', { name: /manage plan/i, level: 2 }),
+      screen.getByRole("heading", { level: 2, name: /manage plan/i }),
     ).toBeInTheDocument();
 
     // Click the "Cancel subscription" button
-    const cancelSubscriptionButton = screen.getByRole('button', {
+    const cancelSubscriptionButton = screen.getByRole("button", {
       name: /cancel subscription/i,
     });
     await user.click(cancelSubscriptionButton);
 
     // It shows the dialog with the correct title, description, and features
     expect(
-      screen.getByRole('heading', {
-        name: /are you sure you want to cancel your subscription?/i,
+      screen.getByRole("heading", {
         level: 2,
+        name: /are you sure you want to cancel your subscription?/i,
       }),
     ).toBeInTheDocument();
     expect(
@@ -380,59 +380,59 @@ describe('BillingPage component', () => {
 
     // It shows the "Cancel subscription" button
     expect(
-      screen.getByRole('button', { name: /cancel subscription/i }),
+      screen.getByRole("button", { name: /cancel subscription/i }),
     ).toBeInTheDocument();
 
     // Clicking the "Select a different plan" button opens the change plan modal
-    const changePlanButton = screen.getByRole('button', {
+    const changePlanButton = screen.getByRole("button", {
       name: /select a different plan/i,
     });
     await user.click(changePlanButton);
     expect(
-      screen.getByRole('heading', { name: /manage plan/i, level: 2 }),
+      screen.getByRole("heading", { level: 2, name: /manage plan/i }),
     ).toBeInTheDocument();
   });
 
-  test('given: a billing email, should: show it in the billing email field', () => {
+  test("given: a billing email, should: show it in the billing email field", () => {
     const props = createProps();
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     expect(
-      screen.getByRole('heading', { name: /payment information/i }),
+      screen.getByRole("heading", { name: /payment information/i }),
     ).toBeInTheDocument();
     expect(screen.getByText(/billing email/i)).toBeInTheDocument();
     expect(screen.getByText(props.billingEmail)).toBeInTheDocument();
   });
 
-  test('given: no billing email, should: not show the billing email field', () => {
-    const props = createProps({ billingEmail: '' });
+  test("given: no billing email, should: not show the billing email field", () => {
+    const props = createProps({ billingEmail: "" });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     expect(
-      screen.queryByRole('heading', { name: /payment information/i }),
+      screen.queryByRole("heading", { name: /payment information/i }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/billing email/i)).not.toBeInTheDocument();
   });
 
-  test('given: a pending change because a subscription is scheduled to downgrade, should: show a banner with the details of the pending change', () => {
+  test("given: a pending change because a subscription is scheduled to downgrade, should: show a banner with the details of the pending change", () => {
     const props = createProps({
+      currentTier: "high",
       pendingChange: {
-        pendingTier: 'mid' as const,
-        pendingInterval: 'monthly' as const,
-        pendingChangeDate: new Date('2025-02-12T00:00:00.000Z'),
+        pendingChangeDate: new Date("2025-02-12T00:00:00.000Z"),
+        pendingInterval: "monthly" as const,
+        pendingTier: "mid" as const,
       },
-      currentTier: 'high',
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -444,22 +444,22 @@ describe('BillingPage component', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /keep current subscription/i }),
+      screen.getByRole("button", { name: /keep current subscription/i }),
     ).toBeInTheDocument();
   });
 
-  test('given: a pending change because a subscription is scheduled to downgrade and the user is keeping their current subscription, should: show a banner with the details of the pending change', () => {
+  test("given: a pending change because a subscription is scheduled to downgrade and the user is keeping their current subscription, should: show a banner with the details of the pending change", () => {
     const props = createProps({
+      currentTier: "high",
       isKeepingCurrentSubscription: true,
       pendingChange: {
-        pendingTier: 'high' as const,
-        pendingInterval: 'monthly' as const,
-        pendingChangeDate: new Date('2025-02-12T00:00:00.000Z'),
+        pendingChangeDate: new Date("2025-02-12T00:00:00.000Z"),
+        pendingInterval: "monthly" as const,
+        pendingTier: "high" as const,
       },
-      currentTier: 'high',
     });
     const RouterStub = createRoutesStub([
-      { path, Component: () => <BillingPage {...props} /> },
+      { Component: () => <BillingPage {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -471,11 +471,11 @@ describe('BillingPage component', () => {
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /updating subscription/i }),
+      screen.getByRole("button", { name: /updating subscription/i }),
     ).toBeDisabled();
   });
 
   test.todo(
-    'given: the user is on an enterprise plan, should: show the available data',
+    "given: the user is on an enterprise plan, should: show the available data",
   );
 });

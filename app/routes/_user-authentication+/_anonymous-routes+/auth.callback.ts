@@ -1,24 +1,23 @@
-import { href, redirect } from 'react-router';
+import { href, redirect } from "react-router";
 
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { getValidEmailInviteInfo } from '~/features/organizations/accept-email-invite/accept-email-invite-helpers.server';
-import { destroyEmailInviteInfoSession } from '~/features/organizations/accept-email-invite/accept-email-invite-session.server';
-import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
-import { destroyInviteLinkInfoSession } from '~/features/organizations/accept-invite-link/accept-invite-link-session.server';
+import type { Route } from "./+types/auth.callback";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getValidEmailInviteInfo } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
+import { destroyEmailInviteInfoSession } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
+import { getValidInviteLinkInfo } from "~/features/organizations/accept-invite-link/accept-invite-link-helpers.server";
+import { destroyInviteLinkInfoSession } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
 import {
   acceptEmailInvite,
   acceptInviteLink,
-} from '~/features/organizations/organizations-helpers.server';
+} from "~/features/organizations/organizations-helpers.server";
 import {
   retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { anonymousContext } from '~/features/user-authentication/user-authentication-middleware.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
-import { redirectWithToast } from '~/utils/toast.server';
-
-import type { Route } from './+types/auth.callback';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { anonymousContext } from "~/features/user-authentication/user-authentication-middleware.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
+import { redirectWithToast } from "~/utils/toast.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   try {
@@ -29,10 +28,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     const { emailInviteInfo, headers: emailInviteHeaders } =
       await getValidEmailInviteInfo(request);
 
-    const code = getSearchParameterFromRequest('code')(request);
+    const code = getSearchParameterFromRequest("code")(request);
 
     if (!code) {
-      throw new Error('Missing code');
+      throw new Error("Missing code");
     }
 
     const {
@@ -45,13 +44,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     }
 
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
     const { email } = user;
 
     if (!email) {
-      throw new Error('User email not found');
+      throw new Error("User email not found");
     }
 
     const maybeUser =
@@ -60,32 +59,35 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     if (maybeUser) {
       if (inviteLinkInfo || emailInviteInfo) {
         const organizationId =
+          // biome-ignore lint/style/noNonNullAssertion: The is checked above
           inviteLinkInfo?.organizationId ?? emailInviteInfo!.organizationId;
         const organizationSlug =
+          // biome-ignore lint/style/noNonNullAssertion: The is checked above
           inviteLinkInfo?.organizationSlug ?? emailInviteInfo!.organizationSlug;
         const organizationName =
+          // biome-ignore lint/style/noNonNullAssertion: The is checked above
           inviteLinkInfo?.organizationName ?? emailInviteInfo!.organizationName;
 
         // If the user is already a member of the organization, redirect to
         // the organization dashboard and show a toast.
         if (
-          maybeUser.memberships.some(m => m.organizationId === organizationId)
+          maybeUser.memberships.some((m) => m.organizationId === organizationId)
         ) {
           return redirectWithToast(
-            href('/organizations/:organizationSlug/dashboard', {
+            href("/organizations/:organizationSlug/dashboard", {
               organizationSlug,
             }),
             {
-              title: i18n.t(
-                'organizations:accept-invite-link.already-member-toast-title',
-              ),
               description: i18n.t(
-                'organizations:accept-invite-link.already-member-toast-description',
+                "organizations:accept-invite-link.already-member-toast-description",
                 {
                   organizationName,
                 },
               ),
-              type: 'info',
+              title: i18n.t(
+                "organizations:accept-invite-link.already-member-toast-title",
+              ),
+              type: "info",
             },
             {
               headers: combineHeaders(
@@ -109,20 +111,20 @@ export async function loader({ request, context }: Route.LoaderArgs) {
           });
 
           return redirectWithToast(
-            href('/organizations/:organizationSlug/dashboard', {
+            href("/organizations/:organizationSlug/dashboard", {
               organizationSlug: emailInviteInfo.organizationSlug,
             }),
             {
-              title: i18n.t(
-                'organizations:accept-invite-link.join-success-toast-title',
-              ),
               description: i18n.t(
-                'organizations:accept-invite-link.join-success-toast-description',
+                "organizations:accept-invite-link.join-success-toast-description",
                 {
                   organizationName: emailInviteInfo.organizationName,
                 },
               ),
-              type: 'success',
+              title: i18n.t(
+                "organizations:accept-invite-link.join-success-toast-title",
+              ),
+              type: "success",
             },
             {
               headers: combineHeaders(
@@ -145,20 +147,20 @@ export async function loader({ request, context }: Route.LoaderArgs) {
           });
 
           return redirectWithToast(
-            href('/organizations/:organizationSlug/dashboard', {
+            href("/organizations/:organizationSlug/dashboard", {
               organizationSlug: inviteLinkInfo.organizationSlug,
             }),
             {
-              title: i18n.t(
-                'organizations:accept-invite-link.join-success-toast-title',
-              ),
               description: i18n.t(
-                'organizations:accept-invite-link.join-success-toast-description',
+                "organizations:accept-invite-link.join-success-toast-description",
                 {
                   organizationName: inviteLinkInfo.organizationName,
                 },
               ),
-              type: 'success',
+              title: i18n.t(
+                "organizations:accept-invite-link.join-success-toast-title",
+              ),
+              type: "success",
             },
             {
               headers: combineHeaders(
@@ -171,7 +173,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         }
       }
 
-      return redirect(href('/organizations'), {
+      return redirect(href("/organizations"), {
         headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
       });
     }
@@ -183,7 +185,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
-        // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
         emailInviteId: emailInviteInfo.emailInviteId,
         emailInviteToken: emailInviteInfo.emailInviteToken,
@@ -204,7 +205,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       });
     }
 
-    return redirect(href('/onboarding'), {
+    return redirect(href("/onboarding"), {
       headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
     });
   } catch (error) {

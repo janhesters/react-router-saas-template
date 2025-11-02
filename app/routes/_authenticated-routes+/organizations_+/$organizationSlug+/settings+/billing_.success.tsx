@@ -1,17 +1,16 @@
-import { OrganizationMembershipRole } from '@prisma/client';
-import confetti from 'canvas-confetti';
-import { BadgeCheckIcon } from 'lucide-react';
-import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { data, href, Link } from 'react-router';
+import { OrganizationMembershipRole } from "@prisma/client";
+import confetti from "canvas-confetti";
+import { BadgeCheckIcon } from "lucide-react";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { data, href, Link } from "react-router";
 
-import { Button } from '~/components/ui/button';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { organizationMembershipContext } from '~/features/organizations/organizations-middleware.server';
-import { getPageTitle } from '~/utils/get-page-title.server';
-import { notFound } from '~/utils/http-responses.server';
-
-import type { Route } from './+types/billing_.success';
+import type { Route } from "./+types/billing_.success";
+import { Button } from "~/components/ui/button";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { getPageTitle } from "~/utils/get-page-title.server";
+import { notFound } from "~/utils/http-responses.server";
 
 export function loader({ context }: Route.LoaderArgs) {
   const { headers, role } = context.get(organizationMembershipContext);
@@ -25,7 +24,7 @@ export function loader({ context }: Route.LoaderArgs) {
     {
       title: getPageTitle(
         i18n.t.bind(i18n),
-        'billing:billing-success-page.page-title',
+        "billing:billing-success-page.page-title",
       ),
     },
     { headers },
@@ -37,14 +36,14 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 ];
 
 export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
-  const { t } = useTranslation('billing', {
-    keyPrefix: 'billing-success-page',
+  const { t } = useTranslation("billing", {
+    keyPrefix: "billing-success-page",
   });
   const { organizationSlug } = params;
 
   useEffect(() => {
     const end = Date.now() + 2 * 1000; // 3 seconds
-    const colors = ['#3b82f6', '#22c55e', '#eab308', '#ef4444'];
+    const colors = ["#3b82f6", "#22c55e", "#eab308", "#ef4444"];
     let everyOther = true;
 
     const frame = () => {
@@ -52,20 +51,20 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
 
       if (everyOther) {
         void confetti({
-          particleCount: colors.length,
           angle: 60,
+          colors: colors,
+          origin: { x: 0, y: 0.5 },
+          particleCount: colors.length,
           spread: 55,
           startVelocity: 60,
-          origin: { x: 0, y: 0.5 },
-          colors: colors,
         });
         void confetti({
-          particleCount: colors.length,
           angle: 120,
+          colors: colors,
+          origin: { x: 1, y: 0.5 },
+          particleCount: colors.length,
           spread: 55,
           startVelocity: 60,
-          origin: { x: 1, y: 0.5 },
-          colors: colors,
         });
       }
 
@@ -82,25 +81,25 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
         <BadgeCheckIcon className="mx-auto size-16 text-green-400 dark:text-green-500" />
 
         <h3 className="text-foreground mt-2 text-lg font-semibold">
-          {t('payment-successful')}
+          {t("payment-successful")}
         </h3>
 
         <p className="text-muted-foreground mt-2 text-base text-balance">
-          {t('product-ready')}
+          {t("product-ready")}
         </p>
 
         <p className="text-muted-foreground mt-2 text-base text-balance">
-          {t('thank-you')}
+          {t("thank-you")}
         </p>
 
         <Button asChild>
           <Link
             className="mt-6"
-            to={href('/organizations/:organizationSlug/dashboard', {
+            to={href("/organizations/:organizationSlug/dashboard", {
               organizationSlug,
             })}
           >
-            {t('go-to-dashboard')}
+            {t("go-to-dashboard")}
           </Link>
         </Button>
       </div>

@@ -1,5 +1,5 @@
-import type { RequestHandler } from 'msw';
-import { http, HttpResponse } from 'msw';
+import type { RequestHandler } from "msw";
+import { HttpResponse, http } from "msw";
 
 /*
 Storage handlers
@@ -19,15 +19,15 @@ const uploadMock = http.post(
     const url = new URL(request.url);
     const pathSegments = url.pathname
       .split(`/storage/v1/object/${bucketName}/`)[1]
-      ?.split('/');
-    const filePath = pathSegments?.join('/'); // Reconstruct the path
+      ?.split("/");
+    const filePath = pathSegments?.join("/"); // Reconstruct the path
 
     if (!filePath) {
       console.error(
-        'MSW Error: Could not determine file path from URL:',
+        "MSW Error: Could not determine file path from URL:",
         url.pathname,
       );
-      return new HttpResponse('Could not determine file path', { status: 400 });
+      return new HttpResponse("Could not determine file path", { status: 400 });
     }
 
     // Simulate reading the file or form data if needed for validation,
@@ -79,9 +79,9 @@ const removeMock = http.delete(
         );
         return HttpResponse.json(
           {
-            statusCode: '400',
-            error: 'Bad Request',
-            message: 'Missing or invalid prefixes array',
+            error: "Bad Request",
+            message: "Missing or invalid prefixes array",
+            statusCode: "400",
           },
           { status: 400 },
         );
@@ -105,27 +105,27 @@ const removeMock = http.delete(
       // --- End Error Simulation ---
 
       // Simulate a successful removal response.
-      const deletedFilesData: FileObject[] = prefixes.map(path => ({
-        name: path.split('/').pop() ?? path,
-        id: undefined,
-        updated_at: undefined,
+      const deletedFilesData: FileObject[] = prefixes.map((path) => ({
         created_at: undefined,
+        id: undefined,
         last_accessed_at: undefined,
         metadata: undefined,
+        name: path.split("/").pop() ?? path,
+        updated_at: undefined,
       }));
 
       return HttpResponse.json(deletedFilesData);
     } catch (error) {
       // This catch block handles errors during JSON parsing (e.g., empty body, invalid JSON)
       console.error(
-        'MSW Error (remove): Could not parse request body as JSON',
+        "MSW Error (remove): Could not parse request body as JSON",
         error,
       );
       return HttpResponse.json(
         {
-          statusCode: '400',
-          error: 'Bad Request',
-          message: 'Invalid or empty JSON body',
+          error: "Bad Request",
+          message: "Invalid or empty JSON body",
+          statusCode: "400",
         },
         { status: 400 },
       );
@@ -146,13 +146,13 @@ const s3UploadMock: RequestHandler = http.put(
     // everything after `/storage/v1/s3/<bucket>/`
     const objectKey = url.pathname.split(`/storage/v1/s3/${bucket}/`)[1];
     if (!objectKey) {
-      return new HttpResponse('Missing key', { status: 400 });
+      return new HttpResponse("Missing key", { status: 400 });
     }
 
     // S3's PutObject returns an empty body + an ETag header
     return new HttpResponse(undefined, {
-      status: 200,
       headers: { ETag: '"mocked-etag"' },
+      status: 200,
     });
   },
 );
@@ -169,16 +169,16 @@ const s3DeleteMock: RequestHandler = http.delete(
 const s3InitMultipartMock: RequestHandler = http.post(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ params, request }) => {
-    const uploadId = 'mock-upload-id';
+    const uploadId = "mock-upload-id";
     const url = new URL(request.url);
 
     // Check if this is an uploads request
-    if (url.searchParams.get('uploads') === null) {
-      return new HttpResponse('Not an uploads request', { status: 400 });
+    if (url.searchParams.get("uploads") === null) {
+      return new HttpResponse("Not an uploads request", { status: 400 });
     }
 
-    if (!params.bucketName || typeof params.bucketName !== 'string') {
-      return new HttpResponse('Missing bucket name', { status: 400 });
+    if (!params.bucketName || typeof params.bucketName !== "string") {
+      return new HttpResponse("Missing bucket name", { status: 400 });
     }
 
     const keyPath = url.pathname.split(
@@ -191,8 +191,8 @@ const s3InitMultipartMock: RequestHandler = http.post(
   <UploadId>${uploadId}</UploadId>
 </InitiateMultipartUploadResult>`;
     return new HttpResponse(xml, {
+      headers: { "Content-Type": "application/xml" },
       status: 200,
-      headers: { 'Content-Type': 'application/xml' },
     });
   },
 );
@@ -204,16 +204,16 @@ const s3UploadPartMock: RequestHandler = http.put(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ request }) => {
     const url = new URL(request.url);
-    const uploadId = url.searchParams.get('uploadId');
-    const partNumber = url.searchParams.get('partNumber');
+    const uploadId = url.searchParams.get("uploadId");
+    const partNumber = url.searchParams.get("partNumber");
     if (!uploadId || !partNumber) {
-      return new HttpResponse('Missing uploadId or partNumber', {
+      return new HttpResponse("Missing uploadId or partNumber", {
         status: 400,
       });
     }
     return new HttpResponse(undefined, {
-      status: 200,
       headers: { ETag: '"mocked-part-etag"' },
+      status: 200,
     });
   },
 );
@@ -225,13 +225,13 @@ const s3CompleteMultipartMock: RequestHandler = http.post(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ params, request }) => {
     const url = new URL(request.url);
-    const uploadId = url.searchParams.get('uploadId');
+    const uploadId = url.searchParams.get("uploadId");
     if (!uploadId) {
-      return new HttpResponse('Missing uploadId', { status: 400 });
+      return new HttpResponse("Missing uploadId", { status: 400 });
     }
 
-    if (!params.bucketName || typeof params.bucketName !== 'string') {
-      return new HttpResponse('Missing bucket name', { status: 400 });
+    if (!params.bucketName || typeof params.bucketName !== "string") {
+      return new HttpResponse("Missing bucket name", { status: 400 });
     }
 
     const keyPath = url.pathname.split(
@@ -239,14 +239,14 @@ const s3CompleteMultipartMock: RequestHandler = http.post(
     )[1];
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
-  <Location>${request.url.split('?')[0]}</Location>
+  <Location>${request.url.split("?")[0]}</Location>
   <Bucket>${params.bucketName}</Bucket>
   <Key>${keyPath}</Key>
   <ETag>"mocked-complete-etag"</ETag>
 </CompleteMultipartUploadResult>`;
     return new HttpResponse(xml, {
+      headers: { "Content-Type": "application/xml" },
       status: 200,
-      headers: { 'Content-Type': 'application/xml' },
     });
   },
 );

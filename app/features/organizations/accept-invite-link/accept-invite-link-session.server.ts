@@ -1,11 +1,11 @@
-import type { OrganizationInviteLink } from '@prisma/client';
-import { createCookieSessionStorage } from 'react-router';
-import { z } from 'zod';
+import type { OrganizationInviteLink } from "@prisma/client";
+import { createCookieSessionStorage } from "react-router";
+import { z } from "zod";
 
-import { INVITE_LINK_INFO_SESSION_NAME } from './accept-invite-link-constants';
+import { INVITE_LINK_INFO_SESSION_NAME } from "./accept-invite-link-constants";
 
 // Define keys for the session data
-const INVITE_LINK_TOKEN_KEY = 'inviteLinkToken'; // This is the token NOT the id
+const INVITE_LINK_TOKEN_KEY = "inviteLinkToken"; // This is the token NOT the id
 
 const inviteLinkSchema = z.object({
   [INVITE_LINK_TOKEN_KEY]: z.string(),
@@ -19,17 +19,17 @@ export type InviteLinkInfoSessionData = z.infer<typeof inviteLinkSchema>;
 const { commitSession, getSession, destroySession } =
   createCookieSessionStorage<InviteLinkInfoSessionData>({
     cookie: {
-      name: INVITE_LINK_INFO_SESSION_NAME,
       httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      name: INVITE_LINK_INFO_SESSION_NAME,
+      path: "/",
+      sameSite: "lax",
       secrets: [process.env.COOKIE_SECRET],
+      secure: process.env.NODE_ENV === "production",
     },
   });
 
 export type CreateInviteLinkInfoCookieParams = InviteLinkInfoSessionData & {
-  expiresAt: OrganizationInviteLink['expiresAt'];
+  expiresAt: OrganizationInviteLink["expiresAt"];
 };
 
 /**
@@ -77,7 +77,7 @@ export async function createInviteLinkInfoHeaders(
   inviteLinkInfo: CreateInviteLinkInfoCookieParams,
 ) {
   return new Headers({
-    'Set-Cookie': await createInviteLinkInfoCookie(inviteLinkInfo),
+    "Set-Cookie": await createInviteLinkInfoCookie(inviteLinkInfo),
   });
 }
 
@@ -93,7 +93,7 @@ export async function createInviteLinkInfoHeaders(
 export async function getInviteLinkInfoFromSession(
   request: Request,
 ): Promise<InviteLinkInfoSessionData | undefined> {
-  const session = await getSession(request.headers.get('Cookie'));
+  const session = await getSession(request.headers.get("Cookie"));
   const inviteLinkToken = session.get(INVITE_LINK_TOKEN_KEY);
 
   // Attempt to parse the retrieved data against the schema
@@ -115,6 +115,6 @@ export async function getInviteLinkInfoFromSession(
 export async function destroyInviteLinkInfoSession(
   request: Request,
 ): Promise<Headers> {
-  const session = await getSession(request.headers.get('Cookie'));
-  return new Headers({ 'Set-Cookie': await destroySession(session) });
+  const session = await getSession(request.headers.get("Cookie"));
+  return new Headers({ "Set-Cookie": await destroySession(session) });
 }

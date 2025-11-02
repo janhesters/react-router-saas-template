@@ -1,4 +1,4 @@
 export const registerIntents = {
-  registerWithEmail: 'registerWithEmail',
-  registerWithGoogle: 'registerWithGoogle',
+  registerWithEmail: "registerWithEmail",
+  registerWithGoogle: "registerWithGoogle",
 } as const;

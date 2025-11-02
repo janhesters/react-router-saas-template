@@ -1,5 +1,5 @@
 export function loader() {
-  return { headerTitle: 'Get Help' };
+  return { headerTitle: "Get Help" };
 }
 
 export default function GetHelpRoute() {

@@ -1,36 +1,35 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
-
-import { EMAIL_INVITE_INFO_SESSION_NAME } from '~/features/organizations/accept-email-invite/accept-email-invite-constants';
-import { INVITE_LINK_INFO_SESSION_NAME } from '~/features/organizations/accept-invite-link/accept-invite-link-constants';
-import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
-import {
-  createPopulatedOrganization,
-  createPopulatedOrganizationEmailInviteLink,
-  createPopulatedOrganizationInviteLink,
-} from '~/features/organizations/organizations-factories.server';
-import { saveOrganizationInviteLinkToDatabase } from '~/features/organizations/organizations-invite-link-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import {
-  deleteUserAccountFromDatabaseById,
-  saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import {
-  createUserWithOrgAndAddAsMember,
-  teardownOrganizationAndMember,
-} from '~/test/test-utils';
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
 
 import {
   getPath,
   setupEmailInviteCookie,
   setupInviteLinkCookie,
   setupOrganizationAndLoginAsMember,
-} from '../../utils';
+} from "../../utils";
+import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
+import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
+import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
+import {
+  createPopulatedOrganization,
+  createPopulatedOrganizationEmailInviteLink,
+  createPopulatedOrganizationInviteLink,
+} from "~/features/organizations/organizations-factories.server";
+import { saveOrganizationInviteLinkToDatabase } from "~/features/organizations/organizations-invite-link-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import {
+  deleteUserAccountFromDatabaseById,
+  saveUserAccountToDatabase,
+} from "~/features/user-accounts/user-accounts-model.server";
+import {
+  createUserWithOrgAndAddAsMember,
+  teardownOrganizationAndMember,
+} from "~/test/test-utils";
 
-const path = '/register';
+const path = "/register";
 
-test.describe('register page', () => {
-  test('given: a logged in user, should: redirect to the organizations page', async ({
+test.describe("register page", () => {
+  test("given: a logged in user, should: redirect to the organizations page", async ({
     page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
@@ -43,10 +42,10 @@ test.describe('register page', () => {
       `/organizations/${organization.slug}/dashboard`,
     );
 
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: a logged out user, should: have the correct title, and show the link to the login page & the terms and privacy policy links', async ({
+  test("given: a logged out user, should: have the correct title, and show the link to the login page & the terms and privacy policy links", async ({
     page,
   }) => {
     await page.goto(path);
@@ -55,39 +54,39 @@ test.describe('register page', () => {
     await expect(page).toHaveTitle(/register | react router saas template/i);
 
     // The login button has the correct link.
-    await expect(page.getByRole('link', { name: /log in/i })).toHaveAttribute(
-      'href',
-      '/login',
+    await expect(page.getByRole("link", { name: /log in/i })).toHaveAttribute(
+      "href",
+      "/login",
     );
 
     // Check that the terms and privacy policy links are visible and have the
     // correct attributes.
-    const termsLink = page.getByRole('link', { name: /terms of service/i });
-    const privacyLink = page.getByRole('link', { name: /privacy policy/i });
-    await expect(termsLink).toHaveAttribute('href', '/terms-of-service');
-    await expect(privacyLink).toHaveAttribute('href', '/privacy-policy');
+    const termsLink = page.getByRole("link", { name: /terms of service/i });
+    const privacyLink = page.getByRole("link", { name: /privacy policy/i });
+    await expect(termsLink).toHaveAttribute("href", "/terms-of-service");
+    await expect(privacyLink).toHaveAttribute("href", "/privacy-policy");
   });
 
-  test.describe('email registration', () => {
-    test('given: a logged out user entering invalid data, should: show the correct error messages', async ({
+  test.describe("email registration", () => {
+    test("given: a logged out user entering invalid data, should: show the correct error messages", async ({
       page,
     }) => {
       await page.goto(path);
 
       // Invalid email.
       await expect(page.getByText(/new here/i)).toBeVisible();
-      const registerButton = page.getByRole('button', { name: /register/i });
+      const registerButton = page.getByRole("button", { name: /register/i });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
-      await emailInput.fill('invalid@email');
+      await emailInput.fill("invalid@email");
       await registerButton.click();
       await expect(
         page.getByText(/a valid email consists of characters, '@' and '.'./i),
       ).toBeVisible();
     });
 
-    test('given: a logged out user with an existing account, should: show the correct error message', async ({
+    test("given: a logged out user with an existing account, should: show the correct error message", async ({
       page,
     }) => {
       const userAccount = createPopulatedUserAccount();
@@ -97,7 +96,7 @@ test.describe('register page', () => {
 
       // Fill in the email and click the register button.
       await expect(page.getByText(/new here/i)).toBeVisible();
-      const registerButton = page.getByRole('button', { name: /register/i });
+      const registerButton = page.getByRole("button", { name: /register/i });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
@@ -114,7 +113,7 @@ test.describe('register page', () => {
       await deleteUserAccountFromDatabaseById(userAccount.id);
     });
 
-    test('given: a logged out user with a new email, should: show the verification form', async ({
+    test("given: a logged out user with a new email, should: show the verification form", async ({
       page,
     }) => {
       const userAccount = createPopulatedUserAccount();
@@ -123,7 +122,7 @@ test.describe('register page', () => {
 
       // Fill in the email and click the register button.
       await expect(page.getByText(/new here\?/i)).toBeVisible();
-      const registerButton = page.getByRole('button', { name: /register/i });
+      const registerButton = page.getByRole("button", { name: /register/i });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
@@ -140,44 +139,44 @@ test.describe('register page', () => {
         ),
       ).toBeVisible();
       await expect(
-        page.getByRole('button', { name: /request new verification link/i }),
+        page.getByRole("button", { name: /request new verification link/i }),
       ).toBeDisabled();
     });
   });
 
-  test.describe('google registration', () => {
-    test('given: a logged out user, should: log the user and redirect to the google login page', async ({
+  test.describe("google registration", () => {
+    test("given: a logged out user, should: log the user and redirect to the google login page", async ({
       page,
     }) => {
       await page.goto(path);
 
       // Click the Google registration button.
-      const googleRegistrationButton = page.getByRole('button', {
+      const googleRegistrationButton = page.getByRole("button", {
         name: /google/i,
       });
       await googleRegistrationButton.click();
 
       // Check that the user is redirected to the google login page.
       await expect(
-        page.getByRole('heading', { name: /sign in/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /sign in/i }),
       ).toBeVisible();
       await expect(page.getByText(/sign in with google/i)).toBeVisible();
     });
   });
 
-  test('given: an anonymous user, should: lack any automatically detectable accessibility issues', async ({
+  test("given: an anonymous user, should: lack any automatically detectable accessibility issues", async ({
     page,
   }) => {
     await page.goto(path);
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules('color-contrast')
+      .disableRules("color-contrast")
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);
   });
 
-  test('given: an anonymous user with an active invite link in their cookies, should: show text letting the user know they will join the organization after registering', async ({
+  test("given: an anonymous user with an active invite link in their cookies, should: show text letting the user know they will join the organization after registering", async ({
     page,
   }) => {
     const { organization, user } = await createUserWithOrgAndAddAsMember({
@@ -186,49 +185,49 @@ test.describe('register page', () => {
       }),
     });
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: user.id,
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     await page.goto(path);
 
     await expect(
-      page.getByText(new RegExp(`register to join ${organization.name}`, 'i')),
+      page.getByText(new RegExp(`register to join ${organization.name}`, "i")),
     ).toBeVisible();
     await expect(
       page.getByText(
         new RegExp(
           `${user.name} has invited you to join ${organization.name}`,
-          'i',
+          "i",
         ),
       ),
     ).toBeVisible();
 
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: an anonymous user with an inactive invite link in their cookies, should: NOT show any text about joining an organization and also clear the invite link cookie', async ({
+  test("given: an anonymous user with an inactive invite link in their cookies, should: NOT show any text about joining an organization and also clear the invite link cookie", async ({
     page,
   }) => {
     const { organization, user } = await createUserWithOrgAndAddAsMember();
     const link = createPopulatedOrganizationInviteLink({
-      organizationId: organization.id,
       creatorId: user.id,
       deactivatedAt: new Date(),
+      organizationId: organization.id,
     });
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Set the invite link cookie
     await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
       page,
-      link: { inviteLinkToken: link.token, expiresAt: link.expiresAt },
     });
 
     await page.goto(path);
@@ -241,13 +240,13 @@ test.describe('register page', () => {
 
     // Verify that the invite-specific text is not shown
     await expect(
-      page.getByText(new RegExp(`register to join ${organization.name}`, 'i')),
+      page.getByText(new RegExp(`register to join ${organization.name}`, "i")),
     ).not.toBeVisible();
     await expect(
       page.getByText(
         new RegExp(
           `${user.name} has invited you to join ${organization.name}`,
-          'i',
+          "i",
         ),
       ),
     ).not.toBeVisible();
@@ -255,14 +254,14 @@ test.describe('register page', () => {
     // Verify that the invite link cookie is cleared
     const cookies = await page.context().cookies();
     const inviteLinkCookie = cookies.find(
-      cookie => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+      (cookie) => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
     );
     expect(inviteLinkCookie).toBeUndefined();
 
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: an anonymous user with an active email invite in their cookies, should: show text letting the user know they will join the organization after registering', async ({
+  test("given: an anonymous user with an active email invite in their cookies, should: show text letting the user know they will join the organization after registering", async ({
     page,
   }) => {
     const { organization, user } = await createUserWithOrgAndAddAsMember({
@@ -271,49 +270,49 @@ test.describe('register page', () => {
       }),
     });
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
       invitedById: user.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
     });
 
     await page.goto(path);
 
     await expect(
-      page.getByText(new RegExp(`register to join ${organization.name}`, 'i')),
+      page.getByText(new RegExp(`register to join ${organization.name}`, "i")),
     ).toBeVisible();
     await expect(
       page.getByText(
         new RegExp(
           `${user.name} has invited you to join ${organization.name}`,
-          'i',
+          "i",
         ),
       ),
     ).toBeVisible();
 
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 
-  test('given: an anonymous user with an inactive email invite in their cookies, should: NOT show any text about joining an organization and also clear the email invite cookie', async ({
+  test("given: an anonymous user with an inactive email invite in their cookies, should: NOT show any text about joining an organization and also clear the email invite cookie", async ({
     page,
   }) => {
     const { organization, user } = await createUserWithOrgAndAddAsMember();
     const invite = createPopulatedOrganizationEmailInviteLink({
-      organizationId: organization.id,
-      invitedById: user.id,
       deactivatedAt: new Date(),
+      invitedById: user.id,
+      organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
-      page,
       invite: { emailInviteToken: invite.id, expiresAt: invite.expiresAt },
+      page,
     });
 
     await page.goto(path);
@@ -326,13 +325,13 @@ test.describe('register page', () => {
 
     // Verify that the invite-specific text is not shown
     await expect(
-      page.getByText(new RegExp(`register to join ${organization.name}`, 'i')),
+      page.getByText(new RegExp(`register to join ${organization.name}`, "i")),
     ).not.toBeVisible();
     await expect(
       page.getByText(
         new RegExp(
           `${user.name} has invited you to join ${organization.name}`,
-          'i',
+          "i",
         ),
       ),
     ).not.toBeVisible();
@@ -340,10 +339,10 @@ test.describe('register page', () => {
     // Verify that the email invite cookie is cleared
     const cookies = await page.context().cookies();
     const emailInviteCookie = cookies.find(
-      cookie => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
+      (cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME,
     );
     expect(emailInviteCookie).toBeUndefined();
 
-    await teardownOrganizationAndMember({ user, organization });
+    await teardownOrganizationAndMember({ organization, user });
   });
 });

@@ -1,10 +1,10 @@
-import { onTestFinished } from 'vitest';
+import { onTestFinished } from "vitest";
 
 import {
   createUserWithOrgAndAddAsMember,
   createUserWithTrialOrgAndAddAsMember,
   teardownOrganizationAndMember,
-} from './test-utils';
+} from "./test-utils";
 
 /**
  * Creates a user with a trial organization and adds the user as a member of
@@ -50,5 +50,5 @@ export async function setupUserWithOrgAndAddAsMember(
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  return { organization, user, subscription };
+  return { organization, subscription, user };
 }

@@ -1,1 +1,1 @@
-export const CONTACT_SALES_INTENT = 'contactSales';
+export const CONTACT_SALES_INTENT = "contactSales";

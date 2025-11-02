@@ -1,7 +1,6 @@
-/* eslint-disable unicorn/no-null */
-import type { OrganizationInviteLink, Prisma } from '@prisma/client';
+import type { OrganizationInviteLink, Prisma } from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -26,7 +25,7 @@ export async function saveOrganizationInviteLinkToDatabase(
  * @returns The organization invite link or null if not found.
  */
 export async function retrieveOrganizationInviteLinkFromDatabaseById(
-  id: OrganizationInviteLink['id'],
+  id: OrganizationInviteLink["id"],
 ) {
   return prisma.organizationInviteLink.findUnique({ where: { id } });
 }
@@ -40,14 +39,14 @@ export async function retrieveOrganizationInviteLinkFromDatabaseById(
  * wasn't found or its deactivated or expired.
  */
 export async function retrieveActiveOrganizationInviteLinkFromDatabaseByToken(
-  token: OrganizationInviteLink['token'],
+  token: OrganizationInviteLink["token"],
 ) {
   return prisma.organizationInviteLink.findUnique({
-    where: { token, deactivatedAt: null, expiresAt: { gt: new Date() } },
     include: {
-      organization: { select: { name: true, id: true, slug: true } },
-      creator: { select: { name: true, id: true } },
+      creator: { select: { id: true, name: true } },
+      organization: { select: { id: true, name: true, slug: true } },
     },
+    where: { deactivatedAt: null, expiresAt: { gt: new Date() }, token },
   });
 }
 
@@ -60,16 +59,16 @@ export async function retrieveActiveOrganizationInviteLinkFromDatabaseByToken(
  * date, and organization details, or null if no active link was found.
  */
 export async function retrieveCreatorAndOrganizationForActiveLinkFromDatabaseByToken(
-  token: OrganizationInviteLink['token'],
+  token: OrganizationInviteLink["token"],
 ) {
   return prisma.organizationInviteLink.findUnique({
-    where: { token, deactivatedAt: null, expiresAt: { gt: new Date() } },
     select: {
-      id: true,
-      creator: { select: { name: true, id: true } },
+      creator: { select: { id: true, name: true } },
       expiresAt: true,
-      organization: { select: { name: true, id: true } },
+      id: true,
+      organization: { select: { id: true, name: true } },
     },
+    where: { deactivatedAt: null, expiresAt: { gt: new Date() }, token },
   });
 }
 
@@ -81,16 +80,16 @@ export async function retrieveCreatorAndOrganizationForActiveLinkFromDatabaseByT
  * @returns The latest active invite link or null if not found.
  */
 export async function retrieveLatestInviteLinkFromDatabaseByOrganizationId(
-  organizationId: OrganizationInviteLink['organizationId'],
+  organizationId: OrganizationInviteLink["organizationId"],
 ) {
   return prisma.organizationInviteLink.findFirst({
-    where: {
-      organizationId,
-      expiresAt: { gt: new Date() },
-      deactivatedAt: null,
-    },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
     take: 1,
+    where: {
+      deactivatedAt: null,
+      expiresAt: { gt: new Date() },
+      organizationId,
+    },
   });
 }
 
@@ -103,11 +102,10 @@ export async function retrieveLatestInviteLinkFromDatabaseByOrganizationId(
  * found or its deactivated or expired.
  */
 export async function retrieveActiveInviteLinkFromDatabaseByToken(
-  token: OrganizationInviteLink['token'],
+  token: OrganizationInviteLink["token"],
 ) {
   const now = new Date();
   return prisma.organizationInviteLink.findFirst({
-    where: { token, deactivatedAt: null, expiresAt: { gt: now } },
     select: {
       creator: { select: { id: true, name: true } },
       deactivatedAt: true,
@@ -116,6 +114,7 @@ export async function retrieveActiveInviteLinkFromDatabaseByToken(
       organization: { select: { id: true, name: true, slug: true } },
       token: true,
     },
+    where: { deactivatedAt: null, expiresAt: { gt: now }, token },
   });
 }
 
@@ -132,11 +131,11 @@ export async function updateOrganizationInviteLinkInDatabaseById({
   id,
   organizationInviteLink,
 }: {
-  id: OrganizationInviteLink['id'];
+  id: OrganizationInviteLink["id"];
   organizationInviteLink: Prisma.OrganizationInviteLinkUpdateInput;
 }) {
   return prisma.organizationInviteLink.update({
-    where: { id },
     data: organizationInviteLink,
+    where: { id },
   });
 }

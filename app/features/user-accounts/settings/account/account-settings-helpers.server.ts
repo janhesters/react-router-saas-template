@@ -1,19 +1,18 @@
-import type { FileUpload } from '@mjackson/form-data-parser';
-import { OrganizationMembershipRole } from '@prisma/client';
-import type { Return } from '@prisma/client/runtime/library';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { FileUpload } from "@mjackson/form-data-parser";
+import { OrganizationMembershipRole } from "@prisma/client";
+import type { Return } from "@prisma/client/runtime/library";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { createAdminS3Client } from '~/utils/s3.server';
-import { uploadToStorage } from '~/utils/storage.server';
-
-import { AVATAR_PATH_PREFIX, BUCKET_NAME } from '../../user-account-constants';
-import type { requireAuthenticatedUserWithMembershipsExists } from '../../user-accounts-helpers.server';
-import type { DangerZoneProps } from './danger-zone';
+import { AVATAR_PATH_PREFIX, BUCKET_NAME } from "../../user-account-constants";
+import type { requireAuthenticatedUserWithMembershipsExists } from "../../user-accounts-helpers.server";
+import type { DangerZoneProps } from "./danger-zone";
+import { createAdminS3Client } from "~/utils/s3.server";
+import { uploadToStorage } from "~/utils/storage.server";
 
 export function mapUserAccountWithMembershipsToDangerZoneProps(
   user: Awaited<
     Return<typeof requireAuthenticatedUserWithMembershipsExists>
-  >['user'],
+  >["user"],
 ): DangerZoneProps {
   const imlicitlyDeletedOrganizations: string[] = [];
   const organizationsBlockingAccountDeletion: string[] = [];
@@ -58,7 +57,7 @@ export async function uploadUserAvatar({
   userId: string;
   supabase: SupabaseClient;
 }) {
-  const fileExtension = file.name.split('.').pop() ?? '';
+  const fileExtension = file.name.split(".").pop() ?? "";
   const key = `${AVATAR_PATH_PREFIX}/${userId}.${fileExtension}`;
   await uploadToStorage({
     bucket: BUCKET_NAME,

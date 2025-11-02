@@ -128,8 +128,8 @@
         "name-label": "Organization name",
         "name-max-length": "Organization name must be less than 255 characters long.",
         "name-min-length": "Organization name must be at least 3 characters long.",
-        "name-required": "Organization name is required.",
         "name-placeholder": "Organization name ...",
+        "name-required": "Organization name is required.",
         "save": "Save changes",
         "saving": "Saving changes ..."
       },

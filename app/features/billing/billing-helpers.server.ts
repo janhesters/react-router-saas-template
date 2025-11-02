@@ -1,14 +1,15 @@
-import { StripeSubscriptionStatus } from '@prisma/client';
+import { StripeSubscriptionStatus } from "@prisma/client";
 
-import type { OrganizationWithMembershipsAndSubscriptions } from '../onboarding/onboarding-helpers.server';
-import type { Interval, Tier } from './billing-constants';
-import type { StripeSubscriptionSchedulePhaseWithPrice } from './billing-factories.server';
-import { getTierAndIntervalForLookupKey } from './billing-helpers';
-import type { BillingPageProps } from './billing-page';
-import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
-import type { CreateSubscriptionModalContentProps } from './create-subscription-modal-content';
-import type { retrieveProductsFromDatabaseByPriceLookupKeys } from './stripe-product-model.server';
-import type { retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId } from './stripe-subscription-model.server';
+import type { OrganizationWithMembershipsAndSubscriptions } from "../onboarding/onboarding-helpers.server";
+import type { Interval, Tier } from "./billing-constants";
+import type { StripeSubscriptionSchedulePhaseWithPrice } from "./billing-factories.server";
+import { getTierAndIntervalForLookupKey } from "./billing-helpers";
+import type { BillingPageProps } from "./billing-page";
+import type { CancelOrModifySubscriptionModalContentProps } from "./cancel-or-modify-subscription-modal-content";
+import type { CreateSubscriptionModalContentProps } from "./create-subscription-modal-content";
+import type { retrieveProductsFromDatabaseByPriceLookupKeys } from "./stripe-product-model.server";
+import type { retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId } from "./stripe-subscription-model.server";
+
 const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
   StripeSubscriptionStatus.active,
   StripeSubscriptionStatus.trialing,
@@ -30,7 +31,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
 }: {
   organization: OrganizationWithMembershipsAndSubscriptions;
   now: Date;
-}): Omit<BillingPageProps, 'createSubscriptionModalProps'> {
+}): Omit<BillingPageProps, "createSubscriptionModalProps"> {
   const subscription = organization.stripeSubscriptions[0];
 
   if (!subscription) {
@@ -39,20 +40,20 @@ export function mapStripeSubscriptionDataToBillingPageProps({
       cancelAtPeriodEnd: false,
       cancelOrModifySubscriptionModalProps: {
         canCancelSubscription: false,
-        currentTier: 'high',
-        currentTierInterval: 'monthly',
+        currentTier: "high",
+        currentTierInterval: "monthly",
       },
-      currentInterval: 'monthly',
+      currentInterval: "monthly",
       currentMonthlyRatePerUser: 85,
       currentPeriodEnd: organization.trialEnd,
       currentSeats: organization._count.memberships,
-      currentTier: 'high',
+      currentTier: "high",
       isEnterprisePlan: false,
       isOnFreeTrial: true,
       maxSeats: 25,
       organizationSlug: organization.slug,
       projectedTotal: 85 * organization._count.memberships,
-      subscriptionStatus: 'active',
+      subscriptionStatus: "active",
     };
   }
 
@@ -60,18 +61,19 @@ export function mapStripeSubscriptionDataToBillingPageProps({
 
   // 1. Determine the end of the current billing period by taking the max timestamp
   const currentPeriodEnd = new Date(
-    Math.max(...items.map(item => item.currentPeriodEnd.getTime())),
+    Math.max(...items.map((item) => item.currentPeriodEnd.getTime())),
   );
 
   // 2. Use the first item to derive price, tier, and seats
+  // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
   const { price } = items[0]!;
 
   // 3. Parse max seats from metadata.max_seats (string or number)
   const rawMaxSeats = price.product.maxSeats;
   const maxSeats =
-    typeof rawMaxSeats === 'string'
+    typeof rawMaxSeats === "string"
       ? Number.parseInt(rawMaxSeats, 10)
-      : typeof rawMaxSeats === 'number'
+      : typeof rawMaxSeats === "number"
         ? rawMaxSeats
         : 1;
   const currentSeats = organization._count.memberships;
@@ -84,16 +86,16 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   const currentTier = getTierAndIntervalForLookupKey(price.lookupKey).tier;
 
   // 6. Determine subscriptionStatus
-  let subscriptionStatus: 'active' | 'inactive' | 'paused';
+  let subscriptionStatus: "active" | "inactive" | "paused";
   if (subscription.cancelAtPeriodEnd && now > currentPeriodEnd) {
-    subscriptionStatus = 'paused';
+    subscriptionStatus = "paused";
   } else if (
-    subscription.status === 'active' ||
-    subscription.status === 'trialing'
+    subscription.status === "active" ||
+    subscription.status === "trialing"
   ) {
-    subscriptionStatus = 'active';
+    subscriptionStatus = "active";
   } else {
-    subscriptionStatus = 'inactive';
+    subscriptionStatus = "inactive";
   }
 
   // 7. Projected total = per-user rate × seats
@@ -117,7 +119,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   let nextPhase: StripeSubscriptionSchedulePhaseWithPrice | undefined;
   if (schedule) {
     nextPhase = schedule.phases.find(
-      p => p.startDate.getTime() > now.getTime(),
+      (p) => p.startDate.getTime() > now.getTime(),
     );
   }
 
@@ -148,7 +150,9 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     pendingChange: nextPhase
       ? {
           pendingChangeDate: nextPhase.startDate,
+          // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
           pendingInterval: pendingInterval!,
+          // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
           pendingTier: pendingTier!,
         }
       : undefined,
@@ -164,7 +168,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
  * @returns The base URL.
  */
 export const extractBaseUrl = (url: URL) =>
-  `${process.env.NODE_ENV === 'production' ? 'https:' : 'http:'}//${url.host}`;
+  `${process.env.NODE_ENV === "production" ? "https:" : "http:"}//${url.host}`;
 
 export type ProductsForBillingPage = Awaited<
   ReturnType<typeof retrieveProductsFromDatabaseByPriceLookupKeys>
@@ -181,7 +185,7 @@ export function getCreateSubscriptionModalProps(
   return {
     createSubscriptionModalProps: {
       currentSeats: organization._count.memberships,
-      planLimits: { low, mid, high },
+      planLimits: { high, low, mid },
     },
   };
 }

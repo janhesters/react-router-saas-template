@@ -1,23 +1,23 @@
 export default {
-  extends: ['@commitlint/config-conventional'],
+  extends: ["@commitlint/config-conventional"],
   rules: {
-    'type-enum': [
+    "scope-empty": [2, "never"], // Enforces a scope like (app) or (tests)
+    "type-enum": [
       2,
-      'always',
+      "always",
       [
-        'feat',
-        'fix',
-        'docs',
-        'style',
-        'refactor',
-        'perf',
-        'test',
-        'build',
-        'ci',
-        'chore',
-        'revert',
+        "feat",
+        "fix",
+        "docs",
+        "style",
+        "refactor",
+        "perf",
+        "test",
+        "build",
+        "ci",
+        "chore",
+        "revert",
       ],
     ],
-    'scope-empty': [2, 'never'], // Enforces a scope like (app) or (tests)
   },
 };

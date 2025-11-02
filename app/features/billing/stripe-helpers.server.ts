@@ -1,8 +1,8 @@
-import type { Organization, UserAccount } from '@prisma/client';
-import { href } from 'react-router';
-import type Stripe from 'stripe';
+import type { Organization, UserAccount } from "@prisma/client";
+import { href } from "react-router";
+import type Stripe from "stripe";
 
-import { stripeAdmin } from '~/features/billing/stripe-admin.server';
+import { stripeAdmin } from "~/features/billing/stripe-admin.server";
 
 /**
  * Creates a Stripe Checkout Session for a subscription purchase or update.
@@ -30,26 +30,26 @@ export async function createStripeCheckoutSession({
   seatsUsed,
 }: {
   baseUrl: string;
-  customerEmail: Organization['billingEmail'];
-  customerId: Organization['stripeCustomerId'];
-  organizationId: Organization['id'];
-  organizationSlug: Organization['slug'];
+  customerEmail: Organization["billingEmail"];
+  customerId: Organization["stripeCustomerId"];
+  organizationId: Organization["id"];
+  organizationSlug: Organization["slug"];
   priceId: string;
-  purchasedById: UserAccount['id'];
+  purchasedById: UserAccount["id"];
   seatsUsed: number;
 }) {
-  const hasCustomerId = customerId && customerId !== '';
+  const hasCustomerId = customerId && customerId !== "";
 
   const session = await stripeAdmin.checkout.sessions.create({
     automatic_tax: { enabled: true },
-    billing_address_collection: 'auto',
+    billing_address_collection: "auto",
     cancel_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing',
+      "/organizations/:organizationSlug/settings/billing",
       { organizationSlug },
     )}`,
     customer: hasCustomerId ? customerId : undefined,
     ...(hasCustomerId && {
-      customer_update: { address: 'auto', name: 'auto', shipping: 'auto' },
+      customer_update: { address: "auto", name: "auto", shipping: "auto" },
     }),
     line_items: [{ price: priceId, quantity: seatsUsed }],
     metadata: {
@@ -58,9 +58,9 @@ export async function createStripeCheckoutSession({
       organizationSlug,
       purchasedById,
     },
-    mode: 'subscription',
+    mode: "subscription",
     saved_payment_method_options: {
-      payment_method_save: 'enabled',
+      payment_method_save: "enabled",
     },
     subscription_data: {
       metadata: {
@@ -71,7 +71,7 @@ export async function createStripeCheckoutSession({
       },
     },
     success_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing/success',
+      "/organizations/:organizationSlug/settings/billing/success",
       { organizationSlug },
     )}?session_id={CHECKOUT_SESSION_ID}`,
     // Show check box to allow purchasing as a business.
@@ -101,7 +101,7 @@ export async function createStripeCustomerPortalSession({
   const session = await stripeAdmin.billingPortal.sessions.create({
     customer: customerId,
     return_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing',
+      "/organizations/:organizationSlug/settings/billing",
       { organizationSlug },
     )}`,
   });
@@ -134,7 +134,7 @@ export async function createStripeSwitchPlanSession({
 }: {
   baseUrl: string;
   customerId: string;
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
   subscriptionId: string;
   subscriptionItemId: string;
   newPriceId: string;
@@ -146,17 +146,17 @@ export async function createStripeSwitchPlanSession({
   // This will deep-link straight to the "Confirm this update" page
   const session = await stripeAdmin.billingPortal.sessions.create({
     customer: customerId,
+    flow_data: {
+      subscription_update_confirm: {
+        items: [{ id: subscriptionItemId, price: newPriceId, quantity }],
+        subscription: subscriptionId,
+      },
+      type: "subscription_update_confirm",
+    },
     return_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing',
+      "/organizations/:organizationSlug/settings/billing",
       { organizationSlug },
     )}`,
-    flow_data: {
-      type: 'subscription_update_confirm',
-      subscription_update_confirm: {
-        subscription: subscriptionId,
-        items: [{ id: subscriptionItemId, price: newPriceId, quantity }],
-      },
-    },
   });
 
   return session;
@@ -180,7 +180,7 @@ export async function updateStripeCustomer({
   customerId: string;
   customerName?: string;
   customerEmail?: string;
-  organizationId?: Organization['id'];
+  organizationId?: Organization["id"];
 }) {
   const customer = await stripeAdmin.customers.update(customerId, {
     ...(customerEmail ? { email: customerEmail } : {}),
@@ -212,25 +212,25 @@ export async function createStripeCancelSubscriptionSession({
   /** Stripe Customer ID */
   customerId: string;
   /** Org slug for building return_url path */
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
   /** The Stripe Subscription ID you want to let them cancel */
   subscriptionId: string;
 }) {
   const session = await stripeAdmin.billingPortal.sessions.create({
     customer: customerId,
-    return_url: `${baseUrl}${href(
-      '/organizations/:organizationSlug/settings/billing',
-      { organizationSlug },
-    )}`,
     flow_data: {
-      // This invokes the "cancel subscription" deep-link
-      type: 'subscription_cancel',
       subscription_cancel: {
         subscription: subscriptionId,
         // you can also configure a retention strategy here if desired:
         // retention: { type: 'coupon_offer', coupon: '25OFF' },
       },
+      // This invokes the "cancel subscription" deep-link
+      type: "subscription_cancel",
     },
+    return_url: `${baseUrl}${href(
+      "/organizations/:organizationSlug/settings/billing",
+      { organizationSlug },
+    )}`,
   });
 
   return session;
@@ -266,7 +266,7 @@ export async function resumeStripeSubscription(subscriptionId: string) {
  * @returns A Promise that resolves to the released SubscriptionSchedule.
  */
 export async function keepCurrentSubscription(
-  scheduleId: Stripe.SubscriptionSchedule['id'],
+  scheduleId: Stripe.SubscriptionSchedule["id"],
 ) {
   return await stripeAdmin.subscriptionSchedules.release(scheduleId);
 }
@@ -288,9 +288,9 @@ export async function adjustSeats({
   stripeScheduleId,
   newQuantity,
 }: {
-  subscriptionId: Stripe.Subscription['id'];
-  subscriptionItemId: Stripe.SubscriptionItem['id'];
-  stripeScheduleId?: Stripe.SubscriptionSchedule['id'];
+  subscriptionId: Stripe.Subscription["id"];
+  subscriptionItemId: Stripe.SubscriptionItem["id"];
+  stripeScheduleId?: Stripe.SubscriptionSchedule["id"];
   newQuantity: number;
 }) {
   const updatedSub = await stripeAdmin.subscriptions.update(subscriptionId, {
@@ -302,15 +302,15 @@ export async function adjustSeats({
       await stripeAdmin.subscriptionSchedules.retrieve(stripeScheduleId);
 
     const now = Math.floor(Date.now() / 1000);
-    const updatedPhases = sched.phases.map(phase => ({
-      start_date: phase.start_date,
+    const updatedPhases = sched.phases.map((phase) => ({
       end_date: phase.end_date,
-      items: phase.items.map(item => ({
+      items: phase.items.map((item) => ({
         quantity:
           phase.start_date > now
             ? newQuantity // bump only future phases
             : item.quantity,
       })),
+      start_date: phase.start_date,
     }));
 
     const updatedSched = await stripeAdmin.subscriptionSchedules.update(
@@ -318,7 +318,7 @@ export async function adjustSeats({
       { phases: updatedPhases },
     );
 
-    return { updatedSub, updatedSched };
+    return { updatedSched, updatedSub };
   }
 
   return { updatedSub };
@@ -333,7 +333,7 @@ export async function adjustSeats({
 export async function deactivateStripeCustomer(customerId: string) {
   const subscriptions = await stripeAdmin.subscriptions.list({
     customer: customerId,
-    status: 'active',
+    status: "active",
   });
 
   const cancelledSubscriptions = [];

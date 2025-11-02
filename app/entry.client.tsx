@@ -1,12 +1,12 @@
-import i18next from 'i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import { startTransition, StrictMode } from 'react';
-import { hydrateRoot } from 'react-dom/client';
-import { I18nextProvider, initReactI18next } from 'react-i18next';
-import { HydratedRouter } from 'react-router/dom';
+import i18next from "i18next";
+import LanguageDetector from "i18next-browser-languagedetector";
+import { StrictMode, startTransition } from "react";
+import { hydrateRoot } from "react-dom/client";
+import { I18nextProvider, initReactI18next } from "react-i18next";
+import { HydratedRouter } from "react-router/dom";
 
-import { i18n } from './features/localization/i18n';
-import { onUnhandledRequest } from './test/mocks/msw-utils';
+import { i18n } from "./features/localization/i18n";
+import { onUnhandledRequest } from "./test/mocks/msw-utils";
 
 declare global {
   var __ENABLE_MSW__: boolean | undefined;
@@ -14,8 +14,8 @@ declare global {
 
 async function activateMsw() {
   if (globalThis.__ENABLE_MSW__ === true) {
-    console.warn('MSW is activated');
-    const { worker } = await import('./test/mocks/browser');
+    console.warn("MSW is activated");
+    const { worker } = await import("./test/mocks/browser");
 
     return worker.start({ onUnhandledRequest });
   }
@@ -32,8 +32,8 @@ async function hydrate() {
     .init({
       ...i18n,
       detection: {
-        order: ['htmlTag'],
         caches: [],
+        order: ["htmlTag"],
       },
     });
 

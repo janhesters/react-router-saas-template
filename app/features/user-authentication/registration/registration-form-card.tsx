@@ -1,19 +1,29 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import type { Organization, UserAccount } from '@prisma/client';
-import { Loader2Icon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form, href, Link, useSubmit } from 'react-router';
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { Organization, UserAccount } from "@prisma/client";
+import { Loader2Icon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { Trans, useTranslation } from "react-i18next";
+import { Form, href, Link, useSubmit } from "react-router";
 
-import { GooggleIcon } from '~/components/svgs/google-icon';
-import { Button, buttonVariants } from '~/components/ui/button';
+import { registerIntents } from "./registration-constants";
+import type {
+  EmailRegistrationErrors,
+  RegisterWithEmailSchema,
+  RegisterWithGoogleSchema,
+} from "./registration-schemas";
+import {
+  registerWithEmailSchema,
+  registerWithGoogleSchema,
+} from "./registration-schemas";
+import { GooggleIcon } from "~/components/svgs/google-icon";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+} from "~/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -21,26 +31,15 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
-import { cn } from '~/lib/utils';
-
-import { registerIntents } from './registration-constants';
-import type {
-  EmailRegistrationErrors,
-  RegisterWithEmailSchema,
-  RegisterWithGoogleSchema,
-} from './registration-schemas';
-import {
-  registerWithEmailSchema,
-  registerWithGoogleSchema,
-} from './registration-schemas';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { cn } from "~/lib/utils";
 
 export type RegistrationFormCardProps = {
   errors?: EmailRegistrationErrors;
   inviteLinkInfo?: {
-    creatorName: UserAccount['name'];
-    organizationName: Organization['name'];
+    creatorName: UserAccount["name"];
+    organizationName: Organization["name"];
   };
   isRegisteringWithEmail?: boolean;
   isRegisteringWithGoogle?: boolean;
@@ -54,33 +53,33 @@ export function RegistrationFormCard({
   isRegisteringWithGoogle = false,
   isSubmitting = false,
 }: RegistrationFormCardProps) {
-  const { t } = useTranslation('user-authentication');
+  const { t } = useTranslation("user-authentication");
   const submit = useSubmit();
 
   /* Email Registration Form */
 
   const emailForm = useForm<RegisterWithEmailSchema>({
-    resolver: zodResolver(registerWithEmailSchema),
     defaultValues: {
+      email: "",
       intent: registerIntents.registerWithEmail,
-      email: '',
     },
     errors,
+    resolver: zodResolver(registerWithEmailSchema),
   });
 
   const handleEmailSubmit = async (values: RegisterWithEmailSchema) => {
-    await submit(values, { method: 'POST' });
+    await submit(values, { method: "POST" });
   };
 
   /* Google Registration Form */
 
   const googleForm = useForm<RegisterWithGoogleSchema>({
-    resolver: zodResolver(registerWithGoogleSchema),
     defaultValues: { intent: registerIntents.registerWithGoogle },
+    resolver: zodResolver(registerWithGoogleSchema),
   });
 
   const handleGoogleSubmit = async (values: RegisterWithGoogleSchema) => {
-    await submit(values, { method: 'POST' });
+    await submit(values, { method: "POST" });
   };
 
   return (
@@ -90,24 +89,24 @@ export function RegistrationFormCard({
           <CardTitle className="text-xl">
             {inviteLinkInfo ? (
               <span>
-                {t('register.form.join-organization', {
-                  organizationName: inviteLinkInfo.organizationName,
+                {t("register.form.join-organization", {
                   interpolation: { escapeValue: false },
+                  organizationName: inviteLinkInfo.organizationName,
                 })}
               </span>
             ) : (
-              t('register.form.card-title')
+              t("register.form.card-title")
             )}
           </CardTitle>
 
           <CardDescription>
             {inviteLinkInfo
-              ? t('register.form.join-organization-description', {
-                  organizationName: inviteLinkInfo.organizationName,
+              ? t("register.form.join-organization-description", {
                   creatorName: inviteLinkInfo.creatorName,
                   interpolation: { escapeValue: false },
+                  organizationName: inviteLinkInfo.organizationName,
                 })
-              : t('register.form.card-description')}
+              : t("register.form.card-description")}
           </CardDescription>
         </CardHeader>
 
@@ -117,8 +116,8 @@ export function RegistrationFormCard({
             <FormProvider {...emailForm}>
               <Form
                 method="POST"
-                replace
                 onSubmit={emailForm.handleSubmit(handleEmailSubmit)}
+                replace
               >
                 <fieldset className="grid gap-6" disabled={isSubmitting}>
                   <FormField
@@ -126,12 +125,12 @@ export function RegistrationFormCard({
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t('register.form.email')}</FormLabel>
+                        <FormLabel>{t("register.form.email")}</FormLabel>
 
                         <FormControl>
                           <Input
                             autoComplete="email"
-                            placeholder={t('register.form.email-placeholder')}
+                            placeholder={t("register.form.email-placeholder")}
                             required
                             type="email"
                             {...field}
@@ -146,16 +145,16 @@ export function RegistrationFormCard({
                   <Button
                     className="w-full"
                     name="intent"
-                    value={registerIntents.registerWithEmail}
                     type="submit"
+                    value={registerIntents.registerWithEmail}
                   >
                     {isRegisteringWithEmail ? (
                       <>
                         <Loader2Icon className="animate-spin" />
-                        {t('register.form.submit-button-loading')}
+                        {t("register.form.submit-button-loading")}
                       </>
                     ) : (
-                      t('register.form.submit-button')
+                      t("register.form.submit-button")
                     )}
                   </Button>
                 </fieldset>
@@ -164,7 +163,7 @@ export function RegistrationFormCard({
 
             <div className="after:border-border relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t">
               <span className="bg-card text-muted-foreground relative z-10 px-2">
-                {t('register.form.divider-text')}
+                {t("register.form.divider-text")}
               </span>
             </div>
 
@@ -188,12 +187,12 @@ export function RegistrationFormCard({
                     {isRegisteringWithGoogle ? (
                       <>
                         <Loader2Icon className="animate-spin" />
-                        {t('register.form.google')}
+                        {t("register.form.google")}
                       </>
                     ) : (
                       <>
                         <GooggleIcon />
-                        {t('register.form.google')}
+                        {t("register.form.google")}
                       </>
                     )}
                   </Button>
@@ -202,15 +201,15 @@ export function RegistrationFormCard({
             </FormProvider>
 
             <div className="text-center text-sm">
-              {t('register.form.login-prompt')}{' '}
+              {t("register.form.login-prompt")}{" "}
               <Link
-                to={href('/login')}
                 className={cn(
-                  buttonVariants({ variant: 'link' }),
-                  'text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4',
+                  buttonVariants({ variant: "link" }),
+                  "text-card-foreground hover:text-primary max-h-min p-0 underline underline-offset-4",
                 )}
+                to={href("/login")}
               >
-                {t('register.form.login-link')}
+                {t("register.form.login-link")}
               </Link>
             </div>
           </div>
@@ -220,8 +219,8 @@ export function RegistrationFormCard({
       <div className="text-muted-foreground [&_a]:hover:text-primary text-center text-xs text-balance [&_a]:underline [&_a]:underline-offset-4">
         <Trans
           components={{
-            1: <Link to={href('/terms-of-service')} />,
-            2: <Link to={href('/privacy-policy')} />,
+            1: <Link to={href("/terms-of-service")} />,
+            2: <Link to={href("/privacy-policy")} />,
           }}
           i18nKey="user-authentication:register.form.terms-and-privacy"
         />

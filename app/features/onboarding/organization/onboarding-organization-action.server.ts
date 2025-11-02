@@ -1,14 +1,13 @@
-import { redirect } from 'react-router';
+import { redirect } from "react-router";
 
-import { saveOrganizationWithOwnerToDatabase } from '~/features/organizations/organizations-model.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { slugify } from '~/utils/slugify.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import { requireUserNeedsOnboarding } from '../onboarding-helpers.server';
-import type { OnboardingOrganizationErrors } from './onboarding-organization-schemas';
-import { onboardingOrganizationSchema } from './onboarding-organization-schemas';
-import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/organization';
+import { requireUserNeedsOnboarding } from "../onboarding-helpers.server";
+import type { OnboardingOrganizationErrors } from "./onboarding-organization-schemas";
+import { onboardingOrganizationSchema } from "./onboarding-organization-schemas";
+import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/organization";
+import { saveOrganizationWithOwnerToDatabase } from "~/features/organizations/organizations-model.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { slugify } from "~/utils/slugify.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 export async function onboardingOrganizationAction({
   request,
@@ -23,10 +22,10 @@ export async function onboardingOrganizationAction({
 
     const organization = await saveOrganizationWithOwnerToDatabase({
       organization: {
+        id: data.organizationId,
+        imageUrl: data.logo,
         name: data.name,
         slug: slugify(data.name),
-        imageUrl: data.logo,
-        id: data.organizationId,
       },
       userId: user.id,
     });

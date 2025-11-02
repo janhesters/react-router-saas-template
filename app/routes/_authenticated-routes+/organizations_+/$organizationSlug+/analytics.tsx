@@ -1,5 +1,5 @@
 export function loader() {
-  return { headerTitle: 'Analytics' };
+  return { headerTitle: "Analytics" };
 }
 
 export default function AnalyticsRoute() {

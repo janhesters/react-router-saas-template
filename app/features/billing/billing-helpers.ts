@@ -1,6 +1,6 @@
 // src/billing-helpers.ts
-import type { Interval, Tier } from './billing-constants';
-import { priceLookupKeysByTierAndInterval } from './billing-constants';
+import type { Interval, Tier } from "./billing-constants";
+import { priceLookupKeysByTierAndInterval } from "./billing-constants";
 
 /**
  * Given one of your lookup‐keys (e.g. 'monthly_hobby_planv2'),
@@ -22,7 +22,7 @@ export function getTierAndIntervalForLookupKey(lookupKey: string): {
       string,
     ][]) {
       if (key === lookupKey) {
-        return { tier, interval };
+        return { interval, tier };
       }
     }
   }

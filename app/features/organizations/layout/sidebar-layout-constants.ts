@@ -1,1 +1,1 @@
-export const SWITCH_ORGANIZATION_INTENT = 'switchOrganization';
+export const SWITCH_ORGANIZATION_INTENT = "switchOrganization";

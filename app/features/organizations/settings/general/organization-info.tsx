@@ -1,6 +1,6 @@
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from "react-i18next";
 
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 export type OrganizationInfoProps = {
   organizationName: string;
@@ -11,17 +11,17 @@ export function OrganizationInfo({
   organizationName,
   organizationLogoUrl,
 }: OrganizationInfoProps) {
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'settings.general.organization-info',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "settings.general.organization-info",
   });
 
   return (
     <div className="flex flex-col gap-y-6 sm:gap-y-8">
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="text-sm font-medium">{t('name-title')}</h2>
+          <h2 className="text-sm font-medium">{t("name-title")}</h2>
           <p className="text-muted-foreground text-sm">
-            {t('name-description')}
+            {t("name-description")}
           </p>
         </div>
 
@@ -32,16 +32,16 @@ export function OrganizationInfo({
 
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="text-sm font-medium">{t('logo-title')}</h2>
+          <h2 className="text-sm font-medium">{t("logo-title")}</h2>
           <p className="text-muted-foreground text-sm">
-            {t('logo-description')}
+            {t("logo-description")}
           </p>
         </div>
 
         <div className="flex items-center gap-4">
           <Avatar className="size-16 rounded-md">
             <AvatarImage
-              alt={t('logo-alt')}
+              alt={t("logo-alt")}
               className="aspect-square h-full rounded-md object-cover"
               src={organizationLogoUrl}
             />

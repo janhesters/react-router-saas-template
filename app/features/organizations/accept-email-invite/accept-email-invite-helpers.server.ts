@@ -1,13 +1,12 @@
-import { asyncPipe } from '~/utils/async-pipe.server';
-import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
-import { notFound } from '~/utils/http-responses.server';
-import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
-
-import { retrieveActiveEmailInviteLinkFromDatabaseByToken } from '../organizations-email-invite-link-model.server';
+import { retrieveActiveEmailInviteLinkFromDatabaseByToken } from "../organizations-email-invite-link-model.server";
 import {
   destroyEmailInviteInfoSession,
   getEmailInviteInfoFromSession,
-} from './accept-email-invite-session.server';
+} from "./accept-email-invite-session.server";
+import { asyncPipe } from "~/utils/async-pipe.server";
+import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
+import { notFound } from "~/utils/http-responses.server";
+import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 
 /**
  * Checks if the provided email invite has expired.
@@ -33,7 +32,7 @@ export const throwIfEmailInviteIsExpired = (
  * @param request - The request to get the token from.
  * @returns The token if found, otherwise undefined.
  */
-export const getEmailInviteToken = getSearchParameterFromRequest('token');
+export const getEmailInviteToken = getSearchParameterFromRequest("token");
 
 /**
  * Validates and returns the organization email invite identified by the provided
@@ -64,7 +63,7 @@ export const requireEmailInviteByTokenExists = asyncPipe(
 export async function requireEmailInviteDataByTokenExists(token: string) {
   const emailInvite = await requireEmailInviteByTokenExists(token);
   return {
-    inviterName: emailInvite.invitedBy?.name ?? 'Deactivated User',
+    inviterName: emailInvite.invitedBy?.name ?? "Deactivated User",
     organizationName: emailInvite.organization.name,
   };
 }
@@ -85,24 +84,24 @@ export async function getValidEmailInviteInfo(request: Request) {
       tokenInfo.emailInviteToken,
     );
 
-    if (emailInvite && emailInvite.organization) {
+    if (emailInvite?.organization) {
       return {
-        headers: new Headers(),
         emailInviteInfo: {
-          inviterName: emailInvite.invitedBy?.name ?? 'Deactivated User',
+          emailInviteId: emailInvite.id,
+          emailInviteToken: emailInvite.token,
+          inviterName: emailInvite.invitedBy?.name ?? "Deactivated User",
           organizationId: emailInvite.organization.id,
           organizationName: emailInvite.organization.name,
           organizationSlug: emailInvite.organization.slug,
-          emailInviteId: emailInvite.id,
-          emailInviteToken: emailInvite.token,
           role: emailInvite.role,
         },
+        headers: new Headers(),
       };
     }
 
     const headers = await destroyEmailInviteInfoSession(request);
-    return { headers, emailInviteInfo: undefined };
+    return { emailInviteInfo: undefined, headers };
   }
 
-  return { headers: new Headers(), emailInviteInfo: undefined };
+  return { emailInviteInfo: undefined, headers: new Headers() };
 }

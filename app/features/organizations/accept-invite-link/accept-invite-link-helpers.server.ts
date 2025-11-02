@@ -1,16 +1,15 @@
-import { asyncPipe } from '~/utils/async-pipe.server';
-import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
-import { notFound } from '~/utils/http-responses.server';
-import { throwIfEntityIsMissing } from '~/utils/throw-if-entity-is-missing.server';
-
 import {
   retrieveActiveOrganizationInviteLinkFromDatabaseByToken,
   retrieveCreatorAndOrganizationForActiveLinkFromDatabaseByToken,
-} from '../organizations-invite-link-model.server';
+} from "../organizations-invite-link-model.server";
 import {
   destroyInviteLinkInfoSession,
   getInviteLinkInfoFromSession,
-} from './accept-invite-link-session.server';
+} from "./accept-invite-link-session.server";
+import { asyncPipe } from "~/utils/async-pipe.server";
+import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
+import { notFound } from "~/utils/http-responses.server";
+import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 
 /**
  * Checks if the provided invite link has expired.
@@ -65,7 +64,7 @@ export async function requireCreatorAndOrganizationByTokenExists(
 ) {
   const inviteLink = await requireInviteLinkByTokenExists(token);
   return {
-    inviterName: inviteLink.creator?.name ?? 'Deactivated User',
+    inviterName: inviteLink.creator?.name ?? "Deactivated User",
     organizationName: inviteLink.organization.name,
   };
 }
@@ -76,7 +75,7 @@ export async function requireCreatorAndOrganizationByTokenExists(
  * @param Request - The request to get the token from.
  * @returns The token from the request params, or null.
  */
-export const getInviteLinkToken = getSearchParameterFromRequest('token');
+export const getInviteLinkToken = getSearchParameterFromRequest("token");
 
 /**
  * Retrieves the invite link information from the session and validates it.
@@ -99,12 +98,12 @@ export async function getValidInviteLinkInfo(request: Request) {
       return {
         headers: new Headers(),
         inviteLinkInfo: {
-          creatorName: inviteLink.creator?.name ?? 'Deactivated User',
+          creatorName: inviteLink.creator?.name ?? "Deactivated User",
+          inviteLinkId: inviteLink.id,
+          inviteLinkToken: inviteLink.token,
           organizationId: inviteLink.organization.id,
           organizationName: inviteLink.organization.name,
           organizationSlug: inviteLink.organization.slug,
-          inviteLinkId: inviteLink.id,
-          inviteLinkToken: inviteLink.token,
         },
       };
     }

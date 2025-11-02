@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-import { LINK_NOTIFICATION_TYPE } from './notification-constants';
-import { createPopulatedNotificationQueryResult } from './notifications-factories.server';
-import { mapInitialNotificationsDataToNotificationButtonProps } from './notifications-helpers.server';
-import type { NotificationQueryResult } from './notifications-model.server';
-import type { LinkNotificationData } from './notifications-schemas';
+import { LINK_NOTIFICATION_TYPE } from "./notification-constants";
+import { createPopulatedNotificationQueryResult } from "./notifications-factories.server";
+import { mapInitialNotificationsDataToNotificationButtonProps } from "./notifications-helpers.server";
+import type { NotificationQueryResult } from "./notifications-model.server";
+import type { LinkNotificationData } from "./notifications-schemas";
 
 function sortByCreatedAt(
   notifications: NotificationQueryResult[],
@@ -14,11 +14,11 @@ function sortByCreatedAt(
   );
 }
 
-describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
-  test('given: no notifications and no panel data, should: return empty notifications and no badge', () => {
+describe("mapInitialNotificationsDataToNotificationButtonProps()", () => {
+  test("given: no notifications and no panel data, should: return empty notifications and no badge", () => {
     const initialData = {
-      lastOpenedAt: null,
       allNotifications: [],
+      lastOpenedAt: null,
       unreadNotifications: [],
     };
 
@@ -35,39 +35,39 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: notifications exist and panel was opened after latest notification, should: return notifications with no badge', () => {
+  test("given: notifications exist and panel was opened after latest notification, should: return notifications with no badge", () => {
     // Fixed notification content for stable assertions
     const content1: LinkNotificationData = {
+      href: "/first",
+      text: "First",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'First',
-      href: '/first',
     };
     const content2: LinkNotificationData = {
+      href: "/second",
+      text: "Second",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Second',
-      href: '/second',
     };
 
     // Two notifications, one newer than the other
     const n1 = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content: content1,
-      createdAt: new Date('2025-04-20T10:00:00Z'),
+      createdAt: new Date("2025-04-20T10:00:00Z"),
+      notificationId: "n1",
       readAt: null,
+      recipientId: "r1",
     });
     const n2 = createPopulatedNotificationQueryResult({
-      recipientId: 'r2',
-      notificationId: 'n2',
       content: content2,
-      createdAt: new Date('2025-04-19T10:00:00Z'),
+      createdAt: new Date("2025-04-19T10:00:00Z"),
+      notificationId: "n2",
       readAt: null,
+      recipientId: "r2",
     });
     const allNotifications = sortByCreatedAt([n1, n2]);
 
     const initialData = {
-      lastOpenedAt: new Date('2025-04-21T00:00:00Z'), // after the latest notification
       allNotifications,
+      lastOpenedAt: new Date("2025-04-21T00:00:00Z"), // after the latest notification
       unreadNotifications: allNotifications,
     };
 
@@ -76,13 +76,13 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     const expected = {
       notificationButtonProps: {
         allNotifications: [
-          { recipientId: 'r1', isRead: false, ...content1 },
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: false, recipientId: "r1", ...content1 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
         showBadge: false,
         unreadNotifications: [
-          { recipientId: 'r1', isRead: false, ...content1 },
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: false, recipientId: "r1", ...content1 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
       },
     };
@@ -90,39 +90,39 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: notifications exist and panel was opened before latest notification, should: return notifications with badge', () => {
+  test("given: notifications exist and panel was opened before latest notification, should: return notifications with badge", () => {
     // Fixed notification content for stable assertions
     const content1: LinkNotificationData = {
+      href: "/first",
+      text: "First",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'First',
-      href: '/first',
     };
     const content2: LinkNotificationData = {
+      href: "/second",
+      text: "Second",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Second',
-      href: '/second',
     };
 
     // Two notifications, one newer than the other
     const n1 = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content: content1,
-      createdAt: new Date('2025-04-20T10:00:00Z'),
+      createdAt: new Date("2025-04-20T10:00:00Z"),
+      notificationId: "n1",
       readAt: null,
+      recipientId: "r1",
     });
     const n2 = createPopulatedNotificationQueryResult({
-      recipientId: 'r2',
-      notificationId: 'n2',
       content: content2,
-      createdAt: new Date('2025-04-19T10:00:00Z'),
+      createdAt: new Date("2025-04-19T10:00:00Z"),
+      notificationId: "n2",
       readAt: null,
+      recipientId: "r2",
     });
     const allNotifications = sortByCreatedAt([n1, n2]);
 
     const initialData = {
-      lastOpenedAt: new Date('2025-04-18T00:00:00Z'), // before the latest notification
       allNotifications,
+      lastOpenedAt: new Date("2025-04-18T00:00:00Z"), // before the latest notification
       unreadNotifications: allNotifications,
     };
 
@@ -131,13 +131,13 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     const expected = {
       notificationButtonProps: {
         allNotifications: [
-          { recipientId: 'r1', isRead: false, ...content1 },
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: false, recipientId: "r1", ...content1 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
         showBadge: true,
         unreadNotifications: [
-          { recipientId: 'r1', isRead: false, ...content1 },
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: false, recipientId: "r1", ...content1 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
       },
     };
@@ -145,37 +145,37 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: notifications with one read and one unread, should: map isRead flags correctly', () => {
+  test("given: notifications with one read and one unread, should: map isRead flags correctly", () => {
     const content1: LinkNotificationData = {
+      href: "/read",
+      text: "Read",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Read',
-      href: '/read',
     };
     const content2: LinkNotificationData = {
+      href: "/unread",
+      text: "Unread",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Unread',
-      href: '/unread',
     };
 
     const n1 = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content: content1,
-      createdAt: new Date('2025-04-20T10:00:00Z'),
-      readAt: new Date('2025-04-20T12:00:00Z'),
+      createdAt: new Date("2025-04-20T10:00:00Z"),
+      notificationId: "n1",
+      readAt: new Date("2025-04-20T12:00:00Z"),
+      recipientId: "r1",
     });
     const n2 = createPopulatedNotificationQueryResult({
-      recipientId: 'r2',
-      notificationId: 'n2',
       content: content2,
-      createdAt: new Date('2025-04-19T10:00:00Z'),
+      createdAt: new Date("2025-04-19T10:00:00Z"),
+      notificationId: "n2",
       readAt: null,
+      recipientId: "r2",
     });
     const allNotifications = sortByCreatedAt([n1, n2]);
 
     const initialData = {
-      lastOpenedAt: null,
       allNotifications,
+      lastOpenedAt: null,
       unreadNotifications: [n2],
     };
 
@@ -184,12 +184,12 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     const expected = {
       notificationButtonProps: {
         allNotifications: [
-          { recipientId: 'r1', isRead: true, ...content1 },
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: true, recipientId: "r1", ...content1 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
         showBadge: true,
         unreadNotifications: [
-          { recipientId: 'r2', isRead: false, ...content2 },
+          { isRead: false, recipientId: "r2", ...content2 },
         ],
       },
     };
@@ -197,26 +197,26 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: panel was opened at exactly the same time as latest notification, should: return notifications with no badge', () => {
+  test("given: panel was opened at exactly the same time as latest notification, should: return notifications with no badge", () => {
     const content = {
+      href: "/exact",
+      text: "Exact",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Exact',
-      href: '/exact',
     };
 
-    const createdAt = new Date('2025-04-20T10:00:00Z');
+    const createdAt = new Date("2025-04-20T10:00:00Z");
 
     const n = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content,
       createdAt,
+      notificationId: "n1",
       readAt: null,
+      recipientId: "r1",
     });
 
     const initialData = {
-      lastOpenedAt: createdAt,
       allNotifications: [n],
+      lastOpenedAt: createdAt,
       unreadNotifications: [n],
     };
 
@@ -225,35 +225,35 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
 
     const expected = {
       notificationButtonProps: {
-        allNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        allNotifications: [{ isRead: false, recipientId: "r1", ...content }],
         showBadge: false,
-        unreadNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        unreadNotifications: [{ isRead: false, recipientId: "r1", ...content }],
       },
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given: no unread notifications but a newer notification exists, should: return notifications with badge', () => {
+  test("given: no unread notifications but a newer notification exists, should: return notifications with badge", () => {
     const content = {
+      href: "/read",
+      text: "Read but new",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Read but new',
-      href: '/read',
     };
 
-    const createdAt = new Date('2025-04-20T10:00:00Z');
+    const createdAt = new Date("2025-04-20T10:00:00Z");
 
     const n = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content,
       createdAt,
-      readAt: new Date('2025-04-20T11:00:00Z'),
+      notificationId: "n1",
+      readAt: new Date("2025-04-20T11:00:00Z"),
+      recipientId: "r1",
     });
 
     const initialData = {
-      lastOpenedAt: new Date('2025-04-19T10:00:00Z'),
       allNotifications: [n],
+      lastOpenedAt: new Date("2025-04-19T10:00:00Z"),
       unreadNotifications: [],
     };
 
@@ -262,7 +262,7 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
 
     const expected = {
       notificationButtonProps: {
-        allNotifications: [{ recipientId: 'r1', isRead: true, ...content }],
+        allNotifications: [{ isRead: true, recipientId: "r1", ...content }],
         showBadge: true,
         unreadNotifications: [],
       },
@@ -271,26 +271,26 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: future dated notification, should: return notifications with badge', () => {
+  test("given: future dated notification, should: return notifications with badge", () => {
     const content = {
+      href: "/future",
+      text: "Future",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'Future',
-      href: '/future',
     };
 
-    const futureDate = new Date('3025-01-01T00:00:00Z');
+    const futureDate = new Date("3025-01-01T00:00:00Z");
 
     const n = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content,
       createdAt: futureDate,
+      notificationId: "n1",
       readAt: null,
+      recipientId: "r1",
     });
 
     const initialData = {
-      lastOpenedAt: new Date('2025-04-27T00:00:00Z'),
       allNotifications: [n],
+      lastOpenedAt: new Date("2025-04-27T00:00:00Z"),
       unreadNotifications: [n],
     };
 
@@ -299,19 +299,19 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
 
     const expected = {
       notificationButtonProps: {
-        allNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        allNotifications: [{ isRead: false, recipientId: "r1", ...content }],
         showBadge: true,
-        unreadNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        unreadNotifications: [{ isRead: false, recipientId: "r1", ...content }],
       },
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given: no notifications but lastOpenedAt exists, should: return empty notifications with no badge', () => {
+  test("given: no notifications but lastOpenedAt exists, should: return empty notifications with no badge", () => {
     const initialData = {
-      lastOpenedAt: new Date('2025-04-27T00:00:00Z'),
       allNotifications: [],
+      lastOpenedAt: new Date("2025-04-27T00:00:00Z"),
       unreadNotifications: [],
     };
 
@@ -329,26 +329,26 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: lastOpenedAt is null and notifications exist, should: return notifications with badge', () => {
+  test("given: lastOpenedAt is null and notifications exist, should: return notifications with badge", () => {
     const content = {
+      href: "/new",
+      text: "New notification",
       type: LINK_NOTIFICATION_TYPE,
-      text: 'New notification',
-      href: '/new',
     };
 
-    const createdAt = new Date('2025-04-20T10:00:00Z');
+    const createdAt = new Date("2025-04-20T10:00:00Z");
 
     const n = createPopulatedNotificationQueryResult({
-      recipientId: 'r1',
-      notificationId: 'n1',
       content,
       createdAt,
+      notificationId: "n1",
       readAt: null,
+      recipientId: "r1",
     });
 
     const initialData = {
-      lastOpenedAt: null,
       allNotifications: [n],
+      lastOpenedAt: null,
       unreadNotifications: [n],
     };
 
@@ -357,9 +357,9 @@ describe('mapInitialNotificationsDataToNotificationButtonProps()', () => {
 
     const expected = {
       notificationButtonProps: {
-        allNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        allNotifications: [{ isRead: false, recipientId: "r1", ...content }],
         showBadge: true,
-        unreadNotifications: [{ recipientId: 'r1', isRead: false, ...content }],
+        unreadNotifications: [{ isRead: false, recipientId: "r1", ...content }],
       },
     };
 

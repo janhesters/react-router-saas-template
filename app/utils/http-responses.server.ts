@@ -1,4 +1,4 @@
-import { data } from 'react-router';
+import { data } from "react-router";
 
 type NestedJSON = {
   [key: string]: string | NestedJSON;
@@ -20,15 +20,15 @@ export function created(): DataWithResponseInit<{ message: string }>;
  */
 export function created<T extends NestedJSON>(
   createdData: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function created<T extends NestedJSON>(
   createdData?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return createdData
-    ? data({ message: 'Created', ...createdData }, { ...init, status: 201 })
-    : data({ message: 'Created' }, { status: 201 });
+    ? data({ message: "Created", ...createdData }, { ...init, status: 201 })
+    : data({ message: "Created" }, { status: 201 });
 }
 
 /**
@@ -45,15 +45,15 @@ export function badRequest(): DataWithResponseInit<{ message: string }>;
  */
 export function badRequest<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function badRequest<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
-    ? data({ message: 'Bad Request', ...errors }, { ...init, status: 400 })
-    : data({ message: 'Bad Request' }, { status: 400 });
+    ? data({ message: "Bad Request", ...errors }, { ...init, status: 400 })
+    : data({ message: "Bad Request" }, { status: 400 });
 }
 
 /**
@@ -70,15 +70,15 @@ export function unauthorized(): DataWithResponseInit<{ message: string }>;
  */
 export function unauthorized<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function unauthorized<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
-    ? data({ message: 'Unauthorized', ...errors }, { ...init, status: 401 })
-    : data({ message: 'Unauthorized' }, { status: 401 });
+    ? data({ message: "Unauthorized", ...errors }, { ...init, status: 401 })
+    : data({ message: "Unauthorized" }, { status: 401 });
 }
 
 /**
@@ -95,15 +95,15 @@ export function forbidden(): DataWithResponseInit<{ message: string }>;
  */
 export function forbidden<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function forbidden<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
-    ? data({ message: 'Forbidden', ...errors }, { ...init, status: 403 })
-    : data({ message: 'Forbidden' }, { status: 403 });
+    ? data({ message: "Forbidden", ...errors }, { ...init, status: 403 })
+    : data({ message: "Forbidden" }, { status: 403 });
 }
 
 /**
@@ -120,15 +120,15 @@ export function notFound(): DataWithResponseInit<{ message: string }>;
  */
 export function notFound<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function notFound<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
-    ? data({ message: 'Not Found', ...errors }, { ...init, status: 404 })
-    : data({ message: 'Not Found' }, { status: 404 });
+    ? data({ message: "Not Found", ...errors }, { ...init, status: 404 })
+    : data({ message: "Not Found" }, { status: 404 });
 }
 
 /**
@@ -145,18 +145,18 @@ export function methodNotAllowed(): DataWithResponseInit<{ message: string }>;
  */
 export function methodNotAllowed<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function methodNotAllowed<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
     ? data(
-        { message: 'Method Not Allowed', ...errors },
+        { message: "Method Not Allowed", ...errors },
         { ...init, status: 405 },
       )
-    : data({ message: 'Method Not Allowed' }, { status: 405 });
+    : data({ message: "Method Not Allowed" }, { status: 405 });
 }
 
 /**
@@ -173,15 +173,15 @@ export function conflict(): DataWithResponseInit<{ message: string }>;
  */
 export function conflict<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function conflict<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
-    ? data({ message: 'Conflict', ...errors }, { ...init, status: 409 })
-    : data({ message: 'Conflict' }, { status: 409 });
+    ? data({ message: "Conflict", ...errors }, { ...init, status: 409 })
+    : data({ message: "Conflict" }, { status: 409 });
 }
 
 /**
@@ -198,16 +198,16 @@ export function tooManyRequests(): DataWithResponseInit<{ message: string }>;
  */
 export function tooManyRequests<T extends NestedJSON>(
   errors: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } & T>;
 export function tooManyRequests<T extends NestedJSON>(
   errors?: T,
-  init?: Omit<ResponseInit, 'status'>,
+  init?: Omit<ResponseInit, "status">,
 ): DataWithResponseInit<{ message: string } | ({ message: string } & T)> {
   return errors
     ? data(
-        { message: 'Too Many Requests', ...errors },
+        { message: "Too Many Requests", ...errors },
         { ...init, status: 429 },
       )
-    : data({ message: 'Too Many Requests' }, { status: 429 });
+    : data({ message: "Too Many Requests" }, { status: 429 });
 }

@@ -1,46 +1,46 @@
-import { describe, expect, test } from 'vitest';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { describe, expect, test } from "vitest";
 
-import { createValidContactSalesFormData } from '~/features/billing/contact-sales/contact-sales-factories.server';
+import { action } from "./contact-sales";
+import { createValidContactSalesFormData } from "~/features/billing/contact-sales/contact-sales-factories.server";
 import {
   deleteContactSalesFormSubmissionFromDatabaseById,
   retrieveContactSalesFormSubmissionsFromDatabase,
-} from '~/features/billing/contact-sales/contact-sales-form-submission-model.server';
-import { createTestContextProvider } from '~/test/test-utils';
-import { badRequest } from '~/utils/http-responses.server';
-import type { Payload } from '~/utils/to-form-data';
-import { toFormData } from '~/utils/to-form-data';
-
-import { action } from './contact-sales';
+} from "~/features/billing/contact-sales/contact-sales-form-submission-model.server";
+import { createTestContextProvider } from "~/test/test-utils";
+import { badRequest } from "~/utils/http-responses.server";
+import type { Payload } from "~/utils/to-form-data";
+import { toFormData } from "~/utils/to-form-data";
 
 const createUrl = () => `http://localhost:3000/contact-sales`;
 
-const pattern = '/contact-sales';
+const pattern = "/contact-sales";
 
 async function sendRequest({ formData }: { formData: FormData }) {
   const request = new Request(createUrl(), {
-    method: 'POST',
     body: formData,
+    method: "POST",
   });
   const params = {};
 
   return await action({
-    request,
-    context: await createTestContextProvider({ request, params, pattern }),
+    context: await createTestContextProvider({ params, pattern, request }),
     params,
+    request,
     unstable_pattern: pattern,
   });
 }
 
-describe('/contact-sales route action', () => {
-  test('given: an invalid intent, should: return a 400 status code with an error message', async () => {
+describe("/contact-sales route action", () => {
+  test("given: an invalid intent, should: return a 400 status code with an error message", async () => {
     // No factory needed here, intent is the only thing that matters
-    const formData = toFormData({ intent: 'invalid-intent' });
+    const formData = toFormData({ intent: "invalid-intent" });
 
     const actual = await sendRequest({ formData });
     const expected = badRequest({
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     });
@@ -48,7 +48,7 @@ describe('/contact-sales route action', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: no intent, should: return a 400 status code with an error message', async () => {
+  test("given: no intent, should: return a 400 status code with an error message", async () => {
     // No factory needed here
     const formData = toFormData({});
 
@@ -56,7 +56,7 @@ describe('/contact-sales route action', () => {
     const expected = badRequest({
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     });
@@ -67,94 +67,94 @@ describe('/contact-sales route action', () => {
   // Use test.each with the factory for invalid field tests
   test.each([
     {
-      given: 'no first name',
+      expected: badRequest({
+        errors: {
+          firstName: { message: "billing:contact-sales.first-name-required" },
+        },
+      }),
+      given: "no first name",
       // Use factory and override the specific field to be invalid
-      override: { firstName: '' }, // Or undefined, depending on schema handling. '' triggers min(1)
-      expected: badRequest({
-        errors: {
-          firstName: { message: 'billing:contact-sales.first-name-required' },
-        },
-      }),
+      override: { firstName: "" }, // Or undefined, depending on schema handling. '' triggers min(1)
     },
     {
-      given: 'no last name',
-      override: { lastName: '' },
       expected: badRequest({
         errors: {
-          lastName: { message: 'billing:contact-sales.last-name-required' },
+          lastName: { message: "billing:contact-sales.last-name-required" },
         },
       }),
+      given: "no last name",
+      override: { lastName: "" },
     },
     {
-      given: 'no company name',
-      override: { companyName: '' },
       expected: badRequest({
         errors: {
           companyName: {
-            message: 'billing:contact-sales.company-name-required',
+            message: "billing:contact-sales.company-name-required",
           },
         },
       }),
+      given: "no company name",
+      override: { companyName: "" },
     },
     {
-      given: 'no work email',
-      override: { workEmail: '' },
       expected: badRequest({
         errors: {
-          workEmail: { message: 'billing:contact-sales.work-email-invalid' },
+          workEmail: { message: "billing:contact-sales.work-email-invalid" },
         },
       }),
+      given: "no work email",
+      override: { workEmail: "" },
     },
     {
-      given: 'invalid work email',
-      override: { workEmail: 'invalid-email' },
       expected: badRequest({
         errors: {
-          workEmail: { message: 'billing:contact-sales.work-email-invalid' },
+          workEmail: { message: "billing:contact-sales.work-email-invalid" },
         },
       }),
+      given: "invalid work email",
+      override: { workEmail: "invalid-email" },
     },
     {
-      given: 'no phone number',
-      override: { phoneNumber: '' },
       expected: badRequest({
         errors: {
           phoneNumber: {
-            message: 'billing:contact-sales.phone-number-required',
+            message: "billing:contact-sales.phone-number-required",
           },
         },
       }),
+      given: "no phone number",
+      override: { phoneNumber: "" },
     },
     {
-      given: 'no message',
-      override: { message: '' },
       expected: badRequest({
         errors: {
-          message: { message: 'billing:contact-sales.message-required' },
+          message: { message: "billing:contact-sales.message-required" },
         },
       }),
+      given: "no message",
+      override: { message: "" },
     },
     {
-      given: 'first name too long',
-      override: { firstName: 'a'.repeat(256) },
       expected: badRequest({
         errors: {
-          firstName: { message: 'billing:contact-sales.first-name-too-long' },
+          firstName: { message: "billing:contact-sales.first-name-too-long" },
         },
       }),
+      given: "first name too long",
+      override: { firstName: "a".repeat(256) },
     },
     {
-      given: 'message too long',
-      override: { message: 'a'.repeat(5001) },
       expected: badRequest({
         errors: {
-          message: { message: 'billing:contact-sales.message-too-long' },
+          message: { message: "billing:contact-sales.message-too-long" },
         },
       }),
+      given: "message too long",
+      override: { message: "a".repeat(5001) },
     },
     // Add other invalid cases using the same pattern
   ])(
-    'given: $given, should: return a 400 status code with an error message',
+    "given: $given, should: return a 400 status code with an error message",
     async ({ override, expected }) => {
       // Create base valid data and apply the specific override for this test case
       const body = createValidContactSalesFormData(override);
@@ -165,18 +165,18 @@ describe('/contact-sales route action', () => {
     },
   );
 
-  test('given: honeypot field is filled, should: throw a 400 error', async () => {
+  test("given: honeypot field is filled, should: throw a 400 error", async () => {
     expect.assertions(3);
 
     const formData = toFormData({
-      intent: 'contactSales',
-      firstName: 'John',
-      lastName: 'Doe',
-      companyName: 'Acme Inc',
-      workEmail: 'john@acme.com',
-      phoneNumber: '1234567890',
-      message: 'Test message',
-      from__confirm: 'spam',
+      companyName: "Acme Inc",
+      firstName: "John",
+      from__confirm: "spam",
+      intent: "contactSales",
+      lastName: "Doe",
+      message: "Test message",
+      phoneNumber: "1234567890",
+      workEmail: "john@acme.com",
     });
 
     try {
@@ -185,12 +185,12 @@ describe('/contact-sales route action', () => {
       expect(error).toBeInstanceOf(Response);
       if (error instanceof Response) {
         expect(error.status).toBe(400);
-        expect(await error.text()).toBe('Form not submitted properly');
+        expect(await error.text()).toBe("Form not submitted properly");
       }
     }
   });
 
-  test('given: valid form submission with empty honeypot, should: save to database and return success', async () => {
+  test("given: valid form submission with empty honeypot, should: save to database and return success", async () => {
     // Use the factory to generate valid data
     const validFormData = createValidContactSalesFormData();
     const formData = toFormData(validFormData as Payload);
@@ -204,22 +204,22 @@ describe('/contact-sales route action', () => {
     // Verify the submission was saved to the database
     const submissions = await retrieveContactSalesFormSubmissionsFromDatabase();
     const savedSubmission = submissions.find(
-      sub => sub.workEmail === validFormData.workEmail,
+      (sub) => sub.workEmail === validFormData.workEmail,
     );
 
     // Use expect.objectContaining or toMatchObject with the original valid data
     expect(savedSubmission).toMatchObject({
+      companyName: validFormData.companyName,
+      createdAt: expect.any(Date) as Date,
       // Match the data that was sent
       firstName: validFormData.firstName,
-      lastName: validFormData.lastName,
-      companyName: validFormData.companyName,
-      workEmail: validFormData.workEmail,
-      phoneNumber: validFormData.phoneNumber,
-      message: validFormData.message,
       // Also check for database-generated fields existence/type
       id: expect.any(String) as string,
-      createdAt: expect.any(Date) as Date,
+      lastName: validFormData.lastName,
+      message: validFormData.message,
+      phoneNumber: validFormData.phoneNumber,
       updatedAt: expect.any(Date) as Date,
+      workEmail: validFormData.workEmail,
     });
 
     await deleteContactSalesFormSubmissionFromDatabaseById(savedSubmission!.id);

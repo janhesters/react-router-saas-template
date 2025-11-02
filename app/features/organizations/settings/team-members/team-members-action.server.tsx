@@ -1,46 +1,45 @@
-import { createId } from '@paralleldrive/cuid2';
-import type { Prisma } from '@prisma/client';
-import { OrganizationMembershipRole } from '@prisma/client';
-import { addDays } from 'date-fns';
-import { data } from 'react-router';
-import { z } from 'zod';
-
-import { adjustSeats } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { sendEmail } from '~/utils/email.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { badRequest, created, forbidden } from '~/utils/http-responses.server';
-import { createToastHeaders } from '~/utils/toast.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
+import { createId } from "@paralleldrive/cuid2";
+import type { Prisma } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
+import { addDays } from "date-fns";
+import { data } from "react-router";
+import { z } from "zod";
 
 import {
   retrieveActiveOrganizationMembershipByEmailAndOrganizationId,
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
-} from '../../organization-membership-model.server';
-import { saveOrganizationEmailInviteLinkToDatabase } from '../../organizations-email-invite-link-model.server';
-import { getOrganizationIsFull } from '../../organizations-helpers.server';
+} from "../../organization-membership-model.server";
+import { saveOrganizationEmailInviteLinkToDatabase } from "../../organizations-email-invite-link-model.server";
+import { getOrganizationIsFull } from "../../organizations-helpers.server";
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
   saveOrganizationInviteLinkToDatabase,
   updateOrganizationInviteLinkInDatabaseById,
-} from '../../organizations-invite-link-model.server';
-import { organizationMembershipContext } from '../../organizations-middleware.server';
-import { InviteEmail } from './invite-email';
+} from "../../organizations-invite-link-model.server";
+import { organizationMembershipContext } from "../../organizations-middleware.server";
+import { InviteEmail } from "./invite-email";
 import {
   CHANGE_ROLE_INTENT,
   CREATE_NEW_INVITE_LINK_INTENT,
   DEACTIVATE_INVITE_LINK_INTENT,
   INVITE_BY_EMAIL_INTENT,
-} from './team-members-constants';
+} from "./team-members-constants";
 import {
   changeRoleSchema,
   inviteByEmailSchema,
-} from './team-members-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members';
+} from "./team-members-settings-schemas";
+import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members";
+import { adjustSeats } from "~/features/billing/stripe-helpers.server";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { sendEmail } from "~/utils/email.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { badRequest, created, forbidden } from "~/utils/http-responses.server";
+import { createToastHeaders } from "~/utils/toast.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
-const schema = z.discriminatedUnion('intent', [
+const schema = z.discriminatedUnion("intent", [
   inviteByEmailSchema,
   z.object({ intent: z.literal(CREATE_NEW_INVITE_LINK_INTENT) }),
   z.object({ intent: z.literal(DEACTIVATE_INVITE_LINK_INTENT) }),
@@ -70,7 +69,7 @@ export async function teamMembersAction({
             errors: {
               email: {
                 message:
-                  'organizations:settings.team-members.invite-by-email.form.organization-full',
+                  "organizations:settings.team-members.invite-by-email.form.organization-full",
               },
             },
           });
@@ -93,10 +92,10 @@ export async function teamMembersAction({
         const token = createId();
         const expiresAt = addDays(new Date(), 2);
         await saveOrganizationInviteLinkToDatabase({
-          token,
-          expiresAt,
           creatorId: user.id,
+          expiresAt,
           organizationId: organization.id,
+          token,
         });
 
         return created({}, { headers });
@@ -124,7 +123,7 @@ export async function teamMembersAction({
         // Prevent users from changing their own role/status
         if (targetUserId === user.id) {
           throw forbidden({
-            errors: { form: 'You cannot change your own role or status.' },
+            errors: { form: "You cannot change your own role or status." },
           });
         }
 
@@ -132,8 +131,8 @@ export async function teamMembersAction({
         const targetMembership =
           await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
             {
-              userId: targetUserId,
               organizationId: organization.id,
+              userId: targetUserId,
             },
           );
 
@@ -141,7 +140,7 @@ export async function teamMembersAction({
         if (!targetMembership) {
           throw badRequest({
             errors: {
-              userId: 'Target user is not a member of this organization.',
+              userId: "Target user is not a member of this organization.",
             },
           });
         }
@@ -152,7 +151,7 @@ export async function teamMembersAction({
           if (targetMembership.role === OrganizationMembershipRole.owner) {
             throw forbidden({
               errors: {
-                form: 'Administrators cannot modify the role or status of owners.',
+                form: "Administrators cannot modify the role or status of owners.",
               },
             });
           }
@@ -161,7 +160,7 @@ export async function teamMembersAction({
           if (requestedRoleOrStatus === OrganizationMembershipRole.owner) {
             throw forbidden({
               errors: {
-                form: 'Administrators cannot promote members to the owner role.',
+                form: "Administrators cannot promote members to the owner role.",
               },
             });
           }
@@ -172,15 +171,15 @@ export async function teamMembersAction({
         const subscription = organization.stripeSubscriptions[0];
         // Prepare the data for the database update
         let updateData: Prisma.OrganizationMembershipUpdateInput;
-        if (requestedRoleOrStatus === 'deactivated') {
+        if (requestedRoleOrStatus === "deactivated") {
           // Set deactivatedAt timestamp
           updateData = { deactivatedAt: new Date() };
 
-          if (subscription && subscription.items[0]) {
+          if (subscription?.items[0]) {
             await adjustSeats({
+              newQuantity: organization._count.memberships - 1,
               subscriptionId: subscription.stripeId,
               subscriptionItemId: subscription.items[0].stripeId,
-              newQuantity: organization._count.memberships - 1,
             });
           }
         } else {
@@ -188,28 +187,27 @@ export async function teamMembersAction({
           // `requestedRoleOrStatus` here is guaranteed by zod schema to be
           // 'member', 'admin', or 'owner'
           const newRole = requestedRoleOrStatus;
-          // eslint-disable-next-line unicorn/no-null
-          updateData = { role: newRole, deactivatedAt: null };
+          updateData = { deactivatedAt: null, role: newRole };
 
           // If the user was deactivated, and there is a subscription,
           // they will now take up a seat again.
           if (targetMembership.deactivatedAt) {
             if (getOrganizationIsFull(organization)) {
               const toastHeaders = await createToastHeaders({
-                title: i18n.t(
-                  'organizations:settings.team-members.invite-by-email.organization-full-toast-title',
-                ),
                 description: i18n.t(
-                  'organizations:settings.team-members.invite-by-email.organization-full-toast-description',
+                  "organizations:settings.team-members.invite-by-email.organization-full-toast-description",
                 ),
-                type: 'error',
+                title: i18n.t(
+                  "organizations:settings.team-members.invite-by-email.organization-full-toast-title",
+                ),
+                type: "error",
               });
               return badRequest(
                 {
                   errors: {
                     email: {
                       message:
-                        'organizations:settings.team-members.invite-by-email.form.organization-full',
+                        "organizations:settings.team-members.invite-by-email.form.organization-full",
                     },
                   },
                 },
@@ -217,11 +215,11 @@ export async function teamMembersAction({
               );
             }
 
-            if (subscription && subscription.items[0]) {
+            if (subscription?.items[0]) {
               await adjustSeats({
+                newQuantity: organization._count.memberships + 1,
                 subscriptionId: subscription.stripeId,
                 subscriptionItemId: subscription.items[0].stripeId,
-                newQuantity: organization._count.memberships + 1,
               });
             }
           }
@@ -229,9 +227,9 @@ export async function teamMembersAction({
 
         // Perform the database update
         await updateOrganizationMembershipInDatabase({
-          userId: targetUserId,
-          organizationId: organization.id,
           data: updateData,
+          organizationId: organization.id,
+          userId: targetUserId,
         });
 
         // Return success
@@ -244,7 +242,7 @@ export async function teamMembersAction({
             errors: {
               email: {
                 message:
-                  'organizations:settings.team-members.invite-by-email.form.organization-full',
+                  "organizations:settings.team-members.invite-by-email.form.organization-full",
               },
             },
           });
@@ -256,7 +254,7 @@ export async function teamMembersAction({
         ) {
           return forbidden({
             errors: {
-              message: 'Only organization owners can invite as owners.',
+              message: "Only organization owners can invite as owners.",
             },
           });
         }
@@ -272,7 +270,7 @@ export async function teamMembersAction({
             errors: {
               email: {
                 message: i18n.t(
-                  'organizations:settings.team-members.invite-by-email.form.email-already-member',
+                  "organizations:settings.team-members.invite-by-email.form.email-already-member",
                   { email: body.email },
                 ),
               },
@@ -291,45 +289,45 @@ export async function teamMembersAction({
         const joinUrl = `${process.env.APP_URL}/organizations/email-invite?token=${emailInvite.token}`;
 
         const result = await sendEmail({
-          to: body.email,
-          subject: i18n.t(
-            'organizations:settings.team-members.invite-by-email.invite-email.subject',
-            {
-              inviteName: user.name,
-              appName: i18n.t('common:app-name'),
-            },
-          ),
           react: (
             <InviteEmail
-              title={i18n.t(
-                'organizations:settings.team-members.invite-by-email.invite-email.title',
-                {
-                  appName: i18n.t('common:app-name'),
-                },
-              )}
-              description={i18n.t(
-                'organizations:settings.team-members.invite-by-email.invite-email.description',
-                {
-                  appName: i18n.t('common:app-name'),
-                  inviterName: user.name,
-                  organizationName: organization.name,
-                },
-              )}
-              callToAction={i18n.t(
-                'organizations:settings.team-members.invite-by-email.invite-email.call-to-action',
-              )}
               buttonText={i18n.t(
-                'organizations:settings.team-members.invite-by-email.invite-email.button-text',
+                "organizations:settings.team-members.invite-by-email.invite-email.button-text",
                 {
                   organizationName: organization.name,
                 },
               )}
               buttonUrl={joinUrl}
+              callToAction={i18n.t(
+                "organizations:settings.team-members.invite-by-email.invite-email.call-to-action",
+              )}
+              description={i18n.t(
+                "organizations:settings.team-members.invite-by-email.invite-email.description",
+                {
+                  appName: i18n.t("common:app-name"),
+                  inviterName: user.name,
+                  organizationName: organization.name,
+                },
+              )}
+              title={i18n.t(
+                "organizations:settings.team-members.invite-by-email.invite-email.title",
+                {
+                  appName: i18n.t("common:app-name"),
+                },
+              )}
             />
           ),
+          subject: i18n.t(
+            "organizations:settings.team-members.invite-by-email.invite-email.subject",
+            {
+              appName: i18n.t("common:app-name"),
+              inviteName: user.name,
+            },
+          ),
+          to: body.email,
         });
 
-        if (result.status === 'error') {
+        if (result.status === "error") {
           return badRequest({
             errors: { email: { message: result.error.message } },
           });
@@ -337,9 +335,9 @@ export async function teamMembersAction({
 
         const toastHeaders = await createToastHeaders({
           title: i18n.t(
-            'organizations:settings.team-members.invite-by-email.success-toast-title',
+            "organizations:settings.team-members.invite-by-email.success-toast-title",
           ),
-          type: 'success',
+          type: "success",
         });
 
         return data(

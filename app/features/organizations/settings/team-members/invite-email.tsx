@@ -1,4 +1,4 @@
-import { Button, Container, Html, Text } from '@react-email/components';
+import { Button, Container, Html, Text } from "@react-email/components";
 
 type InviteEmailProps = {
   /**
@@ -40,7 +40,7 @@ export function InviteEmail({
   buttonUrl,
 }: InviteEmailProps) {
   return (
-    <Html lang="en" dir="ltr">
+    <Html dir="ltr" lang="en">
       <Container>
         <h1>
           <Text>{title}</Text>
@@ -57,19 +57,19 @@ export function InviteEmail({
         <Button
           href={buttonUrl}
           style={{
-            backgroundColor: '#6366f1',
-            color: '#ffffff',
-            padding: '8px 16px',
-            borderRadius: '0.625rem',
-            textDecoration: 'none',
-            fontSize: '14px',
-            fontWeight: '500',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
+            alignItems: "center",
+            backgroundColor: "#6366f1",
+            border: "none",
+            borderRadius: "0.625rem",
+            color: "#ffffff",
+            cursor: "pointer",
+            display: "inline-flex",
+            fontSize: "14px",
+            fontWeight: "500",
+            justifyContent: "center",
+            padding: "8px 16px",
+            textDecoration: "none",
+            transition: "all 0.2s",
           }}
         >
           {buttonText}

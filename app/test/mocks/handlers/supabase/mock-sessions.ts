@@ -1,6 +1,6 @@
-import type { Session } from '@supabase/supabase-js';
+import type { Session } from "@supabase/supabase-js";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /**
  * Type guard to check if an unknown value is a valid Supabase Session object.
@@ -10,13 +10,14 @@ import { prisma } from '~/utils/database.server';
  */
 function isSession(data: unknown): data is Session {
   return (
-    data != undefined &&
-    typeof data === 'object' &&
-    'access_token' in data &&
-    'refresh_token' in data &&
-    'expires_in' in data &&
-    'token_type' in data &&
-    'user' in data
+    data !== undefined &&
+    data !== null &&
+    typeof data === "object" &&
+    "access_token" in data &&
+    "refresh_token" in data &&
+    "expires_in" in data &&
+    "token_type" in data &&
+    "user" in data
   );
 }
 
@@ -29,9 +30,9 @@ function isSession(data: unknown): data is Session {
  */
 export async function setMockSession(accessToken: string, session: Session) {
   await prisma.mockAccessTokenSession.upsert({
-    where: { accessToken },
-    update: { sessionData: session },
     create: { accessToken, sessionData: session },
+    update: { sessionData: session },
+    where: { accessToken },
   });
 }
 

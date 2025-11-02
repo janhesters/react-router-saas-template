@@ -1,12 +1,12 @@
-import { type Organization, OrganizationMembershipRole } from '@prisma/client';
+import type { Organization } from "@prisma/client";
+import { OrganizationMembershipRole } from "@prisma/client";
 
-import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
-import { getTierAndIntervalForLookupKey } from '~/features/billing/billing-helpers';
-import type { BillingSidebarCardProps } from '~/features/billing/billing-sidebar-card';
-import type { OnboardingUser } from '~/features/onboarding/onboarding-helpers.server';
-
-import type { NavUserProps } from './nav-user';
-import type { OrganizationSwitcherProps } from './organization-switcher';
+import type { NavUserProps } from "./nav-user";
+import type { OrganizationSwitcherProps } from "./organization-switcher";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
+import { getTierAndIntervalForLookupKey } from "~/features/billing/billing-helpers";
+import type { BillingSidebarCardProps } from "~/features/billing/billing-sidebar-card";
+import type { OnboardingUser } from "~/features/onboarding/onboarding-helpers.server";
 
 /**
  * Gets the sidebar state from the request cookies. This is used to determine
@@ -17,17 +17,17 @@ import type { OrganizationSwitcherProps } from './organization-switcher';
  * false otherwise).
  */
 export function getSidebarState(request: Request): boolean {
-  const cookies = request.headers.get('cookie') ?? '';
+  const cookies = request.headers.get("cookie") ?? "";
   const sidebarState = cookies
-    .split(';')
-    .map(cookie => cookie.trim())
-    .find(cookie => cookie.startsWith('sidebar_state='))
-    ?.split('=')[1];
+    .split(";")
+    .map((cookie) => cookie.trim())
+    .find((cookie) => cookie.startsWith("sidebar_state="))
+    ?.split("=")[1];
 
   // Return true by default if no cookie is found
   if (!sidebarState) return true;
 
-  return sidebarState === 'true';
+  return sidebarState === "true";
 }
 
 /**
@@ -40,20 +40,21 @@ export function mapOnboardingUserToOrganizationLayoutProps({
   organizationSlug,
 }: {
   user: OnboardingUser;
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
 }): {
   navUserProps: NavUserProps;
   organizationSwitcherProps: OrganizationSwitcherProps;
 } {
-  const mappedOrganizations = user.memberships.map(membership => ({
+  const mappedOrganizations = user.memberships.map((membership) => ({
     id: membership.organization.id,
-    name: membership.organization.name,
     logo: membership.organization.imageUrl,
+    name: membership.organization.name,
     slug: membership.organization.slug,
     tier: getTierAndIntervalForLookupKey(
       // Actual plan if the organization has a subscription.
       membership.organization.stripeSubscriptions.length > 0
-        ? membership.organization.stripeSubscriptions[0]!.items[0]!.price
+        ? // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a subscription
+          membership.organization.stripeSubscriptions[0]!.items[0]!.price
             .lookupKey
         : // Default plan during the trial period.
           priceLookupKeysByTierAndInterval.high.annual,
@@ -70,7 +71,7 @@ export function mapOnboardingUserToOrganizationLayoutProps({
     },
     organizationSwitcherProps: {
       currentOrganization: mappedOrganizations.find(
-        organization => organization.slug === organizationSlug,
+        (organization) => organization.slug === organizationSlug,
       ),
       organizations: mappedOrganizations,
     },
@@ -83,16 +84,16 @@ export function mapOnboardingUserToBillingSidebarCardProps({
   user,
 }: {
   now: Date;
-  organizationSlug: Organization['slug'];
+  organizationSlug: Organization["slug"];
   user: OnboardingUser;
 }): {
   billingSidebarCardProps?: Omit<
     BillingSidebarCardProps,
-    'createSubscriptionModalProps'
+    "createSubscriptionModalProps"
   >;
 } {
   const currentMembership = user.memberships.find(
-    membership => membership.organization.slug === organizationSlug,
+    (membership) => membership.organization.slug === organizationSlug,
   );
 
   if (!currentMembership) {
@@ -110,13 +111,14 @@ export function mapOnboardingUserToBillingSidebarCardProps({
     currentMembership.role === OrganizationMembershipRole.owner;
 
   if (currentOrganization.stripeSubscriptions.length > 0) {
+    // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a subscription
     const subscription = currentOrganization.stripeSubscriptions[0]!;
-    const isCancelled = subscription.status === 'canceled';
+    const isCancelled = subscription.status === "canceled";
     return isCancelled
       ? {
           billingSidebarCardProps: {
             showButton,
-            state: 'cancelled',
+            state: "cancelled",
             trialEndDate: new Date(),
           },
         }
@@ -126,7 +128,7 @@ export function mapOnboardingUserToBillingSidebarCardProps({
   return {
     billingSidebarCardProps: {
       showButton,
-      state: now < currentOrganization.trialEnd ? 'trialing' : 'trialEnded',
+      state: now < currentOrganization.trialEnd ? "trialing" : "trialEnded",
       trialEndDate: currentOrganization.trialEnd,
     },
   };
@@ -139,6 +141,6 @@ export function mapOnboardingUserToBillingSidebarCardProps({
  * @param slug - The slug to switch in the route
  * @returns The route with the slug switched
  */
-export function switchSlugInRoute(route: string, slug: Organization['slug']) {
+export function switchSlugInRoute(route: string, slug: Organization["slug"]) {
   return route.replace(/\/organizations\/[^/]+/, `/organizations/${slug}`);
 }

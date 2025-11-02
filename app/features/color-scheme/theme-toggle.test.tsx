@@ -1,28 +1,27 @@
-import userEvent from '@testing-library/user-event';
-import { createRoutesStub } from 'react-router';
-import { describe, expect, test } from 'vitest';
+import userEvent from "@testing-library/user-event";
+import { createRoutesStub } from "react-router";
+import { describe, expect, test } from "vitest";
 
-import { render, screen } from '~/test/react-test-utils';
-
-import { ThemeToggle } from './theme-toggle';
+import { ThemeToggle } from "./theme-toggle";
+import { render, screen } from "~/test/react-test-utils";
 
 function renderThemeToggle() {
-  const path = '/test';
-  const RouterStub = createRoutesStub([{ path, Component: ThemeToggle }]);
+  const path = "/test";
+  const RouterStub = createRoutesStub([{ Component: ThemeToggle, path }]);
 
   return render(
     <RouterStub
+      hydrationData={{ loaderData: { root: { colorScheme: "light" } } }}
       initialEntries={[path]}
-      hydrationData={{ loaderData: { root: { colorScheme: 'light' } } }}
     />,
   );
 }
 
-describe('ThemeToggle Component', () => {
-  test('given: default render, should: show a button with correct aria-label and dropdown closed', () => {
+describe("ThemeToggle Component", () => {
+  test("given: default render, should: show a button with correct aria-label and dropdown closed", () => {
     renderThemeToggle();
 
-    const button = screen.getByRole('button', {
+    const button = screen.getByRole("button", {
       name: /open theme menu/i,
     });
     expect(button).toBeInTheDocument();
@@ -31,12 +30,12 @@ describe('ThemeToggle Component', () => {
     expect(screen.queryByText(/appearance/i)).not.toBeInTheDocument();
   });
 
-  test('given: user interactions, should: handle dropdown menu accessibility and keyboard navigation', async () => {
+  test("given: user interactions, should: handle dropdown menu accessibility and keyboard navigation", async () => {
     const user = userEvent.setup();
     renderThemeToggle();
 
     // Get the button and verify initial state
-    const button = screen.getByRole('button', {
+    const button = screen.getByRole("button", {
       name: /open theme menu/i,
     });
 
@@ -49,21 +48,21 @@ describe('ThemeToggle Component', () => {
 
     // Verify all theme options are present
     expect(
-      screen.getByRole('menuitem', { name: /light/i }),
+      screen.getByRole("menuitem", { name: /light/i }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: /dark/i })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: /dark/i })).toBeInTheDocument();
     expect(
-      screen.getByRole('menuitem', { name: /system/i }),
+      screen.getByRole("menuitem", { name: /system/i }),
     ).toBeInTheDocument();
 
     // Test keyboard navigation - Escape to close
-    await user.keyboard('{Escape}');
+    await user.keyboard("{Escape}");
     expect(screen.queryByText(/appearance/i)).not.toBeInTheDocument();
 
     // Test keyboard navigation - open with Enter
     button.focus();
     expect(button).toHaveFocus();
-    await user.keyboard('{Enter}');
+    await user.keyboard("{Enter}");
     expect(screen.getByText(/appearance/i)).toBeInTheDocument();
   });
 });

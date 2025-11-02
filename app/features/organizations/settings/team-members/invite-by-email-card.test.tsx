@@ -1,11 +1,10 @@
-import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
-import { createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import type { EmailInviteCardProps } from './invite-by-email-card';
-import { EmailInviteCard } from './invite-by-email-card';
+import type { EmailInviteCardProps } from "./invite-by-email-card";
+import { EmailInviteCard } from "./invite-by-email-card";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
+import { createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<EmailInviteCardProps> = ({
   currentUserIsOwner = false,
@@ -34,13 +33,13 @@ afterAll(() => {
     originalHasPointerCapture;
 });
 
-describe('EmailInviteCard Component', () => {
-  test('given: component renders, should: display card with title, description, and form elements', () => {
+describe("EmailInviteCard Component", () => {
+  test("given: component renders, should: display card with title, description, and form elements", () => {
     const props = createProps();
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -57,16 +56,16 @@ describe('EmailInviteCard Component', () => {
     expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/role/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /send email invitation/i }),
+      screen.getByRole("button", { name: /send email invitation/i }),
     ).toBeInTheDocument();
   });
 
-  test('given: isInvitingByEmail is true, should: disable form and show loading state', () => {
+  test("given: isInvitingByEmail is true, should: disable form and show loading state", () => {
     const props = createProps({ isInvitingByEmail: true });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -74,49 +73,49 @@ describe('EmailInviteCard Component', () => {
     // Verify form is disabled
     expect(screen.getByLabelText(/email/i)).toBeDisabled();
     expect(screen.getByLabelText(/role/i)).toBeDisabled();
-    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole("button")).toBeDisabled();
 
     // Verify loading state
     expect(screen.getByText(/sending/i)).toBeInTheDocument();
   });
 
-  test('given: validation errors exist, should: display error messages', () => {
+  test("given: validation errors exist, should: display error messages", () => {
     const errors = {
       email: {
-        type: 'min',
-        message: 'Email is required',
+        message: "Email is required",
+        type: "min",
       },
       role: {
-        type: 'invalid_type',
-        message: 'Role is required',
+        message: "Role is required",
+        type: "invalid_type",
       },
     };
     const props = createProps({ errors });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Verify error messages
-    expect(screen.getByText('Email is required')).toBeInTheDocument();
-    expect(screen.getByText('Role is required')).toBeInTheDocument();
+    expect(screen.getByText("Email is required")).toBeInTheDocument();
+    expect(screen.getByText("Role is required")).toBeInTheDocument();
   });
 
-  test('given: current user is NOT an owner, should: not show owner role option', () => {
+  test("given: current user is NOT an owner, should: not show owner role option", () => {
     const props = createProps({ currentUserIsOwner: false });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Find the hidden select element
-    const select = screen.getByRole('combobox', { name: /role/i });
+    const select = screen.getByRole("combobox", { name: /role/i });
     const hiddenSelect = select.nextElementSibling as HTMLSelectElement;
 
     // Verify owner role option is not present in the hidden select
@@ -125,18 +124,18 @@ describe('EmailInviteCard Component', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('given: current user is an owner, should: show owner role option', () => {
+  test("given: current user is an owner, should: show owner role option", () => {
     const props = createProps({ currentUserIsOwner: true });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Find the hidden select element
-    const select = screen.getByRole('combobox', { name: /role/i });
+    const select = screen.getByRole("combobox", { name: /role/i });
     const hiddenSelect = select.nextElementSibling as HTMLSelectElement;
 
     // Verify owner role option is present in the hidden select
@@ -145,12 +144,12 @@ describe('EmailInviteCard Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('given: organization is full, should: disable form', () => {
+  test("given: organization is full, should: disable form", () => {
     const props = createProps({ organizationIsFull: true });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
     const RouterStub = createRoutesStub([
-      { path, Component: () => <EmailInviteCard {...props} /> },
+      { Component: () => <EmailInviteCard {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -158,6 +157,6 @@ describe('EmailInviteCard Component', () => {
     // Verify form is disabled
     expect(screen.getByLabelText(/email/i)).toBeDisabled();
     expect(screen.getByLabelText(/role/i)).toBeDisabled();
-    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByRole("button")).toBeDisabled();
   });
 });

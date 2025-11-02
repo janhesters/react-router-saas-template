@@ -1,16 +1,17 @@
-import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test } from "@playwright/test";
 
-import { createValidContactSalesFormData } from '~/features/billing/contact-sales/contact-sales-factories.server';
+import { createValidContactSalesFormData } from "~/features/billing/contact-sales/contact-sales-factories.server";
 import {
   deleteContactSalesFormSubmissionFromDatabaseById,
   retrieveContactSalesFormSubmissionsFromDatabase,
-} from '~/features/billing/contact-sales/contact-sales-form-submission-model.server';
+} from "~/features/billing/contact-sales/contact-sales-form-submission-model.server";
 
-const path = '/contact-sales';
+const path = "/contact-sales";
 
-test.describe('contact sales page', () => {
-  test('given: a user visiting the page, should: have the correct title and form elements', async ({
+test.describe("contact sales page", () => {
+  test("given: a user visiting the page, should: have the correct title and form elements", async ({
     page,
   }) => {
     await page.goto(path);
@@ -26,11 +27,11 @@ test.describe('contact sales page', () => {
     await expect(page.getByLabel(/phone number/i)).toBeVisible();
     await expect(page.getByLabel(/message/i)).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /contact sales/i }),
+      page.getByRole("button", { name: /contact sales/i }),
     ).toBeVisible();
   });
 
-  test('given: a user submitting invalid data, should: show the correct error messages', async ({
+  test("given: a user submitting invalid data, should: show the correct error messages", async ({
     page,
   }) => {
     await page.goto(path);
@@ -43,11 +44,11 @@ test.describe('contact sales page', () => {
     await expect(page.getByLabel(/phone number/i)).toBeVisible();
     await expect(page.getByLabel(/message/i)).toBeVisible();
     await expect(
-      page.getByRole('button', { name: /contact sales/i }),
+      page.getByRole("button", { name: /contact sales/i }),
     ).toBeVisible();
 
     // Submit empty form
-    await page.getByRole('button', { name: /contact sales/i }).click();
+    await page.getByRole("button", { name: /contact sales/i }).click();
 
     // Verify error messages
     await expect(page.getByText(/please enter your first name/i)).toBeVisible();
@@ -68,14 +69,14 @@ test.describe('contact sales page', () => {
     ).toBeVisible();
 
     // Test invalid email format
-    await page.getByLabel(/work email/i).fill('invalid-email');
-    await page.getByRole('button', { name: /contact sales/i }).click();
+    await page.getByLabel(/work email/i).fill("invalid-email");
+    await page.getByRole("button", { name: /contact sales/i }).click();
     await expect(
       page.getByText(/please enter a valid work email/i),
     ).toBeVisible();
   });
 
-  test('given: a user submitting valid data, should: show success message', async ({
+  test("given: a user submitting valid data, should: show success message", async ({
     page,
   }) => {
     await page.goto(path);
@@ -102,7 +103,7 @@ test.describe('contact sales page', () => {
     await page.getByLabel(/phone number/i).fill(validData.phoneNumber);
 
     // Submit the form
-    await page.getByRole('button', { name: /contact sales/i }).click();
+    await page.getByRole("button", { name: /contact sales/i }).click();
 
     // Verify success message
     await expect(page.getByText(/success!/i)).toBeVisible();
@@ -111,7 +112,7 @@ test.describe('contact sales page', () => {
     // Check database for the submission
     const submissions = await retrieveContactSalesFormSubmissionsFromDatabase();
     const savedSubmission = submissions.find(
-      sub => sub.workEmail === validData.workEmail,
+      (sub) => sub.workEmail === validData.workEmail,
     );
     expect(savedSubmission).toMatchObject(validData);
 
@@ -119,19 +120,19 @@ test.describe('contact sales page', () => {
   });
 
   test.fixme(
-    'given: an authenticated user who visited the page from their app, should: add the organization name and id in the form submission (so we can know which customer wants to go enterprise',
+    "given: an authenticated user who visited the page from their app, should: add the organization name and id in the form submission (so we can know which customer wants to go enterprise",
     async () => {
       //
     },
   );
 
-  test('given: a user, should: lack any automatically detectable accessibility issues', async ({
+  test("given: a user, should: lack any automatically detectable accessibility issues", async ({
     page,
   }) => {
     await page.goto(path);
 
     const accessibilityScanResults = await new AxeBuilder({ page })
-      .disableRules('color-contrast')
+      .disableRules("color-contrast")
       .analyze();
 
     expect(accessibilityScanResults.violations).toEqual([]);

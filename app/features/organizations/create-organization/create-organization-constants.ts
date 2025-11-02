@@ -1,1 +1,1 @@
-export const CREATE_ORGANIZATION_INTENT = 'createOrganization';
+export const CREATE_ORGANIZATION_INTENT = "createOrganization";

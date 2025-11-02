@@ -1,32 +1,31 @@
-import { data } from 'react-router';
-import { z } from 'zod';
+import { data } from "react-router";
+import { z } from "zod";
 
-import { adjustSeats } from '~/features/billing/stripe-helpers.server';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { deleteOrganization } from '~/features/organizations/organizations-helpers.server';
-import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from '~/features/user-accounts/user-accounts-helpers.server';
-import {
-  deleteUserAccountFromDatabaseById,
-  updateUserAccountInDatabaseById,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { supabaseAdminClient } from '~/features/user-authentication/supabase.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { badRequest } from '~/utils/http-responses.server';
-import { removeImageFromStorage } from '~/utils/storage-helpers.server';
-import { createToastHeaders, redirectWithToast } from '~/utils/toast.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import type { UpdateUserAccountFormErrors } from './account-settings';
+import type { UpdateUserAccountFormErrors } from "./account-settings";
 import {
   DELETE_USER_ACCOUNT_INTENT,
   UPDATE_USER_ACCOUNT_INTENT,
-} from './account-settings-constants';
-import { uploadUserAvatar } from './account-settings-helpers.server';
-import { updateUserAccountFormSchema } from './account-settings-schemas';
-import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/settings+/+types/account';
+} from "./account-settings-constants";
+import { uploadUserAvatar } from "./account-settings-helpers.server";
+import { updateUserAccountFormSchema } from "./account-settings-schemas";
+import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/settings+/+types/account";
+import { adjustSeats } from "~/features/billing/stripe-helpers.server";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { deleteOrganization } from "~/features/organizations/organizations-helpers.server";
+import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from "~/features/user-accounts/user-accounts-helpers.server";
+import {
+  deleteUserAccountFromDatabaseById,
+  updateUserAccountInDatabaseById,
+} from "~/features/user-accounts/user-accounts-model.server";
+import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { badRequest } from "~/utils/http-responses.server";
+import { removeImageFromStorage } from "~/utils/storage-helpers.server";
+import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
-const schema = z.discriminatedUnion('intent', [
+const schema = z.discriminatedUnion("intent", [
   updateUserAccountFormSchema,
   z.object({ intent: z.literal(DELETE_USER_ACCOUNT_INTENT) }),
 ]);
@@ -59,8 +58,8 @@ export async function accountSettingsAction({
 
           const publicUrl = await uploadUserAvatar({
             file: body.avatar,
-            userId: user.id,
             supabase,
+            userId: user.id,
           });
           updates.imageUrl = publicUrl;
         }
@@ -73,8 +72,8 @@ export async function accountSettingsAction({
         }
 
         const toastHeaders = await createToastHeaders({
-          title: i18n.t('settings:user-account.toast.user-account-updated'),
-          type: 'success',
+          title: i18n.t("settings:user-account.toast.user-account-updated"),
+          type: "success",
         });
         return data(
           { success: new Date().toISOString() },
@@ -85,22 +84,22 @@ export async function accountSettingsAction({
       case DELETE_USER_ACCOUNT_INTENT: {
         // Check if user is an owner of any organizations with other members
         const orgsBlockingDeletion = user.memberships.filter(
-          membership =>
-            membership.role === 'owner' &&
+          (membership) =>
+            membership.role === "owner" &&
             membership.organization._count.memberships > 1,
         );
 
         if (orgsBlockingDeletion.length > 0) {
           return badRequest({
             error:
-              'Cannot delete account while owner of organizations with other members',
+              "Cannot delete account while owner of organizations with other members",
           });
         }
 
         // Find organizations where user is the sole owner (only member)
         const soleOwnerOrgs = user.memberships.filter(
-          membership =>
-            membership.role === 'owner' &&
+          (membership) =>
+            membership.role === "owner" &&
             membership.organization._count.memberships === 1,
         );
 
@@ -118,21 +117,23 @@ export async function accountSettingsAction({
         await Promise.all(
           user.memberships
             .filter(
-              membership =>
+              (membership) =>
                 !soleOwnerOrgs
                   .map(({ organization }) => organization.id)
                   .includes(membership.organization.id),
             )
             .filter(
-              membership => membership.organization.stripeSubscriptions[0],
+              (membership) => membership.organization.stripeSubscriptions[0],
             )
-            .map(membership => {
+            .map((membership) => {
               const subscription =
+                // biome-ignore lint/style/noNonNullAssertion: the subscription is guaranteed to exist
                 membership.organization.stripeSubscriptions[0]!;
               return adjustSeats({
-                subscriptionId: subscription.stripeId,
-                subscriptionItemId: subscription.items[0]!.price.stripeId,
                 newQuantity: membership.organization._count.memberships - 1,
+                subscriptionId: subscription.stripeId,
+                // biome-ignore lint/style/noNonNullAssertion: the subscription item is guaranteed to exist
+                subscriptionItemId: subscription.items[0]!.price.stripeId,
               });
             }),
         );
@@ -145,10 +146,10 @@ export async function accountSettingsAction({
         await supabaseAdminClient.auth.admin.deleteUser(user.supabaseUserId);
 
         return redirectWithToast(
-          '/',
+          "/",
           {
-            title: i18n.t('settings:user-account.toast.user-account-deleted'),
-            type: 'success',
+            title: i18n.t("settings:user-account.toast.user-account-deleted"),
+            type: "success",
           },
           { headers },
         );

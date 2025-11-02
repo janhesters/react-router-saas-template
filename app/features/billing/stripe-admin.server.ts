@@ -1,4 +1,4 @@
-import Stripe from 'stripe';
+import Stripe from "stripe";
 
 // Why is this needed?
 // See: https://github.com/nock/nock/issues/2785#issuecomment-2427076034

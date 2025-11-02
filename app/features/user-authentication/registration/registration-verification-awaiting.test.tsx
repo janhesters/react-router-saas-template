@@ -1,12 +1,11 @@
-import { faker } from '@faker-js/faker';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { act, createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import { registerIntents } from '../user-authentication-constants';
-import type { RegistrationVerificationAwaitingProps } from './registration-verification-awaiting';
-import { RegistrationVerificationAwaiting } from './registration-verification-awaiting';
+import { registerIntents } from "../user-authentication-constants";
+import type { RegistrationVerificationAwaitingProps } from "./registration-verification-awaiting";
+import { RegistrationVerificationAwaiting } from "./registration-verification-awaiting";
+import { act, createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<RegistrationVerificationAwaitingProps> = ({
   email = faker.internet.email(),
@@ -18,7 +17,7 @@ const createProps: Factory<RegistrationVerificationAwaitingProps> = ({
   isSubmitting,
 });
 
-describe('RegistrationVerificationAwaiting Component', () => {
+describe("RegistrationVerificationAwaiting Component", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -28,14 +27,14 @@ describe('RegistrationVerificationAwaiting Component', () => {
     vi.useRealTimers();
   });
 
-  test('given: component renders with default props, should: display correct content, include email input, show resend button, disable fieldset when waiting and render an alert that the user should check their spam folder', () => {
+  test("given: component renders with default props, should: display correct content, include email input, show resend button, disable fieldset when waiting and render an alert that the user should check their spam folder", () => {
     const email = faker.internet.email();
     const props = createProps({ email });
-    const path = '/register';
+    const path = "/register";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <RegistrationVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -55,16 +54,16 @@ describe('RegistrationVerificationAwaiting Component', () => {
     // Verify the hidden email input is present with the correct value
     const hiddenInput = screen.getByDisplayValue(email);
     expect(hiddenInput).toBeInTheDocument();
-    expect(hiddenInput).toHaveAttribute('type', 'hidden');
-    expect(hiddenInput).toHaveAttribute('name', 'email');
+    expect(hiddenInput).toHaveAttribute("type", "hidden");
+    expect(hiddenInput).toHaveAttribute("name", "email");
 
     // Verify the resend button has the correct text and attributes
-    const button = screen.getByRole('button', {
+    const button = screen.getByRole("button", {
       name: /request new verification link/i,
     });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute('name', 'intent');
-    expect(button).toHaveAttribute('value', registerIntents.registerWithEmail);
+    expect(button).toHaveAttribute("name", "intent");
+    expect(button).toHaveAttribute("value", registerIntents.registerWithEmail);
 
     // Verify the alert is displayed
     expect(
@@ -72,20 +71,20 @@ describe('RegistrationVerificationAwaiting Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('given: countdown reaches zero after 60 seconds, should: enable the form', () => {
+  test("given: countdown reaches zero after 60 seconds, should: enable the form", () => {
     const props = createProps();
-    const path = '/register';
+    const path = "/register";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <RegistrationVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Initially, the fieldset should be disabled
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /request new verification link/i,
     });
     expect(submitButton).toBeDisabled();
@@ -106,13 +105,13 @@ describe('RegistrationVerificationAwaiting Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('given: isResending is true, should: display loading state and disable the button', () => {
+  test("given: isResending is true, should: display loading state and disable the button", () => {
     const props = createProps({ isResending: true });
-    const path = '/register';
+    const path = "/register";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <RegistrationVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -124,17 +123,17 @@ describe('RegistrationVerificationAwaiting Component', () => {
     });
 
     // Get the button with the loading text.
-    const button = screen.getByRole('button', { name: /sending/i });
+    const button = screen.getByRole("button", { name: /sending/i });
     expect(button).toBeDisabled();
   });
 
-  test('given: isSubmitting is true, should: disable the form regardless of countdown', () => {
+  test("given: isSubmitting is true, should: disable the form regardless of countdown", () => {
     const props = createProps({ isSubmitting: true });
-    const path = '/register';
+    const path = "/register";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <RegistrationVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -147,7 +146,7 @@ describe('RegistrationVerificationAwaiting Component', () => {
 
     // The submit button should still be disabled due to isSubmitting, even
     // though countdown is at zero.
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /request new verification link/i,
     });
     expect(submitButton).toBeDisabled();

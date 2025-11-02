@@ -1,26 +1,11 @@
-import type { Organization } from '@prisma/client';
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import { CircleXIcon, Loader2Icon } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form, href, Link, useNavigation } from 'react-router';
+import type { Organization } from "@prisma/client";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { CircleXIcon, Loader2Icon } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { Form, href, Link, useNavigation } from "react-router";
 
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Button } from '~/components/ui/button';
-import { Card } from '~/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '~/components/ui/dialog';
-import { Separator } from '~/components/ui/separator';
-import { cn } from '~/lib/utils';
-
-import type { Interval, Tier } from './billing-constants';
+import type { Interval, Tier } from "./billing-constants";
 import {
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
@@ -29,20 +14,32 @@ import {
   SWITCH_SUBSCRIPTION_INTENT,
   UPDATE_BILLING_EMAIL_INTENT,
   VIEW_INVOICES_INTENT,
-} from './billing-constants';
-import type { CancelOrModifySubscriptionModalContentProps } from './cancel-or-modify-subscription-modal-content';
-import { CancelOrModifySubscriptionModalContent } from './cancel-or-modify-subscription-modal-content';
-import {
-  CreateSubscriptionModalContent,
-  type CreateSubscriptionModalContentProps,
-} from './create-subscription-modal-content';
+} from "./billing-constants";
+import type { CancelOrModifySubscriptionModalContentProps } from "./cancel-or-modify-subscription-modal-content";
+import { CancelOrModifySubscriptionModalContent } from "./cancel-or-modify-subscription-modal-content";
+import type { CreateSubscriptionModalContentProps } from "./create-subscription-modal-content";
+import { CreateSubscriptionModalContent } from "./create-subscription-modal-content";
 import {
   DescriptionDetail,
   DescriptionList,
   DescriptionListRow,
   DescriptionTerm,
-} from './description-list';
-import { EditBillingEmailModalContent } from './edit-billing-email-modal-content';
+} from "./description-list";
+import { EditBillingEmailModalContent } from "./edit-billing-email-modal-content";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Button } from "~/components/ui/button";
+import { Card } from "~/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "~/components/ui/dialog";
+import { Separator } from "~/components/ui/separator";
+import { cn } from "~/lib/utils";
 
 type PendingDowngradeBannerProps = {
   pendingTier: Tier;
@@ -59,31 +56,31 @@ function PendingDowngradeBanner({
   isKeepingCurrentSubscription,
   isSubmitting,
 }: PendingDowngradeBannerProps) {
-  const { t, i18n } = useTranslation('billing', {
-    keyPrefix: 'billing-page.pending-downgrade-banner',
+  const { t, i18n } = useTranslation("billing", {
+    keyPrefix: "billing-page.pending-downgrade-banner",
   });
-  const { t: tTier } = useTranslation('billing', {
-    keyPrefix: 'pricing.plans',
+  const { t: tTier } = useTranslation("billing", {
+    keyPrefix: "pricing.plans",
   });
 
   const formattedDate = useMemo(() => {
-    return new Intl.DateTimeFormat(i18n.language || 'en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    return new Intl.DateTimeFormat(i18n.language || "en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     }).format(new Date(pendingChangeDate));
   }, [pendingChangeDate, i18n.language]);
 
   return (
     <Form className="@container/alert" method="POST" replace>
       <Alert className="flex flex-col gap-2 @4xl/alert:block">
-        <AlertTitle>{t('title')}</AlertTitle>
+        <AlertTitle>{t("title")}</AlertTitle>
 
         <AlertDescription>
-          {t('description', {
+          {t("description", {
+            billingInterval: t(`intervals.${pendingInterval}`),
             date: formattedDate,
             planName: tTier(`${pendingTier}.title`),
-            billingInterval: t(`intervals.${pendingInterval}`),
           })}
         </AlertDescription>
 
@@ -98,10 +95,10 @@ function PendingDowngradeBanner({
           {isKeepingCurrentSubscription ? (
             <>
               <Loader2Icon className="animate-spin" />
-              {t('loading-button')}
+              {t("loading-button")}
             </>
           ) : (
-            t('button')
+            t("button")
           )}
         </Button>
       </Alert>
@@ -110,7 +107,7 @@ function PendingDowngradeBanner({
 }
 
 export type BillingPageProps = {
-  billingEmail: Organization['billingEmail'];
+  billingEmail: Organization["billingEmail"];
   cancelAtPeriodEnd: boolean;
   cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps;
   createSubscriptionModalProps: CreateSubscriptionModalContentProps;
@@ -133,7 +130,7 @@ export type BillingPageProps = {
   organizationSlug: string;
   pendingChange?: PendingDowngradeBannerProps;
   projectedTotal: number;
-  subscriptionStatus: 'active' | 'inactive' | 'paused';
+  subscriptionStatus: "active" | "inactive" | "paused";
 };
 
 export function BillingPage({
@@ -157,19 +154,19 @@ export function BillingPage({
   projectedTotal,
   subscriptionStatus,
 }: BillingPageProps) {
-  const { t, i18n } = useTranslation('billing', { keyPrefix: 'billing-page' });
-  const { t: tTier } = useTranslation('billing', {
-    keyPrefix: 'pricing.plans',
+  const { t, i18n } = useTranslation("billing", { keyPrefix: "billing-page" });
+  const { t: tTier } = useTranslation("billing", {
+    keyPrefix: "pricing.plans",
   });
   const [isPlanManagementModalOpen, setIsPlanManagementModalOpen] =
     useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
 
   const formattedDate = useMemo(() => {
-    return new Intl.DateTimeFormat(i18n.language || 'en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
+    return new Intl.DateTimeFormat(i18n.language || "en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     }).format(new Date(currentPeriodEnd));
   }, [currentPeriodEnd, i18n.language]);
 
@@ -182,48 +179,48 @@ export function BillingPage({
   /* Switch subscription */
   const navigation = useNavigation();
   const isSwitchingToHigh =
-    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    navigation.formData?.get("intent") === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
         priceLookupKeysByTierAndInterval.high.annual,
         priceLookupKeysByTierAndInterval.high.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('lookupKey') as string);
+    ).includes(navigation.formData?.get("lookupKey") as string);
   const isSwitchingToLow =
-    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    navigation.formData?.get("intent") === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
         priceLookupKeysByTierAndInterval.low.annual,
         priceLookupKeysByTierAndInterval.low.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('lookupKey') as string);
+    ).includes(navigation.formData?.get("lookupKey") as string);
   const isSwitchingToMid =
-    navigation.formData?.get('intent') === SWITCH_SUBSCRIPTION_INTENT &&
+    navigation.formData?.get("intent") === SWITCH_SUBSCRIPTION_INTENT &&
     (
       [
         priceLookupKeysByTierAndInterval.mid.annual,
         priceLookupKeysByTierAndInterval.mid.monthly,
       ] as string[]
-    ).includes(navigation.formData?.get('lookupKey') as string);
+    ).includes(navigation.formData?.get("lookupKey") as string);
 
   /* Update billing email */
   const isUpdatingBillingEmail =
-    navigation.formData?.get('intent') === UPDATE_BILLING_EMAIL_INTENT;
+    navigation.formData?.get("intent") === UPDATE_BILLING_EMAIL_INTENT;
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t('page-title')}</h2>
+          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
 
           <p className="text-muted-foreground text-sm">
-            {t('page-description')}
+            {t("page-description")}
           </p>
         </div>
 
         <Separator />
 
-        {subscriptionStatus === 'inactive' ? (
+        {subscriptionStatus === "inactive" ? (
           <Dialog>
             <div className="@container/alert">
               <Alert
@@ -231,11 +228,11 @@ export function BillingPage({
                 variant="destructive"
               >
                 <AlertTitle>
-                  {t('subscription-cancelled-banner.title')}
+                  {t("subscription-cancelled-banner.title")}
                 </AlertTitle>
 
                 <AlertDescription>
-                  {t('subscription-cancelled-banner.description')}
+                  {t("subscription-cancelled-banner.description")}
                 </AlertDescription>
 
                 <DialogTrigger asChild>
@@ -243,7 +240,7 @@ export function BillingPage({
                     className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
                     size="sm"
                   >
-                    {t('subscription-cancelled-banner.button')}
+                    {t("subscription-cancelled-banner.button")}
                   </Button>
                 </DialogTrigger>
               </Alert>
@@ -252,12 +249,12 @@ export function BillingPage({
             <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
               <DialogHeader>
                 <DialogTitle>
-                  {t('subscription-cancelled-banner.modal.title')}
+                  {t("subscription-cancelled-banner.modal.title")}
                 </DialogTitle>
 
                 <VisuallyHidden>
                   <DialogDescription>
-                    {t('subscription-cancelled-banner.modal.description')}
+                    {t("subscription-cancelled-banner.modal.description")}
                   </DialogDescription>
                 </VisuallyHidden>
               </DialogHeader>
@@ -273,10 +270,10 @@ export function BillingPage({
               className="flex flex-col gap-2 @xl/alert:block"
               variant="destructive"
             >
-              <AlertTitle>{t('cancel-at-period-end-banner.title')}</AlertTitle>
+              <AlertTitle>{t("cancel-at-period-end-banner.title")}</AlertTitle>
 
               <AlertDescription>
-                {t('cancel-at-period-end-banner.description', {
+                {t("cancel-at-period-end-banner.description", {
                   date: formattedDate,
                 })}
               </AlertDescription>
@@ -292,10 +289,10 @@ export function BillingPage({
                 {isResumingSubscription ? (
                   <>
                     <Loader2Icon className="animate-spin" />
-                    {t('cancel-at-period-end-banner.resuming-subscription')}
+                    {t("cancel-at-period-end-banner.resuming-subscription")}
                   </>
                 ) : (
-                  t('cancel-at-period-end-banner.button')
+                  t("cancel-at-period-end-banner.button")
                 )}
               </Button>
             </Alert>
@@ -311,10 +308,10 @@ export function BillingPage({
             <Dialog>
               <div className="@container/alert">
                 <Alert className="flex flex-col gap-2 @xl/alert:block">
-                  <AlertTitle>{t('free-trial-banner.title')}</AlertTitle>
+                  <AlertTitle>{t("free-trial-banner.title")}</AlertTitle>
 
                   <AlertDescription>
-                    {t('free-trial-banner.description', {
+                    {t("free-trial-banner.description", {
                       date: formattedDate,
                     })}
                   </AlertDescription>
@@ -324,7 +321,7 @@ export function BillingPage({
                       className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
                       size="sm"
                     >
-                      {t('free-trial-banner.button')}
+                      {t("free-trial-banner.button")}
                     </Button>
                   </DialogTrigger>
                 </Alert>
@@ -333,12 +330,12 @@ export function BillingPage({
               <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
                 <DialogHeader>
                   <DialogTitle>
-                    {t('free-trial-banner.modal.title')}
+                    {t("free-trial-banner.modal.title")}
                   </DialogTitle>
 
                   <VisuallyHidden>
                     <DialogDescription>
-                      {t('free-trial-banner.modal.description')}
+                      {t("free-trial-banner.modal.description")}
                     </DialogDescription>
                   </VisuallyHidden>
                 </DialogHeader>
@@ -353,7 +350,7 @@ export function BillingPage({
 
         <div>
           <h3 className="text-base font-medium">
-            {t('plan-information.heading')}
+            {t("plan-information.heading")}
           </h3>
 
           <Form method="POST" replace>
@@ -364,7 +361,7 @@ export function BillingPage({
                   <DescriptionListRow className="flex-col @xl/form:grid @xl/form:grid-cols-[auto_1fr]">
                     <div className="flex items-center justify-between">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t('plan-information.current-plan')}
+                        {t("plan-information.current-plan")}
                       </DescriptionTerm>
 
                       <Button
@@ -374,7 +371,7 @@ export function BillingPage({
                         type="button"
                         variant="outline"
                       >
-                        {t('plan-information.manage-plan')}
+                        {t("plan-information.manage-plan")}
                       </Button>
                     </div>
 
@@ -390,9 +387,9 @@ export function BillingPage({
                               1: <span className="text-muted-foreground" />,
                             }}
                             i18nKey={
-                              currentInterval === 'monthly'
-                                ? 'billing:billing-page.plan-information.rate-format-monthly'
-                                : 'billing:billing-page.plan-information.rate-format-annual'
+                              currentInterval === "monthly"
+                                ? "billing:billing-page.plan-information.rate-format-monthly"
+                                : "billing:billing-page.plan-information.rate-format-annual"
                             }
                             values={{ amount: currentMonthlyRatePerUser }}
                           />
@@ -406,7 +403,7 @@ export function BillingPage({
                         type="button"
                         variant="outline"
                       >
-                        {t('plan-information.manage-plan')}
+                        {t("plan-information.manage-plan")}
                       </Button>
                     </div>
                   </DescriptionListRow>
@@ -417,29 +414,29 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t('plan-information.users')}
+                        {t("plan-information.users")}
                       </DescriptionTerm>
 
                       <DescriptionDetail
                         className={cn(
-                          currentSeats > maxSeats && 'text-destructive',
+                          currentSeats > maxSeats && "text-destructive",
                         )}
                       >
-                        {t('plan-information.users-format', {
+                        {t("plan-information.users-format", {
                           current: currentSeats,
                           max: maxSeats,
                         })}
                       </DescriptionDetail>
                     </div>
 
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild size="sm" variant="outline">
                       <Link
                         to={href(
-                          '/organizations/:organizationSlug/settings/members',
+                          "/organizations/:organizationSlug/settings/members",
                           { organizationSlug },
                         )}
                       >
-                        {t('plan-information.manage-users')}
+                        {t("plan-information.manage-users")}
                       </Link>
                     </Button>
                   </DescriptionListRow>
@@ -449,11 +446,11 @@ export function BillingPage({
                   {/* Projected Total */}
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10 @xl/form:justify-start">
                     <DescriptionTerm className="@xl/form:w-36">
-                      {t('plan-information.projected-total')}
+                      {t("plan-information.projected-total")}
                     </DescriptionTerm>
 
                     <DescriptionDetail>
-                      {t('plan-information.amount-format', {
+                      {t("plan-information.amount-format", {
                         amount: projectedTotal,
                       })}
                     </DescriptionDetail>
@@ -465,7 +462,7 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t('plan-information.next-billing-date')}
+                        {t("plan-information.next-billing-date")}
                       </DescriptionTerm>
 
                       <DescriptionDetail>{formattedDate}</DescriptionDetail>
@@ -482,10 +479,10 @@ export function BillingPage({
                       {isViewingInvoices ? (
                         <>
                           <Loader2Icon className="animate-spin" />
-                          {t('opening-customer-portal')}
+                          {t("opening-customer-portal")}
                         </>
                       ) : (
-                        t('plan-information.view-invoices')
+                        t("plan-information.view-invoices")
                       )}
                     </Button>
                   </DescriptionListRow>
@@ -498,7 +495,7 @@ export function BillingPage({
         {billingEmail && (
           <div>
             <h3 className="text-base font-medium">
-              {t('payment-information.heading')}
+              {t("payment-information.heading")}
             </h3>
 
             <div className="@container/form">
@@ -508,7 +505,7 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t('payment-information.billing-email')}
+                        {t("payment-information.billing-email")}
                       </DescriptionTerm>
 
                       <DescriptionDetail>{billingEmail}</DescriptionDetail>
@@ -516,8 +513,8 @@ export function BillingPage({
 
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          {t('payment-information.edit-button')}
+                        <Button size="sm" variant="outline">
+                          {t("payment-information.edit-button")}
                         </Button>
                       </DialogTrigger>
 
@@ -534,21 +531,21 @@ export function BillingPage({
         )}
 
         <Dialog
-          open={isPlanManagementModalOpen}
           onOpenChange={setIsPlanManagementModalOpen}
+          open={isPlanManagementModalOpen}
         >
           <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
             <DialogHeader>
-              <DialogTitle>{t('pricing-modal.title')}</DialogTitle>
+              <DialogTitle>{t("pricing-modal.title")}</DialogTitle>
 
               <VisuallyHidden>
                 <DialogDescription>
-                  {t('pricing-modal.description')}
+                  {t("pricing-modal.description")}
                 </DialogDescription>
               </VisuallyHidden>
             </DialogHeader>
 
-            {subscriptionStatus === 'active' && !isOnFreeTrial ? (
+            {subscriptionStatus === "active" && !isOnFreeTrial ? (
               <CancelOrModifySubscriptionModalContent
                 {...cancelOrModifySubscriptionModalProps}
                 isSwitchingToHigh={isSwitchingToHigh}
@@ -568,23 +565,23 @@ export function BillingPage({
         </Dialog>
 
         {/* Cancel subscription */}
-        <Dialog open={isCancelModalOpen} onOpenChange={setIsCancelModalOpen}>
+        <Dialog onOpenChange={setIsCancelModalOpen} open={isCancelModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t('cancel-subscription-modal.title')}</DialogTitle>
+              <DialogTitle>{t("cancel-subscription-modal.title")}</DialogTitle>
 
               <DialogDescription>
-                {t('cancel-subscription-modal.description')}
+                {t("cancel-subscription-modal.description")}
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4">
               <ul className="flex flex-col gap-2">
                 {(
-                  t('cancel-subscription-modal.features', {
+                  t("cancel-subscription-modal.features", {
                     returnObjects: true,
                   }) as string[]
-                ).map(feature => (
+                ).map((feature) => (
                   <li className="flex items-center gap-2" key={feature}>
                     <CircleXIcon className="text-destructive size-4" />
                     {feature}
@@ -602,24 +599,24 @@ export function BillingPage({
                 }}
                 variant="outline"
               >
-                {t('cancel-subscription-modal.change-plan')}
+                {t("cancel-subscription-modal.change-plan")}
               </Button>
 
               <Form method="POST" replace>
                 <Button
                   disabled={isSubmitting}
                   name="intent"
+                  type="submit"
                   value={CANCEL_SUBSCRIPTION_INTENT}
                   variant="destructive"
-                  type="submit"
                 >
                   {isCancellingSubscription ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t('cancel-subscription-modal.cancelling-subscription')}
+                      {t("cancel-subscription-modal.cancelling-subscription")}
                     </>
                   ) : (
-                    t('cancel-subscription-modal.confirm')
+                    t("cancel-subscription-modal.confirm")
                   )}
                 </Button>
               </Form>

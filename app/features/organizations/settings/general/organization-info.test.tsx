@@ -1,24 +1,23 @@
-import { faker } from '@faker-js/faker';
-import { describe, expect, test } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { describe, expect, test } from "vitest";
 
-import { createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import { createPopulatedOrganization } from '../../organizations-factories.server';
-import type { OrganizationInfoProps } from './organization-info';
-import { OrganizationInfo } from './organization-info';
+import { createPopulatedOrganization } from "../../organizations-factories.server";
+import type { OrganizationInfoProps } from "./organization-info";
+import { OrganizationInfo } from "./organization-info";
+import { createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<OrganizationInfoProps> = ({
   organizationName = createPopulatedOrganization().name,
   organizationLogoUrl = createPopulatedOrganization().imageUrl,
-} = {}) => ({ organizationName, organizationLogoUrl });
+} = {}) => ({ organizationLogoUrl, organizationName });
 
-describe('OrganizationInfo Component', () => {
-  test('given: organization data, should: render organization name', () => {
+describe("OrganizationInfo Component", () => {
+  test("given: organization data, should: render organization name", () => {
     const props = createProps();
-    const path = '/organizations/test/settings/general';
+    const path = "/organizations/test/settings/general";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <OrganizationInfo {...props} /> },
+      { Component: () => <OrganizationInfo {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -27,12 +26,12 @@ describe('OrganizationInfo Component', () => {
     expect(screen.getByText(props.organizationName)).toBeInTheDocument();
   });
 
-  test('given: organization without logo, should: render organization name and fallback avatar', () => {
+  test("given: organization without logo, should: render organization name and fallback avatar", () => {
     const organizationName = faker.company.name();
-    const props = createProps({ organizationName, organizationLogoUrl: '' });
-    const path = '/organizations/test/settings/general';
+    const props = createProps({ organizationLogoUrl: "", organizationName });
+    const path = "/organizations/test/settings/general";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <OrganizationInfo {...props} /> },
+      { Component: () => <OrganizationInfo {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
@@ -47,17 +46,17 @@ describe('OrganizationInfo Component', () => {
     expect(fallback).toBeInTheDocument();
   });
 
-  test('given: component renders, should: not have any interactive elements', () => {
+  test("given: component renders, should: not have any interactive elements", () => {
     const props = createProps();
-    const path = '/organizations/test/settings/general';
+    const path = "/organizations/test/settings/general";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <OrganizationInfo {...props} /> },
+      { Component: () => <OrganizationInfo {...props} />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Verify no buttons or inputs are present
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 });

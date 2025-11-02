@@ -1,17 +1,9 @@
-import { OrganizationMembershipRole } from '@prisma/client';
-import { data, redirect } from 'react-router';
-import { z } from 'zod';
+import { OrganizationMembershipRole } from "@prisma/client";
+import { data, redirect } from "react-router";
+import { z } from "zod";
 
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { requestToUrl } from '~/utils/get-search-parameter-from-request.server';
-import { badRequest, conflict, forbidden } from '~/utils/http-responses.server';
-import { createToastHeaders } from '~/utils/toast.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import { organizationMembershipContext } from '../organizations/organizations-middleware.server';
-import { updateOrganizationInDatabaseById } from '../organizations/organizations-model.server';
+import { organizationMembershipContext } from "../organizations/organizations-middleware.server";
+import { updateOrganizationInDatabaseById } from "../organizations/organizations-model.server";
 import {
   CANCEL_SUBSCRIPTION_INTENT,
   KEEP_CURRENT_SUBSCRIPTION_INTENT,
@@ -20,8 +12,8 @@ import {
   SWITCH_SUBSCRIPTION_INTENT,
   UPDATE_BILLING_EMAIL_INTENT,
   VIEW_INVOICES_INTENT,
-} from './billing-constants';
-import { extractBaseUrl } from './billing-helpers.server';
+} from "./billing-constants";
+import { extractBaseUrl } from "./billing-helpers.server";
 import {
   cancelSubscriptionSchema,
   keepCurrentSubscriptionSchema,
@@ -30,7 +22,7 @@ import {
   switchSubscriptionSchema,
   updateBillingEmailSchema,
   viewInvoicesSchema,
-} from './billing-schemas';
+} from "./billing-schemas";
 import {
   createStripeCancelSubscriptionSession,
   createStripeCheckoutSession,
@@ -39,16 +31,23 @@ import {
   keepCurrentSubscription,
   resumeStripeSubscription,
   updateStripeCustomer,
-} from './stripe-helpers.server';
+} from "./stripe-helpers.server";
 import {
   retrieveStripePriceFromDatabaseByLookupKey,
   retrieveStripePriceWithProductFromDatabaseByLookupKey,
-} from './stripe-prices-model.server';
-import { updateStripeSubscriptionInDatabaseById } from './stripe-subscription-model.server';
-import { deleteStripeSubscriptionScheduleFromDatabaseById } from './stripe-subscription-schedule-model.server';
-import type { Route } from '.react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing';
+} from "./stripe-prices-model.server";
+import { updateStripeSubscriptionInDatabaseById } from "./stripe-subscription-model.server";
+import { deleteStripeSubscriptionScheduleFromDatabaseById } from "./stripe-subscription-schedule-model.server";
+import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
+import { badRequest, conflict, forbidden } from "~/utils/http-responses.server";
+import { createToastHeaders } from "~/utils/toast.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
-const schema = z.discriminatedUnion('intent', [
+const schema = z.discriminatedUnion("intent", [
   cancelSubscriptionSchema,
   keepCurrentSubscriptionSchema,
   openCustomerCheckoutSessionSchema,
@@ -79,11 +78,11 @@ export async function billingAction({
     switch (body.intent) {
       case CANCEL_SUBSCRIPTION_INTENT: {
         if (!organization.stripeCustomerId) {
-          throw new Error('Organization has no Stripe customer ID');
+          throw new Error("Organization has no Stripe customer ID");
         }
 
         if (!organization.stripeSubscriptions[0]) {
-          throw new Error('Organization has no Stripe subscriptions');
+          throw new Error("Organization has no Stripe subscriptions");
         }
 
         const cancelSession = await createStripeCancelSubscriptionSession({
@@ -100,7 +99,7 @@ export async function billingAction({
         const currentSubscription = organization.stripeSubscriptions[0];
 
         if (!currentSubscription) {
-          throw new Error('Organization has no Stripe subscriptions');
+          throw new Error("Organization has no Stripe subscriptions");
         }
 
         if (currentSubscription.schedule) {
@@ -113,9 +112,9 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            'billing:billing-page.pending-downgrade-banner.success-title',
+            "billing:billing-page.pending-downgrade-banner.success-title",
           ),
-          type: 'success',
+          type: "success",
         });
 
         return data({}, { headers: combineHeaders(toast, headers) });
@@ -132,7 +131,7 @@ export async function billingAction({
           );
 
         if (!price) {
-          throw new Error('Price not found');
+          throw new Error("Price not found");
         }
 
         if (organization._count.memberships > price.product.maxSeats) {
@@ -150,6 +149,7 @@ export async function billingAction({
           seatsUsed: organization._count.memberships,
         });
 
+        // biome-ignore lint/style/noNonNullAssertion: Checkout sessions always have a URL
         return redirect(checkoutSession.url!);
       }
 
@@ -157,11 +157,11 @@ export async function billingAction({
         const currentSubscription = organization.stripeSubscriptions[0];
 
         if (!currentSubscription) {
-          throw new Error('Organization has no Stripe subscriptions');
+          throw new Error("Organization has no Stripe subscriptions");
         }
 
         if (!organization.stripeSubscriptions[0]) {
-          throw new Error('Organization has no Stripe subscriptions');
+          throw new Error("Organization has no Stripe subscriptions");
         }
 
         const subscription = await resumeStripeSubscription(
@@ -180,9 +180,9 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            'billing:billing-page.cancel-at-period-end-banner.resume-success-title',
+            "billing:billing-page.cancel-at-period-end-banner.resume-success-title",
           ),
-          type: 'success',
+          type: "success",
         });
 
         return data({}, { headers: combineHeaders(toast, headers) });
@@ -190,11 +190,11 @@ export async function billingAction({
 
       case SWITCH_SUBSCRIPTION_INTENT: {
         if (!organization.stripeCustomerId) {
-          throw new Error('Organization has no Stripe customer ID');
+          throw new Error("Organization has no Stripe customer ID");
         }
 
         if (!organization.stripeSubscriptions[0]) {
-          throw new Error('Organization has no Stripe subscriptions');
+          throw new Error("Organization has no Stripe subscriptions");
         }
 
         const price = await retrieveStripePriceFromDatabaseByLookupKey(
@@ -202,22 +202,22 @@ export async function billingAction({
         );
 
         if (!price) {
-          return badRequest({ message: 'Price not found' });
+          return badRequest({ message: "Price not found" });
         }
 
         if (!organization.stripeSubscriptions[0].items[0]) {
-          throw new Error('Organization has no Stripe subscription items');
+          throw new Error("Organization has no Stripe subscription items");
         }
 
         const portalSession = await createStripeSwitchPlanSession({
           baseUrl,
           customerId: organization.stripeCustomerId,
+          newPriceId: price.stripeId,
           organizationSlug: params.organizationSlug,
+          quantity: organization._count.memberships,
           subscriptionId: organization.stripeSubscriptions[0].stripeId,
           subscriptionItemId:
             organization.stripeSubscriptions[0].items[0].stripeId,
-          newPriceId: price.stripeId,
-          quantity: organization._count.memberships,
         });
 
         return redirect(portalSession.url);
@@ -225,13 +225,13 @@ export async function billingAction({
 
       case UPDATE_BILLING_EMAIL_INTENT: {
         if (!organization.stripeCustomerId) {
-          throw new Error('Organization has no Stripe customer ID');
+          throw new Error("Organization has no Stripe customer ID");
         }
 
         if (body.billingEmail !== organization.billingEmail) {
           await updateStripeCustomer({
-            customerId: organization.stripeCustomerId,
             customerEmail: body.billingEmail,
+            customerId: organization.stripeCustomerId,
             customerName: organization.name,
           });
 
@@ -243,9 +243,9 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            'billing:billing-page.update-billing-email-modal.success-title',
+            "billing:billing-page.update-billing-email-modal.success-title",
           ),
-          type: 'success',
+          type: "success",
         });
 
         return data({}, { headers: combineHeaders(toast, headers) });
@@ -253,7 +253,7 @@ export async function billingAction({
 
       case VIEW_INVOICES_INTENT: {
         if (!organization.stripeCustomerId) {
-          throw new Error('Organization has no Stripe customer ID');
+          throw new Error("Organization has no Stripe customer ID");
         }
 
         const portalSession = await createStripeCustomerPortalSession({

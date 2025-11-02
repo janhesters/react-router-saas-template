@@ -1,4 +1,4 @@
-import { supabaseAdminClient } from '~/features/user-authentication/supabase.server';
+import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
 
 /**
  * Extracts the bucket and key from a storage URL.
@@ -15,7 +15,7 @@ export function getBucketAndKeyFromUrl(url?: string | null) {
   try {
     pathname = new URL(url).pathname;
   } catch {
-    throw new Error('Invalid URL');
+    throw new Error("Invalid URL");
   }
 
   // Match both object URLs and render/image URLs under public
@@ -24,7 +24,7 @@ export function getBucketAndKeyFromUrl(url?: string | null) {
   const match = regex.exec(pathname);
 
   if (!match) {
-    console.error('Invalid storage URL format', pathname);
+    console.error("Invalid storage URL format", pathname);
     return { bucket: undefined, key: undefined };
   }
 

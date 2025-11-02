@@ -1,6 +1,6 @@
-import { render } from '@react-email/components';
-import type { ReactElement } from 'react';
-import { z } from 'zod';
+import { render } from "@react-email/components";
+import type { ReactElement } from "react";
+import { z } from "zod";
 
 /**
  * Renders a React email component into both HTML and plain text formats.
@@ -22,15 +22,15 @@ async function renderReactEmail(react: ReactElement) {
 
 const resendErrorSchema = z.union([
   z.object({
-    name: z.string(),
     message: z.string(),
+    name: z.string(),
     statusCode: z.number(),
   }),
   z.object({
-    name: z.literal('UnknownError'),
-    message: z.literal('Unknown Error'),
-    statusCode: z.literal(500),
     cause: z.any(),
+    message: z.literal("Unknown Error"),
+    name: z.literal("UnknownError"),
+    statusCode: z.literal(500),
   }),
 ]);
 
@@ -84,7 +84,7 @@ export async function sendEmail({
   | { html: string; text: string; react?: never }
   | { react: ReactElement; html?: never; text?: never }
 )) {
-  const from = 'hello@react-router-saas-template.com';
+  const from = "hello@react-router-saas-template.com";
 
   const email = {
     from,
@@ -102,34 +102,34 @@ export async function sendEmail({
       `Would have sent the following email:`,
       JSON.stringify(email),
     );
-    return { status: 'success', data: { id: 'mocked' } } as const;
+    return { data: { id: "mocked" }, status: "success" } as const;
   }
 
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+  const response = await fetch("https://api.resend.com/emails", {
     body: JSON.stringify(email),
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
+    method: "POST",
   });
   const data = (await response.json()) as unknown;
   const parsedData = resendSuccessSchema.safeParse(data);
 
   if (response.ok && parsedData.success) {
-    return { status: 'success', data: parsedData } as const;
+    return { data: parsedData, status: "success" } as const;
   } else {
     const parseResult = resendErrorSchema.safeParse(data);
     return parseResult.success
-      ? ({ status: 'error', error: parseResult.data } as const)
+      ? ({ error: parseResult.data, status: "error" } as const)
       : ({
-          status: 'error',
           error: {
-            name: 'UnknownError',
-            message: 'Unknown Error',
-            statusCode: 500,
             cause: data,
+            message: "Unknown Error",
+            name: "UnknownError",
+            statusCode: 500,
           } satisfies ResendError,
+          status: "error",
         } as const);
   }
 }

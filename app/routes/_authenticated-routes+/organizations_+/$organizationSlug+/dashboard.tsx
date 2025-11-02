@@ -1,5 +1,5 @@
 export function loader() {
-  return { headerTitle: 'Dashboard' };
+  return { headerTitle: "Dashboard" };
 }
 
 export default function OrganizationDashboardRoute() {

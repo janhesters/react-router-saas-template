@@ -1,22 +1,21 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-import { createRoutesStub, render, screen } from '~/test/react-test-utils';
+import { NotFound } from "./not-found";
+import { createRoutesStub, render, screen } from "~/test/react-test-utils";
 
-import { NotFound } from './not-found';
-
-describe('NotFound Component', () => {
-  test('given: component renders, should: display all required elements', () => {
-    const path = '/non-existent';
+describe("NotFound Component", () => {
+  test("given: component renders, should: display all required elements", () => {
+    const path = "/non-existent";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <NotFound /> },
+      { Component: () => <NotFound />, path },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Verify heading
-    const heading = screen.getByRole('heading', {
-      name: /page not found/i,
+    const heading = screen.getByRole("heading", {
       level: 1,
+      name: /page not found/i,
     });
     expect(heading).toBeInTheDocument();
 
@@ -29,7 +28,7 @@ describe('NotFound Component', () => {
     expect(description).toBeInTheDocument();
 
     // Verify home link
-    const homeLink = screen.getByRole('link', { name: /return home/i });
-    expect(homeLink).toHaveAttribute('href', '/');
+    const homeLink = screen.getByRole("link", { name: /return home/i });
+    expect(homeLink).toHaveAttribute("href", "/");
   });
 });

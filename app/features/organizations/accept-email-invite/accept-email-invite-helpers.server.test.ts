@@ -1,10 +1,10 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-import { createPopulatedOrganizationEmailInviteLink } from '../organizations-factories.server';
-import { getEmailInviteToken } from './accept-email-invite-helpers.server';
+import { createPopulatedOrganizationEmailInviteLink } from "../organizations-factories.server";
+import { getEmailInviteToken } from "./accept-email-invite-helpers.server";
 
-describe('getEmailInviteToken()', () => {
-  test('given: request with token query param, should: return the token', () => {
+describe("getEmailInviteToken()", () => {
+  test("given: request with token query param, should: return the token", () => {
     const token = createPopulatedOrganizationEmailInviteLink().token;
     const request = new Request(`http://example.com/?token=${token}`);
 
@@ -13,16 +13,16 @@ describe('getEmailInviteToken()', () => {
     expect(actual).toEqual(token);
   });
 
-  test('given: request without token query param, should: return empty string', () => {
-    const request = new Request('http://example.com');
+  test("given: request without token query param, should: return empty string", () => {
+    const request = new Request("http://example.com");
 
     const actual = getEmailInviteToken(request);
-    const expected = '';
+    const expected = "";
 
     expect(actual).toEqual(expected);
   });
 
-  test('given: request with multiple token query params, should: return first token', () => {
+  test("given: request with multiple token query params, should: return first token", () => {
     const token1 = createPopulatedOrganizationEmailInviteLink().token;
     const token2 = createPopulatedOrganizationEmailInviteLink().token;
     const request = new Request(

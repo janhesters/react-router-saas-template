@@ -1,11 +1,10 @@
-import type { RouterContextProvider } from 'react-router';
-import { href, redirect } from 'react-router';
+import type { RouterContextProvider } from "react-router";
+import { href, redirect } from "react-router";
 
-import { asyncPipe } from '~/utils/async-pipe.server';
-
-import { throwIfUserAccountIsMissing } from '../user-accounts/user-accounts-helpers.server';
-import { retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId } from '../user-accounts/user-accounts-model.server';
-import { authContext } from '../user-authentication/user-authentication-middleware.server';
+import { throwIfUserAccountIsMissing } from "../user-accounts/user-accounts-helpers.server";
+import { retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId } from "../user-accounts/user-accounts-model.server";
+import { authContext } from "../user-authentication/user-authentication-middleware.server";
+import { asyncPipe } from "~/utils/async-pipe.server";
 
 /**
  * Requires that a user account exists for the authenticated user.
@@ -29,7 +28,7 @@ async function requireOnboardingUserExists({
   } = context.get(authContext);
   const user =
     await retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId(id);
-  return { user: await throwIfUserAccountIsMissing(request, user), headers };
+  return { headers, user: await throwIfUserAccountIsMissing(request, user) };
 }
 
 /**
@@ -37,14 +36,14 @@ async function requireOnboardingUserExists({
  */
 export type OnboardingUser = Awaited<
   ReturnType<typeof requireOnboardingUserExists>
->['user'];
+>["user"];
 
 /**
  * The organization with memberships and subscriptions for the onboarding helper
  * functions.
  */
 export type OrganizationWithMembershipsAndSubscriptions =
-  OnboardingUser['memberships'][number]['organization'];
+  OnboardingUser["memberships"][number]["organization"];
 
 /**
  * Checks if the user is onboarded, which means they have a name and are a
@@ -72,16 +71,17 @@ export const throwIfUserIsOnboarded = (
 ) => {
   if (getUserIsOnboarded(user)) {
     if (user.memberships.length === 1) {
+      // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a membership
       const slug = user.memberships[0]!.organization.slug;
       throw redirect(
-        href('/organizations/:organizationSlug', {
+        href("/organizations/:organizationSlug", {
           organizationSlug: slug,
         }),
         { headers },
       );
     }
 
-    throw redirect(href('/organizations'), { headers });
+    throw redirect(href("/organizations"), { headers });
   }
 
   return user;
@@ -104,19 +104,19 @@ export const redirectUserToOnboardingStep = (
 ) => {
   const { pathname } = new URL(request.url);
 
-  if (user.name.length === 0 && pathname !== '/onboarding/user-account') {
-    throw redirect(href('/onboarding/user-account'), { headers });
+  if (user.name.length === 0 && pathname !== "/onboarding/user-account") {
+    throw redirect(href("/onboarding/user-account"), { headers });
   }
 
   if (
     user.name.length > 0 &&
     user.memberships.length === 0 &&
-    pathname !== '/onboarding/organization'
+    pathname !== "/onboarding/organization"
   ) {
-    throw redirect(href('/onboarding/organization'), { headers });
+    throw redirect(href("/onboarding/organization"), { headers });
   }
 
-  return { user, headers };
+  return { headers, user };
 };
 
 /**
@@ -163,10 +163,10 @@ export const throwIfUserNeedsOnboarding = ({
   headers: Headers;
 }) => {
   if (getUserIsOnboarded(user)) {
-    return { user, headers };
+    return { headers, user };
   }
 
-  throw redirect(href('/onboarding'), { headers });
+  throw redirect(href("/onboarding"), { headers });
 };
 
 /**

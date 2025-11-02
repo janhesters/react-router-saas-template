@@ -1,1 +1,1 @@
-export const ONBOARDING_ORGANIZATION_INTENT = 'createOrganization';
+export const ONBOARDING_ORGANIZATION_INTENT = "createOrganization";

@@ -1,28 +1,27 @@
-import type { ShouldRevalidateFunctionArgs, UIMatch } from 'react-router';
-import { data, href, Outlet, redirect } from 'react-router';
-import { promiseHash } from 'remix-utils/promise';
+import type { ShouldRevalidateFunctionArgs, UIMatch } from "react-router";
+import { data, href, Outlet, redirect } from "react-router";
+import { promiseHash } from "remix-utils/promise";
 
-import { SidebarInset, SidebarProvider } from '~/components/ui/sidebar';
-import { allLookupKeys } from '~/features/billing/billing-constants';
-import { getCreateSubscriptionModalProps } from '~/features/billing/billing-helpers.server';
-import { retrieveProductsFromDatabaseByPriceLookupKeys } from '~/features/billing/stripe-product-model.server';
-import { mapInitialNotificationsDataToNotificationButtonProps } from '~/features/notifications/notifications-helpers.server';
-import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from '~/features/notifications/notifications-model.server';
-import { AppHeader } from '~/features/organizations/layout/app-header';
-import { AppSidebar } from '~/features/organizations/layout/app-sidebar';
-import { findHeaderTitle } from '~/features/organizations/layout/layout-helpers';
+import type { Route } from "./+types/_sidebar-layout";
+import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
+import { allLookupKeys } from "~/features/billing/billing-constants";
+import { getCreateSubscriptionModalProps } from "~/features/billing/billing-helpers.server";
+import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
+import { mapInitialNotificationsDataToNotificationButtonProps } from "~/features/notifications/notifications-helpers.server";
+import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from "~/features/notifications/notifications-model.server";
+import { AppHeader } from "~/features/organizations/layout/app-header";
+import { AppSidebar } from "~/features/organizations/layout/app-sidebar";
+import { findHeaderTitle } from "~/features/organizations/layout/layout-helpers";
 import {
   getSidebarState,
   mapOnboardingUserToBillingSidebarCardProps,
   mapOnboardingUserToOrganizationLayoutProps,
-} from '~/features/organizations/layout/layout-helpers.server';
-import { sidebarLayoutAction } from '~/features/organizations/layout/sidebar-layout-action.server';
+} from "~/features/organizations/layout/layout-helpers.server";
+import { sidebarLayoutAction } from "~/features/organizations/layout/sidebar-layout-action.server";
 import {
   organizationMembershipContext,
   organizationMembershipMiddleware,
-} from '~/features/organizations/organizations-middleware.server';
-
-import type { Route } from './+types/_sidebar-layout';
+} from "~/features/organizations/organizations-middleware.server";
 
 /**
  * @see https://reactrouter.com/start/framework/route-module#shouldrevalidate
@@ -46,7 +45,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     request.url.endsWith(`/organizations/${params.organizationSlug}`)
   ) {
     return redirect(
-      href('/organizations/:organizationSlug/dashboard', {
+      href("/organizations/:organizationSlug/dashboard", {
         organizationSlug: params.organizationSlug,
       }),
     );
@@ -59,8 +58,8 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   const { notificationData, products } = await promiseHash({
     notificationData:
       retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById({
-        userId: user.id,
         organizationId: organization.id,
+        userId: user.id,
       }),
     products: retrieveProductsFromDatabaseByPriceLookupKeys(
       allLookupKeys as unknown as string[],
@@ -70,19 +69,17 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 
   return data(
     {
-      headerTitle: 'React Router SaaS Template',
       defaultSidebarOpen,
+      headerTitle: "React Router SaaS Template",
       ...mapOnboardingUserToOrganizationLayoutProps({
-        user,
         organizationSlug: params.organizationSlug,
+        user,
       }),
-      ...mapInitialNotificationsDataToNotificationButtonProps(
-        notificationData!,
-      ),
+      ...mapInitialNotificationsDataToNotificationButtonProps(notificationData),
       ...mapOnboardingUserToBillingSidebarCardProps({
         now: new Date(),
-        user,
         organizationSlug: params.organizationSlug,
+        user,
       }),
       ...getCreateSubscriptionModalProps(organization, products),
     },
@@ -121,8 +118,8 @@ export default function OrganizationLayoutRoute({
           }
         }
         navUserProps={navUserProps}
-        organizationSwitcherProps={organizationSwitcherProps}
         organizationSlug={params.organizationSlug}
+        organizationSwitcherProps={organizationSwitcherProps}
         variant="inset"
       />
 

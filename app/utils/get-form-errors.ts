@@ -1,7 +1,7 @@
-import type { FieldErrors, FieldValues } from 'react-hook-form';
+import type { FieldErrors, FieldValues } from "react-hook-form";
 
 type ExtractErrors<Type> = Type extends { errors: FieldErrors<FieldValues> }
-  ? Type['errors']
+  ? Type["errors"]
   : never;
 
 /**
@@ -28,9 +28,9 @@ export function getFormErrors<
   ActionData extends object | undefined,
   FormErrors extends FieldErrors<FieldValues> = ExtractErrors<ActionData>,
 >(data: ActionData): FormErrors | undefined {
-  if (!data || data instanceof Response || typeof data !== 'object') {
+  if (!data || data instanceof Response || typeof data !== "object") {
     return undefined;
   }
 
-  return 'errors' in data ? (data.errors as FormErrors) : undefined;
+  return "errors" in data ? (data.errors as FormErrors) : undefined;
 }

@@ -1,36 +1,35 @@
-import { BellIcon, CheckCheckIcon } from 'lucide-react';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useFetcher } from 'react-router';
+import { BellIcon, CheckCheckIcon } from "lucide-react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useFetcher } from "react-router";
 
-import { Button } from '~/components/ui/button';
+import { NotificationsDot } from "./notification-components";
+import {
+  MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
+  NOTIFICATION_PANEL_OPENED_INTENT,
+} from "./notification-constants";
+import type { NotificationsPanelContentProps } from "./notifications-panel-content";
+import { NotificationsPanelContent } from "./notifications-panel-content";
+import { usePendingNotifications } from "./use-pending-notifications";
+import { Button } from "~/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '~/components/ui/popover';
-import { Separator } from '~/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+} from "~/components/ui/popover";
+import { Separator } from "~/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from '~/components/ui/tooltip';
-import { toFormData } from '~/utils/to-form-data';
-
-import { NotificationsDot } from './notification-components';
-import {
-  MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
-  NOTIFICATION_PANEL_OPENED_INTENT,
-} from './notification-constants';
-import type { NotificationsPanelContentProps } from './notifications-panel-content';
-import { NotificationsPanelContent } from './notifications-panel-content';
-import { usePendingNotifications } from './use-pending-notifications';
+} from "~/components/ui/tooltip";
+import { toFormData } from "~/utils/to-form-data";
 
 export type NotificationsButtonProps = {
-  allNotifications: NotificationsPanelContentProps['notifications'];
+  allNotifications: NotificationsPanelContentProps["notifications"];
   showBadge: boolean;
-  unreadNotifications: NotificationsPanelContentProps['notifications'];
+  unreadNotifications: NotificationsPanelContentProps["notifications"];
 };
 
 export function NotificationsButton({
@@ -38,15 +37,15 @@ export function NotificationsButton({
   showBadge,
   unreadNotifications,
 }: NotificationsButtonProps) {
-  const { t } = useTranslation('notifications', {
-    keyPrefix: 'notifications-button',
+  const { t } = useTranslation("notifications", {
+    keyPrefix: "notifications-button",
   });
 
   /* Notification panel opened state */
   const [popoverOpen, setPopoverOpen] = useState(false);
   const notificationPanelOpenedFetcher = useFetcher();
   const notificationPanelOpened =
-    notificationPanelOpenedFetcher.formData?.get('intent') ===
+    notificationPanelOpenedFetcher.formData?.get("intent") ===
     NOTIFICATION_PANEL_OPENED_INTENT;
 
   const handlePopoverOpenChange = (open: boolean) => {
@@ -55,7 +54,7 @@ export function NotificationsButton({
     if (open) {
       void notificationPanelOpenedFetcher.submit(
         toFormData({ intent: NOTIFICATION_PANEL_OPENED_INTENT }),
-        { method: 'post' },
+        { method: "post" },
       );
     }
   };
@@ -63,7 +62,7 @@ export function NotificationsButton({
   /* Mark all as read */
   const markAllAsReadFetcher = useFetcher();
   const isMarkingAllAsRead =
-    markAllAsReadFetcher.formData?.get('intent') ===
+    markAllAsReadFetcher.formData?.get("intent") ===
     MARK_ALL_NOTIFICATIONS_AS_READ_INTENT;
   // Optimistically hide badge when the panel is opened.
   const optimisticShowBadge = showBadge && !notificationPanelOpened;
@@ -72,13 +71,13 @@ export function NotificationsButton({
   const pendingNotifications = usePendingNotifications();
 
   return (
-    <Popover open={popoverOpen} onOpenChange={handlePopoverOpenChange}>
+    <Popover onOpenChange={handlePopoverOpenChange} open={popoverOpen}>
       <PopoverTrigger asChild>
         <Button
           aria-label={
             optimisticShowBadge
-              ? t('open-unread-notifications')
-              : t('open-notifications')
+              ? t("open-unread-notifications")
+              : t("open-notifications")
           }
           className="relative size-8"
           size="icon"
@@ -101,14 +100,14 @@ export function NotificationsButton({
       >
         <div className="flex items-center justify-between">
           <p className="text-base font-semibold" id="notifications-header">
-            {t('notifications')}
+            {t("notifications")}
           </p>
 
           <Tooltip>
             <markAllAsReadFetcher.Form method="post">
               <TooltipTrigger asChild>
                 <Button
-                  aria-label={t('mark-all-as-read')}
+                  aria-label={t("mark-all-as-read")}
                   name="intent"
                   size="sm"
                   type="submit"
@@ -121,16 +120,16 @@ export function NotificationsButton({
             </markAllAsReadFetcher.Form>
 
             <TooltipContent side="bottom">
-              {t('mark-all-as-read')}
+              {t("mark-all-as-read")}
             </TooltipContent>
           </Tooltip>
         </div>
 
         <Tabs defaultValue="unread">
           <TabsList>
-            <TabsTrigger value="unread">{t('unread')}</TabsTrigger>
+            <TabsTrigger value="unread">{t("unread")}</TabsTrigger>
 
-            <TabsTrigger value="all">{t('all')}</TabsTrigger>
+            <TabsTrigger value="all">{t("all")}</TabsTrigger>
           </TabsList>
 
           <div className="-mx-2">
@@ -145,9 +144,9 @@ export function NotificationsButton({
                   ? []
                   : // Optimistically hide notification when marking one as read.
                     unreadNotifications.filter(
-                      notification =>
+                      (notification) =>
                         !pendingNotifications.some(
-                          pending =>
+                          (pending) =>
                             pending.recipientId === notification.recipientId,
                         ),
                     )
@@ -160,15 +159,15 @@ export function NotificationsButton({
               notifications={
                 isMarkingAllAsRead
                   ? // Optimistically mark all notifications as read when marking all as read.
-                    allNotifications.map(notification => ({
+                    allNotifications.map((notification) => ({
                       ...notification,
                       isRead: true,
                     }))
                   : // Optimistically mark specific notifications as read when marking one as read.
-                    allNotifications.map(notification => ({
+                    allNotifications.map((notification) => ({
                       ...notification,
                       isRead: pendingNotifications.some(
-                        pending =>
+                        (pending) =>
                           pending.recipientId === notification.recipientId,
                       ),
                     }))

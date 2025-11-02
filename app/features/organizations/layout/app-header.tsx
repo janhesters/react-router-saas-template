@@ -1,8 +1,8 @@
-import { Separator } from '~/components/ui/separator';
-import { SidebarTrigger } from '~/components/ui/sidebar';
-import { ThemeToggle } from '~/features/color-scheme/theme-toggle';
-import type { NotificationsButtonProps } from '~/features/notifications/notifications-button';
-import { NotificationsButton } from '~/features/notifications/notifications-button';
+import { Separator } from "~/components/ui/separator";
+import { SidebarTrigger } from "~/components/ui/sidebar";
+import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
+import type { NotificationsButtonProps } from "~/features/notifications/notifications-button";
+import { NotificationsButton } from "~/features/notifications/notifications-button";
 
 export type AppHeaderProps = {
   notificationsButtonProps: NotificationsButtonProps;
@@ -16,8 +16,8 @@ export function AppHeader({ notificationsButtonProps, title }: AppHeaderProps) {
         <SidebarTrigger className="-ml-1.5" />
 
         <Separator
-          orientation="vertical"
           className="mr-2 data-[orientation=vertical]:h-4"
+          orientation="vertical"
         />
 
         {title && <h1 className="text-base font-medium">{title}</h1>}

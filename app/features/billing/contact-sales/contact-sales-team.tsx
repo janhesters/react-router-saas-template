@@ -1,11 +1,16 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2Icon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { Form, useSubmit } from 'react-router';
-import { HoneypotInputs } from 'remix-utils/honeypot/react';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Form, useSubmit } from "react-router";
+import { HoneypotInputs } from "remix-utils/honeypot/react";
 
-import { Button } from '~/components/ui/button';
+import type {
+  ContactSalesFormErrors,
+  ContactSalesFormSchema,
+} from "./contact-sales-schemas";
+import { contactSalesFormSchema } from "./contact-sales-schemas";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -13,7 +18,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
+} from "~/components/ui/card";
 import {
   FormControl,
   FormField,
@@ -21,15 +26,9 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
-import { Textarea } from '~/components/ui/textarea';
-
-import type {
-  ContactSalesFormErrors,
-  ContactSalesFormSchema,
-} from './contact-sales-schemas';
-import { contactSalesFormSchema } from './contact-sales-schemas';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
 
 export type ContactSalesTeamProps = {
   errors?: ContactSalesFormErrors;
@@ -40,35 +39,35 @@ export function ContactSalesTeam({
   errors,
   isContactingSales = false,
 }: ContactSalesTeamProps) {
-  const { t } = useTranslation('billing', { keyPrefix: 'contact-sales' });
+  const { t } = useTranslation("billing", { keyPrefix: "contact-sales" });
 
   const form = useForm<ContactSalesFormSchema>({
-    resolver: zodResolver(contactSalesFormSchema),
     defaultValues: {
-      firstName: '',
-      lastName: '',
-      companyName: '',
-      workEmail: '',
-      phoneNumber: '',
-      message: '',
+      companyName: "",
+      firstName: "",
+      lastName: "",
+      message: "",
+      phoneNumber: "",
+      workEmail: "",
     },
     errors,
+    resolver: zodResolver(contactSalesFormSchema),
   });
 
   const submit = useSubmit();
   const onSubmit = async (data: ContactSalesFormSchema) => {
-    await submit(data, { method: 'POST', replace: true });
+    await submit(data, { method: "POST", replace: true });
   };
 
   return (
     <Card>
       <CardHeader className="space-y-6">
         <CardTitle className="text-primary text-5xl">
-          {t('contact-sales-title')}
+          {t("contact-sales-title")}
         </CardTitle>
 
         <CardDescription className="text-2xl">
-          {t('contact-sales-description')}
+          {t("contact-sales-description")}
         </CardDescription>
       </CardHeader>
 
@@ -81,12 +80,12 @@ export function ContactSalesTeam({
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('first-name-label')}</FormLabel>
+                    <FormLabel>{t("first-name-label")}</FormLabel>
 
                     <FormControl>
                       <Input
                         autoComplete="given-name"
-                        placeholder={t('first-name-placeholder')}
+                        placeholder={t("first-name-placeholder")}
                         {...field}
                       />
                     </FormControl>
@@ -101,11 +100,11 @@ export function ContactSalesTeam({
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('last-name-label')}</FormLabel>
+                    <FormLabel>{t("last-name-label")}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="family-name"
-                        placeholder={t('last-name-placeholder')}
+                        placeholder={t("last-name-placeholder")}
                         {...field}
                       />
                     </FormControl>
@@ -119,11 +118,11 @@ export function ContactSalesTeam({
                 name="companyName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('company-name-label')}</FormLabel>
+                    <FormLabel>{t("company-name-label")}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="organization"
-                        placeholder={t('company-name-placeholder')}
+                        placeholder={t("company-name-placeholder")}
                         {...field}
                       />
                     </FormControl>
@@ -137,11 +136,11 @@ export function ContactSalesTeam({
                 name="workEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('work-email-label')}</FormLabel>
+                    <FormLabel>{t("work-email-label")}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="email"
-                        placeholder={t('work-email-placeholder')}
+                        placeholder={t("work-email-placeholder")}
                         type="email"
                         {...field}
                       />
@@ -156,11 +155,11 @@ export function ContactSalesTeam({
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('phone-number-label')}</FormLabel>
+                    <FormLabel>{t("phone-number-label")}</FormLabel>
                     <FormControl>
                       <Input
                         autoComplete="tel"
-                        placeholder={t('phone-number-placeholder')}
+                        placeholder={t("phone-number-placeholder")}
                         type="tel"
                         {...field}
                       />
@@ -175,11 +174,11 @@ export function ContactSalesTeam({
                 name="message"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('message-label')}</FormLabel>
+                    <FormLabel>{t("message-label")}</FormLabel>
                     <FormControl>
                       <Textarea
                         className="min-h-[90px] resize-none"
-                        placeholder={t('message-placeholder')}
+                        placeholder={t("message-placeholder")}
                         {...field}
                       />
                     </FormControl>
@@ -193,20 +192,20 @@ export function ContactSalesTeam({
 
             <CardFooter className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
               <p className="text-muted-foreground text-sm">
-                {t('submit-disclaimer')}
+                {t("submit-disclaimer")}
               </p>
 
               <Button
-                {...form.register('intent', { value: 'contactSales' })}
+                {...form.register("intent", { value: "contactSales" })}
                 type="submit"
               >
                 {isContactingSales ? (
                   <>
                     <Loader2Icon className="animate-spin" />
-                    {t('submit-button-loading')}
+                    {t("submit-button-loading")}
                   </>
                 ) : (
-                  <>{t('submit-button')}</>
+                  t("submit-button")
                 )}
               </Button>
             </CardFooter>

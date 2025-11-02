@@ -1,29 +1,51 @@
-import billing from '../../../public/locales/en/billing.json' with { type: 'json' };
-import colorScheme from '../../../public/locales/en/color-scheme.json' with { type: 'json' };
-import common from '../../../public/locales/en/common.json' with { type: 'json' };
-import dragAndDrop from '../../../public/locales/en/drag-and-drop.json' with { type: 'json' };
-import dropzone from '../../../public/locales/en/dropzone.json' with { type: 'json' };
-import landing from '../../../public/locales/en/landing.json' with { type: 'json' };
-import notifications from '../../../public/locales/en/notifications.json' with { type: 'json' };
-import onboarding from '../../../public/locales/en/onboarding.json' with { type: 'json' };
-import organizations from '../../../public/locales/en/organizations.json' with { type: 'json' };
-import settings from '../../../public/locales/en/settings.json' with { type: 'json' };
-import userAuthentication from '../../../public/locales/en/user-authentication.json' with { type: 'json' };
+import billing from "../../../public/locales/en/billing.json" with {
+  type: "json",
+};
+import colorScheme from "../../../public/locales/en/color-scheme.json" with {
+  type: "json",
+};
+import common from "../../../public/locales/en/common.json" with {
+  type: "json",
+};
+import dragAndDrop from "../../../public/locales/en/drag-and-drop.json" with {
+  type: "json",
+};
+import dropzone from "../../../public/locales/en/dropzone.json" with {
+  type: "json",
+};
+import landing from "../../../public/locales/en/landing.json" with {
+  type: "json",
+};
+import notifications from "../../../public/locales/en/notifications.json" with {
+  type: "json",
+};
+import onboarding from "../../../public/locales/en/onboarding.json" with {
+  type: "json",
+};
+import organizations from "../../../public/locales/en/organizations.json" with {
+  type: "json",
+};
+import settings from "../../../public/locales/en/settings.json" with {
+  type: "json",
+};
+import userAuthentication from "../../../public/locales/en/user-authentication.json" with {
+  type: "json",
+};
 
-export const defaultNS = 'common';
+export const defaultNS = "common";
 
 export const resources = {
   en: {
     billing,
-    'color-scheme': colorScheme,
+    "color-scheme": colorScheme,
     common,
-    'drag-and-drop': dragAndDrop,
+    "drag-and-drop": dragAndDrop,
     dropzone,
     landing,
     notifications,
     onboarding,
     organizations,
     settings,
-    'user-authentication': userAuthentication,
+    "user-authentication": userAuthentication,
   },
 } as const;

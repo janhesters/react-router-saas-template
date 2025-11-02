@@ -1,1 +1,1 @@
-npx lint-staged && npm run typecheck
+bunx biome check --staged . && bun typecheck

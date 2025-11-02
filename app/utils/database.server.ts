@@ -1,11 +1,11 @@
-import { init } from '@paralleldrive/cuid2';
-import { Prisma, PrismaClient } from '@prisma/client';
+import { init } from "@paralleldrive/cuid2";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const cuid = init({ length: 8 });
 
 // Define the slug extension first so we can use it to infer the type
 const slugExtension = Prisma.defineExtension({
-  name: 'slugExtension', // Optional: for error logging
+  name: "slugExtension", // Optional: for error logging
   query: {
     organization: {
       async create({ args, query }) {
@@ -17,7 +17,7 @@ const slugExtension = Prisma.defineExtension({
         });
 
         if (slugExists || reservedSlugs.has(data.slug)) {
-          data.slug = (data.slug + '-' + cuid()).toLowerCase();
+          data.slug = `${data.slug}-${cuid()}`.toLowerCase();
         }
 
         return query(args);
@@ -25,7 +25,7 @@ const slugExtension = Prisma.defineExtension({
       async update({ args, query }) {
         const { data, where } = args;
 
-        if (typeof data.slug === 'string') {
+        if (typeof data.slug === "string") {
           const slugExists = await prisma.organization.findUnique({
             where: { slug: data.slug },
           });
@@ -37,7 +37,7 @@ const slugExtension = Prisma.defineExtension({
             (slugExists && slugExists.id !== where.id) ||
             reservedSlugs.has(data.slug)
           ) {
-            data.slug = (data.slug + '-' + cuid()).toLowerCase();
+            data.slug = `${data.slug}-${cuid()}`.toLowerCase();
           }
         }
 
@@ -49,13 +49,13 @@ const slugExtension = Prisma.defineExtension({
 });
 
 const trialEndExtension = Prisma.defineExtension({
-  name: 'trialEndExtension',
+  name: "trialEndExtension",
   query: {
     organization: {
       async create({ args, query }) {
         const { data } = args;
         // only set it if the user/code didn’t explicitly pass trialEnd
-        if (!('trialEnd' in data)) {
+        if (!("trialEnd" in data)) {
           const twoWeeksFromNow = new Date(
             Date.now() + 14 * 24 * 60 * 60 * 1000,
           );
@@ -69,7 +69,6 @@ const trialEndExtension = Prisma.defineExtension({
 });
 
 // Create a dummy extended client to infer the correct type.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const dummyClient = new PrismaClient()
   .$extends(slugExtension)
   .$extends(trialEndExtension);
@@ -84,14 +83,14 @@ declare global {
 }
 
 const reservedSlugs = new Set([
-  'new', // `organizations/new`
+  "new", // `organizations/new`
 ]);
 
 // This is needed because in development we don't want to restart
 // the server with every change, but we want to make sure we don't
 // create a new connection to the DB with every change either.
 // In production we'll have a single connection to the DB.
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   prisma = new PrismaClient()
     .$extends(slugExtension)
     .$extends(trialEndExtension);

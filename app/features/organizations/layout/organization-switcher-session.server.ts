@@ -1,20 +1,20 @@
-import { createCookieSessionStorage } from 'react-router';
+import { createCookieSessionStorage } from "react-router";
 
-const ORGANIZATION_SWITCHER_SESSION_KEY = 'currentOrganizationId';
-const ORGANIZATION_SWITCHER_SESSION_NAME = '__organization_switcher';
+const ORGANIZATION_SWITCHER_SESSION_KEY = "currentOrganizationId";
+const ORGANIZATION_SWITCHER_SESSION_NAME = "__organization_switcher";
 const TEN_YEARS_IN_SECONDS = 60 * 60 * 24 * 365 * 10;
 
 const organizationSwitcherSession = createCookieSessionStorage<{
   [ORGANIZATION_SWITCHER_SESSION_KEY]: string;
 }>({
   cookie: {
-    name: ORGANIZATION_SWITCHER_SESSION_NAME,
     httpOnly: true, // Prevents client-side JS from accessing the cookie
-    path: '/', // Cookie is available across the entire site
-    sameSite: 'lax', // Helps mitigate CSRF attacks
-    secure: process.env.NODE_ENV === 'production', // Only send over HTTPS in production
     maxAge: 0,
+    name: ORGANIZATION_SWITCHER_SESSION_NAME,
+    path: "/", // Cookie is available across the entire site
+    sameSite: "lax", // Helps mitigate CSRF attacks
     secrets: [process.env.COOKIE_SECRET], // Secret to sign the cookie (replace with a secure value)
+    secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
   },
 });
 
@@ -25,7 +25,7 @@ const organizationSwitcherSession = createCookieSessionStorage<{
  * @returns The organization switcher session
  */
 function getOrganizationSwitcherSession(request: Request) {
-  return organizationSwitcherSession.getSession(request.headers.get('Cookie'));
+  return organizationSwitcherSession.getSession(request.headers.get("Cookie"));
 }
 
 /**

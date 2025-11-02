@@ -1,13 +1,13 @@
 {
   "layout": {
-    "page-title": "Settings",
-    "back-button-label": "Back to home"
+    "back-button-label": "Back to home",
+    "page-title": "Settings"
   },
   "user-account": {
     "danger-zone": {
-      "blocking-organizations-help": "You must remove yourself, transfer ownership, or delete this organization before you can delete your user.",
       "blocking-organizations_one": "Your account is currently an owner in this organization: <1>{{organizations}}</1>.",
       "blocking-organizations_other": "Your account is currently an owner in these organizations: <1>{{organizations}}</1>.",
+      "blocking-organizations-help": "You must remove yourself, transfer ownership, or delete this organization before you can delete your user.",
       "cancel": "Cancel",
       "delete-button": "Delete Account",
       "delete-confirm": "Delete this account",
@@ -30,6 +30,11 @@
       "email-description": "Your email address is used to identify you and cannot be changed.",
       "email-label": "Email",
       "email-placeholder": "Your email address ...",
+      "errors": {
+        "delete-old-avatar-failed": "Failed to delete old avatar.",
+        "unexpected-error": "An unexpected error occurred.",
+        "upload-failed": "Avatar upload failed."
+      },
       "name-description": "Your name will be shown in all organizations across the application.",
       "name-label": "Name",
       "name-max-length": "Your name must be at most 128 characters long.",
@@ -37,17 +42,12 @@
       "name-placeholder": "Your name ...",
       "name-required": "Please enter your name (required).",
       "save": "Save changes",
-      "saving": "Saving changes ...",
-      "errors": {
-        "delete-old-avatar-failed": "Failed to delete old avatar.",
-        "upload-failed": "Avatar upload failed.",
-        "unexpected-error": "An unexpected error occurred."
-      }
+      "saving": "Saving changes ..."
     },
     "page-title": "Account",
     "toast": {
-      "user-account-updated": "Your account has been updated",
-      "user-account-deleted": "Your account has been deleted"
+      "user-account-deleted": "Your account has been deleted",
+      "user-account-updated": "Your account has been updated"
     }
   }
 }

@@ -1,6 +1,6 @@
-import type React from 'react';
-import type { ChangeEvent, DragEvent, InputHTMLAttributes } from 'react';
-import { useCallback, useRef, useState } from 'react';
+import type React from "react";
+import type { ChangeEvent, DragEvent, InputHTMLAttributes } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export type FileMetadata = {
   name: string;
@@ -57,7 +57,7 @@ export const useFileUpload = (
   const {
     maxFiles = Number.POSITIVE_INFINITY,
     maxSize = Number.POSITIVE_INFINITY,
-    accept = '*',
+    accept = "*",
     multiple = false,
     initialFiles = [],
     onFilesChange,
@@ -66,13 +66,13 @@ export const useFileUpload = (
   } = options;
 
   const [state, setState] = useState<FileUploadState>({
-    files: initialFiles.map(file => ({
+    errors: [],
+    files: initialFiles.map((file) => ({
       file,
       id: file.id,
       preview: file.url,
     })),
     isDragging: false,
-    errors: [],
   });
 
   const inputReference = useRef<HTMLInputElement>(null);
@@ -89,17 +89,17 @@ export const useFileUpload = (
         }
       }
 
-      if (accept !== '*') {
-        const acceptedTypes = accept.split(',').map(type => type.trim());
-        const fileType = file instanceof File ? file.type || '' : file.type;
-        const fileExtension = `.${file instanceof File ? file.name.split('.').pop() : file.name.split('.').pop()}`;
+      if (accept !== "*") {
+        const acceptedTypes = accept.split(",").map((type) => type.trim());
+        const fileType = file instanceof File ? file.type || "" : file.type;
+        const fileExtension = `.${file instanceof File ? file.name.split(".").pop() : file.name.split(".").pop()}`;
 
-        const isAccepted = acceptedTypes.some(type => {
-          if (type.startsWith('.')) {
+        const isAccepted = acceptedTypes.some((type) => {
+          if (type.startsWith(".")) {
             return fileExtension.toLowerCase() === type.toLowerCase();
           }
-          if (type.endsWith('/*')) {
-            const baseType = type.split('/')[0];
+          if (type.endsWith("/*")) {
+            const baseType = type.split("/")[0];
             return fileType.startsWith(`${baseType}/`);
           }
           return fileType === type;
@@ -110,7 +110,6 @@ export const useFileUpload = (
         }
       }
 
-      // eslint-disable-next-line unicorn/no-null
       return null;
     },
     [accept, maxSize],
@@ -134,26 +133,26 @@ export const useFileUpload = (
   }, []);
 
   const clearFiles = useCallback(() => {
-    setState(previous => {
+    setState((previous) => {
       // Clean up object URLs
       for (const file of previous.files) {
         if (
           file.preview &&
           file.file instanceof File &&
-          file.file.type.startsWith('image/')
+          file.file.type.startsWith("image/")
         ) {
           URL.revokeObjectURL(file.preview);
         }
       }
 
       if (inputReference.current) {
-        inputReference.current.value = '';
+        inputReference.current.value = "";
       }
 
       const newState = {
         ...previous,
-        files: [],
         errors: [],
+        files: [],
       };
 
       onFilesChange?.(newState.files);
@@ -161,6 +160,7 @@ export const useFileUpload = (
     });
   }, [onFilesChange]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: This is code from Supabase Shadcn registry
   const addFiles = useCallback(
     (newFiles: FileList | File[]) => {
       if (!newFiles?.length) return;
@@ -169,7 +169,7 @@ export const useFileUpload = (
       const errors: string[] = [];
 
       // Clear existing errors when new files are uploaded
-      setState(previous => ({ ...previous, errors: [] }));
+      setState((previous) => ({ ...previous, errors: [] }));
 
       // In single file mode, clear existing files first
       if (!multiple) {
@@ -184,7 +184,7 @@ export const useFileUpload = (
       ) {
         errors.push(`You can only upload a maximum of ${maxFiles} files.`);
         onError?.(errors);
-        setState(previous => ({ ...previous, errors }));
+        setState((previous) => ({ ...previous, errors }));
         return;
       }
 
@@ -194,7 +194,7 @@ export const useFileUpload = (
         // Only check for duplicates if multiple files are allowed
         if (multiple) {
           const isDuplicate = state.files.some(
-            existingFile =>
+            (existingFile) =>
               existingFile.file.name === file.name &&
               existingFile.file.size === file.size,
           );
@@ -232,20 +232,20 @@ export const useFileUpload = (
         // Call the onFilesAdded callback with the newly added valid files
         onFilesAdded?.(validFiles);
 
-        setState(previous => {
+        setState((previous) => {
           const newFiles = multiple
             ? [...previous.files, ...validFiles]
             : validFiles;
           onFilesChange?.(newFiles);
           return {
             ...previous,
-            files: newFiles,
             errors,
+            files: newFiles,
           };
         });
       } else if (errors.length > 0) {
         onError?.(errors);
-        setState(previous => ({
+        setState((previous) => ({
           ...previous,
           errors,
         }));
@@ -253,7 +253,7 @@ export const useFileUpload = (
 
       // Reset input value after handling files
       if (inputReference.current) {
-        inputReference.current.value = '';
+        inputReference.current.value = "";
       }
     },
     [
@@ -272,23 +272,23 @@ export const useFileUpload = (
 
   const removeFile = useCallback(
     (id: string) => {
-      setState(previous => {
-        const fileToRemove = previous.files.find(file => file.id === id);
+      setState((previous) => {
+        const fileToRemove = previous.files.find((file) => file.id === id);
         if (
           fileToRemove?.preview &&
           fileToRemove.file instanceof File &&
-          fileToRemove.file.type.startsWith('image/')
+          fileToRemove.file.type.startsWith("image/")
         ) {
           URL.revokeObjectURL(fileToRemove.preview);
         }
 
-        const newFiles = previous.files.filter(file => file.id !== id);
+        const newFiles = previous.files.filter((file) => file.id !== id);
         onFilesChange?.(newFiles);
 
         return {
           ...previous,
-          files: newFiles,
           errors: [],
+          files: newFiles,
         };
       });
     },
@@ -296,7 +296,7 @@ export const useFileUpload = (
   );
 
   const clearErrors = useCallback(() => {
-    setState(previous => ({
+    setState((previous) => ({
       ...previous,
       errors: [],
     }));
@@ -305,7 +305,7 @@ export const useFileUpload = (
   const handleDragEnter = useCallback((event: DragEvent<HTMLElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    setState(previous => ({ ...previous, isDragging: true }));
+    setState((previous) => ({ ...previous, isDragging: true }));
   }, []);
 
   const handleDragLeave = useCallback((event: DragEvent<HTMLElement>) => {
@@ -316,7 +316,7 @@ export const useFileUpload = (
       return;
     }
 
-    setState(previous => ({ ...previous, isDragging: false }));
+    setState((previous) => ({ ...previous, isDragging: false }));
   }, []);
 
   const handleDragOver = useCallback((event: DragEvent<HTMLElement>) => {
@@ -328,7 +328,7 @@ export const useFileUpload = (
     (event: DragEvent<HTMLElement>) => {
       event.preventDefault();
       event.stopPropagation();
-      setState(previous => ({ ...previous, isDragging: false }));
+      setState((previous) => ({ ...previous, isDragging: false }));
 
       // Don't process files if the input is disabled
       if (inputReference.current?.disabled) {
@@ -340,6 +340,7 @@ export const useFileUpload = (
         if (multiple) {
           addFiles(event.dataTransfer.files);
         } else {
+          // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
           const file = event.dataTransfer.files[0]!;
           addFiles([file]);
         }
@@ -367,11 +368,11 @@ export const useFileUpload = (
     (props: InputHTMLAttributes<HTMLInputElement> = {}) => {
       return {
         ...props,
-        type: 'file' as const,
-        onChange: handleFileChange,
         accept: props.accept ?? accept,
         multiple: props.multiple ?? multiple,
+        onChange: handleFileChange,
         ref: inputReference,
+        type: "file" as const,
       };
     },
     [accept, multiple, handleFileChange],
@@ -381,29 +382,30 @@ export const useFileUpload = (
     state,
     {
       addFiles,
-      removeFile,
-      clearFiles,
       clearErrors,
+      clearFiles,
+      getInputProps,
       handleDragEnter,
       handleDragLeave,
       handleDragOver,
       handleDrop,
       handleFileChange,
       openFileDialog,
-      getInputProps,
+      removeFile,
     },
   ];
 };
 
 // Helper function to format bytes to human-readable format
 export const formatBytes = (bytes: number, decimals = 2): string => {
-  if (bytes === 0) return '0 Bytes';
+  if (bytes === 0) return "0 Bytes";
 
   const k = 1024;
   const dm = Math.max(decimals, 0);
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 
   const index = Math.floor(Math.log(bytes) / Math.log(k));
 
+  // biome-ignore lint/style/noNonNullAssertion: This is code from Supabase Shadcn registry
   return Number.parseFloat((bytes / k ** index).toFixed(dm)) + sizes[index]!;
 };

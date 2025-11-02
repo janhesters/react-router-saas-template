@@ -17,8 +17,7 @@ explaining the template.
 - 🎨 [Shadcn UI](https://ui.shadcn.com/) components
 - 🗄️ [Postgres](https://www.postgresql.org/) with
   [Supabase](https://supabase.com/) & [Prisma](https://www.prisma.io/)
-- 🧹 [ESLint](https://eslint.org/) for linting
-- 💅 [Prettier](https://prettier.io/) for code formatting
+- 🧹 [Biome](https://biomejs.dev/) for linting and formatting
 - ⚡️ [Vitest](https://vitest.dev/) for testing
 - 🎭 [Playwright](https://playwright.dev/) for E2E testing
 - 🛠️ [Commitizen](https://commitizen-tools.github.io/commitizen/),
@@ -534,16 +533,16 @@ npm run stripe:resend-events
 - `"build"` - Compiles the application using React Router's build process.
 - `"build-with-mocks"` - Builds the app and initializes MSW in the client build
   directory without saving it to `package.json`.
+- `"check"` - Runs Biome checks and automatically applies safe fixes with
+  formatting across the codebase.
 - `"dev"` - Starts the development server using React Router's dev mode.
 - `"dev-with-mocks"` - Starts the dev server with both client and server mocks
   enabled via `VITE_CLIENT_MOCKS=true` and `SERVER_MOCKS=true`.
 - `"dev-with-server-mocks"` - Starts the dev server with only server-side mocks
   enabled.
-- `"format"` - Formats all files in the project using Prettier.
-- `"lint"` - Runs ESLint to check for linting errors across the codebase.
-- `"lint:fix"` - Automatically fixes linting issues using ESLint.
-- `"prepare"` - Sets up Git hooks via Husky (non-failing if Husky isn't
-  installed).
+- `"lint"` - Runs Biome in CI mode to check for linting and formatting errors
+  across the codebase, including Tailwind directives in CSS.
+- `"prepare"` - Sets up Git hooks via Husky.
 - `"start"` - Serves the production build using `react-router-serve`.
 - `"start-with-server-mocks"` - Serves the production build with server mocks
   enabled.
@@ -768,17 +767,17 @@ editor to get a really great in-editor experience with type checking and
 auto-complete. To run type checking across the whole project, run
 `npm run type-check`.
 
-### Linting
+### Linting and Formatting
 
-This project uses ESLint for linting. That is configured in `.eslintrc.cjs`.
+This project uses [Biome](https://biomejs.dev/) for linting and formatting. That
+is configured in `biome.json`.
 
-### Formatting
-
-We use [Prettier](https://prettier.io/) for auto-formatting in this project.
-It's recommended to install an editor plugin (like the
-[VSCode Prettier plugin](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode))
-to get auto-formatting on save. There's also a `npm run format` script you can
-run to format all files in the project.
+It's recommended to install the
+[Biome VS Code extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
+to get auto-formatting on save and inline linting feedback. You can also run
+`npm run check` to format and fix linting issues across all files in the
+project, or `npm run lint` to check for errors without making changes (useful
+for CI).
 
 ### AI-Driven Development
 

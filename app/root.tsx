@@ -1,7 +1,7 @@
-import './app.css';
+import "./app.css";
 
-import { useTranslation } from 'react-i18next';
-import type { ShouldRevalidateFunctionArgs } from 'react-router';
+import { useTranslation } from "react-i18next";
+import type { ShouldRevalidateFunctionArgs } from "react-router";
 import {
   data,
   isRouteErrorResponse,
@@ -11,30 +11,30 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
-} from 'react-router';
-import { useRouteError } from 'react-router';
-import { useChangeLanguage } from 'remix-i18next/react';
-import { HoneypotProvider } from 'remix-utils/honeypot/react';
-import { promiseHash } from 'remix-utils/promise';
-import sonnerStyles from 'sonner/dist/styles.css?url';
+  useRouteError,
+} from "react-router";
+import { useChangeLanguage } from "remix-i18next/react";
+import { HoneypotProvider } from "remix-utils/honeypot/react";
+import { promiseHash } from "remix-utils/promise";
+import sonnerStyles from "sonner/dist/styles.css?url";
 
-import type { Route } from './+types/root';
-import { NotFound } from './components/not-found';
-import { Toaster } from './components/ui/sonner';
-import { getColorScheme } from './features/color-scheme/color-scheme.server';
-import { useColorScheme } from './features/color-scheme/use-color-scheme';
+import type { Route } from "./+types/root";
+import { NotFound } from "./components/not-found";
+import { Toaster } from "./components/ui/sonner";
+import { getColorScheme } from "./features/color-scheme/color-scheme.server";
+import { useColorScheme } from "./features/color-scheme/use-color-scheme";
 import {
   getInstance,
   getLocale,
   i18nextMiddleware,
-} from './features/localization/i18n-middleware.server';
-import { useToast } from './hooks/use-toast';
-import { getEnv } from './utils/env.server';
-import { honeypot } from './utils/honeypot.server';
-import { getToast } from './utils/toast.server';
+} from "./features/localization/i18n-middleware.server";
+import { useToast } from "./hooks/use-toast";
+import { getEnv } from "./utils/env.server";
+import { honeypot } from "./utils/honeypot.server";
+import { getToast } from "./utils/toast.server";
 
 export const links: Route.LinksFunction = () => [
-  { rel: 'stylesheet', href: sonnerStyles },
+  { href: sonnerStyles, rel: "stylesheet" },
 ];
 
 /**
@@ -63,7 +63,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
   const locale = getLocale(context);
   const i18next = getInstance(context);
-  const title = i18next.t('app-name');
+  const title = i18next.t("app-name");
   const { toast, headers: toastHeaders } = toastData;
   return data(
     {
@@ -86,7 +86,7 @@ export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
   const data = useLoaderData<typeof loader>();
-  const locale = data?.locale ?? 'en';
+  const locale = data?.locale ?? "en";
   const error = useRouteError();
   const isErrorFromRoute = isRouteErrorResponse(error);
   const colorScheme = useColorScheme();
@@ -97,10 +97,10 @@ export function Layout({
   useToast(data?.toast);
 
   return (
-    <html className={colorScheme} lang={locale} dir={i18n.dir()}>
+    <html className={colorScheme} dir={i18n.dir()} lang={locale}>
       <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta content="width=device-width, initial-scale=1" name="viewport" />
         <Meta />
         <Links />
         {isErrorFromRoute && (
@@ -113,6 +113,11 @@ export function Layout({
           {children}
         </HoneypotProvider>
         <script
+          /**
+           * biome-ignore lint/security/noDangerouslySetInnerHtml: This is how
+           * you're supposed to set variables that are available on the client
+           * side with React Router.
+           */
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {})}`,
           }}
@@ -130,15 +135,15 @@ export default function App() {
 }
 
 function BaseErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = 'Oops!';
-  let details = 'An unexpected error occurred.';
+  let message = "Oops!";
+  let details = "An unexpected error occurred.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? '404' : 'Error';
+    message = error.status === 404 ? "404" : "Error";
     details =
       error.status === 404
-        ? 'The requested page could not be found.'
+        ? "The requested page could not be found."
         : error.statusText || details;
   } else if (import.meta.env.DEV && error && error instanceof Error) {
     details = error.message;

@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { toast as showToast } from 'sonner';
+import { useEffect } from "react";
+import { toast as showToast } from "sonner";
 
-import type { Toast } from '~/utils/toast.server';
+import type { Toast } from "~/utils/toast.server";
 
 /**
  * Custom hook for displaying a toast notification.
@@ -17,8 +17,8 @@ export function useToast(toast?: Toast | null) {
     if (toast) {
       setTimeout(() => {
         showToast[toast.type](toast.title, {
-          id: toast.id,
           description: toast.description,
+          id: toast.id,
         });
       }, 0);
     }

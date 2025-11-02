@@ -1,56 +1,54 @@
-/* eslint-disable unicorn/consistent-function-scoping */
-import AxeBuilder from '@axe-core/playwright';
-import type { Page } from '@playwright/test';
-import { expect, test } from '@playwright/test';
-import type { OrganizationEmailInviteLink } from '@prisma/client';
-import { promiseHash } from 'remix-utils/promise';
+import AxeBuilder from "@axe-core/playwright";
+import type { Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import type { OrganizationEmailInviteLink } from "@prisma/client";
+import { promiseHash } from "remix-utils/promise";
 
-import { priceLookupKeysByTierAndInterval } from '~/features/billing/billing-constants';
-import { saveOrganizationEmailInviteLinkToDatabase } from '~/features/organizations/organizations-email-invite-link-model.server';
-import { createPopulatedOrganizationEmailInviteLink } from '~/features/organizations/organizations-factories.server';
+import { getPath, setupOrganizationAndLoginAsMember } from "../../utils";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
+import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
+import { createPopulatedOrganizationEmailInviteLink } from "~/features/organizations/organizations-factories.server";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
-} from '~/test/test-utils';
-
-import { getPath, setupOrganizationAndLoginAsMember } from '../../utils';
+} from "~/test/test-utils";
 
 const getEmailInvitePagePath = (token?: string) =>
-  `/organizations/email-invite${token ? `?token=${token}` : ''}`;
+  `/organizations/email-invite${token ? `?token=${token}` : ""}`;
 
-test.describe('organizations email invite page', () => {
-  test.describe('given: a logged out user', () => {
+test.describe("organizations email invite page", () => {
+  test.describe("given: a logged out user", () => {
     async function setup(
-      deactivatedAt?: OrganizationEmailInviteLink['deactivatedAt'],
+      deactivatedAt?: OrganizationEmailInviteLink["deactivatedAt"],
     ) {
       const { user, organization } = await createUserWithOrgAndAddAsMember();
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
-        invitedById: user.id,
         deactivatedAt,
+        email: "invited@example.com",
+        invitedById: user.id,
         organizationId: organization.id,
-        email: 'invited@example.com',
       });
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
 
       return { emailInvite, organization, user };
     }
 
-    test('given: an invalid token, should: show a 404 page', async ({
+    test("given: an invalid token, should: show a 404 page", async ({
       page,
     }) => {
       const { user, organization } = await setup();
 
-      await page.goto(getEmailInvitePagePath('invalid-token'));
+      await page.goto(getEmailInvitePagePath("invalid-token"));
 
       await expect(
-        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /page not found/i }),
       ).toBeVisible();
       await expect(page).toHaveTitle(/404/i);
 
       await teardownOrganizationAndMember({ organization, user });
     });
 
-    test('given: a valid token, should: redirect to the register page', async ({
+    test("given: a valid token, should: redirect to the register page", async ({
       page,
     }) => {
       const { emailInvite, user, organization } = await setup();
@@ -58,20 +56,20 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       // Click the accept invite button.
-      await page.getByRole('button', { name: /accept invite/i }).click();
+      await page.getByRole("button", { name: /accept invite/i }).click();
 
       // The page title is correct.
       await expect(page).toHaveTitle(/register | react router saas template/i);
       await expect(
         page.getByText(
-          new RegExp(`register to join ${organization.name}`, 'i'),
+          new RegExp(`register to join ${organization.name}`, "i"),
         ),
       ).toBeVisible();
       await expect(
         page.getByText(
           new RegExp(
             `${user.name} has invited you to join ${organization.name}`,
-            'i',
+            "i",
           ),
         ),
       ).toBeVisible();
@@ -79,7 +77,7 @@ test.describe('organizations email invite page', () => {
       await teardownOrganizationAndMember({ organization, user });
     });
 
-    test('given: a valid token for a deactivated email invite, should: show a 404 page ', async ({
+    test("given: a valid token for a deactivated email invite, should: show a 404 page ", async ({
       page,
     }) => {
       const { emailInvite, user, organization } = await setup(new Date());
@@ -87,14 +85,14 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       await expect(
-        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /page not found/i }),
       ).toBeVisible();
       await expect(page).toHaveTitle(/404/i);
 
       await teardownOrganizationAndMember({ organization, user });
     });
 
-    test('given a valid token, should: lack any automatically detectable accessibility issues', async ({
+    test("given a valid token, should: lack any automatically detectable accessibility issues", async ({
       page,
     }) => {
       const data = await setup();
@@ -102,7 +100,7 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(data.emailInvite.token));
 
       const accessibilityScanResults = await new AxeBuilder({ page })
-        .disableRules(['color-contrast'])
+        .disableRules(["color-contrast"])
         .analyze();
 
       expect(accessibilityScanResults.violations).toEqual([]);
@@ -111,13 +109,13 @@ test.describe('organizations email invite page', () => {
     });
   });
 
-  test.describe('given: a logged in user', () => {
+  test.describe("given: a logged in user", () => {
     async function setup({
       page,
       deactivatedAt,
     }: {
       page: Page;
-      deactivatedAt?: OrganizationEmailInviteLink['deactivatedAt'];
+      deactivatedAt?: OrganizationEmailInviteLink["deactivatedAt"];
     }) {
       const { auth, data } = await promiseHash({
         auth: setupOrganizationAndLoginAsMember({ page }),
@@ -125,33 +123,33 @@ test.describe('organizations email invite page', () => {
       });
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
         deactivatedAt,
+        email: auth.user.email,
         invitedById: data.user.id,
         organizationId: data.organization.id,
-        email: auth.user.email,
       });
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
 
       return {
-        emailInvite,
         // auth's user & organization are for the authenticated user.
         auth,
         // data's user & organization are for the existing organization
         // for which the authenticated user received an email invite.
         data,
+        emailInvite,
       };
     }
 
-    test('given: an invalid token, should: show a 404 page', async ({
+    test("given: an invalid token, should: show a 404 page", async ({
       page,
     }) => {
       const { auth, data } = await setup({
         page,
       });
 
-      await page.goto(getEmailInvitePagePath('invalid-token'));
+      await page.goto(getEmailInvitePagePath("invalid-token"));
 
       await expect(
-        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /page not found/i }),
       ).toBeVisible();
       await expect(page).toHaveTitle(/404/i);
 
@@ -159,7 +157,7 @@ test.describe('organizations email invite page', () => {
       await teardownOrganizationAndMember(auth);
     });
 
-    test('given: a valid token, should: let the user join the organization', async ({
+    test("given: a valid token, should: let the user join the organization", async ({
       page,
     }) => {
       const { emailInvite, auth, data } = await setup({ page });
@@ -169,33 +167,33 @@ test.describe('organizations email invite page', () => {
       // It renders the correct page & heading.
       await expect(page.getByText(/welcome to /i)).toBeVisible();
       await expect(
-        page.getByRole('heading', {
+        page.getByRole("heading", {
+          level: 1,
           name: new RegExp(
             `${data.user.name} invites you to join ${data.organization.name}`,
-            'i',
+            "i",
           ),
-          level: 1,
         }),
       ).toBeVisible();
       await expect(
         page.getByText(/click the button below to sign up/i),
       ).toBeVisible();
       await expect(
-        page.getByRole('button', { name: /accept invite/i }),
+        page.getByRole("button", { name: /accept invite/i }),
       ).toBeVisible();
 
       // It has a button to accept the invite, shows a success toast and
       // redirects to the organization's dashboard.
-      await page.getByRole('button', { name: /accept invite/i }).click();
+      await page.getByRole("button", { name: /accept invite/i }).click();
       await expect(
-        page.getByRole('button', { name: /accepting invite/i }),
+        page.getByRole("button", { name: /accepting invite/i }),
       ).toBeDisabled();
       await expect(
-        page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /dashboard/i }),
       ).toBeVisible();
       await expect(
         page
-          .getByRole('region', {
+          .getByRole("region", {
             name: /notifications/i,
           })
           .getByText(/successfully joined organization/i),
@@ -208,25 +206,25 @@ test.describe('organizations email invite page', () => {
       await teardownOrganizationAndMember(auth);
     });
 
-    test('given: a valid token for a deactivated email invite, should: show a 404 page ', async ({
+    test("given: a valid token for a deactivated email invite, should: show a 404 page ", async ({
       page,
     }) => {
       const { emailInvite, auth, data } = await setup({
-        page,
         deactivatedAt: new Date(),
+        page,
       });
 
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       await expect(
-        page.getByRole('heading', { name: /page not found/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /page not found/i }),
       ).toBeVisible();
       await expect(page).toHaveTitle(/404/i);
       await teardownOrganizationAndMember(data);
       await teardownOrganizationAndMember(auth);
     });
 
-    test('given: a valid token for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening', async ({
+    test("given: a valid token for an organization that is already full, should: NOT let the user join the organization and show a toast with a message letting the user know what is happening", async ({
       page,
     }) => {
       // Create an organization with the low tier plan (1 seat limit)
@@ -239,9 +237,9 @@ test.describe('organizations email invite page', () => {
 
       // Create an email invite for this organization
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
+        email: auth.user.email,
         invitedById: data.user.id,
         organizationId: data.organization.id,
-        email: auth.user.email,
       });
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
 
@@ -249,12 +247,12 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       // Click the accept invite button
-      await page.getByRole('button', { name: /accept invite/i }).click();
+      await page.getByRole("button", { name: /accept invite/i }).click();
 
       // Verify toast message
       await expect(
         page
-          .getByRole('region', { name: /notifications/i })
+          .getByRole("region", { name: /notifications/i })
           .getByText(/organization has reached its member limit/i),
       ).toBeVisible();
 
@@ -271,15 +269,15 @@ test.describe('organizations email invite page', () => {
       // Create an organization and make the user a member and log in as that
       // user
       const { user, organization } = await setupOrganizationAndLoginAsMember({
-        page,
         lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
+        page,
       });
 
       // Create an email invite for the same organization
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
+        email: user.email,
         invitedById: user.id,
         organizationId: organization.id,
-        email: user.email,
       });
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
 
@@ -287,11 +285,11 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       // Click the accept invite button
-      await page.getByRole('button', { name: /accept invite/i }).click();
+      await page.getByRole("button", { name: /accept invite/i }).click();
 
       // Verify redirect to organization dashboard
       await expect(
-        page.getByRole('heading', { name: /dashboard/i, level: 1 }),
+        page.getByRole("heading", { level: 1, name: /dashboard/i }),
       ).toBeVisible();
       expect(getPath(page)).toEqual(
         `/organizations/${organization.slug}/dashboard`,
@@ -300,16 +298,16 @@ test.describe('organizations email invite page', () => {
       // Verify toast message
       await expect(
         page
-          .getByRole('region', { name: /notifications/i })
+          .getByRole("region", { name: /notifications/i })
           .getByText(
-            new RegExp(`You are already a member of ${organization.name}`, 'i'),
+            new RegExp(`You are already a member of ${organization.name}`, "i"),
           ),
       ).toBeVisible();
 
       await teardownOrganizationAndMember({ organization, user });
     });
 
-    test('given a valid token, should: lack any automatically detectable accessibility issues', async ({
+    test("given a valid token, should: lack any automatically detectable accessibility issues", async ({
       page,
     }) => {
       const { emailInvite, auth, data } = await setup({ page });
@@ -317,7 +315,7 @@ test.describe('organizations email invite page', () => {
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
       const accessibilityScanResults = await new AxeBuilder({ page })
-        .disableRules(['color-contrast'])
+        .disableRules(["color-contrast"])
         .analyze();
 
       expect(accessibilityScanResults.violations).toEqual([]);

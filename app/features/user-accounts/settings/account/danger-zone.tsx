@@ -1,9 +1,9 @@
-import type { Organization } from '@prisma/client';
-import { Loader2Icon } from 'lucide-react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form } from 'react-router';
+import type { Organization } from "@prisma/client";
+import { Loader2Icon } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
+import { Form } from "react-router";
 
-import { Button } from '~/components/ui/button';
+import { Button } from "~/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,15 +13,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '~/components/ui/dialog';
-import { cn } from '~/lib/utils';
+} from "~/components/ui/dialog";
+import { cn } from "~/lib/utils";
 
-export const DELETE_USER_ACCOUNT_INTENT = 'delete-user-account';
+export const DELETE_USER_ACCOUNT_INTENT = "delete-user-account";
 
 export type DangerZoneProps = {
-  imlicitlyDeletedOrganizations: Organization['name'][];
+  imlicitlyDeletedOrganizations: Organization["name"][];
   isDeletingAccount?: boolean;
-  organizationsBlockingAccountDeletion: Organization['name'][];
+  organizationsBlockingAccountDeletion: Organization["name"][];
 };
 
 function Strong({
@@ -32,7 +32,7 @@ function Strong({
   className?: string;
 }) {
   return (
-    <span className={cn('text-foreground font-semibold', className)}>
+    <span className={cn("text-foreground font-semibold", className)}>
       {children}
     </span>
   );
@@ -43,8 +43,8 @@ export function DangerZone({
   isDeletingAccount = false,
   organizationsBlockingAccountDeletion,
 }: DangerZoneProps) {
-  const { t } = useTranslation('settings', {
-    keyPrefix: 'user-account.danger-zone',
+  const { t } = useTranslation("settings", {
+    keyPrefix: "user-account.danger-zone",
   });
 
   const isDeleteBlocked = organizationsBlockingAccountDeletion.length > 0;
@@ -53,14 +53,14 @@ export function DangerZone({
   return (
     <div className="flex flex-col gap-y-4">
       <h2 className="text-destructive leading-none font-semibold">
-        {t('title')}
+        {t("title")}
       </h2>
 
       <div className="border-destructive rounded-xl border px-4 py-2">
         <div className="flex flex-col justify-between gap-y-2 md:flex-row md:items-center">
           <div className="space-y-1">
             <div className="text-foreground font-medium">
-              {t('delete-title')}
+              {t("delete-title")}
             </div>
 
             {isDeleteBlocked ? (
@@ -69,17 +69,17 @@ export function DangerZone({
                   components={{ 1: <Strong /> }}
                   count={organizationsBlockingAccountDeletion.length}
                   i18nKey="settings:user-account.danger-zone.blocking-organizations"
+                  shouldUnescape
                   values={{
                     organizations:
-                      organizationsBlockingAccountDeletion.join(', '),
+                      organizationsBlockingAccountDeletion.join(", "),
                   }}
-                  shouldUnescape
-                />{' '}
-                <span>{t('blocking-organizations-help')}</span>
+                />{" "}
+                <span>{t("blocking-organizations-help")}</span>
               </p>
             ) : (
               <p className="text-muted-foreground text-sm">
-                {t('delete-description')}
+                {t("delete-description")}
               </p>
             )}
           </div>
@@ -87,16 +87,16 @@ export function DangerZone({
           <Dialog>
             <DialogTrigger asChild>
               <Button disabled={isDeleteBlocked} variant="destructive">
-                {t('delete-button')}
+                {t("delete-button")}
               </Button>
             </DialogTrigger>
 
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>{t('dialog-title')}</DialogTitle>
+                <DialogTitle>{t("dialog-title")}</DialogTitle>
                 <div className="space-y-2">
                   <DialogDescription>
-                    {t('dialog-description')}
+                    {t("dialog-description")}
                   </DialogDescription>
 
                   {hasImplicitDeletions && (
@@ -108,7 +108,7 @@ export function DangerZone({
                         shouldUnescape
                         values={{
                           organizations:
-                            imlicitlyDeletedOrganizations.join(', '),
+                            imlicitlyDeletedOrganizations.join(", "),
                         }}
                       />
                     </div>
@@ -124,7 +124,7 @@ export function DangerZone({
                     type="button"
                     variant="secondary"
                   >
-                    {t('cancel')}
+                    {t("cancel")}
                   </Button>
                 </DialogClose>
 
@@ -139,10 +139,10 @@ export function DangerZone({
                     {isDeletingAccount ? (
                       <>
                         <Loader2Icon className="animate-spin" />
-                        {t('deleting')}
+                        {t("deleting")}
                       </>
                     ) : (
-                      t('delete-confirm')
+                      t("delete-confirm")
                     )}
                   </Button>
                 </Form>

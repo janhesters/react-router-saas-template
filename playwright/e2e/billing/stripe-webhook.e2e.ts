@@ -1,18 +1,19 @@
-/* eslint-disable unicorn/no-null */
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
-import type { APIRequestContext } from '@playwright/test';
-import { expect, test } from '@playwright/test';
-import { StripePriceInterval } from '@prisma/client';
-import type Stripe from 'stripe';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
+import type { APIRequestContext } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { StripePriceInterval } from "@prisma/client";
+import type Stripe from "stripe";
 
+import { getJson } from "../../utils";
 import {
   createPopulatedStripePrice,
   createPopulatedStripeProduct,
   createPopulatedStripeSubscription,
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,
-} from '~/features/billing/billing-factories.server';
-import { stripeAdmin } from '~/features/billing/stripe-admin.server';
+} from "~/features/billing/billing-factories.server";
+import { stripeAdmin } from "~/features/billing/stripe-admin.server";
 import {
   createStripeCheckoutSessionCompletedEventFactory,
   createStripeCustomerDeletedEventFactory,
@@ -28,7 +29,7 @@ import {
   createStripeSubscriptionScheduleCreatedEventFactory,
   createStripeSubscriptionScheduleExpiringEventFactory,
   createStripeSubscriptionScheduleUpdatedEventFactory,
-} from '~/features/billing/stripe-event-factories.server';
+} from "~/features/billing/stripe-event-factories.server";
 import {
   createStripeCheckoutSessionFactory,
   createStripeCustomerFactory,
@@ -38,40 +39,38 @@ import {
   createStripeSubscriptionItemFactory,
   createStripeSubscriptionScheduleFactory,
   createStripeSubscriptionSchedulePhaseFactory,
-} from '~/features/billing/stripe-factories.server';
+} from "~/features/billing/stripe-factories.server";
 import {
   retrieveStripePriceFromDatabaseByLookupKey,
   saveStripePriceToDatabase,
-} from '~/features/billing/stripe-prices-model.server';
+} from "~/features/billing/stripe-prices-model.server";
 import {
   deleteStripeProductFromDatabaseById,
   retrieveStripeProductFromDatabaseById,
   saveStripeProductToDatabase,
-} from '~/features/billing/stripe-product-model.server';
+} from "~/features/billing/stripe-product-model.server";
 import {
   createStripeSubscriptionInDatabase,
   retrieveStripeSubscriptionWithItemsFromDatabaseById,
   saveStripeSubscriptionToDatabase,
-} from '~/features/billing/stripe-subscription-model.server';
+} from "~/features/billing/stripe-subscription-model.server";
 import {
   retrieveStripeSubscriptionScheduleWithPhasesFromDatabaseById,
   saveSubscriptionScheduleWithPhasesAndPriceToDatabase,
-} from '~/features/billing/stripe-subscription-schedule-model.server';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+} from "~/features/billing/stripe-subscription-schedule-model.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import {
   deleteOrganizationFromDatabaseById,
   retrieveOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
-} from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+} from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
+} from "~/features/user-accounts/user-accounts-model.server";
 
-import { getJson } from '../../utils';
-
-const path = '/api/v1/stripe/webhooks';
+const path = "/api/v1/stripe/webhooks";
 
 async function sendStripeWebhookRequest({
   event,
@@ -86,50 +85,50 @@ async function sendStripeWebhookRequest({
   });
 
   const response = await request.post(path, {
-    headers: { 'stripe-signature': signatureHeader },
     data: JSON.stringify(event),
+    headers: { "stripe-signature": signatureHeader },
   });
 
   return response;
 }
 
 test.describe(`${path} API route`, () => {
-  test('given: a GET request, should: return a 405 error', async ({
+  test("given: a GET request, should: return a 405 error", async ({
     request,
   }) => {
     const response = await request.get(path);
 
     expect(response.status()).toEqual(405);
-    expect(await getJson(response)).toEqual({ message: 'Method Not Allowed' });
+    expect(await getJson(response)).toEqual({ message: "Method Not Allowed" });
   });
 
-  test('given: a PUT request, should: return a 405 error', async ({
+  test("given: a PUT request, should: return a 405 error", async ({
     request,
   }) => {
     const response = await request.put(path);
 
     expect(response.status()).toEqual(405);
-    expect(await getJson(response)).toEqual({ message: 'Method Not Allowed' });
+    expect(await getJson(response)).toEqual({ message: "Method Not Allowed" });
   });
 
-  test('given: a DELETE request, should: return a 405 error', async ({
+  test("given: a DELETE request, should: return a 405 error", async ({
     request,
   }) => {
     const response = await request.delete(path);
 
     expect(response.status()).toEqual(405);
-    expect(await getJson(response)).toEqual({ message: 'Method Not Allowed' });
+    expect(await getJson(response)).toEqual({ message: "Method Not Allowed" });
   });
 
-  test.describe('POST request', () => {
-    test('given: no stripe signature header, should: return a 400', async ({
+  test.describe("POST request", () => {
+    test("given: no stripe signature header, should: return a 400", async ({
       request,
     }) => {
       const response = await request.post(path, { data: {} });
 
       expect(response.status()).toEqual(400);
       expect(await getJson(response)).toEqual({
-        message: 'Missing stripe-signature header',
+        message: "Missing stripe-signature header",
       });
     });
 
@@ -137,24 +136,24 @@ test.describe(`${path} API route`, () => {
       request,
     }) => {
       const organization = createPopulatedOrganization({
-        billingEmail: '',
-        stripeCustomerId: null,
+        billingEmail: "",
         createdAt: faker.date.recent({ days: 3 }),
+        stripeCustomerId: null,
       });
       await saveOrganizationToDatabase(organization);
       const newBillingEmail = faker.internet.email();
       const checkoutSession = createStripeCheckoutSessionFactory({
+        customer: faker.string.uuid(),
         customer_details: {
-          email: newBillingEmail,
           address: null,
+          business_name: null,
+          email: newBillingEmail,
+          individual_name: null,
           name: null,
           phone: null,
           tax_exempt: null,
           tax_ids: null,
-          business_name: null,
-          individual_name: null,
         },
-        customer: faker.string.uuid(),
         metadata: {
           organizationId: organization.id,
         },
@@ -166,16 +165,16 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const updatedOrganization = await retrieveOrganizationFromDatabaseById(
         organization.id,
       );
-      expect(updatedOrganization!.billingEmail).toEqual(newBillingEmail);
-      expect(updatedOrganization!.stripeCustomerId).toEqual(
+      expect(updatedOrganization?.billingEmail).toEqual(newBillingEmail);
+      expect(updatedOrganization?.stripeCustomerId).toEqual(
         checkoutSession.customer,
       );
-      expect(updatedOrganization!.trialEnd).not.toBeNull();
+      expect(updatedOrganization?.trialEnd).not.toBeNull();
 
       await deleteOrganizationFromDatabaseById(organization.id);
     });
@@ -197,12 +196,12 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const updatedOrganization = await retrieveOrganizationFromDatabaseById(
         organization.id,
       );
-      expect(updatedOrganization!.stripeCustomerId).toBeNull();
+      expect(updatedOrganization?.stripeCustomerId).toBeNull();
 
       await deleteOrganizationFromDatabaseById(organization.id);
     });
@@ -221,29 +220,29 @@ test.describe(`${path} API route`, () => {
       await saveStripePriceToDatabase(price);
       const subscriptionId = createStripeSubscriptionFactory().id;
       const subscription = createStripeSubscriptionFactory({
-        id: subscriptionId,
         customer: organization.stripeCustomerId as unknown as Stripe.Customer,
-        metadata: {
-          organizationId: organization.id,
-          purchasedById: user.id,
-        },
+        id: subscriptionId,
         items: {
-          object: 'list',
           data: [
             createStripeSubscriptionItemFactory({
               price: createStripePriceFactory({
-                id: price.stripeId,
-                unit_amount: price.unitAmount,
-                currency: price.currency,
-                product: product.stripeId,
                 active: price.active,
+                currency: price.currency,
+                id: price.stripeId,
                 lookup_key: price.lookupKey,
+                product: product.stripeId,
+                unit_amount: price.unitAmount,
               }),
               subscription: subscriptionId,
             }),
           ],
           has_more: false,
+          object: "list",
           url: `/v1/subscription_items?subscription=${subscriptionId}`,
+        },
+        metadata: {
+          organizationId: organization.id,
+          purchasedById: user.id,
         },
       });
       const event = createStripeCustomerSubscriptionCreatedEventFactory({
@@ -253,19 +252,19 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseSubscription =
         await retrieveStripeSubscriptionWithItemsFromDatabaseById(
           subscription.id,
         );
       expect(databaseSubscription).not.toBeNull();
-      expect(databaseSubscription!.stripeId).toEqual(subscription.id);
-      expect(databaseSubscription!.organizationId).toEqual(organization.id);
-      expect(databaseSubscription!.purchasedById).toEqual(user.id);
-      expect(databaseSubscription!.status).toEqual(subscription.status);
-      expect(databaseSubscription!.items.length).toEqual(1);
-      expect(databaseSubscription!.items[0]!.priceId).toEqual(price.stripeId);
+      expect(databaseSubscription?.stripeId).toEqual(subscription.id);
+      expect(databaseSubscription?.organizationId).toEqual(organization.id);
+      expect(databaseSubscription?.purchasedById).toEqual(user.id);
+      expect(databaseSubscription?.status).toEqual(subscription.status);
+      expect(databaseSubscription?.items.length).toEqual(1);
+      expect(databaseSubscription?.items[0]?.priceId).toEqual(price.stripeId);
 
       await deleteOrganizationFromDatabaseById(organization.id);
       await deleteUserAccountFromDatabaseById(user.id);
@@ -287,32 +286,32 @@ test.describe(`${path} API route`, () => {
       await saveStripePriceToDatabase(price);
       const subscriptionId = createStripeSubscriptionFactory().id;
       const initialSubscriptionData = createStripeSubscriptionFactory({
-        id: subscriptionId,
         customer: organization.stripeCustomerId!,
-        status: 'active',
+        id: subscriptionId,
         items: {
-          object: 'list',
           data: [
             createStripeSubscriptionItemFactory({
-              subscription: subscriptionId,
               price: createStripePriceFactory({
                 id: price.stripeId,
                 product: product.stripeId,
               }),
+              subscription: subscriptionId,
             }),
           ],
           has_more: false,
+          object: "list",
           url: `/v1/subscription_items?subscription=${subscriptionId}`,
         },
         metadata: { organizationId: organization.id, purchasedById: user.id },
+        status: "active",
       });
       await createStripeSubscriptionInDatabase(initialSubscriptionData);
       const nowInSeconds = Math.floor(Date.now() / 1000);
       const deletedSubscriptionEventData = {
         ...initialSubscriptionData,
-        status: 'canceled' as Stripe.Subscription.Status,
         canceled_at: nowInSeconds,
         ended_at: nowInSeconds,
+        status: "canceled" as Stripe.Subscription.Status,
       };
       const event = createStripeCustomerSubscriptionDeletedEventFactory({
         data: { object: deletedSubscriptionEventData },
@@ -321,15 +320,15 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseSubscription =
         await retrieveStripeSubscriptionWithItemsFromDatabaseById(
           initialSubscriptionData.id,
         );
       expect(databaseSubscription).not.toBeNull();
-      expect(databaseSubscription!.status).toEqual('canceled');
-      expect(databaseSubscription!.created.toISOString()).toEqual(
+      expect(databaseSubscription?.status).toEqual("canceled");
+      expect(databaseSubscription?.created.toISOString()).toEqual(
         new Date(initialSubscriptionData.created * 1000).toISOString(),
       );
 
@@ -351,31 +350,31 @@ test.describe(`${path} API route`, () => {
       await saveStripePriceToDatabase(price);
       const subscriptionId = createStripeSubscriptionFactory().id;
       const initialSubscriptionData = createStripeSubscriptionFactory({
-        id: subscriptionId,
         customer: organization.stripeCustomerId!,
-        status: 'active',
+        id: subscriptionId,
         items: {
-          object: 'list',
           data: [
             createStripeSubscriptionItemFactory({
-              subscription: subscriptionId,
               price: createStripePriceFactory({
                 id: price.stripeId,
                 product: product.stripeId,
               }),
+              subscription: subscriptionId,
             }),
           ],
           has_more: false,
+          object: "list",
           url: `/v1/subscription_items?subscription=${subscriptionId}`,
         },
         metadata: { organizationId: organization.id, purchasedById: user.id },
+        status: "active",
       });
       await createStripeSubscriptionInDatabase(initialSubscriptionData);
 
       const updatedSubscriptionData = {
         ...initialSubscriptionData,
-        status: 'past_due' as Stripe.Subscription.Status,
         cancel_at_period_end: true,
+        status: "past_due" as Stripe.Subscription.Status,
       };
       const event = createStripeCustomerSubscriptionUpdatedEventFactory({
         data: { object: updatedSubscriptionData },
@@ -384,16 +383,16 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseSubscription =
         await retrieveStripeSubscriptionWithItemsFromDatabaseById(
           initialSubscriptionData.id,
         );
       expect(databaseSubscription).not.toBeNull();
-      expect(databaseSubscription!.status).toEqual('past_due');
-      expect(databaseSubscription!.cancelAtPeriodEnd).toEqual(true);
-      expect(databaseSubscription!.created.toISOString()).toEqual(
+      expect(databaseSubscription?.status).toEqual("past_due");
+      expect(databaseSubscription?.cancelAtPeriodEnd).toEqual(true);
+      expect(databaseSubscription?.created.toISOString()).toEqual(
         new Date(initialSubscriptionData.created * 1000).toISOString(),
       );
 
@@ -408,18 +407,18 @@ test.describe(`${path} API route`, () => {
       const product = createPopulatedStripeProduct();
       await saveStripeProductToDatabase(product);
       const price = createStripePriceFactory({
-        product: product.stripeId,
-        lookup_key: 'test_price_key',
-        unit_amount: 1000,
-        currency: 'usd',
         active: true,
+        currency: "usd",
+        lookup_key: "test_price_key",
+        product: product.stripeId,
         recurring: {
-          interval: 'month',
+          interval: "month",
           interval_count: 1,
-          trial_period_days: null,
-          usage_type: 'licensed',
           meter: null,
+          trial_period_days: null,
+          usage_type: "licensed",
         },
+        unit_amount: 1000,
       });
       const event = createStripePriceCreatedEventFactory({
         data: { object: price },
@@ -428,18 +427,18 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databasePrice = await retrieveStripePriceFromDatabaseByLookupKey(
         price.lookup_key!,
       );
       expect(databasePrice).not.toBeNull();
-      expect(databasePrice!.stripeId).toEqual(price.id);
-      expect(databasePrice!.currency).toEqual(price.currency);
-      expect(databasePrice!.unitAmount).toEqual(price.unit_amount);
-      expect(databasePrice!.active).toEqual(price.active);
-      expect(databasePrice!.interval).toEqual(price.recurring!.interval);
-      expect(databasePrice!.productId).toEqual(product.stripeId);
+      expect(databasePrice?.stripeId).toEqual(price.id);
+      expect(databasePrice?.currency).toEqual(price.currency);
+      expect(databasePrice?.unitAmount).toEqual(price.unit_amount);
+      expect(databasePrice?.active).toEqual(price.active);
+      expect(databasePrice?.interval).toEqual(price.recurring!.interval);
+      expect(databasePrice?.productId).toEqual(product.stripeId);
 
       await deleteStripeProductFromDatabaseById(product.stripeId);
     });
@@ -459,7 +458,7 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databasePrice = await retrieveStripePriceFromDatabaseByLookupKey(
         price.lookupKey,
@@ -475,28 +474,28 @@ test.describe(`${path} API route`, () => {
       const product = createPopulatedStripeProduct();
       await saveStripeProductToDatabase(product);
       const initialPrice = createPopulatedStripePrice({
-        productId: product.stripeId,
-        currency: 'usd',
-        unitAmount: 1000,
         active: true,
+        currency: "usd",
         interval: StripePriceInterval.month,
+        productId: product.stripeId,
+        unitAmount: 1000,
       });
       await saveStripePriceToDatabase(initialPrice);
 
       const updatedPriceData = createStripePriceFactory({
-        id: initialPrice.stripeId,
-        currency: 'eur',
-        unit_amount: 2000,
         active: false,
+        currency: "eur",
+        id: initialPrice.stripeId,
         lookup_key: initialPrice.lookupKey,
-        recurring: {
-          interval: 'year',
-          interval_count: 1,
-          trial_period_days: null,
-          usage_type: 'licensed',
-          meter: null,
-        },
         product: product.stripeId,
+        recurring: {
+          interval: "year",
+          interval_count: 1,
+          meter: null,
+          trial_period_days: null,
+          usage_type: "licensed",
+        },
+        unit_amount: 2000,
       });
 
       const event = createStripePriceUpdatedEventFactory({
@@ -506,19 +505,19 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databasePrice = await retrieveStripePriceFromDatabaseByLookupKey(
         initialPrice.lookupKey,
       );
       expect(databasePrice).not.toBeNull();
-      expect(databasePrice!.currency).toEqual(updatedPriceData.currency);
-      expect(databasePrice!.unitAmount).toEqual(updatedPriceData.unit_amount);
-      expect(databasePrice!.active).toEqual(updatedPriceData.active);
-      expect(databasePrice!.interval).toEqual(
+      expect(databasePrice?.currency).toEqual(updatedPriceData.currency);
+      expect(databasePrice?.unitAmount).toEqual(updatedPriceData.unit_amount);
+      expect(databasePrice?.active).toEqual(updatedPriceData.active);
+      expect(databasePrice?.interval).toEqual(
         updatedPriceData.recurring!.interval,
       );
-      expect(databasePrice!.productId).toEqual(product.stripeId);
+      expect(databasePrice?.productId).toEqual(product.stripeId);
 
       await deleteStripeProductFromDatabaseById(product.stripeId);
     });
@@ -527,9 +526,9 @@ test.describe(`${path} API route`, () => {
       request,
     }) => {
       const product = createStripeProductFactory({
-        metadata: { max_seats: '5' },
-        name: 'Pro Plan',
         active: true,
+        metadata: { max_seats: "5" },
+        name: "Pro Plan",
       });
       const event = createStripeProductCreatedEventFactory({
         data: { object: product },
@@ -538,16 +537,16 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseProduct = await retrieveStripeProductFromDatabaseById(
         product.id,
       );
       expect(databaseProduct).not.toBeNull();
-      expect(databaseProduct!.stripeId).toEqual(product.id);
-      expect(databaseProduct!.name).toEqual(product.name);
-      expect(databaseProduct!.maxSeats).toEqual(5);
-      expect(databaseProduct!.active).toEqual(product.active);
+      expect(databaseProduct?.stripeId).toEqual(product.id);
+      expect(databaseProduct?.name).toEqual(product.name);
+      expect(databaseProduct?.maxSeats).toEqual(5);
+      expect(databaseProduct?.active).toEqual(product.active);
 
       await deleteStripeProductFromDatabaseById(product.id);
     });
@@ -564,7 +563,7 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseProduct = await retrieveStripeProductFromDatabaseById(
         product.stripeId,
@@ -576,17 +575,17 @@ test.describe(`${path} API route`, () => {
       request,
     }) => {
       const initialProduct = createPopulatedStripeProduct({
-        name: 'Initial Name',
-        maxSeats: 5,
         active: true,
+        maxSeats: 5,
+        name: "Initial Name",
       });
       await saveStripeProductToDatabase(initialProduct);
 
       const updatedProductData = createStripeProductFactory({
-        id: initialProduct.stripeId,
-        name: 'Updated Name',
-        metadata: { max_seats: '10' },
         active: false,
+        id: initialProduct.stripeId,
+        metadata: { max_seats: "10" },
+        name: "Updated Name",
       });
       const event = createStripeProductUpdatedEventFactory({
         data: { object: updatedProductData },
@@ -595,15 +594,15 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseProduct = await retrieveStripeProductFromDatabaseById(
         initialProduct.stripeId,
       );
       expect(databaseProduct).not.toBeNull();
-      expect(databaseProduct!.name).toEqual(updatedProductData.name);
-      expect(databaseProduct!.maxSeats).toEqual(10);
-      expect(databaseProduct!.active).toEqual(updatedProductData.active);
+      expect(databaseProduct?.name).toEqual(updatedProductData.name);
+      expect(databaseProduct?.maxSeats).toEqual(10);
+      expect(databaseProduct?.active).toEqual(updatedProductData.active);
 
       await deleteStripeProductFromDatabaseById(initialProduct.stripeId);
     });
@@ -616,12 +615,12 @@ test.describe(`${path} API route`, () => {
       const organization = createPopulatedOrganization();
       await saveOrganizationToDatabase(organization);
       const subscription = createPopulatedStripeSubscription({
-        stripeId: `sub_${createId()}`,
+        cancelAtPeriodEnd: false,
+        created: faker.date.past({ years: 1 }),
         organizationId: organization.id,
         purchasedById: user.id,
-        created: faker.date.past({ years: 1 }),
-        cancelAtPeriodEnd: false,
-        status: 'active',
+        status: "active",
+        stripeId: `sub_${createId()}`,
       });
       await saveStripeSubscriptionToDatabase(subscription);
       const product = createPopulatedStripeProduct();
@@ -631,26 +630,26 @@ test.describe(`${path} API route`, () => {
 
       // Create the schedule with a phase using the price
       const scheduleData = createStripeSubscriptionScheduleFactory({
-        subscription: subscription.stripeId,
         current_phase: {
-          start_date: Math.floor(Date.now() / 1000),
           end_date: Math.floor(Date.now() / 1000) + 86_400, // 24 hours from now
+          start_date: Math.floor(Date.now() / 1000),
         },
         phases: [
           createStripeSubscriptionSchedulePhaseFactory({
             items: [
               {
+                billing_thresholds: null,
+                discounts: [],
+                metadata: {},
+                plan: price.stripeId, // Required by Stripe API types
                 price: price.stripeId,
                 quantity: 1,
                 tax_rates: [],
-                metadata: {},
-                discounts: [],
-                plan: price.stripeId, // Required by Stripe API types
-                billing_thresholds: null,
               },
             ],
           }),
         ],
+        subscription: subscription.stripeId,
       });
       const event = createStripeSubscriptionScheduleCreatedEventFactory({
         data: { object: scheduleData },
@@ -659,26 +658,26 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       const databaseSchedule =
         await retrieveStripeSubscriptionScheduleWithPhasesFromDatabaseById(
           scheduleData.id,
         );
       expect(databaseSchedule).not.toBeNull();
-      expect(databaseSchedule!.stripeId).toEqual(scheduleData.id);
-      expect(databaseSchedule!.subscriptionId).toEqual(subscription.stripeId);
-      expect(databaseSchedule!.created.getTime()).toEqual(
+      expect(databaseSchedule?.stripeId).toEqual(scheduleData.id);
+      expect(databaseSchedule?.subscriptionId).toEqual(subscription.stripeId);
+      expect(databaseSchedule?.created.getTime()).toEqual(
         scheduleData.created * 1000,
       );
-      expect(databaseSchedule!.currentPhaseStart!.getTime()).toEqual(
+      expect(databaseSchedule?.currentPhaseStart?.getTime()).toEqual(
         scheduleData.current_phase!.start_date * 1000,
       );
-      expect(databaseSchedule!.currentPhaseEnd!.getTime()).toEqual(
+      expect(databaseSchedule?.currentPhaseEnd?.getTime()).toEqual(
         scheduleData.current_phase!.end_date * 1000,
       );
-      expect(databaseSchedule!.phases.length).toEqual(1);
-      expect(databaseSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
+      expect(databaseSchedule?.phases.length).toEqual(1);
+      expect(databaseSchedule?.phases[0]?.priceId).toEqual(price.stripeId);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);
@@ -694,12 +693,12 @@ test.describe(`${path} API route`, () => {
       const organization = createPopulatedOrganization();
       await saveOrganizationToDatabase(organization);
       const subscription = createPopulatedStripeSubscription({
-        stripeId: `sub_${createId()}`,
+        cancelAtPeriodEnd: false,
+        created: faker.date.past({ years: 1 }),
         organizationId: organization.id,
         purchasedById: user.id,
-        created: faker.date.past({ years: 1 }),
-        cancelAtPeriodEnd: false,
-        status: 'active',
+        status: "active",
+        stripeId: `sub_${createId()}`,
       });
       await saveStripeSubscriptionToDatabase(subscription);
       const product = createPopulatedStripeProduct();
@@ -710,8 +709,8 @@ test.describe(`${path} API route`, () => {
       // Create initial schedule in database
       const initialSchedule =
         createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-          subscriptionId: subscription.stripeId,
           phases: [{ price }],
+          subscriptionId: subscription.stripeId,
         });
       await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
         initialSchedule,
@@ -721,29 +720,29 @@ test.describe(`${path} API route`, () => {
       const updatedStartDate = Math.floor(Date.now() / 1000);
       const updatedEndDate = updatedStartDate + 86_400; // 24 hours from now
       const updatedScheduleData = createStripeSubscriptionScheduleFactory({
-        id: initialSchedule.stripeId,
-        subscription: subscription.stripeId,
         current_phase: {
-          start_date: updatedStartDate,
           end_date: updatedEndDate,
+          start_date: updatedStartDate,
         },
+        id: initialSchedule.stripeId,
         phases: [
           createStripeSubscriptionSchedulePhaseFactory({
-            start_date: updatedStartDate,
             end_date: updatedEndDate,
             items: [
               {
+                billing_thresholds: null,
+                discounts: [],
+                metadata: {},
+                plan: price.stripeId,
                 price: price.stripeId,
                 quantity: 2, // Changed quantity to verify update
                 tax_rates: [],
-                metadata: {},
-                discounts: [],
-                plan: price.stripeId,
-                billing_thresholds: null,
               },
             ],
+            start_date: updatedStartDate,
           }),
         ],
+        subscription: subscription.stripeId,
       });
 
       // Create and send the webhook event
@@ -753,7 +752,7 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       // Verify the schedule was updated
       const updatedSchedule =
@@ -761,17 +760,17 @@ test.describe(`${path} API route`, () => {
           initialSchedule.stripeId,
         );
       expect(updatedSchedule).not.toBeNull();
-      expect(updatedSchedule!.stripeId).toEqual(initialSchedule.stripeId);
-      expect(updatedSchedule!.subscriptionId).toEqual(subscription.stripeId);
-      expect(updatedSchedule!.currentPhaseStart!.getTime()).toEqual(
+      expect(updatedSchedule?.stripeId).toEqual(initialSchedule.stripeId);
+      expect(updatedSchedule?.subscriptionId).toEqual(subscription.stripeId);
+      expect(updatedSchedule?.currentPhaseStart?.getTime()).toEqual(
         updatedStartDate * 1000,
       );
-      expect(updatedSchedule!.currentPhaseEnd!.getTime()).toEqual(
+      expect(updatedSchedule?.currentPhaseEnd?.getTime()).toEqual(
         updatedEndDate * 1000,
       );
-      expect(updatedSchedule!.phases.length).toEqual(1);
-      expect(updatedSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
-      expect(updatedSchedule!.phases[0]!.quantity).toEqual(2);
+      expect(updatedSchedule?.phases.length).toEqual(1);
+      expect(updatedSchedule?.phases[0]?.priceId).toEqual(price.stripeId);
+      expect(updatedSchedule?.phases[0]?.quantity).toEqual(2);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);
@@ -787,12 +786,12 @@ test.describe(`${path} API route`, () => {
       const organization = createPopulatedOrganization();
       await saveOrganizationToDatabase(organization);
       const subscription = createPopulatedStripeSubscription({
-        stripeId: `sub_${createId()}`,
+        cancelAtPeriodEnd: false,
+        created: faker.date.past({ years: 1 }),
         organizationId: organization.id,
         purchasedById: user.id,
-        created: faker.date.past({ years: 1 }),
-        cancelAtPeriodEnd: false,
-        status: 'active',
+        status: "active",
+        stripeId: `sub_${createId()}`,
       });
       await saveStripeSubscriptionToDatabase(subscription);
       const product = createPopulatedStripeProduct();
@@ -803,8 +802,8 @@ test.describe(`${path} API route`, () => {
       // Create initial schedule in database
       const initialSchedule =
         createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice({
-          subscriptionId: subscription.stripeId,
           phases: [{ price }],
+          subscriptionId: subscription.stripeId,
         });
       await saveSubscriptionScheduleWithPhasesAndPriceToDatabase(
         initialSchedule,
@@ -814,29 +813,29 @@ test.describe(`${path} API route`, () => {
       const updatedStartDate = Math.floor(Date.now() / 1000);
       const updatedEndDate = updatedStartDate + 86_400; // 24 hours from now
       const updatedScheduleData = createStripeSubscriptionScheduleFactory({
-        id: initialSchedule.stripeId,
-        subscription: subscription.stripeId,
         current_phase: {
-          start_date: updatedStartDate,
           end_date: updatedEndDate,
+          start_date: updatedStartDate,
         },
+        id: initialSchedule.stripeId,
         phases: [
           createStripeSubscriptionSchedulePhaseFactory({
-            start_date: updatedStartDate,
             end_date: updatedEndDate,
             items: [
               {
+                billing_thresholds: null,
+                discounts: [],
+                metadata: {},
+                plan: price.stripeId,
                 price: price.stripeId,
                 quantity: 2, // Changed quantity to verify update
                 tax_rates: [],
-                metadata: {},
-                discounts: [],
-                plan: price.stripeId,
-                billing_thresholds: null,
               },
             ],
+            start_date: updatedStartDate,
           }),
         ],
+        subscription: subscription.stripeId,
       });
 
       // Create and send the webhook event
@@ -846,7 +845,7 @@ test.describe(`${path} API route`, () => {
       const response = await sendStripeWebhookRequest({ event, request });
 
       expect(response.status()).toEqual(200);
-      expect(await getJson(response)).toEqual({ message: 'OK' });
+      expect(await getJson(response)).toEqual({ message: "OK" });
 
       // Verify the schedule was updated
       const updatedSchedule =
@@ -854,17 +853,17 @@ test.describe(`${path} API route`, () => {
           initialSchedule.stripeId,
         );
       expect(updatedSchedule).not.toBeNull();
-      expect(updatedSchedule!.stripeId).toEqual(initialSchedule.stripeId);
-      expect(updatedSchedule!.subscriptionId).toEqual(subscription.stripeId);
-      expect(updatedSchedule!.currentPhaseStart!.getTime()).toEqual(
+      expect(updatedSchedule?.stripeId).toEqual(initialSchedule.stripeId);
+      expect(updatedSchedule?.subscriptionId).toEqual(subscription.stripeId);
+      expect(updatedSchedule?.currentPhaseStart?.getTime()).toEqual(
         updatedStartDate * 1000,
       );
-      expect(updatedSchedule!.currentPhaseEnd!.getTime()).toEqual(
+      expect(updatedSchedule?.currentPhaseEnd?.getTime()).toEqual(
         updatedEndDate * 1000,
       );
-      expect(updatedSchedule!.phases.length).toEqual(1);
-      expect(updatedSchedule!.phases[0]!.priceId).toEqual(price.stripeId);
-      expect(updatedSchedule!.phases[0]!.quantity).toEqual(2);
+      expect(updatedSchedule?.phases.length).toEqual(1);
+      expect(updatedSchedule?.phases[0]?.priceId).toEqual(price.stripeId);
+      expect(updatedSchedule?.phases[0]?.quantity).toEqual(2);
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(organization.id);

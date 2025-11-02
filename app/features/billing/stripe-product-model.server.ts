@@ -1,10 +1,10 @@
-import type { Prisma, StripeProduct } from '@prisma/client';
-import type { Stripe } from 'stripe';
-import { z } from 'zod';
+import type { Prisma, StripeProduct } from "@prisma/client";
+import type { Stripe } from "stripe";
+import { z } from "zod";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
-const maxSeatsSchema = z.preprocess(value => {
+const maxSeatsSchema = z.preprocess((value) => {
   const number = Number(value);
   return Number.isInteger(number) && number > 0 ? number : undefined;
 }, z.number().int().positive().default(1));
@@ -36,10 +36,10 @@ export async function saveStripeProductFromAPIToDatabase(
 ) {
   return prisma.stripeProduct.create({
     data: {
-      stripeId: product.id,
-      name: product.name,
-      maxSeats: maxSeatsSchema.parse(product.metadata.max_seats),
       active: product.active,
+      maxSeats: maxSeatsSchema.parse(product.metadata.max_seats),
+      name: product.name,
+      stripeId: product.id,
     },
   });
 }
@@ -53,7 +53,7 @@ export async function saveStripeProductFromAPIToDatabase(
  * @returns The retrieved Stripe product.
  */
 export async function retrieveStripeProductFromDatabaseById(
-  stripeId: StripeProduct['stripeId'],
+  stripeId: StripeProduct["stripeId"],
 ) {
   return prisma.stripeProduct.findUnique({ where: { stripeId } });
 }
@@ -68,8 +68,8 @@ export async function retrieveProductsFromDatabaseByPriceLookupKeys(
   lookupKeys: string[],
 ) {
   return prisma.stripeProduct.findMany({
-    where: { prices: { some: { lookupKey: { in: lookupKeys } } } },
     include: { prices: { where: { lookupKey: { in: lookupKeys } } } },
+    where: { prices: { some: { lookupKey: { in: lookupKeys } } } },
   });
 }
 
@@ -87,12 +87,12 @@ export async function updateStripeProductFromAPIInDatabase(
   product: Stripe.Product,
 ) {
   return prisma.stripeProduct.update({
-    where: { stripeId: product.id },
     data: {
-      name: product.name,
-      maxSeats: maxSeatsSchema.parse(product.metadata.max_seats),
       active: product.active,
+      maxSeats: maxSeatsSchema.parse(product.metadata.max_seats),
+      name: product.name,
     },
+    where: { stripeId: product.id },
   });
 }
 
@@ -105,7 +105,7 @@ export async function updateStripeProductFromAPIInDatabase(
  * @returns The deleted Stripe product.
  */
 export async function deleteStripeProductFromDatabaseById(
-  stripeId: StripeProduct['stripeId'],
+  stripeId: StripeProduct["stripeId"],
 ) {
   return prisma.stripeProduct.delete({ where: { stripeId } });
 }

@@ -1,13 +1,13 @@
-import type { LucideIcon } from 'lucide-react';
-import { ChevronRightIcon } from 'lucide-react';
-import type { ComponentProps } from 'react';
-import { NavLink, useLocation } from 'react-router';
+import type { LucideIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
+import type { ComponentProps } from "react";
+import { NavLink, useLocation } from "react-router";
 
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '~/components/ui/collapsible';
+} from "~/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -17,7 +17,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from '~/components/ui/sidebar';
+} from "~/components/ui/sidebar";
 
 type NavGroupItem = {
   title: string;
@@ -40,7 +40,7 @@ type NavGroupItemWithChildren = NavGroupItem & {
 export type NavGroupProps = {
   className?: string;
   items: (NavGroupItemWithoutChildren | NavGroupItemWithChildren)[];
-  size?: ComponentProps<typeof SidebarMenuButton>['size'];
+  size?: ComponentProps<typeof SidebarMenuButton>["size"];
   title?: string;
 };
 
@@ -52,25 +52,25 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
       {title && <SidebarGroupLabel>{title}</SidebarGroupLabel>}
 
       <SidebarMenu>
-        {items.map(item => {
-          if ('items' in item) {
+        {items.map((item) => {
+          if ("items" in item) {
             const isParentActive = item.items.some(
-              subItem => location.pathname === subItem.url,
+              (subItem) => location.pathname === subItem.url,
             );
 
             return (
               <Collapsible
-                key={item.title}
                 asChild
-                defaultOpen={isParentActive}
                 className="group/collapsible"
+                defaultOpen={isParentActive}
+                key={item.title}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
-                      tooltip={item.title}
-                      size={size}
                       isActive={isParentActive}
+                      size={size}
+                      tooltip={item.title}
                     >
                       {item.icon && <item.icon />}
                       <span>{item.title}</span>
@@ -80,13 +80,13 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
 
                   <CollapsibleContent>
                     <SidebarMenuSub>
-                      {item.items?.map(subItem => (
+                      {item.items?.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <NavLink end to={subItem.url}>
                             {({ isActive: childIsActive }) => (
                               <SidebarMenuSubButton
-                                isActive={childIsActive}
                                 asChild
+                                isActive={childIsActive}
                               >
                                 <div>
                                   <span>{subItem.title}</span>
@@ -109,9 +109,9 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
                 {({ isActive }) => (
                   <SidebarMenuButton
                     asChild
-                    tooltip={item.title}
-                    size={size}
                     isActive={isActive}
+                    size={size}
+                    tooltip={item.title}
                   >
                     <div>
                       {item.icon && <item.icon />}

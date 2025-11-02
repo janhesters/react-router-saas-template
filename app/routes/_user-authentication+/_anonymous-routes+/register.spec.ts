@@ -1,58 +1,57 @@
-import { describe, expect, onTestFinished, test } from 'vitest';
+import { describe, expect, onTestFinished, test } from "vitest";
 
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+import { action } from "./register";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { registerIntents } from '~/features/user-authentication/user-authentication-constants';
-import { anonymousMiddleware } from '~/features/user-authentication/user-authentication-middleware.server';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { registerIntents } from "~/features/user-authentication/user-authentication-constants";
+import { anonymousMiddleware } from "~/features/user-authentication/user-authentication-middleware.server";
 import {
   createRateLimitedEmail,
   supabaseHandlers,
-} from '~/test/mocks/handlers/supabase';
-import { setupMockServerLifecycle } from '~/test/msw-test-utils';
+} from "~/test/mocks/handlers/supabase";
+import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import {
   createAuthenticatedRequest,
   createTestContextProvider,
-} from '~/test/test-utils';
+} from "~/test/test-utils";
 import {
   badRequest,
   conflict,
   tooManyRequests,
-} from '~/utils/http-responses.server';
-import { toFormData } from '~/utils/to-form-data';
-
-import { action } from './register';
+} from "~/utils/http-responses.server";
+import { toFormData } from "~/utils/to-form-data";
 
 const createUrl = () => `http://localhost:3000/register`;
 
-const pattern = '/register';
+const pattern = "/register";
 
 async function sendRequest({ formData }: { formData: FormData }) {
   const request = new Request(createUrl(), {
-    method: 'POST',
     body: formData,
+    method: "POST",
   });
   const params = {};
 
   return await action({
-    request,
     context: await createTestContextProvider({
-      request,
+      middlewares: [anonymousMiddleware],
       params,
       pattern,
-      middlewares: [anonymousMiddleware],
+      request,
     }),
     params,
+    request,
     unstable_pattern: pattern,
   });
 }
 
 setupMockServerLifecycle(...supabaseHandlers);
 
-describe('/register route action', () => {
-  test('given: an authenticated request, should: throw a redirect to the organizations page', async () => {
+describe("/register route action", () => {
+  test("given: an authenticated request, should: throw a redirect to the organizations page", async () => {
     expect.assertions(2);
 
     const userAccount = createPopulatedUserAccount();
@@ -61,41 +60,41 @@ describe('/register route action', () => {
       await deleteUserAccountFromDatabaseById(userAccount.id);
     });
     const request = await createAuthenticatedRequest({
+      formData: toFormData({}),
+      method: "POST",
       url: createUrl(),
       user: userAccount,
-      method: 'POST',
-      formData: toFormData({}),
     });
     const params = {};
 
     try {
       await action({
-        request,
         context: await createTestContextProvider({
-          request,
-          params,
           middlewares: [anonymousMiddleware],
+          params,
           pattern,
+          request,
         }),
         params,
+        request,
         unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
-        expect(error.headers.get('Location')).toEqual('/organizations');
+        expect(error.headers.get("Location")).toEqual("/organizations");
       }
     }
   });
 
-  test('given: an invalid intent, should: return a 400 status code with an error message', async () => {
-    const formData = toFormData({ intent: 'invalid-intent' });
+  test("given: an invalid intent, should: return a 400 status code with an error message", async () => {
+    const formData = toFormData({ intent: "invalid-intent" });
 
     const actual = await sendRequest({ formData });
     const expected = badRequest({
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     });
@@ -103,14 +102,14 @@ describe('/register route action', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: no intent, should: return a 400 status code with an error message', async () => {
+  test("given: no intent, should: return a 400 status code with an error message", async () => {
     const formData = toFormData({});
 
     const actual = await sendRequest({ formData });
     const expected = badRequest({
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     });
@@ -122,8 +121,8 @@ describe('/register route action', () => {
     const intent = registerIntents.registerWithEmail;
 
     test("given: a valid email for a new user, should: return the user's email with no session or user", async () => {
-      const email = 'new-user@example.com';
-      const formData = toFormData({ intent, email });
+      const email = "new-user@example.com";
+      const formData = toFormData({ email, intent });
 
       const actual = await sendRequest({ formData });
       const expected = { email, session: null, user: null };
@@ -133,25 +132,25 @@ describe('/register route action', () => {
 
     test.each([
       {
-        given: 'no email',
         body: { intent },
         expected: badRequest({
           errors: {
-            email: { message: 'user-authentication:common.email-invalid' },
+            email: { message: "user-authentication:common.email-invalid" },
           },
         }),
+        given: "no email",
       },
       {
-        given: 'an invalid email',
-        body: { intent, email: 'invalid-email' },
+        body: { email: "invalid-email", intent },
         expected: badRequest({
           errors: {
-            email: { message: 'user-authentication:common.email-invalid' },
+            email: { message: "user-authentication:common.email-invalid" },
           },
         }),
+        given: "an invalid email",
       },
     ])(
-      'given: $given, should: return a 400 status code with an error message',
+      "given: $given, should: return a 400 status code with an error message",
       async ({ body, expected }) => {
         const formData = toFormData(body);
 
@@ -160,19 +159,19 @@ describe('/register route action', () => {
       },
     );
 
-    test('given: a valid email for an existing user, should: return a 409 status code with an error message', async () => {
+    test("given: a valid email for an existing user, should: return a 409 status code with an error message", async () => {
       const userAccount = createPopulatedUserAccount();
       await saveUserAccountToDatabase(userAccount);
       onTestFinished(async () => {
         await deleteUserAccountFromDatabaseById(userAccount.id);
       });
-      const formData = toFormData({ intent, email: userAccount.email });
+      const formData = toFormData({ email: userAccount.email, intent });
 
       const actual = await sendRequest({ formData });
       const expected = conflict({
         errors: {
           email: {
-            message: 'user-authentication:register.form.user-already-exists',
+            message: "user-authentication:register.form.user-already-exists",
           },
         },
       });
@@ -180,15 +179,15 @@ describe('/register route action', () => {
       expect(actual).toEqual(expected);
     });
 
-    test('given: too many requests in a short time, should: return a 429 status code with an error message', async () => {
+    test("given: too many requests in a short time, should: return a 429 status code with an error message", async () => {
       const email = createRateLimitedEmail();
-      const formData = toFormData({ intent, email });
+      const formData = toFormData({ email, intent });
 
       const actual = await sendRequest({ formData });
       const expected = tooManyRequests({
         errors: {
           email: {
-            message: 'user-authentication:register.registration-failed',
+            message: "user-authentication:register.registration-failed",
           },
         },
       });
@@ -200,16 +199,16 @@ describe('/register route action', () => {
   describe(`${registerIntents.registerWithGoogle} intent`, () => {
     const intent = registerIntents.registerWithGoogle;
 
-    test('given: a registration request with Google, should: return a redirect response to Supabase OAuth URL with code_verifier cookie', async () => {
+    test("given: a registration request with Google, should: return a redirect response to Supabase OAuth URL with code_verifier cookie", async () => {
       const formData = toFormData({ intent });
 
       const response = (await sendRequest({ formData })) as Response;
 
       expect(response.status).toBe(302);
-      expect(response.headers.get('Location')).toMatch(
+      expect(response.headers.get("Location")).toMatch(
         /^https:\/\/.*\.supabase\.co\/auth\/v1\/authorize\?provider=google/,
       );
-      expect(response.headers.get('Set-Cookie')).toMatch(
+      expect(response.headers.get("Set-Cookie")).toMatch(
         /sb-.*-auth-token-code-verifier=/,
       );
     });

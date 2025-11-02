@@ -1,11 +1,12 @@
-import { type Label as LabelPrimitive, Slot as SlotPrimitive } from 'radix-ui';
-import * as React from 'react';
-import type { ControllerProps, FieldPath, FieldValues } from 'react-hook-form';
-import { Controller, useFormContext, useFormState } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
+import type { Label as LabelPrimitive } from "radix-ui";
+import { Slot as SlotPrimitive } from "radix-ui";
+import * as React from "react";
+import type { ControllerProps, FieldPath, FieldValues } from "react-hook-form";
+import { Controller, useFormContext, useFormState } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
-import { Label } from '~/components/ui/label';
-import { cn } from '~/lib/utils';
+import { Label } from "~/components/ui/label";
+import { cn } from "~/lib/utils";
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
@@ -39,17 +40,17 @@ const useFormField = () => {
   const fieldState = getFieldState(fieldContext.name, formState);
 
   if (!fieldContext) {
-    throw new Error('useFormField should be used within <FormField>');
+    throw new Error("useFormField should be used within <FormField>");
   }
 
   const { id } = itemContext;
 
   return {
+    formDescriptionId: `${id}-form-item-description`,
+    formItemId: `${id}-form-item`,
+    formMessageId: `${id}-form-item-message`,
     id,
     name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
     ...fieldState,
   };
 };
@@ -62,14 +63,14 @@ const FormItemContext = React.createContext<FormItemContextValue>(
   {} as FormItemContextValue,
 );
 
-function FormItem({ className, ...props }: React.ComponentProps<'div'>) {
+function FormItem({ className, ...props }: React.ComponentProps<"div">) {
   const id = React.useId();
 
   return (
     <FormItemContext.Provider value={{ id }}>
       <div
+        className={cn("grid gap-2", className)}
         data-slot="form-item"
-        className={cn('grid gap-2', className)}
         {...props}
       />
     </FormItemContext.Provider>
@@ -84,9 +85,9 @@ function FormLabel({
 
   return (
     <Label
-      data-slot="form-label"
+      className={cn("data-[error=true]:text-destructive", className)}
       data-error={!!error}
-      className={cn('data-[error=true]:text-destructive', className)}
+      data-slot="form-label"
       htmlFor={formItemId}
       {...props}
     />
@@ -101,46 +102,45 @@ function FormControl({
 
   return (
     <SlotPrimitive.Slot
-      data-slot="form-control"
-      id={formItemId}
       aria-describedby={
         error ? `${formDescriptionId} ${formMessageId}` : `${formDescriptionId}`
       }
       aria-invalid={!!error}
+      data-slot="form-control"
+      id={formItemId}
       {...props}
     />
   );
 }
 
-function FormDescription({ className, ...props }: React.ComponentProps<'p'>) {
+function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   const { formDescriptionId } = useFormField();
 
   return (
     <p
+      className={cn("text-muted-foreground text-sm", className)}
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn('text-muted-foreground text-sm', className)}
       {...props}
     />
   );
 }
 
-function FormMessage({ className, ...props }: React.ComponentProps<'p'>) {
+function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField();
   const { t } = useTranslation();
-  const key = error ? String(error?.message ?? '') : props.children;
-  const body = typeof key === 'string' ? t(key) : key;
+  const key = error ? String(error?.message ?? "") : props.children;
+  const body = typeof key === "string" ? t(key) : key;
 
   if (!body) {
-    // eslint-disable-next-line unicorn/no-null
     return null;
   }
 
   return (
     <p
+      className={cn("text-destructive text-sm", className)}
       data-slot="form-message"
       id={formMessageId}
-      className={cn('text-destructive text-sm', className)}
       {...props}
     >
       {body}
@@ -158,4 +158,4 @@ export {
   useFormField,
 };
 
-export { FormProvider } from 'react-hook-form';
+export { FormProvider } from "react-hook-form";

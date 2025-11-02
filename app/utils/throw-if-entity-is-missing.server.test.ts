@@ -1,12 +1,11 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test } from "vitest";
 
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { getIsDataWithResponseInit } from "./get-is-data-with-response-init.server";
+import { throwIfEntityIsMissing } from "./throw-if-entity-is-missing.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 
-import { getIsDataWithResponseInit } from './get-is-data-with-response-init.server';
-import { throwIfEntityIsMissing } from './throw-if-entity-is-missing.server';
-
-describe('throwIfEntityIsMissing()', () => {
-  test('given: an an entity, should: return the entity', () => {
+describe("throwIfEntityIsMissing()", () => {
+  test("given: an an entity, should: return the entity", () => {
     const organization = createPopulatedOrganization();
 
     const actual = throwIfEntityIsMissing(organization);
@@ -15,7 +14,7 @@ describe('throwIfEntityIsMissing()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: null, should: throw a 404 not found error', () => {
+  test("given: null, should: throw a 404 not found error", () => {
     expect.assertions(2);
 
     try {
@@ -23,7 +22,7 @@ describe('throwIfEntityIsMissing()', () => {
     } catch (error) {
       if (getIsDataWithResponseInit(error)) {
         expect(error.init?.status).toEqual(404);
-        expect(error.data).toEqual({ message: 'Not Found' });
+        expect(error.data).toEqual({ message: "Not Found" });
       }
     }
   });

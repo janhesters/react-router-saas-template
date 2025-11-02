@@ -1,20 +1,14 @@
-import { CheckIcon, Loader2Icon } from 'lucide-react';
-import type { ComponentProps, MouseEventHandler } from 'react';
-import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-import { Form, href, Link } from 'react-router';
+import { CheckIcon, Loader2Icon } from "lucide-react";
+import type { ComponentProps, MouseEventHandler } from "react";
+import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { Form, href, Link } from "react-router";
 
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-
-import type { Interval, Tier } from './billing-constants';
+import type { Interval, Tier } from "./billing-constants";
 import {
   priceLookupKeysByTierAndInterval,
   SWITCH_SUBSCRIPTION_INTENT,
-} from './billing-constants';
+} from "./billing-constants";
 import {
   FeatureListItem,
   FeaturesList,
@@ -28,11 +22,16 @@ import {
   TierCardTitle,
   TierContainer,
   TierGrid,
-} from './pricing';
+} from "./pricing";
+import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export type CancelOrModifySubscriptionModalContentProps = {
   canCancelSubscription: boolean;
-  currentTier: Tier | 'enterprise';
+  currentTier: Tier | "enterprise";
   currentTierInterval: Interval;
   isSwitchingToHigh?: boolean;
   isSwitchingToLow?: boolean;
@@ -49,11 +48,11 @@ export function CancelOrModifySubscriptionModalContent({
   isSwitchingToMid = false,
   onCancelSubscriptionClick,
 }: CancelOrModifySubscriptionModalContentProps) {
-  const { t } = useTranslation('billing', { keyPrefix: 'pricing' });
-  const { t: tModal } = useTranslation('billing', {
-    keyPrefix: 'billing-page.pricing-modal',
+  const { t } = useTranslation("billing", { keyPrefix: "pricing" });
+  const { t: tModal } = useTranslation("billing", {
+    keyPrefix: "billing-page.pricing-modal",
   });
-  const [billingPeriod, setBillingPeriod] = useState('annual');
+  const [billingPeriod, setBillingPeriod] = useState("annual");
 
   const isSubmitting =
     isSwitchingToLow || isSwitchingToMid || isSwitchingToHigh;
@@ -63,34 +62,34 @@ export function CancelOrModifySubscriptionModalContent({
     t(`plans.${key}.features`, { returnObjects: true }) as string[];
 
   const getButtonProps = (
-    interval: 'monthly' | 'annual',
-    tier: 'low' | 'mid' | 'high',
+    interval: "monthly" | "annual",
+    tier: "low" | "mid" | "high",
   ): Partial<ComponentProps<typeof Button>> => {
     const isCurrentTier = tier === currentTier;
     const isUpgrade =
-      (currentTier === 'low' && (tier === 'mid' || tier === 'high')) ||
-      (currentTier === 'mid' && tier === 'high');
+      (currentTier === "low" && (tier === "mid" || tier === "high")) ||
+      (currentTier === "mid" && tier === "high");
 
     // flags for in-flight actions
     const switchingToThisTier =
-      (tier === 'low' && isSwitchingToLow) ||
-      (tier === 'mid' && isSwitchingToMid) ||
-      (tier === 'high' && isSwitchingToHigh);
+      (tier === "low" && isSwitchingToLow) ||
+      (tier === "mid" && isSwitchingToMid) ||
+      (tier === "high" && isSwitchingToHigh);
 
     // 1. If this is the current tier but only the billing interval is different
     if (isCurrentTier) {
       if (interval !== currentTierInterval) {
-        return interval === 'annual'
-          ? { children: tModal('switch-to-annual-button') }
+        return interval === "annual"
+          ? { children: tModal("switch-to-annual-button") }
           : {
-              children: tModal('switch-to-monthly-button'),
-              variant: 'outline',
+              children: tModal("switch-to-monthly-button"),
+              variant: "outline",
             };
       }
       return {
-        children: tModal('current-plan'),
+        children: tModal("current-plan"),
         disabled: true,
-        variant: 'outline',
+        variant: "outline",
       };
     }
 
@@ -99,22 +98,22 @@ export function CancelOrModifySubscriptionModalContent({
       const label = isUpgrade ? (
         <>
           <Loader2Icon className="animate-spin" />
-          {tModal('upgrading')}
+          {tModal("upgrading")}
         </>
       ) : (
         <>
           <Loader2Icon className="animate-spin" />
-          {tModal('downgrading')}
+          {tModal("downgrading")}
         </>
       );
 
-      return { children: label, ...(isUpgrade ? {} : { variant: 'outline' }) };
+      return { children: label, ...(isUpgrade ? {} : { variant: "outline" }) };
     }
 
     // 3. Default static buttons for upgrade vs downgrade
     return isUpgrade
-      ? { children: tModal('upgrade-button'), disabled: isSubmitting }
-      : { children: tModal('downgrade-button'), variant: 'outline' };
+      ? { children: tModal("upgrade-button"), disabled: isSubmitting }
+      : { children: tModal("downgrade-button"), variant: "outline" };
   };
 
   return (
@@ -122,20 +121,20 @@ export function CancelOrModifySubscriptionModalContent({
       <Form method="post" replace>
         <fieldset disabled={isSubmitting}>
           <input
-            type="hidden"
             name="intent"
+            type="hidden"
             value={SWITCH_SUBSCRIPTION_INTENT}
           />
 
-          <Tabs value={billingPeriod} onValueChange={setBillingPeriod}>
+          <Tabs onValueChange={setBillingPeriod} value={billingPeriod}>
             <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
               <TabsList>
-                <TabsTrigger value="monthly">{t('monthly')}</TabsTrigger>
-                <TabsTrigger value="annual">{t('annual')}</TabsTrigger>
+                <TabsTrigger value="monthly">{t("monthly")}</TabsTrigger>
+                <TabsTrigger value="annual">{t("annual")}</TabsTrigger>
               </TabsList>
 
-              {billingPeriod === 'monthly' && (
-                <p className="text-primary text-sm">{t('save-annually')}</p>
+              {billingPeriod === "monthly" && (
+                <p className="text-primary text-sm">{t("save-annually")}</p>
               )}
             </div>
 
@@ -145,30 +144,30 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Low Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+                      <TierCardTitle>{t("plans.low.title")}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$17' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$17" }}
                         />
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.low.description')}
+                        {t("plans.low.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.low.monthly}
                         type="submit"
-                        {...getButtonProps('monthly', 'low')}
+                        value={priceLookupKeysByTierAndInterval.low.monthly}
+                        {...getButtonProps("monthly", "low")}
                       />
                     </TierCardHeader>
 
@@ -176,10 +175,10 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.low.features-title')}
+                        {t("plans.low.features-title")}
                       </FeaturesListTitle>
                       <FeaturesList>
-                        {getFeatures('low').map(feature => (
+                        {getFeatures("low").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -192,30 +191,30 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Mid Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                      <TierCardTitle>{t("plans.mid.title")}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$30' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$30" }}
                         />
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.mid.description')}
+                        {t("plans.mid.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.mid.monthly}
                         type="submit"
-                        {...getButtonProps('monthly', 'mid')}
+                        value={priceLookupKeysByTierAndInterval.mid.monthly}
+                        {...getButtonProps("monthly", "mid")}
                       />
                     </TierCardHeader>
 
@@ -223,11 +222,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.mid.features-title')}
+                        {t("plans.mid.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('mid').map(feature => (
+                        {getFeatures("mid").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -241,32 +240,32 @@ export function CancelOrModifySubscriptionModalContent({
                   <TierCard className="ring-primary -mt-1.5 ring-2">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
-                        {t('plans.high.title')}
-                        <Badge>{t('most-popular')}</Badge>
+                        {t("plans.high.title")}
+                        <Badge>{t("most-popular")}</Badge>
                       </TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$55' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$55" }}
                         />
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.high.description')}
+                        {t("plans.high.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.high.monthly}
                         type="submit"
-                        {...getButtonProps('monthly', 'high')}
+                        value={priceLookupKeysByTierAndInterval.high.monthly}
+                        {...getButtonProps("monthly", "high")}
                       />
                     </TierCardHeader>
 
@@ -274,11 +273,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.high.features-title')}
+                        {t("plans.high.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('high').map(feature => (
+                        {getFeatures("high").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -297,32 +296,32 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Low Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+                      <TierCardTitle>{t("plans.low.title")}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$15' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$15" }}
                         />
 
                         <OfferBadge>-10%</OfferBadge>
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.low.description')}
+                        {t("plans.low.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.low.annual}
                         type="submit"
-                        {...getButtonProps('annual', 'low')}
+                        value={priceLookupKeysByTierAndInterval.low.annual}
+                        {...getButtonProps("annual", "low")}
                       />
                     </TierCardHeader>
 
@@ -330,11 +329,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.low.features-title')}
+                        {t("plans.low.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('low').map(feature => (
+                        {getFeatures("low").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -347,32 +346,32 @@ export function CancelOrModifySubscriptionModalContent({
                   {/* Mid Tier */}
                   <TierCard>
                     <TierCardHeader>
-                      <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                      <TierCardTitle>{t("plans.mid.title")}</TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$25' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$25" }}
                         />
 
                         <OfferBadge>-15%</OfferBadge>
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.mid.description')}
+                        {t("plans.mid.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.mid.annual}
                         type="submit"
-                        {...getButtonProps('annual', 'mid')}
+                        value={priceLookupKeysByTierAndInterval.mid.annual}
+                        {...getButtonProps("annual", "mid")}
                       />
                     </TierCardHeader>
 
@@ -380,11 +379,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.mid.features-title')}
+                        {t("plans.mid.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('mid').map(feature => (
+                        {getFeatures("mid").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -398,34 +397,34 @@ export function CancelOrModifySubscriptionModalContent({
                   <TierCard className="ring-primary -mt-1.5 ring-2">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
-                        {t('plans.high.title')}
-                        <Badge>{t('most-popular')}</Badge>
+                        {t("plans.high.title")}
+                        <Badge>{t("most-popular")}</Badge>
                       </TierCardTitle>
 
                       <TierCardPrice>
                         <Trans
-                          i18nKey="billing:pricing.price"
-                          values={{ price: '$45' }}
                           components={{
                             1: (
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
+                          i18nKey="billing:pricing.price"
+                          values={{ price: "$45" }}
                         />
 
                         <OfferBadge>-20%</OfferBadge>
                       </TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.high.description')}
+                        {t("plans.high.description")}
                       </TierCardDescription>
 
                       <Button
                         className="w-full"
                         name="lookupKey"
-                        value={priceLookupKeysByTierAndInterval.high.annual}
                         type="submit"
-                        {...getButtonProps('annual', 'high')}
+                        value={priceLookupKeysByTierAndInterval.high.annual}
+                        {...getButtonProps("annual", "high")}
                       />
                     </TierCardHeader>
 
@@ -433,11 +432,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.high.features-title')}
+                        {t("plans.high.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('high').map(feature => (
+                        {getFeatures("high").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -451,18 +450,18 @@ export function CancelOrModifySubscriptionModalContent({
                   <TierCard className="@4xl/tiers:col-start-2 @6xl/tiers:col-start-auto">
                     <TierCardHeader>
                       <TierCardTitle>
-                        {t('plans.enterprise.title')}
+                        {t("plans.enterprise.title")}
                       </TierCardTitle>
 
-                      <TierCardPrice>{t('custom')}</TierCardPrice>
+                      <TierCardPrice>{t("custom")}</TierCardPrice>
 
                       <TierCardDescription>
-                        {t('plans.enterprise.description')}
+                        {t("plans.enterprise.description")}
                       </TierCardDescription>
 
                       <Button asChild className="w-full">
-                        <Link to={href('/contact-sales')}>
-                          {t('plans.enterprise.cta')}
+                        <Link to={href("/contact-sales")}>
+                          {t("plans.enterprise.cta")}
                         </Link>
                       </Button>
                     </TierCardHeader>
@@ -471,11 +470,11 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t('plans.enterprise.features-title')}
+                        {t("plans.enterprise.features-title")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
-                        {getFeatures('enterprise').map(feature => (
+                        {getFeatures("enterprise").map((feature) => (
                           <FeatureListItem key={feature}>
                             <CheckIcon />
                             {feature}
@@ -498,11 +497,11 @@ export function CancelOrModifySubscriptionModalContent({
           <div className="@container/alert">
             <Alert className="flex flex-col gap-2 @5xl/alert:block">
               <AlertTitle>
-                {tModal('cancel-subscription-banner.title')}
+                {tModal("cancel-subscription-banner.title")}
               </AlertTitle>
 
               <AlertDescription>
-                {tModal('cancel-subscription-banner.description')}
+                {tModal("cancel-subscription-banner.description")}
               </AlertDescription>
 
               <Button
@@ -512,7 +511,7 @@ export function CancelOrModifySubscriptionModalContent({
                 type="button"
                 variant="outline"
               >
-                {tModal('cancel-subscription-banner.button')}
+                {tModal("cancel-subscription-banner.button")}
               </Button>
             </Alert>
           </div>

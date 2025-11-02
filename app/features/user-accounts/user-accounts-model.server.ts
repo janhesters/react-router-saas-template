@@ -1,7 +1,6 @@
-/* eslint-disable unicorn/no-null */
-import type { Prisma, UserAccount } from '@prisma/client';
+import type { Prisma, UserAccount } from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -26,7 +25,7 @@ export async function saveUserAccountToDatabase(
  * @returns The user account or null.
  */
 export async function retrieveUserAccountFromDatabaseById(
-  id: UserAccount['id'],
+  id: UserAccount["id"],
 ) {
   return prisma.userAccount.findUnique({ where: { id } });
 }
@@ -38,7 +37,7 @@ export async function retrieveUserAccountFromDatabaseById(
  * @returns The user account or null.
  */
 export async function retrieveUserAccountFromDatabaseByEmail(
-  email: UserAccount['email'],
+  email: UserAccount["email"],
 ) {
   return prisma.userAccount.findUnique({ where: { email } });
 }
@@ -50,10 +49,9 @@ export async function retrieveUserAccountFromDatabaseByEmail(
  * @returns The user account with active memberships or null.
  */
 export async function retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail(
-  email: UserAccount['email'],
+  email: UserAccount["email"],
 ) {
   return prisma.userAccount.findUnique({
-    where: { email },
     include: {
       memberships: {
         where: {
@@ -61,6 +59,7 @@ export async function retrieveUserAccountWithActiveMembershipsFromDatabaseByEmai
         },
       },
     },
+    where: { email },
   });
 }
 
@@ -71,7 +70,7 @@ export async function retrieveUserAccountWithActiveMembershipsFromDatabaseByEmai
  * @returns The user account or null.
  */
 export async function retrieveUserAccountFromDatabaseBySupabaseUserId(
-  supabaseUserId: UserAccount['supabaseUserId'],
+  supabaseUserId: UserAccount["supabaseUserId"],
 ) {
   return prisma.userAccount.findUnique({ where: { supabaseUserId } });
 }
@@ -86,16 +85,13 @@ export async function retrieveUserAccountFromDatabaseBySupabaseUserId(
  * future.
  */
 export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId(
-  supabaseUserId: UserAccount['supabaseUserId'],
+  supabaseUserId: UserAccount["supabaseUserId"],
 ) {
   return prisma.userAccount.findUnique({
-    where: { supabaseUserId },
     include: {
       memberships: {
-        where: {
-          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
-        },
         select: {
+          deactivatedAt: true,
           organization: {
             select: {
               _count: {
@@ -117,32 +113,35 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
               slug: true,
               stripeCustomerId: true,
               stripeSubscriptions: {
-                orderBy: { created: 'desc' },
-                take: 1,
                 include: {
                   items: { include: { price: { include: { product: true } } } },
                   schedule: {
-                    where: {
-                      currentPhaseStart: { not: null },
-                      currentPhaseEnd: { not: null },
-                    },
                     include: {
                       phases: {
-                        orderBy: { startDate: 'asc' },
                         include: { price: true },
+                        orderBy: { startDate: "asc" },
                       },
+                    },
+                    where: {
+                      currentPhaseEnd: { not: null },
+                      currentPhaseStart: { not: null },
                     },
                   },
                 },
+                orderBy: { created: "desc" },
+                take: 1,
               },
               trialEnd: true,
             },
           },
           role: true,
-          deactivatedAt: true,
+        },
+        where: {
+          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
         },
       },
     },
+    where: { supabaseUserId },
   });
 }
 
@@ -156,22 +155,15 @@ export async function retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUs
  * deactivation date in the future.
  */
 export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId(
-  supabaseUserId: UserAccount['supabaseUserId'],
+  supabaseUserId: UserAccount["supabaseUserId"],
 ) {
   return prisma.userAccount.findUnique({
-    where: { supabaseUserId },
     include: {
       memberships: {
-        where: {
-          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
-        },
         select: {
+          deactivatedAt: true,
           organization: {
             select: {
-              id: true,
-              name: true,
-              slug: true,
-              imageUrl: true,
               // Count active members in the organization
               _count: {
                 select: {
@@ -185,13 +177,20 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatab
                   },
                 },
               },
+              id: true,
+              imageUrl: true,
+              name: true,
+              slug: true,
             },
           },
           role: true,
-          deactivatedAt: true,
+        },
+        where: {
+          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
         },
       },
     },
+    where: { supabaseUserId },
   });
 }
 
@@ -206,22 +205,15 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsFromDatab
  * deactivation date in the future.
  */
 export async function retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId(
-  supabaseUserId: UserAccount['supabaseUserId'],
+  supabaseUserId: UserAccount["supabaseUserId"],
 ) {
   return prisma.userAccount.findUnique({
-    where: { supabaseUserId },
     include: {
       memberships: {
-        where: {
-          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
-        },
         select: {
+          deactivatedAt: true,
           organization: {
             select: {
-              id: true,
-              name: true,
-              slug: true,
-              imageUrl: true,
               // Count active members in the organization
               _count: {
                 select: {
@@ -235,28 +227,35 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsAndSubscr
                   },
                 },
               },
+              id: true,
+              imageUrl: true,
+              name: true,
+              slug: true,
               stripeSubscriptions: {
-                orderBy: { created: 'desc' },
-                take: 1,
                 include: {
                   items: { include: { price: true } },
                   schedule: {
                     include: {
                       phases: {
-                        orderBy: { startDate: 'asc' },
                         include: { price: true },
+                        orderBy: { startDate: "asc" },
                       },
                     },
                   },
                 },
+                orderBy: { created: "desc" },
+                take: 1,
               },
             },
           },
           role: true,
-          deactivatedAt: true,
+        },
+        where: {
+          OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: new Date() } }],
         },
       },
     },
+    where: { supabaseUserId },
   });
 }
 
@@ -273,10 +272,10 @@ export async function updateUserAccountInDatabaseById({
   id,
   user,
 }: {
-  id: UserAccount['id'];
-  user: Omit<Prisma.UserAccountUpdateInput, 'id'>;
+  id: UserAccount["id"];
+  user: Omit<Prisma.UserAccountUpdateInput, "id">;
 }) {
-  return prisma.userAccount.update({ where: { id }, data: user });
+  return prisma.userAccount.update({ data: user, where: { id } });
 }
 
 /* DELETE */
@@ -287,6 +286,6 @@ export async function updateUserAccountInDatabaseById({
  * @param id The id of the user account to delete.
  * @returns The deleted user account.
  */
-export async function deleteUserAccountFromDatabaseById(id: UserAccount['id']) {
+export async function deleteUserAccountFromDatabaseById(id: UserAccount["id"]) {
   return prisma.userAccount.delete({ where: { id } });
 }

@@ -1,6 +1,5 @@
-/* eslint-disable unicorn/no-null */
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
+import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
 import type {
   StripePrice,
   StripeProduct,
@@ -8,12 +7,11 @@ import type {
   StripeSubscriptionItem,
   StripeSubscriptionSchedule,
   StripeSubscriptionSchedulePhase,
-} from '@prisma/client';
-import { StripePriceInterval } from '@prisma/client';
+} from "@prisma/client";
+import { StripePriceInterval } from "@prisma/client";
 
-import type { DeepPartial, Factory } from '~/utils/types';
-
-import { allLookupKeys, allTiers } from './billing-constants';
+import { allLookupKeys, allTiers } from "./billing-constants";
+import type { DeepPartial, Factory } from "~/utils/types";
 
 export const getRandomTier = () => faker.helpers.arrayElement(allTiers);
 export const getRandomLookupKey = () =>
@@ -25,8 +23,8 @@ export const createPopulatedStripeProduct: Factory<StripeProduct> = ({
   stripeId = `prod_${createId()}`,
   active = true,
   name = faker.commerce.productName(),
-  maxSeats = faker.number.int({ min: 1, max: 100 }),
-} = {}) => ({ stripeId, active, name, maxSeats });
+  maxSeats = faker.number.int({ max: 100, min: 1 }),
+} = {}) => ({ active, maxSeats, name, stripeId });
 
 /**
  * Creates a Stripe price with populated values.
@@ -38,21 +36,21 @@ export const createPopulatedStripePrice: Factory<StripePrice> = ({
   lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}`,
   stripeId = `price_${createId()}`,
   active = true,
-  currency = 'usd',
+  currency = "usd",
   productId = `prod_${createId()}`,
-  unitAmount = faker.number.int({ min: 500, max: 50_000 }),
+  unitAmount = faker.number.int({ max: 50_000, min: 500 }),
   interval = faker.helpers.arrayElement([
     StripePriceInterval.month,
     StripePriceInterval.year,
   ]),
 } = {}) => ({
-  stripeId,
   active,
   currency,
+  interval,
   lookupKey,
   productId,
+  stripeId,
   unitAmount,
-  interval,
 });
 
 /**
@@ -69,14 +67,14 @@ export const createPopulatedStripeSubscriptionSchedule: Factory<
   created = faker.date.past({ years: 1 }),
   currentPhaseStart = faker.date.past({ years: 1 }),
   currentPhaseEnd = currentPhaseStart
-    ? faker.date.future({ years: 1, refDate: currentPhaseStart })
+    ? faker.date.future({ refDate: currentPhaseStart, years: 1 })
     : null,
 } = {}) => ({
+  created,
+  currentPhaseEnd,
+  currentPhaseStart,
   stripeId,
   subscriptionId,
-  created,
-  currentPhaseStart,
-  currentPhaseEnd,
 });
 
 /**
@@ -91,16 +89,16 @@ export const createPopulatedStripeSubscriptionSchedulePhase: Factory<
   id = createId(),
   scheduleId = createPopulatedStripeSubscriptionSchedule().stripeId,
   startDate = faker.date.past({ years: 1 }),
-  endDate = faker.date.future({ years: 1, refDate: startDate }),
+  endDate = faker.date.future({ refDate: startDate, years: 1 }),
   priceId = `price_${createId()}`,
-  quantity = faker.number.int({ min: 1, max: 100 }),
+  quantity = faker.number.int({ max: 100, min: 1 }),
 } = {}) => ({
-  id,
-  scheduleId,
-  startDate,
   endDate,
+  id,
   priceId,
   quantity,
+  scheduleId,
+  startDate,
 });
 
 /**
@@ -115,14 +113,14 @@ export const createPopulatedStripeSubscriptionItem: Factory<
   stripeId = `si_${createId()}`,
   stripeSubscriptionId = `sub_${createId()}`,
   currentPeriodEnd = faker.date.future({ years: 1 }),
-  currentPeriodStart = faker.date.past({ years: 1, refDate: currentPeriodEnd }),
+  currentPeriodStart = faker.date.past({ refDate: currentPeriodEnd, years: 1 }),
   priceId = `price_${createId()}`,
 } = {}) => ({
-  stripeId,
-  stripeSubscriptionId,
   currentPeriodEnd,
   currentPeriodStart,
   priceId,
+  stripeId,
+  stripeSubscriptionId,
 });
 
 /**
@@ -137,14 +135,14 @@ export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
   purchasedById = createId(),
   created = faker.date.past({ years: 1 }),
   cancelAtPeriodEnd = false,
-  status = 'active',
+  status = "active",
 } = {}) => ({
-  stripeId,
+  cancelAtPeriodEnd,
+  created,
   organizationId,
   purchasedById,
-  created,
-  cancelAtPeriodEnd,
   status,
+  stripeId,
 });
 
 /* Compound Factories */
@@ -171,7 +169,7 @@ export function createStripeProductWithPrices(
 
   // Handle price overrides, defaulting to two prices if none given
   const prices = Array.isArray(pricesOverride)
-    ? pricesOverride.map(priceOvr =>
+    ? pricesOverride.map((priceOvr) =>
         createPopulatedStripePrice({
           ...priceOvr,
           productId: product.stripeId,
@@ -260,7 +258,7 @@ export function createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct(
 
   // Items: if provided (even empty), map overrides; else default one
   const items = Array.isArray(itemsOverride)
-    ? itemsOverride.map(itemOverride =>
+    ? itemsOverride.map((itemOverride) =>
         createPopulatedStripeSubscriptionItemWithPriceAndProduct(itemOverride),
       )
     : [createPopulatedStripeSubscriptionItemWithPriceAndProduct()];
@@ -312,7 +310,7 @@ export function createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice(
   // if caller passed phases (even empty), map overrides; otherwise default one
   const phasesOverride = overrides.phases;
   const phases = Array.isArray(phasesOverride)
-    ? phasesOverride.map(phOvr =>
+    ? phasesOverride.map((phOvr) =>
         createPopulatedStripeSubscriptionSchedulePhaseWithPrice({
           ...phOvr,
           scheduleId: base.stripeId,
@@ -353,7 +351,7 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
   );
 
   const items = Array.isArray(itemsOverride)
-    ? itemsOverride.map(itemOverride => {
+    ? itemsOverride.map((itemOverride) => {
         const { price: priceOverrides, ...itemBaseOverrides } =
           itemOverride || {};
         const price = createPopulatedStripePrice({
@@ -413,7 +411,7 @@ export function createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAn
 
   // Items: if provided (even empty), map overrides; else default one
   const items = Array.isArray(itemsOverride)
-    ? itemsOverride.map(itemOverride =>
+    ? itemsOverride.map((itemOverride) =>
         createPopulatedStripeSubscriptionItemWithPriceAndProduct(itemOverride),
       )
     : [createPopulatedStripeSubscriptionItemWithPriceAndProduct()];

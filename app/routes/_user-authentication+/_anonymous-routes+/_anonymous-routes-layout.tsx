@@ -1,6 +1,6 @@
-import { Outlet } from 'react-router';
+import { Outlet } from "react-router";
 
-import { anonymousMiddleware } from '~/features/user-authentication/user-authentication-middleware.server';
+import { anonymousMiddleware } from "~/features/user-authentication/user-authentication-middleware.server";
 
 export const middleware = [anonymousMiddleware];
 

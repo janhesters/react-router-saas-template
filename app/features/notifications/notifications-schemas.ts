@@ -1,18 +1,18 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 import {
   LINK_NOTIFICATION_TYPE,
   MARK_ALL_NOTIFICATIONS_AS_READ_INTENT,
   MARK_ONE_NOTIFICATION_AS_READ_INTENT,
   NOTIFICATION_PANEL_OPENED_INTENT,
-} from './notification-constants';
+} from "./notification-constants";
 
 /* Notification types */
 
 export const linkNotificationDataSchema = z.object({
-  type: z.literal(LINK_NOTIFICATION_TYPE),
-  text: z.string(),
   href: z.string(),
+  text: z.string(),
+  type: z.literal(LINK_NOTIFICATION_TYPE),
 });
 
 export type LinkNotificationData = z.infer<typeof linkNotificationDataSchema>;

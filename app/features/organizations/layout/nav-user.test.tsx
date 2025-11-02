@@ -1,32 +1,31 @@
-import userEvent from '@testing-library/user-event';
-import { createRoutesStub } from 'react-router';
-import { describe, expect, test } from 'vitest';
+import userEvent from "@testing-library/user-event";
+import { createRoutesStub } from "react-router";
+import { describe, expect, test } from "vitest";
 
-import { SidebarProvider } from '~/components/ui/sidebar';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
+import type { NavUserProps } from "./nav-user";
+import { NavUser } from "./nav-user";
+import { SidebarProvider } from "~/components/ui/sidebar";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
-import type { NavUserProps } from './nav-user';
-import { NavUser } from './nav-user';
-
-const createUser: Factory<NavUserProps['user']> = ({
+const createUser: Factory<NavUserProps["user"]> = ({
   name = createPopulatedUserAccount().name,
   email = createPopulatedUserAccount().email,
   avatar = createPopulatedUserAccount().imageUrl,
-} = {}) => ({ name, email, avatar });
+} = {}) => ({ avatar, email, name });
 
 const createProps: Factory<NavUserProps> = ({ user = createUser() } = {}) => ({
   user,
 });
 
-describe('NavUser Component', () => {
-  test('given: user data, should: render user information and handle menu interactions', () => {
+describe("NavUser Component", () => {
+  test("given: user data, should: render user information and handle menu interactions", () => {
     const props = createProps();
     const { user } = props;
-    const path = '/test';
+    const path = "/test";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <NavUser {...props} /> },
+      { Component: () => <NavUser {...props} />, path },
     ]);
 
     render(
@@ -41,18 +40,18 @@ describe('NavUser Component', () => {
 
     // Verify dropdown menu is initially closed
     expect(
-      screen.queryByRole('menuitem', { name: /account/i }),
+      screen.queryByRole("menuitem", { name: /account/i }),
     ).not.toBeInTheDocument();
   });
 
-  test('given: user data, should: render avatar fallback with initials when avatar fails to load', () => {
+  test("given: user data, should: render avatar fallback with initials when avatar fails to load", () => {
     const props = createProps({
-      user: createUser({ avatar: 'invalid-url' }),
+      user: createUser({ avatar: "invalid-url" }),
     });
     const { user } = props;
-    const path = '/test';
+    const path = "/test";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <NavUser {...props} /> },
+      { Component: () => <NavUser {...props} />, path },
     ]);
 
     render(
@@ -68,12 +67,12 @@ describe('NavUser Component', () => {
     expect(avatarFallback).toBeInTheDocument();
   });
 
-  test('given: user menu interactions, should: handle opening, closing, and navigation correctly', async () => {
+  test("given: user menu interactions, should: handle opening, closing, and navigation correctly", async () => {
     const user = userEvent.setup();
     const props = createProps();
-    const path = '/test';
+    const path = "/test";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <NavUser {...props} /> },
+      { Component: () => <NavUser {...props} />, path },
     ]);
 
     render(
@@ -84,39 +83,39 @@ describe('NavUser Component', () => {
 
     // Verify dropdown menu is initially closed
     expect(
-      screen.queryByRole('menuitem', { name: /account/i }),
+      screen.queryByRole("menuitem", { name: /account/i }),
     ).not.toBeInTheDocument();
 
     // Click the user button to open the menu
-    const userButton = screen.getByRole('button', {
+    const userButton = screen.getByRole("button", {
       name: /open user menu/i,
     });
     await user.click(userButton);
 
     // Verify dropdown menu items are now visible
     expect(
-      screen.getByRole('menuitem', { name: /account/i }),
+      screen.getByRole("menuitem", { name: /account/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('menuitem', { name: /log out/i }),
+      screen.getByRole("menuitem", { name: /log out/i }),
     ).toBeInTheDocument();
 
     // Verify account link
-    const accountLink = screen.getByRole('link', { name: /account/i });
-    expect(accountLink).toHaveAttribute('href', '/settings/account');
+    const accountLink = screen.getByRole("link", { name: /account/i });
+    expect(accountLink).toHaveAttribute("href", "/settings/account");
 
     // Verify logout button
-    const logoutButton = screen.getByRole('menuitem', { name: /log out/i });
-    expect(logoutButton).toHaveAttribute('name', 'intent');
-    expect(logoutButton).toHaveAttribute('value', 'logout');
-    expect(logoutButton).toHaveAttribute('type', 'submit');
+    const logoutButton = screen.getByRole("menuitem", { name: /log out/i });
+    expect(logoutButton).toHaveAttribute("name", "intent");
+    expect(logoutButton).toHaveAttribute("value", "logout");
+    expect(logoutButton).toHaveAttribute("type", "submit");
 
     // Press escape to close the dropdown
-    await user.keyboard('{Escape}');
+    await user.keyboard("{Escape}");
 
     // Verify menu is closed
     expect(
-      screen.queryByRole('menuitem', { name: /account/i }),
+      screen.queryByRole("menuitem", { name: /account/i }),
     ).not.toBeInTheDocument();
   });
 });

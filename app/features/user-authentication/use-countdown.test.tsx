@@ -1,12 +1,11 @@
 // src/hooks/useCountdown.test.ts
 
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { act, renderHook } from '~/test/react-test-utils';
+import { useCountdown } from "./use-countdown";
+import { act, renderHook } from "~/test/react-test-utils";
 
-import { useCountdown } from './use-countdown';
-
-describe('useCountdown()', () => {
+describe("useCountdown()", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -16,12 +15,12 @@ describe('useCountdown()', () => {
     vi.useRealTimers();
   });
 
-  test('given: an initial time in seconds, should: initialize with that value', () => {
+  test("given: an initial time in seconds, should: initialize with that value", () => {
     const { result } = renderHook(() => useCountdown(60));
     expect(result.current.secondsLeft).toEqual(60);
   });
 
-  test('given: an initial time greater than zero, should: count down every second until zero', () => {
+  test("given: an initial time greater than zero, should: count down every second until zero", () => {
     const { result } = renderHook(() => useCountdown(3));
 
     expect(result.current.secondsLeft).toEqual(3);
@@ -42,7 +41,7 @@ describe('useCountdown()', () => {
     expect(result.current.secondsLeft).toEqual(0);
   });
 
-  test('given: a countdown reaching zero, should: stop at zero and not continue', () => {
+  test("given: a countdown reaching zero, should: stop at zero and not continue", () => {
     const { result } = renderHook(() => useCountdown(2));
 
     expect(result.current.secondsLeft).toEqual(2);
@@ -58,7 +57,7 @@ describe('useCountdown()', () => {
     expect(result.current.secondsLeft).toEqual(0);
   });
 
-  test('given: a new initial time value, should: reset the countdown to the new value', () => {
+  test("given: a new initial time value, should: reset the countdown to the new value", () => {
     const { result, rerender } = renderHook(
       ({ initialSeconds }) => useCountdown(initialSeconds),
       { initialProps: { initialSeconds: 5 } },
@@ -75,7 +74,7 @@ describe('useCountdown()', () => {
     expect(result.current.secondsLeft).toEqual(10);
   });
 
-  test('given: zero or negative initial values, should: remain at the initial value without counting', () => {
+  test("given: zero or negative initial values, should: remain at the initial value without counting", () => {
     const { result: zeroResult } = renderHook(() => useCountdown(0));
     expect(zeroResult.current.secondsLeft).toEqual(0);
 
@@ -89,7 +88,7 @@ describe('useCountdown()', () => {
     expect(negativeResult.current.secondsLeft).toEqual(-5);
   });
 
-  test('given: component unmounting, should: stop counting and maintain last value', () => {
+  test("given: component unmounting, should: stop counting and maintain last value", () => {
     const { result, unmount } = renderHook(() => useCountdown(5));
 
     expect(result.current.secondsLeft).toEqual(5);
@@ -102,7 +101,7 @@ describe('useCountdown()', () => {
     expect(result.current.secondsLeft).toEqual(5);
   });
 
-  test('given: reset function is called, should: reset the timer back to initialSeconds', () => {
+  test("given: reset function is called, should: reset the timer back to initialSeconds", () => {
     const { result } = renderHook(() => useCountdown(10));
 
     expect(result.current.secondsLeft).toEqual(10);
@@ -118,7 +117,7 @@ describe('useCountdown()', () => {
     expect(result.current.secondsLeft).toEqual(10);
   });
 
-  test('given: reset function is called after countdown reaches zero, should: restart the countdown', () => {
+  test("given: reset function is called after countdown reaches zero, should: restart the countdown", () => {
     const { result } = renderHook(() => useCountdown(3));
 
     expect(result.current.secondsLeft).toEqual(3);

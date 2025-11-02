@@ -1,13 +1,12 @@
-import { OrganizationMembershipRole } from '@prisma/client';
-import { describe, expect, test } from 'vitest';
+import { OrganizationMembershipRole } from "@prisma/client";
+import { describe, expect, test } from "vitest";
 
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+import { mapUserAccountWithMembershipsToDangerZoneProps } from "./account-settings-helpers.server";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 
-import { mapUserAccountWithMembershipsToDangerZoneProps } from './account-settings-helpers.server';
-
-describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
-  test('given: a user account with no memberships, should: return danger zone props with empty arrays', () => {
+describe("mapUserAccountWithMembershipsToDangerZoneProps()", () => {
+  test("given: a user account with no memberships, should: return danger zone props with empty arrays", () => {
     const user = createPopulatedUserAccount();
 
     const actual = mapUserAccountWithMembershipsToDangerZoneProps({
@@ -22,7 +21,7 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a user who is a member or admin of organizations, should: not include those organizations in any arrays', () => {
+  test("given: a user who is a member or admin of organizations, should: not include those organizations in any arrays", () => {
     const user = createPopulatedUserAccount();
     const org1 = createPopulatedOrganization();
     const org2 = createPopulatedOrganization();
@@ -31,14 +30,14 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
       ...user,
       memberships: [
         {
+          deactivatedAt: null,
           organization: { ...org1, _count: { memberships: 1 } },
           role: OrganizationMembershipRole.member,
-          deactivatedAt: null,
         },
         {
+          deactivatedAt: null,
           organization: { ...org2, _count: { memberships: 2 } },
           role: OrganizationMembershipRole.admin,
-          deactivatedAt: null,
         },
       ],
     });
@@ -50,7 +49,7 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a user who is the owner and only member of organizations, should: include those organizations in implicitly deleted array', () => {
+  test("given: a user who is the owner and only member of organizations, should: include those organizations in implicitly deleted array", () => {
     const user = createPopulatedUserAccount();
     const org1 = createPopulatedOrganization();
     const org2 = createPopulatedOrganization();
@@ -59,14 +58,14 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
       ...user,
       memberships: [
         {
+          deactivatedAt: null,
           organization: { ...org1, _count: { memberships: 1 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
         {
+          deactivatedAt: null,
           organization: { ...org2, _count: { memberships: 1 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
       ],
     });
@@ -78,7 +77,7 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a user who is the owner of organizations with other members, should: include those organizations in blocking array', () => {
+  test("given: a user who is the owner of organizations with other members, should: include those organizations in blocking array", () => {
     const user = createPopulatedUserAccount();
     const org1 = createPopulatedOrganization();
     const org2 = createPopulatedOrganization();
@@ -87,14 +86,14 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
       ...user,
       memberships: [
         {
+          deactivatedAt: null,
           organization: { ...org1, _count: { memberships: 2 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
         {
+          deactivatedAt: null,
           organization: { ...org2, _count: { memberships: 3 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
       ],
     });
@@ -106,7 +105,7 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a user who is the owner of organizations with mixed member counts, should: correctly categorize organizations', () => {
+  test("given: a user who is the owner of organizations with mixed member counts, should: correctly categorize organizations", () => {
     const user = createPopulatedUserAccount();
     const soloOrg = createPopulatedOrganization();
     const multiMemberOrg = createPopulatedOrganization();
@@ -116,19 +115,19 @@ describe('mapUserAccountWithMembershipsToDangerZoneProps()', () => {
       ...user,
       memberships: [
         {
+          deactivatedAt: null,
           organization: { ...soloOrg, _count: { memberships: 1 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
         {
+          deactivatedAt: null,
           organization: { ...multiMemberOrg, _count: { memberships: 3 } },
           role: OrganizationMembershipRole.owner,
-          deactivatedAt: null,
         },
         {
+          deactivatedAt: null,
           organization: { ...memberOrg, _count: { memberships: 2 } },
           role: OrganizationMembershipRole.member,
-          deactivatedAt: null,
         },
       ],
     });

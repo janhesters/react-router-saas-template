@@ -1,16 +1,13 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-/* eslint-disable @typescript-eslint/consistent-type-definitions */
-import { z } from 'zod';
+import { z } from "zod";
 
 const schema = z.object({
-  ALLOW_INDEXING: z.enum(['true', 'false']).optional(),
+  ALLOW_INDEXING: z.enum(["true", "false"]).optional(),
   APP_URL: z.url(),
   COOKIE_SECRET: z.string(),
   DATABASE_URL: z.string(),
   HONEYPOT_SECRET: z.string(),
-  MOCKS: z.literal('true').optional(),
-  NODE_ENV: z.enum(['production', 'development', 'test'] as const),
+  MOCKS: z.literal("true").optional(),
+  NODE_ENV: z.enum(["production", "development", "test"] as const),
   RESEND_API_KEY: z.string().optional(),
   STORAGE_ACCESS_KEY_ID: z.string(),
   STORAGE_REGION: z.string(),
@@ -34,11 +31,11 @@ export function init() {
 
   if (parsed.success === false) {
     console.error(
-      '❌ Invalid environment variables:',
+      "❌ Invalid environment variables:",
       z.flattenError(parsed.error).fieldErrors,
     );
 
-    throw new Error('Invalid environment variables');
+    throw new Error("Invalid environment variables");
   }
 }
 

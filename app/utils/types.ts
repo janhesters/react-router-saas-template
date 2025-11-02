@@ -1,9 +1,9 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps } from "react";
 
 /**
  * Props for an SVG icon component.
  */
-export type IconProps = Omit<ComponentProps<'svg'>, 'fill'> & {
+export type IconProps = Omit<ComponentProps<"svg">, "fill"> & {
   className?: string;
 };
 

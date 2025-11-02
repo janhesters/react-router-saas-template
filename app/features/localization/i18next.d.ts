@@ -1,8 +1,8 @@
-import type { defaultNS, resources } from './resources';
+import type { defaultNS, resources } from "./resources";
 
-declare module 'react-i18next' {
+declare module "react-i18next" {
   type CustomTypeOptions = {
     defaultNS: typeof defaultNS;
-    resources: (typeof resources)['en'];
+    resources: (typeof resources)["en"];
   };
 }

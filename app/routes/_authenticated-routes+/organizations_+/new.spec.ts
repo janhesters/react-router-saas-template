@@ -1,33 +1,33 @@
-import { describe, expect, onTestFinished, test } from 'vitest';
+/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { describe, expect, onTestFinished, test } from "vitest";
 
-import { CREATE_ORGANIZATION_INTENT } from '~/features/organizations/create-organization/create-organization-constants';
-import { createPopulatedOrganization } from '~/features/organizations/organizations-factories.server';
+import { action } from "./new";
+import { CREATE_ORGANIZATION_INTENT } from "~/features/organizations/create-organization/create-organization-constants";
+import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import {
   deleteOrganizationFromDatabaseById,
   retrieveOrganizationWithMembershipsFromDatabaseBySlug,
   saveOrganizationToDatabase,
-} from '~/features/organizations/organizations-model.server';
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
+} from "~/features/organizations/organizations-model.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
-} from '~/features/user-accounts/user-accounts-model.server';
-import { stripeHandlers } from '~/test/mocks/handlers/stripe';
-import { supabaseHandlers } from '~/test/mocks/handlers/supabase';
-import { setupMockServerLifecycle } from '~/test/msw-test-utils';
+} from "~/features/user-accounts/user-accounts-model.server";
+import { stripeHandlers } from "~/test/mocks/handlers/stripe";
+import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
+import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import {
   createAuthenticatedRequest,
   createAuthTestContextProvider,
-} from '~/test/test-utils';
-import { badRequest } from '~/utils/http-responses.server';
-import { slugify } from '~/utils/slugify.server';
-import { toFormData } from '~/utils/to-form-data';
-
-import { action } from './new';
+} from "~/test/test-utils";
+import { badRequest } from "~/utils/http-responses.server";
+import { slugify } from "~/utils/slugify.server";
+import { toFormData } from "~/utils/to-form-data";
 
 const createUrl = () => `http://localhost:3000/organizations/new`;
 
-const pattern = '/organizations/new';
+const pattern = "/organizations/new";
 
 async function sendAuthenticatedRequest({
   userAccount,
@@ -37,17 +37,17 @@ async function sendAuthenticatedRequest({
   formData: FormData;
 }) {
   const request = await createAuthenticatedRequest({
+    formData,
+    method: "POST",
     url: createUrl(),
     user: userAccount,
-    method: 'POST',
-    formData,
   });
   const params = {};
 
   return await action({
-    request,
-    context: await createAuthTestContextProvider({ request, params, pattern }),
+    context: await createAuthTestContextProvider({ params, pattern, request }),
     params,
+    request,
     unstable_pattern: pattern,
   });
 }
@@ -64,31 +64,31 @@ async function setup(userAccount = createPopulatedUserAccount()) {
 
 setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
-describe('/organizations/new route action', () => {
-  test('given: an unauthenticated request, should: throw a redirect to the login page', async () => {
+describe("/organizations/new route action", () => {
+  test("given: an unauthenticated request, should: throw a redirect to the login page", async () => {
     expect.assertions(2);
 
     const request = new Request(createUrl(), {
-      method: 'POST',
       body: toFormData({}),
+      method: "POST",
     });
     const params = {};
 
     try {
       await action({
-        request,
         context: await createAuthTestContextProvider({
-          request,
           params,
           pattern,
+          request,
         }),
-        unstable_pattern: pattern,
         params,
+        request,
+        unstable_pattern: pattern,
       });
     } catch (error) {
       if (error instanceof Response) {
         expect(error.status).toEqual(302);
-        expect(error.headers.get('Location')).toEqual(
+        expect(error.headers.get("Location")).toEqual(
           `/login?redirectTo=%2Forganizations%2Fnew`,
         );
       }
@@ -98,7 +98,7 @@ describe('/organizations/new route action', () => {
   describe(`${CREATE_ORGANIZATION_INTENT} intent`, () => {
     const intent = CREATE_ORGANIZATION_INTENT;
 
-    test('given: a valid name for an organization, should: create organization and redirect to organization page', async () => {
+    test("given: a valid name for an organization, should: create organization and redirect to organization page", async () => {
       const { userAccount } = await setup();
       const organization = createPopulatedOrganization();
       const formData = toFormData({
@@ -107,13 +107,13 @@ describe('/organizations/new route action', () => {
       });
 
       const response = (await sendAuthenticatedRequest({
-        userAccount,
         formData,
+        userAccount,
       })) as Response;
 
       expect(response.status).toEqual(302);
       const slug = slugify(organization.name);
-      expect(response.headers.get('Location')).toEqual(
+      expect(response.headers.get("Location")).toEqual(
         `/organizations/${slug}`,
       );
 
@@ -123,15 +123,15 @@ describe('/organizations/new route action', () => {
       expect(createdOrganization).toMatchObject({
         name: organization.name,
       });
-      expect(createdOrganization!.memberships[0]!.member.id).toEqual(
+      expect(createdOrganization?.memberships[0]?.member.id).toEqual(
         userAccount.id,
       );
-      expect(createdOrganization!.memberships[0]!.role).toEqual('owner');
+      expect(createdOrganization?.memberships[0]?.role).toEqual("owner");
 
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
     });
 
-    test('given: an organization name that already exists, should: create organization with unique slug', async () => {
+    test("given: an organization name that already exists, should: create organization with unique slug", async () => {
       const { userAccount } = await setup();
 
       // Create first organization
@@ -148,81 +148,81 @@ describe('/organizations/new route action', () => {
       });
 
       const response = (await sendAuthenticatedRequest({
-        userAccount,
         formData,
+        userAccount,
       })) as Response;
 
       expect(response.status).toEqual(302);
-      const locationHeader = response.headers.get('Location');
+      const locationHeader = response.headers.get("Location");
       expect(locationHeader).toMatch(
         new RegExp(String.raw`^/organizations/${firstOrg.slug}-[\da-z]{8}$`),
       );
 
       // Extract slug from redirect URL and verify organization
-      const slug = locationHeader!.split('/').pop()!;
+      const slug = locationHeader!.split("/").pop()!;
       const secondOrg =
         await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(secondOrg).toBeTruthy();
-      expect(secondOrg!.name).toEqual(firstOrg.name);
-      expect(secondOrg!.slug).not.toEqual(firstOrg.slug);
-      expect(secondOrg!.memberships).toHaveLength(1);
-      expect(secondOrg!.memberships[0]!.member.id).toEqual(userAccount.id);
-      expect(secondOrg!.memberships[0]!.role).toEqual('owner');
+      expect(secondOrg?.name).toEqual(firstOrg.name);
+      expect(secondOrg?.slug).not.toEqual(firstOrg.slug);
+      expect(secondOrg?.memberships).toHaveLength(1);
+      expect(secondOrg?.memberships[0]?.member.id).toEqual(userAccount.id);
+      expect(secondOrg?.memberships[0]?.role).toEqual("owner");
 
       await deleteOrganizationFromDatabaseById(secondOrg!.id);
     });
 
-    test('given: an organization name that would create a reserved slug, should: create organization with unique slug', async () => {
+    test("given: an organization name that would create a reserved slug, should: create organization with unique slug", async () => {
       const { userAccount } = await setup();
 
       const formData = toFormData({
         intent,
-        name: 'New', // This would create slug "new" which is reserved.
+        name: "New", // This would create slug "new" which is reserved.
       });
 
       const response = (await sendAuthenticatedRequest({
-        userAccount,
         formData,
+        userAccount,
       })) as Response;
 
       expect(response.status).toEqual(302);
-      const locationHeader = response.headers.get('Location');
+      const locationHeader = response.headers.get("Location");
       expect(locationHeader).toMatch(/^\/organizations\/new-[\da-z]{8}$/);
 
       // Extract slug from redirect URL and verify organization.
-      const slug = locationHeader!.split('/').pop()!;
+      const slug = locationHeader!.split("/").pop()!;
       const organization =
         await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(organization).toBeTruthy();
-      expect(organization!.name).toEqual('New');
-      expect(organization!.slug).not.toEqual('new');
-      expect(organization!.memberships).toHaveLength(1);
-      expect(organization!.memberships[0]!.member.id).toEqual(userAccount.id);
-      expect(organization!.memberships[0]!.role).toEqual('owner');
+      expect(organization?.name).toEqual("New");
+      expect(organization?.slug).not.toEqual("new");
+      expect(organization?.memberships).toHaveLength(1);
+      expect(organization?.memberships[0]?.member.id).toEqual(userAccount.id);
+      expect(organization?.memberships[0]?.role).toEqual("owner");
 
       await deleteOrganizationFromDatabaseById(organization!.id);
     });
 
-    test('given: a valid organization id, name and a logo url, should: create organization with logo url', async () => {
+    test("given: a valid organization id, name and a logo url, should: create organization with logo url", async () => {
       const { userAccount } = await setup();
       const organization = createPopulatedOrganization();
 
       const formData = toFormData({
         intent,
-        organizationId: organization.id,
-        name: organization.name,
         logo: organization.imageUrl,
+        name: organization.name,
+        organizationId: organization.id,
       });
 
       const response = (await sendAuthenticatedRequest({
-        userAccount,
         formData,
+        userAccount,
       })) as Response;
 
       // Assert redirect
       expect(response.status).toEqual(302);
       const slug = slugify(organization.name);
-      expect(response.headers.get('Location')).toEqual(
+      expect(response.headers.get("Location")).toEqual(
         `/organizations/${slug}`,
       );
 
@@ -233,15 +233,15 @@ describe('/organizations/new route action', () => {
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
         id: organization.id,
+        imageUrl: organization.imageUrl, // Verify the logo URL was saved
         name: organization.name,
         slug: slug,
-        imageUrl: organization.imageUrl, // Verify the logo URL was saved
       });
-      expect(createdOrganization!.memberships).toHaveLength(1);
-      expect(createdOrganization!.memberships[0]!.member.id).toEqual(
+      expect(createdOrganization?.memberships).toHaveLength(1);
+      expect(createdOrganization?.memberships[0]?.member.id).toEqual(
         userAccount.id,
       );
-      expect(createdOrganization!.memberships[0]!.role).toEqual('owner');
+      expect(createdOrganization?.memberships[0]?.role).toEqual("owner");
 
       // Cleanup
       await deleteOrganizationFromDatabaseById(createdOrganization!.id);
@@ -249,57 +249,57 @@ describe('/organizations/new route action', () => {
 
     test.each([
       {
-        given: 'no name provided',
         body: { intent } as const,
         expected: badRequest({
-          errors: { name: { message: 'organizations:new.form.name-required' } },
+          errors: { name: { message: "organizations:new.form.name-required" } },
         }),
+        given: "no name provided",
       },
       {
-        given: 'a name that is too short (2 characters)',
-        body: { intent, name: 'ab' } as const,
+        body: { intent, name: "ab" } as const,
         expected: badRequest({
           errors: {
-            name: { message: 'organizations:new.form.name-min-length' },
+            name: { message: "organizations:new.form.name-min-length" },
           },
         }),
+        given: "a name that is too short (2 characters)",
       },
       {
-        given: 'a name that is too long (256 characters)',
-        body: { intent, name: 'a'.repeat(256) } as const,
+        body: { intent, name: "a".repeat(256) } as const,
         expected: badRequest({
           errors: {
-            name: { message: 'organizations:new.form.name-max-length' },
+            name: { message: "organizations:new.form.name-max-length" },
           },
         }),
+        given: "a name that is too long (256 characters)",
       },
       {
-        given: 'a name with only whitespace',
-        body: { intent, name: '   ' },
+        body: { intent, name: "   " },
         expected: badRequest({
           errors: {
-            name: { message: 'organizations:new.form.name-min-length' },
+            name: { message: "organizations:new.form.name-min-length" },
           },
         }),
+        given: "a name with only whitespace",
       },
       {
-        given: 'a too short name with whitespace',
-        body: { intent, name: '  a ' },
+        body: { intent, name: "  a " },
         expected: badRequest({
           errors: {
-            name: { message: 'organizations:new.form.name-min-length' },
+            name: { message: "organizations:new.form.name-min-length" },
           },
         }),
+        given: "a too short name with whitespace",
       },
     ])(
-      'given: $given, should: return a 400 status code with an error message',
+      "given: $given, should: return a 400 status code with an error message",
       async ({ body, expected }) => {
         const { userAccount } = await setup();
 
         const formData = toFormData(body);
         const response = await sendAuthenticatedRequest({
-          userAccount,
           formData,
+          userAccount,
         });
 
         expect(response).toEqual(expected);

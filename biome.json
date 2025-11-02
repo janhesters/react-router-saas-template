@@ -1,0 +1,76 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.2/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [":NODE:", ":PACKAGE:", ":BLANK_LINE:", ":PATH:"]
+          }
+        },
+        "useSortedAttributes": "on",
+        "useSortedKeys": "on"
+      }
+    },
+    "enabled": true
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "files": {
+    "ignoreUnknown": false,
+    "includes": ["**", "!.react-router"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space"
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "correctness": {
+        "noReactPropAssignments": "error",
+        "useHookAtTopLevel": "error",
+        "useJsonImportAttributes": "error",
+        "useJsxKeyInIterable": "error",
+        "useSingleJsDocAsterisk": "error"
+      },
+      "recommended": true,
+      "style": {
+        "useForOf": "error",
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "separatedType"
+          }
+        },
+        "useNumberNamespace": "error",
+        "useNumericSeparators": "error",
+        "useSelfClosingElements": "error",
+        "useTrimStartEnd": "error"
+      },
+      "suspicious": {
+        "noDuplicateTestHooks": "error",
+        "noFocusedTests": "error",
+        "noGlobalIsFinite": "off",
+        "noGlobalIsNan": "error",
+        "noMisplacedAssertion": "error",
+        "noUnknownAtRules": "off"
+      }
+    }
+  },
+  "vcs": {
+    "clientKind": "git",
+    "defaultBranch": "main",
+    "enabled": true,
+    "useIgnoreFile": true
+  }
+}

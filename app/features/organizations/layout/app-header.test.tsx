@@ -1,11 +1,11 @@
-import { describe, expect, test } from 'vitest';
+/** biome-ignore-all lint/style/noNonNullAssertion: Test code */
+import { describe, expect, test } from "vitest";
 
-import { SidebarProvider } from '~/components/ui/sidebar';
-import { createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import type { AppHeaderProps } from './app-header';
-import { AppHeader } from './app-header';
+import type { AppHeaderProps } from "./app-header";
+import { AppHeader } from "./app-header";
+import { SidebarProvider } from "~/components/ui/sidebar";
+import { createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<AppHeaderProps> = ({
   title,
@@ -14,14 +14,14 @@ const createProps: Factory<AppHeaderProps> = ({
     showBadge: false,
     unreadNotifications: [],
   },
-} = {}) => ({ title, notificationsButtonProps });
+} = {}) => ({ notificationsButtonProps, title });
 
-describe('AppHeader Component', () => {
-  test('given: a title, should: render header with title and notification button', () => {
-    const props = createProps({ title: 'Test Title' });
-    const path = '/test';
+describe("AppHeader Component", () => {
+  test("given: a title, should: render header with title and notification button", () => {
+    const props = createProps({ title: "Test Title" });
+    const path = "/test";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <AppHeader {...props} /> },
+      { Component: () => <AppHeader {...props} />, path },
     ]);
 
     render(
@@ -32,22 +32,22 @@ describe('AppHeader Component', () => {
 
     // Verify the title is displayed
     expect(
-      screen.getByRole('heading', { name: props.title!, level: 1 }),
+      screen.getByRole("heading", { level: 1, name: props.title! }),
     ).toBeInTheDocument();
 
     // Verify the notification button is present
-    const notificationButton = screen.getByRole('button', {
+    const notificationButton = screen.getByRole("button", {
       name: /open notifications/i,
     });
     expect(notificationButton).toBeInTheDocument();
-    expect(notificationButton).toHaveClass('size-8');
+    expect(notificationButton).toHaveClass("size-8");
   });
 
-  test('given: no title, should: render header without title but with notification button', () => {
+  test("given: no title, should: render header without title but with notification button", () => {
     const props = createProps({ title: undefined });
-    const path = '/test';
+    const path = "/test";
     const RouterStub = createRoutesStub([
-      { path, Component: () => <AppHeader {...props} /> },
+      { Component: () => <AppHeader {...props} />, path },
     ]);
 
     render(
@@ -57,10 +57,10 @@ describe('AppHeader Component', () => {
     );
 
     // Verify the title is not displayed
-    expect(screen.queryByRole('heading')).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading")).not.toBeInTheDocument();
 
     // Verify the notification button is still present
-    const notificationButton = screen.getByRole('button', {
+    const notificationButton = screen.getByRole("button", {
       name: /open notifications/i,
     });
     expect(notificationButton).toBeInTheDocument();

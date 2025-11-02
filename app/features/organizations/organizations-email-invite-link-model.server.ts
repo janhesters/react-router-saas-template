@@ -1,11 +1,10 @@
-/* eslint-disable unicorn/no-null */
 import type {
   Organization,
   OrganizationEmailInviteLink,
   Prisma,
-} from '@prisma/client';
+} from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -30,7 +29,7 @@ export async function saveOrganizationEmailInviteLinkToDatabase(
  * @returns The email invite link or null if not found.
  */
 export async function retrieveEmailInviteLinkFromDatabaseById(
-  id: OrganizationEmailInviteLink['id'],
+  id: OrganizationEmailInviteLink["id"],
 ) {
   return prisma.organizationEmailInviteLink.findUnique({
     where: { id },
@@ -46,15 +45,15 @@ export async function retrieveEmailInviteLinkFromDatabaseById(
  * or has expired.
  */
 export async function retrieveActiveEmailInviteLinkFromDatabaseByToken(
-  token: OrganizationEmailInviteLink['token'],
+  token: OrganizationEmailInviteLink["token"],
 ) {
   const now = new Date();
   return prisma.organizationEmailInviteLink.findUnique({
-    where: { token, expiresAt: { gt: now }, deactivatedAt: null },
     include: {
-      organization: { select: { id: true, name: true, slug: true } },
       invitedBy: { select: { id: true, name: true } },
+      organization: { select: { id: true, name: true, slug: true } },
     },
+    where: { deactivatedAt: null, expiresAt: { gt: now }, token },
   });
 }
 
@@ -66,13 +65,13 @@ export async function retrieveActiveEmailInviteLinkFromDatabaseByToken(
  * @returns An array of active email invite links for the organization.
  */
 export async function retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId(
-  organizationId: Organization['id'],
+  organizationId: Organization["id"],
 ) {
   const now = new Date();
   return prisma.organizationEmailInviteLink.findMany({
-    where: { organizationId, expiresAt: { gt: now }, deactivatedAt: null },
-    orderBy: { createdAt: 'desc' },
     include: { invitedBy: { select: { id: true, name: true } } },
+    orderBy: { createdAt: "desc" },
+    where: { deactivatedAt: null, expiresAt: { gt: now }, organizationId },
   });
 }
 
@@ -89,11 +88,11 @@ export async function updateEmailInviteLinkInDatabaseById({
   id,
   emailInviteLink,
 }: {
-  id: OrganizationEmailInviteLink['id'];
+  id: OrganizationEmailInviteLink["id"];
   emailInviteLink: Prisma.OrganizationEmailInviteLinkUncheckedUpdateInput;
 }) {
   return prisma.organizationEmailInviteLink.update({
-    where: { id },
     data: emailInviteLink,
+    where: { id },
   });
 }

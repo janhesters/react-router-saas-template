@@ -1,9 +1,9 @@
-import type { RequestHandler } from 'msw';
-import type { SetupServer } from 'msw/node';
-import { setupServer } from 'msw/node';
+import type { RequestHandler } from "msw";
+import type { SetupServer } from "msw/node";
+import { setupServer } from "msw/node";
 
-import { onUnhandledRequest } from './msw-utils';
-import { remixPingHandler } from './msw-utils.server';
+import { onUnhandledRequest } from "./msw-utils";
+import { remixPingHandler } from "./msw-utils.server";
 
 /**
  * During development, we need to save the instance of our MSW server in a
@@ -29,24 +29,24 @@ function setup(handlers: RequestHandler[]) {
 
 function start(server: SetupServer) {
   server.listen({ onUnhandledRequest });
-  console.info('🔶 MSW mock server running ...');
+  console.info("🔶 MSW mock server running ...");
 
-  process.once('SIGINT', () => {
+  process.once("SIGINT", () => {
     globalThis.__MSW_SERVER = undefined;
     server.close();
   });
 
-  process.once('SIGTERM', () => {
+  process.once("SIGTERM", () => {
     globalThis.__MSW_SERVER = undefined;
     server.close();
   });
 }
 
 function restart(server: SetupServer, handlers: RequestHandler[]) {
-  console.info('🔶 Shutting down MSW Mock Server ...');
+  console.info("🔶 Shutting down MSW Mock Server ...");
   server.close();
 
-  console.info('🔶 Attempting to restart MSW Mock Server ...');
+  console.info("🔶 Attempting to restart MSW Mock Server ...");
   start(setup(handlers));
 }
 

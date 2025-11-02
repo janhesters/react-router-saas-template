@@ -1,7 +1,7 @@
-import type { FieldErrors } from 'react-hook-form';
-import { describe, expect, test } from 'vitest';
+import type { FieldErrors } from "react-hook-form";
+import { describe, expect, test } from "vitest";
 
-import { getFormErrors } from './get-form-errors';
+import { getFormErrors } from "./get-form-errors";
 
 type TestFormFields = {
   email: string;
@@ -14,10 +14,10 @@ type TestFormData =
     }
   | Response;
 
-describe('getFormErrors()', () => {
-  test('given: a form data object with errors, should: return the errors', () => {
+describe("getFormErrors()", () => {
+  test("given: a form data object with errors, should: return the errors", () => {
     const errors: FieldErrors<TestFormFields> = {
-      email: { type: 'validation', message: 'Invalid email' },
+      email: { message: "Invalid email", type: "validation" },
     };
     const data: TestFormData = { errors };
 
@@ -27,8 +27,8 @@ describe('getFormErrors()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: a form data object without errors, should: return undefined', () => {
-    const data: TestFormData = { email: 'test@example.com' };
+  test("given: a form data object without errors, should: return undefined", () => {
+    const data: TestFormData = { email: "test@example.com" };
 
     const actual = getFormErrors<TestFormData>(data);
     const expected = undefined;
@@ -36,7 +36,7 @@ describe('getFormErrors()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: undefined, should: return undefined', () => {
+  test("given: undefined, should: return undefined", () => {
     const data = undefined;
 
     const actual = getFormErrors<TestFormData | undefined>(data);
@@ -45,7 +45,7 @@ describe('getFormErrors()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: empty object, should: return undefined', () => {
+  test("given: empty object, should: return undefined", () => {
     const data: TestFormData = {};
 
     const actual = getFormErrors<TestFormData>(data);
@@ -54,7 +54,7 @@ describe('getFormErrors()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: Response object, should: return undefined', () => {
+  test("given: Response object, should: return undefined", () => {
     const data = new Response();
 
     const actual = getFormErrors<TestFormData>(data);

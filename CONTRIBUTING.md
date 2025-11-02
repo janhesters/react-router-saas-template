@@ -176,7 +176,7 @@ npm run test:e2e:ui # End-to-end
 
 ### Code Quality
 
-- ESLint & Prettier
+- Biome
 - Write self-documenting code
 - Add TSDoc to your complex functions
 - Comment complex logic

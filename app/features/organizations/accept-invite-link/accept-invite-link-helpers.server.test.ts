@@ -1,31 +1,30 @@
-import { faker } from '@faker-js/faker';
-import { describe, expect, test } from 'vitest';
-
-import { createPopulatedUserAccount } from '~/features/user-accounts/user-accounts-factories.server';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { notFound } from '~/utils/http-responses.server';
+import { faker } from "@faker-js/faker";
+import { describe, expect, test } from "vitest";
 
 import {
   createPopulatedOrganization,
   createPopulatedOrganizationInviteLink,
-} from '../organizations-factories.server';
+} from "../organizations-factories.server";
 import {
   getInviteLinkToken,
   throwIfInviteLinkIsExpired,
-} from './accept-invite-link-helpers.server';
+} from "./accept-invite-link-helpers.server";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { notFound } from "~/utils/http-responses.server";
 
-describe('throwIfInviteLinkIsExpired()', () => {
-  test('given: a valid invite link, should: return the link', () => {
+describe("throwIfInviteLinkIsExpired()", () => {
+  test("given: a valid invite link, should: return the link", () => {
     const link = {
-      id: createPopulatedOrganizationInviteLink().id,
-      expiresAt: createPopulatedOrganizationInviteLink().expiresAt,
-      organization: {
-        id: createPopulatedOrganization().name,
-        name: createPopulatedOrganization().name,
-      },
       creator: {
         id: createPopulatedUserAccount().id,
         name: createPopulatedUserAccount().name,
+      },
+      expiresAt: createPopulatedOrganizationInviteLink().expiresAt,
+      id: createPopulatedOrganizationInviteLink().id,
+      organization: {
+        id: createPopulatedOrganization().name,
+        name: createPopulatedOrganization().name,
       },
     };
 
@@ -35,19 +34,19 @@ describe('throwIfInviteLinkIsExpired()', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('given: an expired invite link, should: throw a 404 error', () => {
+  test("given: an expired invite link, should: throw a 404 error", () => {
     expect.assertions(1);
 
     const link = {
-      id: createPopulatedOrganizationInviteLink().id,
-      expiresAt: faker.date.recent(),
-      organization: {
-        id: createPopulatedOrganization().name,
-        name: createPopulatedOrganization().name,
-      },
       creator: {
         id: createPopulatedUserAccount().id,
         name: createPopulatedUserAccount().name,
+      },
+      expiresAt: faker.date.recent(),
+      id: createPopulatedOrganizationInviteLink().id,
+      organization: {
+        id: createPopulatedOrganization().name,
+        name: createPopulatedOrganization().name,
       },
     };
 
@@ -61,8 +60,8 @@ describe('throwIfInviteLinkIsExpired()', () => {
   });
 });
 
-describe('getInviteLinkToken()', () => {
-  test('given a request with token query param: returns the token', () => {
+describe("getInviteLinkToken()", () => {
+  test("given a request with token query param: returns the token", () => {
     const token = createPopulatedOrganizationInviteLink().token;
     const request = new Request(`http://example.com/?token=${token}`);
 
@@ -71,16 +70,16 @@ describe('getInviteLinkToken()', () => {
     expect(actual).toEqual(token);
   });
 
-  test('given a request without a token query param: returns an empty string', () => {
-    const request = new Request('http://example.com');
+  test("given a request without a token query param: returns an empty string", () => {
+    const request = new Request("http://example.com");
 
     const actual = getInviteLinkToken(request);
-    const expected = '';
+    const expected = "";
 
     expect(actual).toEqual(expected);
   });
 
-  test('given a request with multiple token query params: returns the first token', () => {
+  test("given a request with multiple token query params: returns the first token", () => {
     const token1 = createPopulatedOrganizationInviteLink().token;
     const token2 = createPopulatedOrganizationInviteLink().token;
     const request = new Request(

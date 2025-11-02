@@ -1,12 +1,13 @@
-import { CheckIcon } from 'lucide-react';
-import { useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
-import { href, Link } from 'react-router';
+import { CheckIcon } from "lucide-react";
+import { useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
+import { href, Link } from "react-router";
 
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
-import { Separator } from '~/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+import type { Route } from "./+types/pricing";
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Separator } from "~/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
   FeatureListItem,
   FeaturesList,
@@ -20,16 +21,14 @@ import {
   TierCardTitle,
   TierContainer,
   TierGrid,
-} from '~/features/billing/pricing';
-import { Footer } from '~/features/landing/footer';
-import { Header } from '~/features/landing/header';
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-
-import type { Route } from './+types/pricing';
+} from "~/features/billing/pricing";
+import { Footer } from "~/features/landing/footer";
+import { Header } from "~/features/landing/header";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
 
 export function loader({ context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
-  return { title: i18n.t('billing:pricing-page.page-title') };
+  return { title: i18n.t("billing:pricing-page.page-title") };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -37,9 +36,9 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 ];
 
 export default function PricingRoute() {
-  const { t } = useTranslation('billing', { keyPrefix: 'pricing' });
-  const { t: tPage } = useTranslation('billing', { keyPrefix: 'pricing-page' });
-  const [billingPeriod, setBillingPeriod] = useState('annual');
+  const { t } = useTranslation("billing", { keyPrefix: "pricing" });
+  const { t: tPage } = useTranslation("billing", { keyPrefix: "pricing-page" });
+  const [billingPeriod, setBillingPeriod] = useState("annual");
 
   const getFeatures = (key: string): string[] => {
     return t(`plans.${key}.features`, { returnObjects: true }) as string[];
@@ -50,27 +49,27 @@ export default function PricingRoute() {
       <Header />
       <main className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48">
         <div className="mx-auto mb-8 max-w-2xl text-center">
-          <h1 className="text-primary">{tPage('page-title')}</h1>
+          <h1 className="text-primary">{tPage("page-title")}</h1>
 
           <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
-            {tPage('pricing-heading')}
+            {tPage("pricing-heading")}
           </h2>
 
           <p className="text-muted-foreground mt-6 text-lg text-pretty">
-            {tPage('page-description')}
+            {tPage("page-description")}
           </p>
         </div>
 
-        <Tabs value={billingPeriod} onValueChange={setBillingPeriod}>
+        <Tabs onValueChange={setBillingPeriod} value={billingPeriod}>
           <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
             <TabsList>
-              <TabsTrigger value="monthly">{t('monthly')}</TabsTrigger>
+              <TabsTrigger value="monthly">{t("monthly")}</TabsTrigger>
 
-              <TabsTrigger value="annual">{t('annual')}</TabsTrigger>
+              <TabsTrigger value="annual">{t("annual")}</TabsTrigger>
             </TabsList>
 
-            {billingPeriod === 'monthly' && (
-              <p className="text-primary text-sm">{t('save-annually')}</p>
+            {billingPeriod === "monthly" && (
+              <p className="text-primary text-sm">{t("save-annually")}</p>
             )}
           </div>
 
@@ -79,16 +78,16 @@ export default function PricingRoute() {
               <TierGrid>
                 <TierCard>
                   <TierCardHeader>
-                    <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+                    <TierCardTitle>{t("plans.low.title")}</TierCardTitle>
 
-                    <TierCardPrice>{t('free')}</TierCardPrice>
+                    <TierCardPrice>{t("free")}</TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.low.description')}
+                      {t("plans.low.description")}
                     </TierCardDescription>
 
                     <Button asChild className="w-full">
-                      <Link to={href('/register')}>{t('plans.low.cta')}</Link>
+                      <Link to={href("/register")}>{t("plans.low.cta")}</Link>
                     </Button>
                   </TierCardHeader>
 
@@ -96,11 +95,11 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.low.features-title')}
+                      {t("plans.low.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('low').map(feature => (
+                      {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -112,36 +111,36 @@ export default function PricingRoute() {
 
                 <TierCard>
                   <TierCardHeader>
-                    <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                    <TierCardTitle>{t("plans.mid.title")}</TierCardTitle>
 
                     <TierCardPrice>
                       <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$30' }}
                         components={{
                           1: (
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
+                        i18nKey="billing:pricing.price"
+                        values={{ price: "$30" }}
                       />
                     </TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.mid.description')}
+                      {t("plans.mid.description")}
                     </TierCardDescription>
 
-                    <Button className="w-full">{t('plans.mid.cta')}</Button>
+                    <Button className="w-full">{t("plans.mid.cta")}</Button>
                   </TierCardHeader>
 
                   <Separator />
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.mid.features-title')}
+                      {t("plans.mid.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('mid').map(feature => (
+                      {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -154,38 +153,38 @@ export default function PricingRoute() {
                 <TierCard className="ring-primary ring-2">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
-                      {t('plans.high.title')}
-                      <Badge>{t('most-popular')}</Badge>
+                      {t("plans.high.title")}
+                      <Badge>{t("most-popular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
                       <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$55' }}
                         components={{
                           1: (
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
+                        i18nKey="billing:pricing.price"
+                        values={{ price: "$55" }}
                       />
                     </TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.high.description')}
+                      {t("plans.high.description")}
                     </TierCardDescription>
 
-                    <Button className="w-full">{t('plans.high.cta')}</Button>
+                    <Button className="w-full">{t("plans.high.cta")}</Button>
                   </TierCardHeader>
 
                   <Separator />
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.high.features-title')}
+                      {t("plans.high.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('high').map(feature => (
+                      {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -203,16 +202,16 @@ export default function PricingRoute() {
               <TierGrid className="@6xl/tiers:grid-cols-4">
                 <TierCard>
                   <TierCardHeader>
-                    <TierCardTitle>{t('plans.low.title')}</TierCardTitle>
+                    <TierCardTitle>{t("plans.low.title")}</TierCardTitle>
 
-                    <TierCardPrice>{t('free')}</TierCardPrice>
+                    <TierCardPrice>{t("free")}</TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.low.description')}
+                      {t("plans.low.description")}
                     </TierCardDescription>
 
                     <Button asChild className="w-full">
-                      <Link to={href('/register')}>{t('plans.low.cta')}</Link>
+                      <Link to={href("/register")}>{t("plans.low.cta")}</Link>
                     </Button>
                   </TierCardHeader>
 
@@ -220,11 +219,11 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.low.features-title')}
+                      {t("plans.low.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('low').map(feature => (
+                      {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -236,38 +235,38 @@ export default function PricingRoute() {
 
                 <TierCard>
                   <TierCardHeader>
-                    <TierCardTitle>{t('plans.mid.title')}</TierCardTitle>
+                    <TierCardTitle>{t("plans.mid.title")}</TierCardTitle>
 
                     <TierCardPrice>
                       <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$25' }}
                         components={{
                           1: (
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
+                        i18nKey="billing:pricing.price"
+                        values={{ price: "$25" }}
                       />
 
                       <OfferBadge>-15%</OfferBadge>
                     </TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.mid.description')}
+                      {t("plans.mid.description")}
                     </TierCardDescription>
 
-                    <Button className="w-full">{t('plans.mid.cta')}</Button>
+                    <Button className="w-full">{t("plans.mid.cta")}</Button>
                   </TierCardHeader>
 
                   <Separator />
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.mid.features-title')}
+                      {t("plans.mid.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('mid').map(feature => (
+                      {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -280,40 +279,40 @@ export default function PricingRoute() {
                 <TierCard className="ring-primary -mt-1.5 ring-2">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
-                      {t('plans.high.title')}
-                      <Badge>{t('most-popular')}</Badge>
+                      {t("plans.high.title")}
+                      <Badge>{t("most-popular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
                       <Trans
-                        i18nKey="billing:pricing.price"
-                        values={{ price: '$45' }}
                         components={{
                           1: (
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
+                        i18nKey="billing:pricing.price"
+                        values={{ price: "$45" }}
                       />
 
                       <OfferBadge>-20%</OfferBadge>
                     </TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.high.description')}
+                      {t("plans.high.description")}
                     </TierCardDescription>
 
-                    <Button className="w-full">{t('plans.high.cta')}</Button>
+                    <Button className="w-full">{t("plans.high.cta")}</Button>
                   </TierCardHeader>
 
                   <Separator />
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.high.features-title')}
+                      {t("plans.high.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('high').map(feature => (
+                      {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}
@@ -325,17 +324,17 @@ export default function PricingRoute() {
 
                 <TierCard className="@4xl/tiers:col-start-2 @6xl/tiers:col-start-auto">
                   <TierCardHeader>
-                    <TierCardTitle>{t('plans.enterprise.title')}</TierCardTitle>
+                    <TierCardTitle>{t("plans.enterprise.title")}</TierCardTitle>
 
-                    <TierCardPrice>{t('custom')}</TierCardPrice>
+                    <TierCardPrice>{t("custom")}</TierCardPrice>
 
                     <TierCardDescription>
-                      {t('plans.enterprise.description')}
+                      {t("plans.enterprise.description")}
                     </TierCardDescription>
 
                     <Button asChild className="w-full">
-                      <Link to={href('/contact-sales')}>
-                        {t('plans.enterprise.cta')}
+                      <Link to={href("/contact-sales")}>
+                        {t("plans.enterprise.cta")}
                       </Link>
                     </Button>
                   </TierCardHeader>
@@ -344,11 +343,11 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t('plans.enterprise.features-title')}
+                      {t("plans.enterprise.features-title")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
-                      {getFeatures('enterprise').map(feature => (
+                      {getFeatures("enterprise").map((feature) => (
                         <FeatureListItem key={feature}>
                           <CheckIcon />
                           {feature}

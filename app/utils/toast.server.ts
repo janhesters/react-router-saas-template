@@ -1,19 +1,18 @@
-/* eslint-disable unicorn/no-null */
-import { createId } from '@paralleldrive/cuid2';
-import { createCookieSessionStorage, redirect } from 'react-router';
-import { z } from 'zod';
+import { createId } from "@paralleldrive/cuid2";
+import { createCookieSessionStorage, redirect } from "react-router";
+import { z } from "zod";
 
-import { combineHeaders } from './combine-headers.server';
+import { combineHeaders } from "./combine-headers.server";
 
 const { commitSession, destroySession, getSession } =
   createCookieSessionStorage({
     cookie: {
       httpOnly: true,
-      name: '__toast',
-      path: '/',
-      sameSite: 'lax',
+      name: "__toast",
+      path: "/",
+      sameSite: "lax",
       secrets: [process.env.COOKIE_SECRET],
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === "production",
     },
   });
 
@@ -21,14 +20,14 @@ const ToastSchema = z.object({
   description: z.string().optional(),
   id: z.string().default(createId),
   title: z.string().optional(),
-  type: z.enum(['message', 'error', 'info', 'success']).default('message'),
+  type: z.enum(["message", "error", "info", "success"]).default("message"),
 });
 
 export type Toast = z.infer<typeof ToastSchema>;
-export type ToastInput = Omit<Toast, 'id' | 'type'> &
-  Partial<Pick<Toast, 'id' | 'type'>>;
+export type ToastInput = Omit<Toast, "id" | "type"> &
+  Partial<Pick<Toast, "id" | "type">>;
 
-const TOAST_KEY = 'toast';
+const TOAST_KEY = "toast";
 
 /**
  * Retrieves a toast message from the user's session.
@@ -39,15 +38,15 @@ const TOAST_KEY = 'toast';
  * @returns An object with the toast message and session headers.
  */
 export async function getToast(request: Request) {
-  const session = await getSession(request.headers.get('Cookie'));
+  const session = await getSession(request.headers.get("Cookie"));
   const cookies = session.get(TOAST_KEY) as unknown as ToastInput | undefined;
   const result = ToastSchema.safeParse(cookies);
   const toast = result.success ? result.data : null;
   return {
-    toast,
     headers: toast
-      ? new Headers({ 'Set-Cookie': await destroySession(session) })
+      ? new Headers({ "Set-Cookie": await destroySession(session) })
       : undefined,
+    toast,
   };
 }
 
@@ -62,7 +61,7 @@ export async function createToastHeaders(toastInput: ToastInput) {
   const toast = ToastSchema.parse(toastInput);
   const session = await getSession();
   session.flash(TOAST_KEY, toast);
-  return new Headers({ 'Set-Cookie': await commitSession(session) });
+  return new Headers({ "Set-Cookie": await commitSession(session) });
 }
 
 /**

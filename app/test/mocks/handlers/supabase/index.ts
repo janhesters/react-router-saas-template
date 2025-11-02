@@ -1,11 +1,11 @@
-import type { RequestHandler } from 'msw';
+import type { RequestHandler } from "msw";
 
-import { supabaseAuthHandlers } from './auth';
-import { supabaseStorageHandlers } from './storage';
+import { supabaseAuthHandlers } from "./auth";
+import { supabaseStorageHandlers } from "./storage";
 
 export const supabaseHandlers: RequestHandler[] = [
   ...supabaseAuthHandlers,
   ...supabaseStorageHandlers,
 ];
 
-export { createRateLimitedEmail } from './auth';
+export { createRateLimitedEmail } from "./auth";

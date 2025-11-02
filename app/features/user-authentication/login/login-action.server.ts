@@ -1,28 +1,24 @@
-import type { AuthOtpResponse } from '@supabase/supabase-js';
-import { redirect } from 'react-router';
-import { z } from 'zod';
+import type { AuthOtpResponse } from "@supabase/supabase-js";
+import { redirect } from "react-router";
+import { z } from "zod";
 
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
-import { getErrorMessage } from '~/utils/get-error-message';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { tooManyRequests, unauthorized } from '~/utils/http-responses.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import { anonymousContext } from '../user-authentication-middleware.server';
-import {
-  type EmailLoginErrors,
-  loginWithEmailSchema,
-  loginWithGoogleSchema,
-} from './login-schemas';
-import type { Route } from '.react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/login';
+import { anonymousContext } from "../user-authentication-middleware.server";
+import type { EmailLoginErrors } from "./login-schemas";
+import { loginWithEmailSchema, loginWithGoogleSchema } from "./login-schemas";
+import type { Route } from ".react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/login";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { retrieveUserAccountFromDatabaseByEmail } from "~/features/user-accounts/user-accounts-model.server";
+import { getErrorMessage } from "~/utils/get-error-message";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { tooManyRequests, unauthorized } from "~/utils/http-responses.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 export type LoginActionData =
-  | (AuthOtpResponse['data'] & { email: string })
+  | (AuthOtpResponse["data"] & { email: string })
   | Response
   | { errors: EmailLoginErrors };
 
-const loginSchema = z.discriminatedUnion('intent', [
+const loginSchema = z.discriminatedUnion("intent", [
   loginWithEmailSchema,
   loginWithGoogleSchema,
 ]);
@@ -37,7 +33,7 @@ export async function loginAction({
     const body = await validateFormData(request, loginSchema);
 
     switch (body.intent) {
-      case 'loginWithEmail': {
+      case "loginWithEmail": {
         const userAccount = await retrieveUserAccountFromDatabaseByEmail(
           body.email,
         );
@@ -46,7 +42,7 @@ export async function loginAction({
           throw unauthorized({
             errors: {
               email: {
-                message: 'user-authentication:login.form.user-doesnt-exist',
+                message: "user-authentication:login.form.user-doesnt-exist",
               },
             },
           });
@@ -55,7 +51,7 @@ export async function loginAction({
         const { data, error } = await supabase.auth.signInWithOtp({
           email: body.email,
           options: {
-            data: { intent: body.intent, appName: i18n.t('common:app-name') },
+            data: { appName: i18n.t("common:app-name"), intent: body.intent },
             shouldCreateUser: false,
           },
         });
@@ -64,11 +60,11 @@ export async function loginAction({
           const errorMessage = getErrorMessage(error);
 
           // Error: For security purposes, you can only request this after 10 seconds.
-          if (errorMessage.includes('you can only request this after')) {
+          if (errorMessage.includes("you can only request this after")) {
             throw tooManyRequests({
               errors: {
                 email: {
-                  message: 'user-authentication:login.form.login-failed',
+                  message: "user-authentication:login.form.login-failed",
                 },
               },
             });
@@ -79,12 +75,12 @@ export async function loginAction({
 
         return { ...data, email: body.email };
       }
-      case 'loginWithGoogle': {
+      case "loginWithGoogle": {
         const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
           options: {
             redirectTo: `${process.env.APP_URL}/auth/callback`,
           },
+          provider: "google",
         });
 
         if (error) {

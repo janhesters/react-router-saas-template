@@ -1,19 +1,17 @@
-/* eslint-disable unicorn/no-null */
-import { faker } from '@faker-js/faker';
-import { createId } from '@paralleldrive/cuid2';
+import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
 import type {
   Notification,
   NotificationPanel,
   NotificationRecipient,
   Prisma,
-} from '@prisma/client';
+} from "@prisma/client";
 
-import type { Factory } from '~/utils/types';
-
-import { LINK_NOTIFICATION_TYPE } from './notification-constants';
-import type { NotificationQueryResult } from './notifications-model.server';
-import type { NotificationType } from './notifications-panel-content';
-import type { LinkNotificationData } from './notifications-schemas';
+import { LINK_NOTIFICATION_TYPE } from "./notification-constants";
+import type { NotificationQueryResult } from "./notifications-model.server";
+import type { NotificationType } from "./notifications-panel-content";
+import type { LinkNotificationData } from "./notifications-schemas";
+import type { Factory } from "~/utils/types";
 
 /**
  * Creates link notification data with populated values.
@@ -29,8 +27,8 @@ export const createPopulatedLinkNotificationData: Factory<
   text = faker.lorem.sentences(2),
   href = faker.internet.url(),
 } = {}) => ({
-  text,
   href,
+  text,
   type: LINK_NOTIFICATION_TYPE,
 });
 
@@ -53,14 +51,14 @@ export const createPopulatedNotificationType: Factory<NotificationType> = ({
   switch (type) {
     case LINK_NOTIFICATION_TYPE: {
       return {
-        recipientId,
         isRead,
+        recipientId,
         ...createPopulatedLinkNotificationData(rest),
       };
     }
     default: {
       return faker.helpers.arrayElement([
-        { recipientId, isRead, ...createPopulatedLinkNotificationData(rest) },
+        { isRead, recipientId, ...createPopulatedLinkNotificationData(rest) },
       ]);
     }
   }
@@ -73,7 +71,7 @@ export const createPopulatedNotificationType: Factory<NotificationType> = ({
  * @returns A populated notification with given params.
  */
 export const createPopulatedNotification: Factory<
-  Omit<Notification, 'content'> & {
+  Omit<Notification, "content"> & {
     content: Prisma.InputJsonValue;
   }
 > = ({
@@ -82,7 +80,7 @@ export const createPopulatedNotification: Factory<
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
   organizationId = createId(),
   content = createPopulatedNotificationType(),
-} = {}) => ({ id, createdAt, updatedAt, organizationId, content });
+} = {}) => ({ content, createdAt, id, organizationId, updatedAt });
 
 /**
  * Creates a notification recipient with populated values.
@@ -99,7 +97,7 @@ export const createPopulatedNotificationRecipient: Factory<
   notificationId = createId(),
   userId = createId(),
   readAt = null,
-} = {}) => ({ id, createdAt, updatedAt, notificationId, userId, readAt });
+} = {}) => ({ createdAt, id, notificationId, readAt, updatedAt, userId });
 
 /**
  * Creates a notification panel with populated values.
@@ -114,7 +112,7 @@ export const createPopulatedNotificationPanel: Factory<NotificationPanel> = ({
   userId = createId(),
   organizationId = createId(),
   lastOpenedAt = faker.date.recent({ days: 1, refDate: updatedAt }),
-} = {}) => ({ id, createdAt, updatedAt, userId, organizationId, lastOpenedAt });
+} = {}) => ({ createdAt, id, lastOpenedAt, organizationId, updatedAt, userId });
 
 /**
  * Creates a notification query result with populated values. This represents the flattened
@@ -130,6 +128,6 @@ export const createPopulatedNotificationQueryResult: Factory<
   readAt = null,
   notificationId = createPopulatedNotification().id,
   content = createPopulatedNotification()
-    .content as unknown as Notification['content'],
+    .content as unknown as Notification["content"],
   createdAt = createPopulatedNotification().createdAt,
-} = {}) => ({ recipientId, readAt, notificationId, content, createdAt });
+} = {}) => ({ content, createdAt, notificationId, readAt, recipientId });

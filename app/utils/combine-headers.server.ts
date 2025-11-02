@@ -10,7 +10,7 @@
  * input headers.
  */
 export function combineHeaders(
-  ...headers: (ResponseInit['headers'] | null | undefined)[]
+  ...headers: (ResponseInit["headers"] | null | undefined)[]
 ) {
   const combined = new Headers();
 

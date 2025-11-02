@@ -1,7 +1,7 @@
-import type { Organization, Prisma, StripeSubscription } from '@prisma/client';
-import type Stripe from 'stripe';
+import type { Organization, Prisma, StripeSubscription } from "@prisma/client";
+import type Stripe from "stripe";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -33,20 +33,20 @@ export async function createStripeSubscriptionInDatabase(
 
   return prisma.stripeSubscription.create({
     data: {
-      stripeId: stripeSubscription.id,
-      organization: { connect: { id: organizationId } },
-      purchasedBy: { connect: { id: purchasedById } },
-      created: new Date(stripeSubscription.created * 1000),
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-      status: stripeSubscription.status,
+      created: new Date(stripeSubscription.created * 1000),
       items: {
-        create: stripeSubscription.items.data.map(item => ({
-          stripeId: item.id,
-          currentPeriodStart: new Date(item.current_period_start * 1000),
+        create: stripeSubscription.items.data.map((item) => ({
           currentPeriodEnd: new Date(item.current_period_end * 1000),
+          currentPeriodStart: new Date(item.current_period_start * 1000),
           price: { connect: { stripeId: item.price.id } },
+          stripeId: item.id,
         })),
       },
+      organization: { connect: { id: organizationId } },
+      purchasedBy: { connect: { id: purchasedById } },
+      status: stripeSubscription.status,
+      stripeId: stripeSubscription.id,
     },
   });
 }
@@ -60,7 +60,7 @@ export async function createStripeSubscriptionInDatabase(
  * @returns The retrieved StripeSubscription record
  */
 export async function retrieveStripeSubscriptionFromDatabaseById(
-  stripeId: StripeSubscription['stripeId'],
+  stripeId: StripeSubscription["stripeId"],
 ) {
   return await prisma.stripeSubscription.findUnique({ where: { stripeId } });
 }
@@ -72,11 +72,11 @@ export async function retrieveStripeSubscriptionFromDatabaseById(
  * @returns The retrieved StripeSubscription record with its items
  */
 export async function retrieveStripeSubscriptionWithItemsFromDatabaseById(
-  stripeId: StripeSubscription['stripeId'],
+  stripeId: StripeSubscription["stripeId"],
 ) {
   return await prisma.stripeSubscription.findUnique({
-    where: { stripeId },
     include: { items: true },
+    where: { stripeId },
   });
 }
 
@@ -92,17 +92,17 @@ export async function retrieveStripeSubscriptionWithItemsFromDatabaseById(
  * exists.
  */
 export async function retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId(
-  organizationId: Organization['id'],
+  organizationId: Organization["id"],
 ) {
   return await prisma.stripeSubscription.findFirst({
-    where: { organizationId },
-    orderBy: { created: 'desc' },
     include: {
       items: {
         include: { price: true },
       },
       schedule: { include: { phases: { include: { price: true } } } },
     },
+    orderBy: { created: "desc" },
+    where: { organizationId },
   });
 }
 
@@ -119,12 +119,12 @@ export async function updateStripeSubscriptionInDatabaseById({
   id,
   subscription,
 }: {
-  id: StripeSubscription['stripeId'];
-  subscription: Omit<Prisma.StripeSubscriptionUpdateInput, 'id'>;
+  id: StripeSubscription["stripeId"];
+  subscription: Omit<Prisma.StripeSubscriptionUpdateInput, "id">;
 }) {
   return await prisma.stripeSubscription.update({
-    where: { stripeId: id },
     data: subscription,
+    where: { stripeId: id },
   });
 }
 
@@ -142,22 +142,22 @@ export async function updateStripeSubscriptionFromAPIInDatabase(
   const purchasedById = metadata.purchasedById;
 
   return prisma.stripeSubscription.update({
-    where: { stripeId: stripeSubscription.id },
     data: {
-      purchasedBy: { connect: { id: purchasedById } },
-      created: new Date(stripeSubscription.created * 1000),
       cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-      status: stripeSubscription.status,
+      created: new Date(stripeSubscription.created * 1000),
       items: {
-        deleteMany: {},
-        create: stripeSubscription.items.data.map(item => ({
-          stripeId: item.id,
-          currentPeriodStart: new Date(item.current_period_start * 1000),
+        create: stripeSubscription.items.data.map((item) => ({
           currentPeriodEnd: new Date(item.current_period_end * 1000),
+          currentPeriodStart: new Date(item.current_period_start * 1000),
           price: { connect: { stripeId: item.price.id } },
+          stripeId: item.id,
         })),
+        deleteMany: {},
       },
+      purchasedBy: { connect: { id: purchasedById } },
+      status: stripeSubscription.status,
     },
+    where: { stripeId: stripeSubscription.id },
   });
 }
 
@@ -170,7 +170,7 @@ export async function updateStripeSubscriptionFromAPIInDatabase(
  * @returns The deleted StripeSubscription record
  */
 export async function deleteStripeSubscriptionFromDatabaseById(
-  stripeId: StripeSubscription['stripeId'],
+  stripeId: StripeSubscription["stripeId"],
 ) {
   return await prisma.stripeSubscription.delete({ where: { stripeId } });
 }

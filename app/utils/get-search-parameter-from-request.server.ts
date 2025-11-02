@@ -18,7 +18,7 @@ export const requestToUrl = (request: Request) => new URL(request.url);
 export function getSearchParameterFromRequest(searchParameter: string) {
   return function getSearchParameter(request: Request) {
     const url = requestToUrl(request);
-    const searchParameterValue = url.searchParams.get(searchParameter) ?? '';
+    const searchParameterValue = url.searchParams.get(searchParameter) ?? "";
     return searchParameterValue;
   };
 }

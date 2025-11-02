@@ -1,11 +1,11 @@
-import type { OrganizationEmailInviteLink } from '@prisma/client';
-import { createCookieSessionStorage } from 'react-router';
-import { z } from 'zod';
+import type { OrganizationEmailInviteLink } from "@prisma/client";
+import { createCookieSessionStorage } from "react-router";
+import { z } from "zod";
 
-import { EMAIL_INVITE_INFO_SESSION_NAME } from './accept-email-invite-constants';
+import { EMAIL_INVITE_INFO_SESSION_NAME } from "./accept-email-invite-constants";
 
 // Define keys for the session data
-const EMAIL_INVITE_TOKEN_KEY = 'emailInviteToken'; // This is the token NOT the id
+const EMAIL_INVITE_TOKEN_KEY = "emailInviteToken"; // This is the token NOT the id
 
 const emailInviteSchema = z.object({
   [EMAIL_INVITE_TOKEN_KEY]: z.string(),
@@ -19,17 +19,17 @@ export type EmailInviteInfoSessionData = z.infer<typeof emailInviteSchema>;
 const { commitSession, getSession, destroySession } =
   createCookieSessionStorage<EmailInviteInfoSessionData>({
     cookie: {
-      name: EMAIL_INVITE_INFO_SESSION_NAME,
       httpOnly: true,
-      path: '/',
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      name: EMAIL_INVITE_INFO_SESSION_NAME,
+      path: "/",
+      sameSite: "lax",
       secrets: [process.env.COOKIE_SECRET],
+      secure: process.env.NODE_ENV === "production",
     },
   });
 
 export type CreateEmailInviteInfoCookieParams = EmailInviteInfoSessionData & {
-  expiresAt: OrganizationEmailInviteLink['expiresAt'];
+  expiresAt: OrganizationEmailInviteLink["expiresAt"];
 };
 
 /**
@@ -77,7 +77,7 @@ export async function createEmailInviteInfoHeaders(
   emailInviteInfo: CreateEmailInviteInfoCookieParams,
 ) {
   return new Headers({
-    'Set-Cookie': await createEmailInviteInfoCookie(emailInviteInfo),
+    "Set-Cookie": await createEmailInviteInfoCookie(emailInviteInfo),
   });
 }
 
@@ -93,7 +93,7 @@ export async function createEmailInviteInfoHeaders(
 export async function getEmailInviteInfoFromSession(
   request: Request,
 ): Promise<EmailInviteInfoSessionData | undefined> {
-  const session = await getSession(request.headers.get('Cookie'));
+  const session = await getSession(request.headers.get("Cookie"));
   const emailInviteToken = session.get(EMAIL_INVITE_TOKEN_KEY);
 
   // Attempt to parse the retrieved data against the schema
@@ -115,6 +115,6 @@ export async function getEmailInviteInfoFromSession(
 export async function destroyEmailInviteInfoSession(
   request: Request,
 ): Promise<Headers> {
-  const session = await getSession(request.headers.get('Cookie'));
-  return new Headers({ 'Set-Cookie': await destroySession(session) });
+  const session = await getSession(request.headers.get("Cookie"));
+  return new Headers({ "Set-Cookie": await destroySession(session) });
 }

@@ -1,12 +1,11 @@
-import { faker } from '@faker-js/faker';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { faker } from "@faker-js/faker";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
-import { act, createRoutesStub, render, screen } from '~/test/react-test-utils';
-import type { Factory } from '~/utils/types';
-
-import { loginIntents } from '../user-authentication-constants';
-import type { LoginVerificationAwaitingProps } from './login-verification-awaiting';
-import { LoginVerificationAwaiting } from './login-verification-awaiting';
+import { loginIntents } from "../user-authentication-constants";
+import type { LoginVerificationAwaitingProps } from "./login-verification-awaiting";
+import { LoginVerificationAwaiting } from "./login-verification-awaiting";
+import { act, createRoutesStub, render, screen } from "~/test/react-test-utils";
+import type { Factory } from "~/utils/types";
 
 const createProps: Factory<LoginVerificationAwaitingProps> = ({
   email = faker.internet.email(),
@@ -18,7 +17,7 @@ const createProps: Factory<LoginVerificationAwaitingProps> = ({
   isSubmitting,
 });
 
-describe('LoginVerificationAwaiting Component', () => {
+describe("LoginVerificationAwaiting Component", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -28,14 +27,14 @@ describe('LoginVerificationAwaiting Component', () => {
     vi.useRealTimers();
   });
 
-  test('given: component renders with default props, should: display correct content, include email input, show resend button, disable fieldset when waiting and render an alert that the user should check their spam folder', () => {
+  test("given: component renders with default props, should: display correct content, include email input, show resend button, disable fieldset when waiting and render an alert that the user should check their spam folder", () => {
     const email = faker.internet.email();
     const props = createProps({ email });
-    const path = '/login';
+    const path = "/login";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <LoginVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -55,16 +54,16 @@ describe('LoginVerificationAwaiting Component', () => {
     // Verify the hidden email input is present with the correct value
     const hiddenInput = screen.getByDisplayValue(email);
     expect(hiddenInput).toBeInTheDocument();
-    expect(hiddenInput).toHaveAttribute('type', 'hidden');
-    expect(hiddenInput).toHaveAttribute('name', 'email');
+    expect(hiddenInput).toHaveAttribute("type", "hidden");
+    expect(hiddenInput).toHaveAttribute("name", "email");
 
     // Verify the resend button has the correct text and attributes
-    const button = screen.getByRole('button', {
+    const button = screen.getByRole("button", {
       name: /request new login link/i,
     });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute('name', 'intent');
-    expect(button).toHaveAttribute('value', loginIntents.loginWithEmail);
+    expect(button).toHaveAttribute("name", "intent");
+    expect(button).toHaveAttribute("value", loginIntents.loginWithEmail);
 
     // Verify the alert is displayed
     expect(
@@ -72,20 +71,20 @@ describe('LoginVerificationAwaiting Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('given: countdown reaches zero after 60 seconds, should: enable the form', () => {
+  test("given: countdown reaches zero after 60 seconds, should: enable the form", () => {
     const props = createProps();
-    const path = '/login';
+    const path = "/login";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <LoginVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
     render(<RouterStub initialEntries={[path]} />);
 
     // Initially, the fieldset should be disabled
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /request new login link/i,
     });
     expect(submitButton).toBeDisabled();
@@ -106,13 +105,13 @@ describe('LoginVerificationAwaiting Component', () => {
     ).toBeInTheDocument();
   });
 
-  test('given: isResending is true, should: display loading state and disable the button', () => {
+  test("given: isResending is true, should: display loading state and disable the button", () => {
     const props = createProps({ isResending: true });
-    const path = '/login';
+    const path = "/login";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <LoginVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -124,17 +123,17 @@ describe('LoginVerificationAwaiting Component', () => {
     });
 
     // Get the button with the loading text.
-    const button = screen.getByRole('button', { name: /sending/i });
+    const button = screen.getByRole("button", { name: /sending/i });
     expect(button).toBeDisabled();
   });
 
-  test('given: isSubmitting is true, should: disable the form regardless of countdown', () => {
+  test("given: isSubmitting is true, should: disable the form regardless of countdown", () => {
     const props = createProps({ isSubmitting: true });
-    const path = '/login';
+    const path = "/login";
     const RouterStub = createRoutesStub([
       {
-        path,
         Component: () => <LoginVerificationAwaiting {...props} />,
+        path,
       },
     ]);
 
@@ -147,7 +146,7 @@ describe('LoginVerificationAwaiting Component', () => {
 
     // The submit button should still be disabled due to isSubmitting, even
     // though countdown is at zero.
-    const submitButton = screen.getByRole('button', {
+    const submitButton = screen.getByRole("button", {
       name: /request new login link/i,
     });
     expect(submitButton).toBeDisabled();

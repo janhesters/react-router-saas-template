@@ -2,13 +2,13 @@ import type {
   InviteLinkUse,
   OrganizationInviteLink,
   UserAccount,
-} from '@prisma/client';
+} from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 export type PartialinviteLinkUseParameters = Pick<
-  Parameters<typeof prisma.inviteLinkUse.create>[0]['data'],
-  'id'
+  Parameters<typeof prisma.inviteLinkUse.create>[0]["data"],
+  "id"
 >;
 
 /* CREATE */
@@ -21,8 +21,8 @@ export type PartialinviteLinkUseParameters = Pick<
  */
 export function saveInviteLinkUseToDatabase(
   inviteLinkUse: PartialinviteLinkUseParameters & {
-    inviteLinkId: OrganizationInviteLink['id'];
-    userId: UserAccount['id'];
+    inviteLinkId: OrganizationInviteLink["id"];
+    userId: UserAccount["id"];
   },
 ) {
   return prisma.inviteLinkUse.create({ data: inviteLinkUse });
@@ -36,7 +36,7 @@ export function saveInviteLinkUseToDatabase(
  * @param id - The id of the Invite Link Uses to get.
  * @returns The Invite Link Uses with a given id or null if it wasn't found.
  */
-export function retrieveInviteLinkUseFromDatabaseById(id: InviteLinkUse['id']) {
+export function retrieveInviteLinkUseFromDatabaseById(id: InviteLinkUse["id"]) {
   return prisma.inviteLinkUse.findUnique({ where: { id } });
 }
 
@@ -44,8 +44,8 @@ export function retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
   inviteLinkId,
   userId,
 }: {
-  inviteLinkId: OrganizationInviteLink['id'];
-  userId: UserAccount['id'];
+  inviteLinkId: OrganizationInviteLink["id"];
+  userId: UserAccount["id"];
 }) {
   return prisma.inviteLinkUse.findUnique({
     where: { inviteLinkId_userId: { inviteLinkId, userId } },
@@ -61,7 +61,7 @@ export function retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
  * @returns The Invite Link Uses that was deleted.
  */
 export async function deleteInviteLinkUseFromDatabaseById(
-  id: InviteLinkUse['id'],
+  id: InviteLinkUse["id"],
 ) {
   return prisma.inviteLinkUse.delete({ where: { id } });
 }

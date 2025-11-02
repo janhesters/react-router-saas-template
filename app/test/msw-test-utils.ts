@@ -1,6 +1,6 @@
-import type { RequestHandler } from 'msw';
-import { setupServer } from 'msw/node';
-import { afterAll, afterEach, beforeAll } from 'vitest';
+import type { RequestHandler } from "msw";
+import { setupServer } from "msw/node";
+import { afterAll, afterEach, beforeAll } from "vitest";
 
 /**
  * Sets up a mock server with lifecycle hooks for testing, using MSW and Vitest.

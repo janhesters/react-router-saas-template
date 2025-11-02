@@ -1,9 +1,9 @@
-import { http, passthrough } from 'msw';
+import { http, passthrough } from "msw";
 
 const REMIX_DEV_PING = new URL(
-  process?.env?.REMIX_DEV_ORIGIN ?? 'http://test-origin',
+  process?.env?.REMIX_DEV_ORIGIN ?? "http://test-origin",
 );
-REMIX_DEV_PING.pathname = '/ping';
+REMIX_DEV_PING.pathname = "/ping";
 
 /**
  * Lets MSW forward internal "dev ready" messages on `/ping`.

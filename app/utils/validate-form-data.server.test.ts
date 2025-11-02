@@ -1,105 +1,105 @@
-import { describe, expect, test } from 'vitest';
-import { z } from 'zod';
+import { describe, expect, test } from "vitest";
+import { z } from "zod";
 
-import { validateFormData } from './validate-form-data.server';
+import { validateFormData } from "./validate-form-data.server";
 
 const createRequest = (formDataEntries: [string, string][]) => {
   const formData = new FormData();
   for (const [key, value] of formDataEntries) formData.append(key, value);
 
-  return new Request('http://localhost', {
-    method: 'POST',
+  return new Request("http://localhost", {
     body: formData,
+    method: "POST",
   });
 };
 
 const registerIntents = {
-  registerWithEmail: 'registerWithEmail',
-  registerWithGoogle: 'registerWithGoogle',
+  registerWithEmail: "registerWithEmail",
+  registerWithGoogle: "registerWithGoogle",
 } as const;
 
 const registerWithEmailSchema = z.object({
+  email: z.string().email(),
   intent: z.literal(registerIntents.registerWithEmail),
   username: z.string().min(3),
-  email: z.string().email(),
 });
 
 const registerWithGoogleSchema = z.object({
   intent: z.literal(registerIntents.registerWithGoogle),
   username: z
     .string()
-    .min(3, { message: 'Username must be at least 3 characters long' }),
+    .min(3, { message: "Username must be at least 3 characters long" }),
 });
 
 const testSchema = z
-  .discriminatedUnion('intent', [
+  .discriminatedUnion("intent", [
     registerWithEmailSchema,
     registerWithGoogleSchema,
   ])
-  .refine(data => data.username !== 'admin', {
+  .refine((data) => data.username !== "admin", {
     message: 'Username "admin" is reserved',
     path: [],
   });
 
-describe('validateFormData()', () => {
-  test('given: valid email registration data, should: return parsed data', async () => {
+describe("validateFormData()", () => {
+  test("given: valid email registration data, should: return parsed data", async () => {
     const request = createRequest([
-      ['intent', 'registerWithEmail'],
-      ['username', 'john_doe'],
-      ['email', 'john@example.com'],
+      ["intent", "registerWithEmail"],
+      ["username", "john_doe"],
+      ["email", "john@example.com"],
     ]);
 
     const actual = await validateFormData(request, testSchema);
     const expected = {
-      intent: 'registerWithEmail',
-      username: 'john_doe',
-      email: 'john@example.com',
+      email: "john@example.com",
+      intent: "registerWithEmail",
+      username: "john_doe",
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given: valid google registration data, should: return parsed data', async () => {
+  test("given: valid google registration data, should: return parsed data", async () => {
     const request = createRequest([
-      ['intent', 'registerWithGoogle'],
-      ['username', 'john_doe'],
+      ["intent", "registerWithGoogle"],
+      ["username", "john_doe"],
     ]);
 
     const actual = await validateFormData(request, testSchema);
     const expected = {
-      intent: 'registerWithGoogle',
-      username: 'john_doe',
+      intent: "registerWithGoogle",
+      username: "john_doe",
     };
 
     expect(actual).toEqual(expected);
   });
 
-  test('given: missing intent, should: throw badRequest with error for intent', async () => {
+  test("given: missing intent, should: throw badRequest with error for intent", async () => {
     const request = createRequest([
-      ['username', 'john_doe'],
-      ['email', 'john@example.com'],
+      ["username", "john_doe"],
+      ["email", "john@example.com"],
     ]);
 
     const expectedErrors = {
       errors: {
         intent: {
-          message: 'Invalid input',
+          message: "Invalid input",
         },
       },
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: 'Bad Request', ...expectedErrors },
+      data: { message: "Bad Request", ...expectedErrors },
       init: { status: 400 },
-      type: 'DataWithResponseInit',
+      type: "DataWithResponseInit",
     });
   });
 
-  test('given: reserved username, should: throw badRequest with form error', async () => {
+  test("given: reserved username, should: throw badRequest with form error", async () => {
     const request = createRequest([
-      ['intent', 'registerWithEmail'],
-      ['username', 'admin'],
-      ['email', 'john@example.com'],
+      ["intent", "registerWithEmail"],
+      ["username", "admin"],
+      ["email", "john@example.com"],
     ]);
 
     const expectedErrors = {
@@ -107,67 +107,67 @@ describe('validateFormData()', () => {
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: 'Bad Request', ...expectedErrors },
+      data: { message: "Bad Request", ...expectedErrors },
       init: { status: 400 },
-      type: 'DataWithResponseInit',
+      type: "DataWithResponseInit",
     });
   });
 
-  test('given: email registration with invalid email, should: throw badRequest with error for email', async () => {
+  test("given: email registration with invalid email, should: throw badRequest with error for email", async () => {
     const request = createRequest([
-      ['intent', 'registerWithEmail'],
-      ['username', 'john_doe'],
-      ['email', 'not-an-email'],
+      ["intent", "registerWithEmail"],
+      ["username", "john_doe"],
+      ["email", "not-an-email"],
     ]);
 
     const expectedErrors = {
-      errors: { email: { message: 'Invalid email address' } },
+      errors: { email: { message: "Invalid email address" } },
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: 'Bad Request', ...expectedErrors },
+      data: { message: "Bad Request", ...expectedErrors },
       init: { status: 400 },
-      type: 'DataWithResponseInit',
+      type: "DataWithResponseInit",
     });
   });
 
-  test('given: google registration with short username, should: throw badRequest with error for username', async () => {
+  test("given: google registration with short username, should: throw badRequest with error for username", async () => {
     const request = createRequest([
-      ['intent', 'registerWithGoogle'],
-      ['username', 'jo'],
+      ["intent", "registerWithGoogle"],
+      ["username", "jo"],
     ]);
 
     const expectedErrors = {
       errors: {
-        username: { message: 'Username must be at least 3 characters long' },
+        username: { message: "Username must be at least 3 characters long" },
       },
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: 'Bad Request', ...expectedErrors },
+      data: { message: "Bad Request", ...expectedErrors },
       init: { status: 400 },
-      type: 'DataWithResponseInit',
+      type: "DataWithResponseInit",
     });
   });
 
-  test('given: multiple errors including reserved username, should: throw badRequest with form and field errors', async () => {
+  test("given: multiple errors including reserved username, should: throw badRequest with form and field errors", async () => {
     const request = createRequest([
-      ['intent', 'registerWithEmail'],
-      ['username', 'admin'],
-      ['email', 'not-an-email'],
+      ["intent", "registerWithEmail"],
+      ["username", "admin"],
+      ["email", "not-an-email"],
     ]);
 
     const expectedErrors = {
       errors: {
-        email: { message: 'Invalid email address' },
+        email: { message: "Invalid email address" },
         root: { message: 'Username "admin" is reserved' },
       },
     };
 
     await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: { message: 'Bad Request', ...expectedErrors },
+      data: { message: "Bad Request", ...expectedErrors },
       init: { status: 400 },
-      type: 'DataWithResponseInit',
+      type: "DataWithResponseInit",
     });
   });
 });

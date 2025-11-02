@@ -1,6 +1,6 @@
-import type { Organization, Prisma, UserAccount } from '@prisma/client';
+import type { Organization, Prisma, UserAccount } from "@prisma/client";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* READ */
 
@@ -15,8 +15,8 @@ export async function retrieveOrganizationMembershipFromDatabaseByUserIdAndOrgan
   userId,
   organizationId,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
 }) {
   return prisma.organizationMembership.findUnique({
     where: {
@@ -38,11 +38,11 @@ export async function retrieveActiveOrganizationMembershipByEmailAndOrganization
   email,
   organizationId,
 }: {
-  email: UserAccount['email'];
-  organizationId: Organization['id'];
+  email: UserAccount["email"];
+  organizationId: Organization["id"];
 }) {
   return prisma.organizationMembership.findFirst({
-    where: { organizationId: organizationId, member: { email: email } },
+    where: { member: { email: email }, organizationId: organizationId },
   });
 }
 
@@ -61,12 +61,12 @@ export async function updateOrganizationMembershipInDatabase({
   organizationId,
   data,
 }: {
-  userId: UserAccount['id'];
-  organizationId: Organization['id'];
+  userId: UserAccount["id"];
+  organizationId: Organization["id"];
   data: Prisma.OrganizationMembershipUpdateInput; // Use Prisma type for flexibility
 }) {
   return prisma.organizationMembership.update({
-    where: { memberId_organizationId: { memberId: userId, organizationId } },
     data,
+    where: { memberId_organizationId: { memberId: userId, organizationId } },
   });
 }

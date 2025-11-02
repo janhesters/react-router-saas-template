@@ -1,8 +1,8 @@
-import { BadgeCheckIcon, ChevronsUpDownIcon, LogOutIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Form, href, Link } from 'react-router';
+import { BadgeCheckIcon, ChevronsUpDownIcon, LogOutIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Form, href, Link } from "react-router";
 
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,13 +11,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '~/components/ui/dropdown-menu';
+} from "~/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from '~/components/ui/sidebar';
+} from "~/components/ui/sidebar";
 
 export type NavUserProps = {
   user: {
@@ -29,8 +29,8 @@ export type NavUserProps = {
 
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
-  const { t } = useTranslation('organizations', {
-    keyPrefix: 'layout.nav-user',
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "layout.nav-user",
   });
 
   return (
@@ -39,12 +39,12 @@ export function NavUser({ user }: NavUserProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
+              aria-label={t("user-menu-button-label")}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              aria-label={t('user-menu-button-label')}
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage alt={user.name} src={user.avatar} />
                 <AvatarFallback className="rounded-lg">
                   {user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -59,15 +59,15 @@ export function NavUser({ user }: NavUserProps) {
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
-            className="max-w-(--radix-dropdown-menu-trigger-width) min-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:max-w-80 md:min-w-56"
-            side={isMobile ? 'bottom' : 'right'}
             align="end"
+            className="max-w-(--radix-dropdown-menu-trigger-width) min-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:max-w-80 md:min-w-56"
+            side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage alt={user.name} src={user.avatar} />
                   <AvatarFallback className="rounded-lg">
                     {user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
@@ -83,26 +83,26 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
 
             <DropdownMenuGroup>
-              <Link to={href('/settings/account')}>
+              <Link to={href("/settings/account")}>
                 <DropdownMenuItem>
                   <BadgeCheckIcon />
-                  {t('account')}
+                  {t("account")}
                 </DropdownMenuItem>
               </Link>
             </DropdownMenuGroup>
 
             <DropdownMenuSeparator />
 
-            <Form method="post" action="/logout" replace>
+            <Form action="/logout" method="post" replace>
               <DropdownMenuItem asChild>
                 <button
                   className="w-full"
                   name="intent"
-                  value="logout"
                   type="submit"
+                  value="logout"
                 >
                   <LogOutIcon />
-                  {t('log-out')}
+                  {t("log-out")}
                 </button>
               </DropdownMenuItem>
             </Form>

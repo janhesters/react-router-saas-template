@@ -1,11 +1,10 @@
-import { redirect } from 'react-router';
+import { redirect } from "react-router";
 
-import { logout } from '~/features/user-authentication/user-authentication-helpers.server';
-
-import type { Route } from './+types/logout';
+import type { Route } from "./+types/logout";
+import { logout } from "~/features/user-authentication/user-authentication-helpers.server";
 
 export function loader() {
-  return redirect('/');
+  return redirect("/");
 }
 
 export async function action({ request }: Route.ActionArgs) {

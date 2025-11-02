@@ -1,28 +1,27 @@
-import type { AuthOtpResponse } from '@supabase/supabase-js';
-import { redirect } from 'react-router';
-import { z } from 'zod';
+import type { AuthOtpResponse } from "@supabase/supabase-js";
+import { redirect } from "react-router";
+import { z } from "zod";
 
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { retrieveUserAccountFromDatabaseByEmail } from '~/features/user-accounts/user-accounts-model.server';
-import { getErrorMessage } from '~/utils/get-error-message';
-import { getIsDataWithResponseInit } from '~/utils/get-is-data-with-response-init.server';
-import { conflict, tooManyRequests } from '~/utils/http-responses.server';
-import { validateFormData } from '~/utils/validate-form-data.server';
-
-import { anonymousContext } from '../user-authentication-middleware.server';
+import { anonymousContext } from "../user-authentication-middleware.server";
+import type { EmailRegistrationErrors } from "./registration-schemas";
 import {
-  type EmailRegistrationErrors,
   registerWithEmailSchema,
   registerWithGoogleSchema,
-} from './registration-schemas';
-import type { Route } from '.react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/login';
+} from "./registration-schemas";
+import type { Route } from ".react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/login";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { retrieveUserAccountFromDatabaseByEmail } from "~/features/user-accounts/user-accounts-model.server";
+import { getErrorMessage } from "~/utils/get-error-message";
+import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { conflict, tooManyRequests } from "~/utils/http-responses.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 export type RegisterActionData =
-  | (AuthOtpResponse['data'] & { email: string })
+  | (AuthOtpResponse["data"] & { email: string })
   | Response
   | { errors: EmailRegistrationErrors };
 
-const registerSchema = z.discriminatedUnion('intent', [
+const registerSchema = z.discriminatedUnion("intent", [
   registerWithEmailSchema,
   registerWithGoogleSchema,
 ]);
@@ -37,7 +36,7 @@ export async function registerAction({
     const body = await validateFormData(request, registerSchema);
 
     switch (body.intent) {
-      case 'registerWithEmail': {
+      case "registerWithEmail": {
         const userAccount = await retrieveUserAccountFromDatabaseByEmail(
           body.email,
         );
@@ -47,7 +46,7 @@ export async function registerAction({
             errors: {
               email: {
                 message:
-                  'user-authentication:register.form.user-already-exists',
+                  "user-authentication:register.form.user-already-exists",
               },
             },
           });
@@ -56,7 +55,7 @@ export async function registerAction({
         const { data, error } = await supabase.auth.signInWithOtp({
           email: body.email,
           options: {
-            data: { intent: body.intent, appName: i18n.t('common:app-name') },
+            data: { appName: i18n.t("common:app-name"), intent: body.intent },
             shouldCreateUser: true,
           },
         });
@@ -64,11 +63,11 @@ export async function registerAction({
         if (error) {
           const errorMessage = getErrorMessage(error);
 
-          if (errorMessage.includes('you can only request this after')) {
+          if (errorMessage.includes("you can only request this after")) {
             throw tooManyRequests({
               errors: {
                 email: {
-                  message: 'user-authentication:register.registration-failed',
+                  message: "user-authentication:register.registration-failed",
                 },
               },
             });
@@ -79,12 +78,12 @@ export async function registerAction({
 
         return { ...data, email: body.email };
       }
-      case 'registerWithGoogle': {
+      case "registerWithGoogle": {
         const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
           options: {
             redirectTo: `${process.env.APP_URL}/auth/callback`,
           },
+          provider: "google",
         });
 
         if (error) {

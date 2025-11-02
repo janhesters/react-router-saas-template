@@ -1,19 +1,18 @@
-import { href, redirect } from 'react-router';
+import { href, redirect } from "react-router";
 
-import { getInstance } from '~/features/localization/i18n-middleware.server';
-import { getValidEmailInviteInfo } from '~/features/organizations/accept-email-invite/accept-email-invite-helpers.server';
-import { getValidInviteLinkInfo } from '~/features/organizations/accept-invite-link/accept-invite-link-helpers.server';
+import type { Route } from "./+types/register.confirm";
+import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getValidEmailInviteInfo } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
+import { getValidInviteLinkInfo } from "~/features/organizations/accept-invite-link/accept-invite-link-helpers.server";
 import {
   acceptEmailInvite,
   acceptInviteLink,
-} from '~/features/organizations/organizations-helpers.server';
-import { saveUserAccountToDatabase } from '~/features/user-accounts/user-accounts-model.server';
-import { anonymousContext } from '~/features/user-authentication/user-authentication-middleware.server';
-import { combineHeaders } from '~/utils/combine-headers.server';
-import { getErrorMessage } from '~/utils/get-error-message';
-import { getSearchParameterFromRequest } from '~/utils/get-search-parameter-from-request.server';
-
-import type { Route } from './+types/register.confirm';
+} from "~/features/organizations/organizations-helpers.server";
+import { saveUserAccountToDatabase } from "~/features/user-accounts/user-accounts-model.server";
+import { anonymousContext } from "~/features/user-authentication/user-authentication-middleware.server";
+import { combineHeaders } from "~/utils/combine-headers.server";
+import { getErrorMessage } from "~/utils/get-error-message";
+import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase, headers } = context.get(anonymousContext);
@@ -22,14 +21,14 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const { emailInviteInfo, headers: emailInviteHeaders } =
     await getValidEmailInviteInfo(request);
 
-  const tokenHash = getSearchParameterFromRequest('token_hash')(request);
+  const tokenHash = getSearchParameterFromRequest("token_hash")(request);
 
   const {
     data: { user },
     error,
   } = await supabase.auth.verifyOtp({
     token_hash: tokenHash,
-    type: 'email',
+    type: "email",
   });
 
   if (error) {
@@ -37,7 +36,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   if (!user?.email || !user.id) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
 
   try {
@@ -50,7 +49,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
     if (emailInviteInfo) {
       await acceptEmailInvite({
-        // eslint-disable-next-line unicorn/no-null
         deactivatedAt: null,
         emailInviteId: emailInviteInfo.emailInviteId,
         emailInviteToken: emailInviteInfo.emailInviteToken,
@@ -73,7 +71,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   } catch (error) {
     const message = getErrorMessage(error);
 
-    if (message.includes('Unique constraint failed on the fields')) {
+    if (message.includes("Unique constraint failed on the fields")) {
       // Do nothing, the user already exists and we can safely redirect to the
       // onboarding page. This case happens for example when the user
       // accidentally clicks the verification link twice.
@@ -83,7 +81,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   }
 
   return redirect(
-    emailInviteInfo ? href('/onboarding/user-account') : href('/onboarding'),
+    emailInviteInfo ? href("/onboarding/user-account") : href("/onboarding"),
     {
       headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
     },

@@ -1,7 +1,7 @@
-import type { Prisma, StripePrice } from '@prisma/client';
-import type { Stripe } from 'stripe';
+import type { Prisma, StripePrice } from "@prisma/client";
+import type { Stripe } from "stripe";
 
-import { prisma } from '~/utils/database.server';
+import { prisma } from "~/utils/database.server";
 
 /* CREATE */
 
@@ -26,13 +26,13 @@ export async function saveStripePriceToDatabase(
 export async function saveStripePriceFromAPIToDatabase(price: Stripe.Price) {
   return prisma.stripePrice.create({
     data: {
-      stripeId: price.id,
-      currency: price.currency,
-      lookupKey: price.lookup_key ?? '',
-      unitAmount: price.unit_amount ?? 0,
       active: price.active,
+      currency: price.currency,
+      interval: price.recurring?.interval ?? "month",
+      lookupKey: price.lookup_key ?? "",
       product: { connect: { stripeId: price.product as string } },
-      interval: price.recurring!.interval,
+      stripeId: price.id,
+      unitAmount: price.unit_amount ?? 0,
     },
   });
 }
@@ -45,7 +45,7 @@ export async function saveStripePriceFromAPIToDatabase(price: Stripe.Price) {
  * @returns The retrieved Stripe price.
  */
 export async function retrieveStripePriceFromDatabaseByLookupKey(
-  lookupKey: StripePrice['lookupKey'],
+  lookupKey: StripePrice["lookupKey"],
 ) {
   return prisma.stripePrice.findUnique({ where: { lookupKey } });
 }
@@ -57,11 +57,11 @@ export async function retrieveStripePriceFromDatabaseByLookupKey(
  * @returns The retrieved Stripe price with its product.
  */
 export async function retrieveStripePriceWithProductFromDatabaseByLookupKey(
-  lookupKey: StripePrice['lookupKey'],
+  lookupKey: StripePrice["lookupKey"],
 ) {
   return prisma.stripePrice.findUnique({
-    where: { lookupKey },
     include: { product: true },
+    where: { lookupKey },
   });
 }
 
@@ -75,15 +75,15 @@ export async function retrieveStripePriceWithProductFromDatabaseByLookupKey(
  */
 export async function updateStripePriceFromAPIInDatabase(price: Stripe.Price) {
   return prisma.stripePrice.update({
-    where: { stripeId: price.id },
     data: {
-      currency: price.currency,
-      lookupKey: price.lookup_key ?? '',
-      unitAmount: price.unit_amount ?? 0,
       active: price.active,
-      interval: price.recurring!.interval,
+      currency: price.currency,
+      interval: price.recurring?.interval,
+      lookupKey: price.lookup_key ?? "",
       product: { connect: { stripeId: price.product as string } },
+      unitAmount: price.unit_amount ?? 0,
     },
+    where: { stripeId: price.id },
   });
 }
 
@@ -96,7 +96,7 @@ export async function updateStripePriceFromAPIInDatabase(price: Stripe.Price) {
  * @returns The deleted price.
  */
 export async function deleteStripePriceFromDatabaseById(
-  stripeId: StripePrice['stripeId'],
+  stripeId: StripePrice["stripeId"],
 ) {
   return prisma.stripePrice.delete({ where: { stripeId } });
 }

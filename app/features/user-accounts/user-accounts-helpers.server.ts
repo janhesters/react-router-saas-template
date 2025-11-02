@@ -1,13 +1,13 @@
-import type { UserAccount } from '@prisma/client';
-import type { RouterContextProvider } from 'react-router';
+import type { UserAccount } from "@prisma/client";
+import type { RouterContextProvider } from "react-router";
 
-import { logout } from '../user-authentication/user-authentication-helpers.server';
-import { authContext } from '../user-authentication/user-authentication-middleware.server';
+import { logout } from "../user-authentication/user-authentication-helpers.server";
+import { authContext } from "../user-authentication/user-authentication-middleware.server";
 import {
   retrieveUserAccountFromDatabaseBySupabaseUserId,
   retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId,
   retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId,
-} from './user-accounts-model.server';
+} from "./user-accounts-model.server";
 
 /**
  * Ensures that a user account is present.
@@ -21,7 +21,7 @@ export const throwIfUserAccountIsMissing = async <T extends UserAccount>(
   userAccount: T | null,
 ) => {
   if (!userAccount) {
-    throw await logout(request, '/login');
+    throw await logout(request, "/login");
   }
 
   return userAccount;
@@ -47,7 +47,7 @@ export const requireAuthenticatedUserExists = async ({
     headers,
   } = context.get(authContext);
   const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
-  return { user: await throwIfUserAccountIsMissing(request, user), headers };
+  return { headers, user: await throwIfUserAccountIsMissing(request, user) };
 };
 
 /**
@@ -80,9 +80,9 @@ export const requireAuthenticatedUserWithMembershipsExists = async ({
       id,
     );
   return {
-    user: await throwIfUserAccountIsMissing(request, user),
     headers,
     supabase,
+    user: await throwIfUserAccountIsMissing(request, user),
   };
 };
 
@@ -117,9 +117,9 @@ export const requireAuthenticatedUserWithMembershipsAndSubscriptionsExists =
         id,
       );
     return {
-      user: await throwIfUserAccountIsMissing(request, user),
       headers,
       supabase,
+      user: await throwIfUserAccountIsMissing(request, user),
     };
   };
 

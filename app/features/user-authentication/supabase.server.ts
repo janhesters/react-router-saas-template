@@ -2,8 +2,8 @@ import {
   createServerClient,
   parseCookieHeader,
   serializeCookieHeader,
-} from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
+} from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 export function createSupabaseServerClient({ request }: { request: Request }) {
   const headers = new Headers();
@@ -12,10 +12,10 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
     process.env.VITE_SUPABASE_URL,
     process.env.VITE_SUPABASE_ANON_KEY,
     {
-      auth: { flowType: 'pkce' },
+      auth: { flowType: "pkce" },
       cookies: {
         getAll() {
-          return parseCookieHeader(request.headers.get('Cookie') ?? '') as {
+          return parseCookieHeader(request.headers.get("Cookie") ?? "") as {
             name: string;
             value: string;
           }[];
@@ -23,7 +23,7 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
         setAll(cookiesToSet) {
           for (const { name, value, options } of cookiesToSet)
             headers.append(
-              'Set-Cookie',
+              "Set-Cookie",
               serializeCookieHeader(name, value, options),
             );
         },
@@ -31,7 +31,7 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
     },
   );
 
-  return { supabase, headers };
+  return { headers, supabase };
 }
 
 export const supabaseAdminClient = createClient(

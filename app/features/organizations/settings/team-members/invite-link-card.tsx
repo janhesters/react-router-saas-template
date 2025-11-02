@@ -1,15 +1,19 @@
-import copyToClipboard from 'copy-to-clipboard';
+import copyToClipboard from "copy-to-clipboard";
 import {
   AlertTriangleIcon,
   ClipboardCheckIcon,
   CopyIcon,
   Loader2Icon,
-} from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Form, useNavigation } from 'react-router';
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { Form, useNavigation } from "react-router";
 
-import { Button } from '~/components/ui/button';
+import {
+  CREATE_NEW_INVITE_LINK_INTENT,
+  DEACTIVATE_INVITE_LINK_INTENT,
+} from "./team-members-constants";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -17,14 +21,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
-import { inputClassName } from '~/components/ui/input';
-import { cn } from '~/lib/utils';
-
-import {
-  CREATE_NEW_INVITE_LINK_INTENT,
-  DEACTIVATE_INVITE_LINK_INTENT,
-} from './team-members-constants';
+} from "~/components/ui/card";
+import { inputClassName } from "~/components/ui/input";
+import { cn } from "~/lib/utils";
 
 export type InviteLinkCardProps = {
   inviteLink?: { href: string; expiryDate: string };
@@ -35,8 +34,8 @@ export function InviteLinkCard({
   inviteLink,
   organizationIsFull = false,
 }: InviteLinkCardProps) {
-  const { t, i18n } = useTranslation('organizations', {
-    keyPrefix: 'settings.team-members.invite-link',
+  const { t, i18n } = useTranslation("organizations", {
+    keyPrefix: "settings.team-members.invite-link",
   });
 
   const [linkCopied, setLinkCopied] = useState(false);
@@ -52,22 +51,22 @@ export function InviteLinkCard({
     }
 
     // Guard against React 18's ghost remount.
-    mounted.current = mounted.current === null ? false : true;
+    mounted.current = mounted.current !== null;
   }, [inviteLink?.href]);
 
   const navigation = useNavigation();
   const isCreatingNewLink =
-    navigation.formData?.get('intent') === CREATE_NEW_INVITE_LINK_INTENT;
+    navigation.formData?.get("intent") === CREATE_NEW_INVITE_LINK_INTENT;
   const isDeactivatingLink =
-    navigation.formData?.get('intent') === DEACTIVATE_INVITE_LINK_INTENT;
+    navigation.formData?.get("intent") === DEACTIVATE_INVITE_LINK_INTENT;
   const isSubmitting = isCreatingNewLink || isDeactivatingLink;
 
   const formatDate = useCallback(
     (isoString: string) => {
       const date = new Date(isoString);
       return new Intl.DateTimeFormat(i18n.language, {
-        dateStyle: 'full', // e.g., "Wednesday, March 26, 2025"
-        timeStyle: 'short', // e.g., "2:30 PM"
+        dateStyle: "full", // e.g., "Wednesday, March 26, 2025"
+        timeStyle: "short", // e.g., "2:30 PM"
         timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, // Browser's timezone
       }).format(date);
     },
@@ -79,20 +78,21 @@ export function InviteLinkCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t('card-title')}</CardTitle>
-        <CardDescription>{t('card-description')}</CardDescription>
+        <CardTitle>{t("card-title")}</CardTitle>
+        <CardDescription>{t("card-description")}</CardDescription>
       </CardHeader>
 
       {inviteLink ? (
         <>
           <CardContent>
             <div className="relative">
+              {/** biome-ignore lint/a11y/useAnchorContent: the a tag has an aria-label */}
               <a
                 aria-describedby="link-expiration-warning"
-                aria-label={t('go-to-link')}
+                aria-label={t("go-to-link")}
                 className={cn(
                   inputClassName,
-                  'items-center pr-12 read-only:cursor-pointer read-only:opacity-100',
+                  "items-center pr-12 read-only:cursor-pointer read-only:opacity-100",
                 )}
                 href={inviteLink.href}
                 ref={inviteLinkReference}
@@ -106,28 +106,28 @@ export function InviteLinkCard({
 
               <Button
                 className={cn(
-                  'hover:border-input absolute top-0 right-0 rounded-l-none border border-l border-transparent',
-                  'border-l-input dark:hover:border-transparent',
-                  'dark:hover:border-l-input',
+                  "hover:border-input absolute top-0 right-0 rounded-l-none border border-l border-transparent",
+                  "border-l-input dark:hover:border-transparent",
+                  "dark:hover:border-l-input",
                 )}
                 onClick={() => {
                   copyToClipboard(inviteLink.href);
                   setLinkCopied(true);
                 }}
-                variant="ghost"
                 size="icon"
+                variant="ghost"
               >
                 {linkCopied ? (
                   <>
                     <ClipboardCheckIcon />
 
-                    <span className="sr-only">{t('invite-link-copied')}</span>
+                    <span className="sr-only">{t("invite-link-copied")}</span>
                   </>
                 ) : (
                   <>
                     <CopyIcon />
 
-                    <span className="sr-only">{t('copy-invite-link')}</span>
+                    <span className="sr-only">{t("copy-invite-link")}</span>
                   </>
                 )}
               </Button>
@@ -137,22 +137,22 @@ export function InviteLinkCard({
                 id="link-expiration-warning"
               >
                 <span className="grow">
-                  {t('link-valid-until', {
+                  {t("link-valid-until", {
                     date: formatDate(inviteLink.expiryDate),
                   })}
                 </span>
 
                 <span
+                  aria-hidden={linkCopied ? "false" : "true"}
                   aria-live="polite"
-                  aria-hidden={linkCopied ? 'false' : 'true'}
                   className={cn(
-                    'text-primary transform transition duration-300 ease-in-out',
+                    "text-primary transform transition duration-300 ease-in-out",
                     linkCopied
-                      ? 'translate-x-0 scale-100 opacity-100'
-                      : 'translate-x-10 scale-75 opacity-0',
+                      ? "translate-x-0 scale-100 opacity-100"
+                      : "translate-x-10 scale-75 opacity-0",
                   )}
                 >
-                  {t('copied')}
+                  {t("copied")}
                 </span>
               </p>
             </div>
@@ -166,16 +166,16 @@ export function InviteLinkCard({
                   className="w-full"
                   disabled={disabled}
                   name="intent"
-                  value="createNewInviteLink"
                   type="submit"
+                  value="createNewInviteLink"
                 >
                   {isCreatingNewLink ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t('regenerating')}
+                      {t("regenerating")}
                     </>
                   ) : (
-                    <>{t('regenerate-link')}</>
+                    t("regenerate-link")
                   )}
                 </Button>
               </Form>
@@ -184,17 +184,17 @@ export function InviteLinkCard({
                 <Button
                   disabled={isDeactivatingLink}
                   name="intent"
-                  value="deactivateInviteLink"
                   type="submit"
+                  value="deactivateInviteLink"
                   variant="outline"
                 >
                   {isDeactivatingLink ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t('deactivating')}
+                      {t("deactivating")}
                     </>
                   ) : (
-                    <>{t('deactivate-link')}</>
+                    t("deactivate-link")
                   )}
                 </Button>
               </Form>
@@ -209,7 +209,7 @@ export function InviteLinkCard({
                 className="text-primary mr-1.5 size-4"
               />
 
-              <span>{t('new-link-deactivates-old')}</span>
+              <span>{t("new-link-deactivates-old")}</span>
             </p>
           </CardFooter>
         </>
@@ -220,16 +220,16 @@ export function InviteLinkCard({
               className="w-full"
               disabled={disabled}
               name="intent"
-              value="createNewInviteLink"
               type="submit"
+              value="createNewInviteLink"
             >
               {isCreatingNewLink ? (
                 <>
                   <Loader2Icon className="animate-spin" />
-                  {t('creating')}
+                  {t("creating")}
                 </>
               ) : (
-                <>{t('create-new-invite-link')}</>
+                t("create-new-invite-link")
               )}
             </Button>
           </Form>

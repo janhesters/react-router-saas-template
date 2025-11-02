@@ -1,27 +1,27 @@
-import { createId } from '@paralleldrive/cuid2';
-import type { RequestHandler } from 'msw';
-import { http, HttpResponse } from 'msw';
-import { z } from 'zod';
+import { createId } from "@paralleldrive/cuid2";
+import type { RequestHandler } from "msw";
+import { HttpResponse, http } from "msw";
+import { z } from "zod";
 
 // Schema for validating incoming email requests
 const emailRequestSchema = z.object({
   from: z.string(),
-  to: z.union([z.string(), z.array(z.string())]),
-  subject: z.string(),
   html: z.string().optional(),
+  subject: z.string(),
   text: z.string().optional(),
+  to: z.union([z.string(), z.array(z.string())]),
 });
 
 const sendEmailMock = http.post(
-  'https://api.resend.com/emails',
+  "https://api.resend.com/emails",
   async ({ request }) => {
     // Check for Authorization header
-    const authHeader = request.headers.get('Authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
       return HttpResponse.json(
         {
-          name: 'UnauthorizedError',
-          message: 'Invalid API key provided',
+          message: "Invalid API key provided",
+          name: "UnauthorizedError",
           statusCode: 401,
         },
         { status: 401 },
@@ -35,10 +35,10 @@ const sendEmailMock = http.post(
       if (!parseResult.success) {
         return HttpResponse.json(
           {
-            name: 'ValidationError',
-            message: 'Invalid request data',
-            statusCode: 400,
             cause: parseResult.error.format(),
+            message: "Invalid request data",
+            name: "ValidationError",
+            statusCode: 400,
           },
           { status: 400 },
         );
@@ -48,8 +48,8 @@ const sendEmailMock = http.post(
       if (!parseResult.data.html && !parseResult.data.text) {
         return HttpResponse.json(
           {
-            name: 'ValidationError',
-            message: 'Either html or text content must be provided',
+            message: "Either html or text content must be provided",
+            name: "ValidationError",
             statusCode: 400,
           },
           { status: 400 },
@@ -63,10 +63,10 @@ const sendEmailMock = http.post(
     } catch (error) {
       return HttpResponse.json(
         {
-          name: 'UnknownError',
-          message: 'Failed to process email request',
-          statusCode: 500,
           cause: error,
+          message: "Failed to process email request",
+          name: "UnknownError",
+          statusCode: 500,
         },
         { status: 500 },
       );

@@ -1,17 +1,23 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2Icon } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-import { useTranslation } from 'react-i18next';
-import { Form, useSubmit } from 'react-router';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2Icon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { Form, useSubmit } from "react-router";
 
-import { Button } from '~/components/ui/button';
+import { UPDATE_BILLING_EMAIL_INTENT } from "./billing-constants";
+import type {
+  UpdateBillingEmailErrors,
+  UpdateBillingEmailSchema,
+} from "./billing-schemas";
+import { updateBillingEmailSchema } from "./billing-schemas";
+import { Button } from "~/components/ui/button";
 import {
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '~/components/ui/dialog';
+} from "~/components/ui/dialog";
 import {
   FormControl,
   FormField,
@@ -19,15 +25,8 @@ import {
   FormLabel,
   FormMessage,
   FormProvider,
-} from '~/components/ui/form';
-import { Input } from '~/components/ui/input';
-
-import { UPDATE_BILLING_EMAIL_INTENT } from './billing-constants';
-import type {
-  UpdateBillingEmailErrors,
-  UpdateBillingEmailSchema,
-} from './billing-schemas';
-import { updateBillingEmailSchema } from './billing-schemas';
+} from "~/components/ui/form";
+import { Input } from "~/components/ui/input";
 
 type EditBillingEmailModalContentProps = {
   billingEmail: string;
@@ -40,30 +39,30 @@ export function EditBillingEmailModalContent({
   errors,
   isUpdatingBillingEmail = false,
 }: EditBillingEmailModalContentProps) {
-  const { t } = useTranslation('billing', {
-    keyPrefix: 'billing-page.update-billing-email-modal',
+  const { t } = useTranslation("billing", {
+    keyPrefix: "billing-page.update-billing-email-modal",
   });
   const submit = useSubmit();
 
   const form = useForm<UpdateBillingEmailSchema>({
-    resolver: zodResolver(updateBillingEmailSchema),
     defaultValues: {
-      intent: UPDATE_BILLING_EMAIL_INTENT,
       billingEmail,
+      intent: UPDATE_BILLING_EMAIL_INTENT,
     },
     errors,
+    resolver: zodResolver(updateBillingEmailSchema),
   });
 
   const handleSubmit = async (values: UpdateBillingEmailSchema) => {
-    await submit(values, { method: 'POST' });
+    await submit(values, { method: "POST" });
   };
 
   return (
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>{t('title')}</DialogTitle>
+        <DialogTitle>{t("title")}</DialogTitle>
 
-        <DialogDescription>{t('description')}</DialogDescription>
+        <DialogDescription>{t("description")}</DialogDescription>
       </DialogHeader>
 
       <FormProvider {...form}>
@@ -80,13 +79,13 @@ export function EditBillingEmailModalContent({
               render={({ field }) => (
                 <FormItem className="grid-cols-4 items-center">
                   <FormLabel className="text-right">
-                    {t('email-label')}
+                    {t("email-label")}
                   </FormLabel>
 
                   <FormControl>
                     <Input
                       className="col-span-3"
-                      placeholder={t('email-placeholder')}
+                      placeholder={t("email-placeholder")}
                       {...field}
                     />
                   </FormControl>
@@ -101,8 +100,8 @@ export function EditBillingEmailModalContent({
 
       <DialogFooter>
         <Button
-          form="edit-billing-email-form"
           disabled={isUpdatingBillingEmail}
+          form="edit-billing-email-form"
           name="intent"
           type="submit"
           value={UPDATE_BILLING_EMAIL_INTENT}
@@ -110,10 +109,10 @@ export function EditBillingEmailModalContent({
           {isUpdatingBillingEmail ? (
             <>
               <Loader2Icon className="animate-spin" />
-              {t('saving-changes')}
+              {t("saving-changes")}
             </>
           ) : (
-            t('submit-button')
+            t("submit-button")
           )}
         </Button>
       </DialogFooter>
