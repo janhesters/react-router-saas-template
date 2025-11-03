@@ -1,24 +1,11 @@
+/**
+ * biome-ignore-all lint/suspicious/noConsole:helpful local dev error messages
+ */
 import { render } from "@react-email/components";
 import type { ReactElement } from "react";
 import { z } from "zod";
 
-/**
- * Renders a React email component into both HTML and plain text formats.
- *
- * @param react - The React element to render as an email
- * @returns A promise that resolves to an object containing both HTML and plain
- * text versions of the email
- * @example
- * const email = await renderReactEmail(<WelcomeEmail />);
- * // Returns: { html: "<div>...</div>", text: "Welcome..." }
- */
-async function renderReactEmail(react: ReactElement) {
-  const [html, text] = await Promise.all([
-    render(react),
-    render(react, { plainText: true }),
-  ]);
-  return { html, text };
-}
+const internalServerErrorStatusCode = 500;
 
 const resendErrorSchema = z.union([
   z.object({
@@ -30,50 +17,16 @@ const resendErrorSchema = z.union([
     cause: z.any(),
     message: z.literal("Unknown Error"),
     name: z.literal("UnknownError"),
-    statusCode: z.literal(500),
+    statusCode: z.literal(internalServerErrorStatusCode),
   }),
 ]);
 
 type ResendError = z.infer<typeof resendErrorSchema>;
 
-const resendSuccessSchema = z.object({ id: z.string() });
+const resendSuccessSchema = z.object({
+  id: z.string(),
+});
 
-/**
- * Sends an email using the Resend API. The email can be specified either as a
- * React component or as raw HTML and plain text content.
- *
- * @param to - The recipient's email address
- * @param subject - The email subject line
- * @param react - A React component to render as the email content (mutually
- * exclusive with html/text)
- * @param html - The HTML version of the email content (mutually exclusive with
- * react)
- * @param text - The plain text version of the email content (mutually exclusive
- * with react)
- *
- * @returns A promise that resolves to either:
- * - A success result with the email ID:
- * `{ status: 'success', data: { id: string } }`
- * - An error result with details:
- * `{ status: 'error', error: ResendError }`
- *
- * @example
- * // Using a React component
- * const result = await sendEmail({
- *   to: 'user@example.com',
- *   subject: 'Welcome!',
- *   react: <WelcomeEmail />
- * });
- *
- * @example
- * // Using raw HTML and text
- * const result = await sendEmail({
- *   to: 'user@example.com',
- *   subject: 'Welcome!',
- *   html: '<h1>Welcome</h1><p>Thanks for joining!</p>',
- *   text: 'Welcome\n\nThanks for joining!'
- * });
- */
 export async function sendEmail({
   react,
   ...options
@@ -93,16 +46,22 @@ export async function sendEmail({
   };
 
   // feel free to remove this condition once you've set up resend
-  if (!process.env.RESEND_API_KEY) {
-    console.error(`RESEND_API_KEY not set.`);
-    console.error(
-      `To send emails, set the RESEND_API_KEY environment variable.`,
-    );
-    console.error(
-      `Would have sent the following email:`,
-      JSON.stringify(email),
-    );
-    return { data: { id: "mocked" }, status: "success" } as const;
+  if (!process.env.RESEND_API_KEY && !process.env.MOCKS) {
+    if (process.env.NODE_ENV !== "test") {
+      console.error(`RESEND_API_KEY not set and we're not in mocks mode.`);
+      console.error(
+        `To send emails, set the RESEND_API_KEY environment variable.`,
+      );
+      console.error(
+        `Would have sent the following email:`,
+        JSON.stringify(email),
+      );
+    }
+
+    return {
+      data: { id: "mocked" },
+      status: "success",
+    } as const;
   }
 
   const response = await fetch("https://api.resend.com/emails", {
@@ -113,23 +72,33 @@ export async function sendEmail({
     },
     method: "POST",
   });
-  const data = (await response.json()) as unknown;
+  const data = await response.json();
   const parsedData = resendSuccessSchema.safeParse(data);
 
   if (response.ok && parsedData.success) {
     return { data: parsedData, status: "success" } as const;
   } else {
     const parseResult = resendErrorSchema.safeParse(data);
-    return parseResult.success
-      ? ({ error: parseResult.data, status: "error" } as const)
-      : ({
-          error: {
-            cause: data,
-            message: "Unknown Error",
-            name: "UnknownError",
-            statusCode: 500,
-          } satisfies ResendError,
-          status: "error",
-        } as const);
+    if (parseResult.success) {
+      return { error: parseResult.data, status: "error" } as const;
+    } else {
+      return {
+        error: {
+          cause: data,
+          message: "Unknown Error",
+          name: "UnknownError",
+          statusCode: 500,
+        } satisfies ResendError,
+        status: "error",
+      } as const;
+    }
   }
+}
+
+async function renderReactEmail(react: ReactElement) {
+  const [html, text] = await Promise.all([
+    render(react),
+    render(react, { plainText: true }),
+  ]);
+  return { html, text };
 }
