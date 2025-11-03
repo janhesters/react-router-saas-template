@@ -54,7 +54,7 @@ test.describe("register page", () => {
     await expect(page).toHaveTitle(/register | react router saas template/i);
 
     // The login button has the correct link.
-    await expect(page.getByRole("link", { name: /log in/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /sign in/i })).toHaveAttribute(
       "href",
       "/login",
     );
@@ -74,15 +74,17 @@ test.describe("register page", () => {
       await page.goto(path);
 
       // Invalid email.
-      await expect(page.getByText(/new here/i)).toBeVisible();
-      const registerButton = page.getByRole("button", { name: /register/i });
+      await expect(page.getByText(/create an account/i)).toBeVisible();
+      const registerButton = page.getByRole("button", {
+        name: /create account/i,
+      });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
       await emailInput.fill("invalid@email");
       await registerButton.click();
       await expect(
-        page.getByText(/a valid email consists of characters, '@' and '.'./i),
+        page.getByText(/please enter a valid email address/i),
       ).toBeVisible();
     });
 
@@ -95,8 +97,10 @@ test.describe("register page", () => {
       await page.goto(path);
 
       // Fill in the email and click the register button.
-      await expect(page.getByText(/new here/i)).toBeVisible();
-      const registerButton = page.getByRole("button", { name: /register/i });
+      await expect(page.getByText(/create an account/i)).toBeVisible();
+      const registerButton = page.getByRole("button", {
+        name: /create account/i,
+      });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
@@ -121,8 +125,10 @@ test.describe("register page", () => {
       await page.goto(path);
 
       // Fill in the email and click the register button.
-      await expect(page.getByText(/new here\?/i)).toBeVisible();
-      const registerButton = page.getByRole("button", { name: /register/i });
+      await expect(page.getByText(/create an account/i)).toBeVisible();
+      const registerButton = page.getByRole("button", {
+        name: /create account/i,
+      });
       await expect(registerButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
@@ -152,7 +158,7 @@ test.describe("register page", () => {
 
       // Click the Google registration button.
       const googleRegistrationButton = page.getByRole("button", {
-        name: /google/i,
+        name: /continue with google/i,
       });
       await googleRegistrationButton.click();
 
@@ -233,9 +239,9 @@ test.describe("register page", () => {
     await page.goto(path);
 
     // Check that the normal registration text is shown instead of the invite text
-    await expect(page.getByText(/new here\?/i)).toBeVisible();
+    await expect(page.getByText(/create an account/i)).toBeVisible();
     await expect(
-      page.getByText(/create your account to get started\./i),
+      page.getByText(/enter your email below to create your account/i),
     ).toBeVisible();
 
     // Verify that the invite-specific text is not shown
@@ -318,9 +324,9 @@ test.describe("register page", () => {
     await page.goto(path);
 
     // Check that the normal registration text is shown instead of the invite text
-    await expect(page.getByText(/new here\?/i)).toBeVisible();
+    await expect(page.getByText(/create an account/i)).toBeVisible();
     await expect(
-      page.getByText(/create your account to get started\./i),
+      page.getByText(/enter your email below to create your account/i),
     ).toBeVisible();
 
     // Verify that the invite-specific text is not shown

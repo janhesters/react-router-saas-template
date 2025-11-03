@@ -1,18 +1,42 @@
-import { useTranslation } from "react-i18next";
-import { data, useActionData, useNavigation } from "react-router";
+import { useForm } from "@conform-to/react/future";
+import { MailIcon } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
+import { data, Form, href, Link, useNavigation } from "react-router";
+import * as z from "zod";
 
 import type { Route } from "./+types/login";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
+import { GooggleIcon } from "~/components/svgs/google-icon";
+import { Button, buttonVariants } from "~/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+  FieldSet,
+} from "~/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "~/components/ui/input-group";
+import { Spinner } from "~/components/ui/spinner";
 import { getInstance } from "~/features/localization/i18n-middleware.server";
 import { getInviteInfoForAuthRoutes } from "~/features/organizations/organizations-helpers.server";
-import type { LoginActionData } from "~/features/user-authentication/login/login-action.server";
 import { loginAction } from "~/features/user-authentication/login/login-action.server";
-import { LoginFormCard } from "~/features/user-authentication/login/login-form-card";
+import { loginWithEmailSchema } from "~/features/user-authentication/login/login-schemas";
 import { LoginVerificationAwaiting } from "~/features/user-authentication/login/login-verification-awaiting";
 import { loginIntents } from "~/features/user-authentication/user-authentication-constants";
 import { getIsAwaitingEmailConfirmation } from "~/features/user-authentication/user-authentication-helpers";
-import { getFormErrors } from "~/utils/get-form-errors";
+import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
+
+z.config({ jitless: true });
+
+export const LOGIN_WITH_EMAIL_INTENT = loginIntents.loginWithEmail;
+export const LOGIN_WITH_GOOGLE_INTENT = loginIntents.loginWithGoogle;
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
@@ -38,44 +62,149 @@ export async function action(args: Route.ActionArgs) {
   return loginAction(args);
 }
 
-export default function LoginRoute({ loaderData }: Route.ComponentProps) {
-  const { t } = useTranslation("user-authentication");
-  const navigation = useNavigation();
+export default function LoginRoute({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
+  const { t } = useTranslation("user-authentication", { keyPrefix: "login" });
   const { inviteLinkInfo } = loaderData;
-  const actionData = useActionData<LoginActionData>();
 
   const isAwaitingEmailConfirmation =
     getIsAwaitingEmailConfirmation(actionData);
-  const errors = getFormErrors(actionData);
 
+  const { form, fields } = useForm({
+    lastResult: actionData?.result,
+    schema: loginWithEmailSchema,
+  });
+
+  const navigation = useNavigation();
   const isLoggingInWithEmail =
-    navigation.formData?.get("intent") === loginIntents.loginWithEmail;
+    navigation.formData?.get("intent") === LOGIN_WITH_EMAIL_INTENT;
   const isLoggingInWithGoogle =
-    navigation.formData?.get("intent") === loginIntents.loginWithGoogle;
+    navigation.formData?.get("intent") === LOGIN_WITH_GOOGLE_INTENT;
   const isSubmitting = isLoggingInWithEmail || isLoggingInWithGoogle;
 
-  return (
-    <>
-      <h1 className="sr-only">{t("login.page-title")}</h1>
+  if (isAwaitingEmailConfirmation) {
+    return (
+      <LoginVerificationAwaiting
+        email={actionData?.email}
+        isResending={isLoggingInWithEmail}
+        isSubmitting={isSubmitting}
+      />
+    );
+  }
 
-      <div className="flex flex-col gap-6">
-        {isAwaitingEmailConfirmation ? (
-          <LoginVerificationAwaiting
-            email={actionData?.email}
-            isResending={isLoggingInWithEmail}
-            isSubmitting={isSubmitting}
-          />
-        ) : (
-          <LoginFormCard
-            errors={errors}
-            inviteLinkInfo={inviteLinkInfo}
-            isLoggingInWithEmail={isLoggingInWithEmail}
-            isLoggingInWithGoogle={isLoggingInWithGoogle}
-            isSubmitting={isSubmitting}
-          />
-        )}
-      </div>
-    </>
+  return (
+    <FieldSet disabled={isSubmitting}>
+      <FieldGroup>
+        <div className="flex flex-col items-center gap-1 text-center">
+          <h1 className="text-2xl font-bold">
+            {inviteLinkInfo
+              ? t("form.join-organization", {
+                  creatorName: inviteLinkInfo.creatorName,
+                  interpolation: { escapeValue: false },
+                  organizationName: inviteLinkInfo.organizationName,
+                })
+              : t("title")}
+          </h1>
+          <p className="text-muted-foreground text-balance text-sm">
+            {inviteLinkInfo
+              ? t("form.join-organization-description", {
+                  creatorName: inviteLinkInfo.creatorName,
+                  interpolation: { escapeValue: false },
+                  organizationName: inviteLinkInfo.organizationName,
+                })
+              : t("subtitle")}
+          </p>
+        </div>
+
+        {/* Email Login Form */}
+        <Form method="POST" {...form.props}>
+          <FieldGroup>
+            <Field data-invalid={fields.email.ariaInvalid}>
+              <FieldLabel htmlFor={fields.email.id}>
+                {t("emailLabel")}
+              </FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  {...fields.email.inputProps}
+                  autoComplete="email"
+                  placeholder={t("emailPlaceholder")}
+                  type="email"
+                />
+                <InputGroupAddon>
+                  <MailIcon />
+                </InputGroupAddon>
+              </InputGroup>
+              <FieldError
+                errors={fields.email.errors}
+                id={fields.email.errorId}
+              />
+            </Field>
+
+            <Field>
+              <Button
+                name="intent"
+                type="submit"
+                value={LOGIN_WITH_EMAIL_INTENT}
+              >
+                {isLoggingInWithEmail ? (
+                  <>
+                    <Spinner /> {t("submitButtonSubmitting")}
+                  </>
+                ) : (
+                  t("submitButton")
+                )}
+              </Button>
+            </Field>
+          </FieldGroup>
+        </Form>
+
+        <FieldSeparator>{t("separator")}</FieldSeparator>
+
+        {/* Google Login Form */}
+        <Form method="POST">
+          <Field>
+            <Button
+              name="intent"
+              type="submit"
+              value={LOGIN_WITH_GOOGLE_INTENT}
+              variant="outline"
+            >
+              {isLoggingInWithGoogle ? (
+                <>
+                  <Spinner /> {t("googleButton")}
+                </>
+              ) : (
+                <>
+                  <GooggleIcon /> {t("googleButton")}
+                </>
+              )}
+            </Button>
+          </Field>
+        </Form>
+
+        <Field>
+          <FieldDescription className="text-center">
+            <Trans
+              components={{
+                signup: (
+                  <Link
+                    className={cn(
+                      buttonVariants({ variant: "link" }),
+                      "text-muted-foreground max-h-min p-0 hover:text-primary",
+                    )}
+                    to={href("/register")}
+                  />
+                ),
+              }}
+              i18nKey="login.signupCta"
+              ns="user-authentication"
+            />
+          </FieldDescription>
+        </Field>
+      </FieldGroup>
+    </FieldSet>
   );
 }
 

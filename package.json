@@ -36,6 +36,7 @@
     "input-otp": "1.4.2",
     "isbot": "5.1.31",
     "lucide-react": "0.552.0",
+    "motion": "12.23.24",
     "radix-ui": "1.4.3",
     "ramda": "0.32.0",
     "react": "19.2.0",

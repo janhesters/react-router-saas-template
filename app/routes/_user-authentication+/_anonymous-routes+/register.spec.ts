@@ -17,11 +17,6 @@ import {
   createAuthenticatedRequest,
   createTestContextProvider,
 } from "~/test/test-utils";
-import {
-  badRequest,
-  conflict,
-  tooManyRequests,
-} from "~/utils/http-responses.server";
 import { toFormData } from "~/utils/to-form-data";
 
 const createUrl = () => `http://localhost:3000/register`;
@@ -91,30 +86,38 @@ describe("/register route action", () => {
     const formData = toFormData({ intent: "invalid-intent" });
 
     const actual = await sendRequest({ formData });
-    const expected = badRequest({
-      errors: {
-        intent: {
-          message: "Invalid input",
+
+    expect(actual).toMatchObject({
+      data: {
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining(["Invalid input"]),
+            },
+          },
         },
       },
+      init: { status: 400 },
     });
-
-    expect(actual).toEqual(expected);
   });
 
   test("given: no intent, should: return a 400 status code with an error message", async () => {
     const formData = toFormData({});
 
     const actual = await sendRequest({ formData });
-    const expected = badRequest({
-      errors: {
-        intent: {
-          message: "Invalid input",
+
+    expect(actual).toMatchObject({
+      data: {
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining(["Invalid input"]),
+            },
+          },
         },
       },
+      init: { status: 400 },
     });
-
-    expect(actual).toEqual(expected);
   });
 
   describe(`${registerIntents.registerWithEmail} intent`, () => {
@@ -133,33 +136,36 @@ describe("/register route action", () => {
     test.each([
       {
         body: { intent },
-        expected: badRequest({
-          errors: {
-            email: { message: "user-authentication:common.email-invalid" },
-          },
-        }),
         given: "no email",
       },
       {
         body: { email: "invalid-email", intent },
-        expected: badRequest({
-          errors: {
-            email: { message: "user-authentication:common.email-invalid" },
-          },
-        }),
         given: "an invalid email",
       },
     ])(
       "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
+      async ({ body }) => {
         const formData = toFormData(body);
 
         const actual = await sendRequest({ formData });
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject({
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  email: expect.arrayContaining([
+                    "user-authentication:register.errors.invalidEmail",
+                  ]),
+                },
+              },
+            },
+          },
+          init: { status: 400 },
+        });
       },
     );
 
-    test("given: a valid email for an existing user, should: return a 409 status code with an error message", async () => {
+    test("given: a valid email for an existing user, should: return a 400 status code with an error message", async () => {
       const userAccount = createPopulatedUserAccount();
       await saveUserAccountToDatabase(userAccount);
       onTestFinished(async () => {
@@ -168,31 +174,43 @@ describe("/register route action", () => {
       const formData = toFormData({ email: userAccount.email, intent });
 
       const actual = await sendRequest({ formData });
-      const expected = conflict({
-        errors: {
-          email: {
-            message: "user-authentication:register.form.user-already-exists",
+
+      expect(actual).toMatchObject({
+        data: {
+          result: {
+            error: {
+              fieldErrors: {
+                email: expect.arrayContaining([
+                  "user-authentication:register.form.user-already-exists",
+                ]),
+              },
+            },
           },
         },
+        init: { status: 400 },
       });
-
-      expect(actual).toEqual(expected);
     });
 
-    test("given: too many requests in a short time, should: return a 429 status code with an error message", async () => {
+    test("given: too many requests in a short time, should: return a 400 status code with an error message", async () => {
       const email = createRateLimitedEmail();
       const formData = toFormData({ email, intent });
 
       const actual = await sendRequest({ formData });
-      const expected = tooManyRequests({
-        errors: {
-          email: {
-            message: "user-authentication:register.registration-failed",
+
+      expect(actual).toMatchObject({
+        data: {
+          result: {
+            error: {
+              fieldErrors: {
+                email: expect.arrayContaining([
+                  "user-authentication:register.form.registration-failed",
+                ]),
+              },
+            },
           },
         },
+        init: { status: 400 },
       });
-
-      expect(actual).toEqual(expected);
     });
   });
 

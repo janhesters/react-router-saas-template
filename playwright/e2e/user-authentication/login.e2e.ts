@@ -87,14 +87,16 @@ test.describe("login page", () => {
 
       // Invalid email.
       await expect(page.getByText(/welcome back/i)).toBeVisible();
-      const loginButton = page.getByRole("button", { name: /login/i });
+      const loginButton = page.getByRole("button", {
+        name: /sign in with email/i,
+      });
       await expect(loginButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await expect(emailInput).toBeVisible();
       await emailInput.fill("invalid@email");
       await loginButton.click();
       await expect(
-        page.getByText(/a valid email consists of characters, '@' and '.'./i),
+        page.getByText(/please enter a valid email address/i),
       ).toBeVisible();
 
       // User does not exist.
@@ -117,7 +119,9 @@ test.describe("login page", () => {
 
       // Fill in the email and click the login button.
       await expect(page.getByText(/welcome back/i)).toBeVisible();
-      const loginButton = page.getByRole("button", { name: /login/i });
+      const loginButton = page.getByRole("button", {
+        name: /sign in with email/i,
+      });
       await expect(loginButton).toBeVisible();
       const emailInput = page.getByLabel(/email/i);
       await emailInput.fill(userAccount.email);
@@ -148,7 +152,7 @@ test.describe("login page", () => {
 
       // Click the Google login button.
       const googleLoginButton = page.getByRole("button", {
-        name: /google/i,
+        name: /continue with google/i,
       });
       await googleLoginButton.click();
 
