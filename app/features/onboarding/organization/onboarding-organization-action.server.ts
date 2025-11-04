@@ -1,3 +1,4 @@
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { createId } from "@paralleldrive/cuid2";
 import { redirect } from "react-router";
 
@@ -19,9 +20,13 @@ export async function onboardingOrganizationAction({
     request,
   });
   const { supabase } = context.get(authContext);
-  const result = await validateFormData(request, onboardingOrganizationSchema, {
-    maxFileSize: 1_000_000, // 1MB
-  });
+  const result = await validateFormData(
+    request,
+    coerceFormValue(onboardingOrganizationSchema),
+    {
+      maxFileSize: 1_000_000, // 1MB
+    },
+  );
 
   if (!result.success) {
     return result.response;

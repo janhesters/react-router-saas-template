@@ -1,4 +1,3 @@
-import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { z } from "zod";
 
 import { ONBOARDING_USER_ACCOUNT_INTENT } from "./onboarding-user-account-constants";
@@ -9,28 +8,22 @@ const ONE_MB = 1_000_000;
 
 z.config({ jitless: true });
 
-export const onboardingUserAccountSchema = coerceFormValue(
-  z.object({
-    image: z
-      .file()
-      .max(ONE_MB, { message: "onboarding:user-account.errors.photoTooLarge" })
-      .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
-        message: "onboarding:user-account.errors.invalidFileType",
-      })
-      .optional(),
-    intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
-    name: z
-      .string()
-      .trim()
-      .min(MIN_NAME_LENGTH, {
-        message: "onboarding:user-account.errors.nameMin",
-      })
-      .max(MAX_NAME_LENGTH, {
-        message: "onboarding:user-account.errors.nameMax",
-      }),
-  }),
-);
-
-export type OnboardingUserAccountSchema = z.infer<
-  typeof onboardingUserAccountSchema
->;
+export const onboardingUserAccountSchema = z.object({
+  image: z
+    .file()
+    .max(ONE_MB, { message: "onboarding:user-account.errors.photoTooLarge" })
+    .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
+      message: "onboarding:user-account.errors.invalidFileType",
+    })
+    .optional(),
+  intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
+  name: z
+    .string()
+    .trim()
+    .min(MIN_NAME_LENGTH, {
+      message: "onboarding:user-account.errors.nameMin",
+    })
+    .max(MAX_NAME_LENGTH, {
+      message: "onboarding:user-account.errors.nameMax",
+    }),
+});

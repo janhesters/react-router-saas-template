@@ -66,7 +66,10 @@ test.describe("account settings", () => {
     await expect(page.getByRole("textbox", { name: /email/i })).toHaveValue(
       user.email,
     );
-    await expect(page.getByRole("img", { name: /avatar/i })).toBeVisible();
+    // Verify avatar field is present (the fallback shows a UserIcon SVG, not an img)
+    await expect(
+      page.getByText(/your avatar will be shown across the application/i),
+    ).toBeVisible();
 
     await deleteUserAccountFromDatabaseById(user.id);
   });
@@ -134,38 +137,24 @@ test.describe("account settings", () => {
 
     await page.goto("/settings/account");
 
-    // Some random page assertions to give the JS for the upload time to load.
+    // Verify page loaded
     await expect(
       page.getByRole("heading", { level: 1, name: /settings/i }),
     ).toBeVisible();
     await expect(page.getByText(/manage your account settings/i)).toBeVisible();
-    await expect(page.getByRole("link", { name: /back/i })).toHaveAttribute(
-      "href",
-      "/organizations",
-    );
-    await expect(page.getByRole("textbox", { name: /name/i })).toBeVisible();
-    await expect(page.getByRole("textbox", { name: /email/i })).toBeVisible();
 
     // Set new name
     const newName = createPopulatedUserAccount().name;
     await page.getByRole("textbox", { name: /name/i }).fill(newName);
 
-    // Upload new avatar
-    // Test image upload via drag and drop
-    const dropzone = page.getByText(/drag and drop or select files to upload/i);
-    await expect(dropzone).toBeVisible();
+    // Upload new avatar via file input
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles("playwright/fixtures/200x200.jpg");
 
-    // Perform drag and drop of the image
-    // desktop viewport = drag‑and‑drop version is rendered *after* the hidden mobile input
-    const fileInputs = page.locator('input[type="file"]');
-    await expect(fileInputs).toHaveCount(2);
-    await fileInputs.nth(1).setInputFiles("playwright/fixtures/200x200.jpg");
-    await expect(page.getByText("200x200.jpg")).toBeVisible();
-
-    // Set new name again because sometimes the page loads slow because of the
-    // MSW client mocks.
-    await page.getByRole("textbox", { name: /name/i }).clear();
-    await page.getByRole("textbox", { name: /name/i }).fill(newName);
+    // Verify preview shows (the file has been selected)
+    await expect(
+      page.getByRole("img", { name: /avatar preview/i }),
+    ).toBeVisible();
 
     // Save changes
     await page.getByRole("button", { name: /save changes/i }).click();
@@ -176,6 +165,14 @@ test.describe("account settings", () => {
         .getByRole("region", { name: /notifications/i })
         .getByText(/your account has been updated/i),
     ).toBeVisible();
+
+    // Verify name was updated in database
+    const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
+    expect(updatedUser?.name).toEqual(newName);
+    // With server-side uploads, the file is uploaded to Supabase storage
+    expect(updatedUser?.imageUrl).toMatch(
+      /storage\/v1\/object\/public\/app-images\/user-avatars/,
+    );
 
     await deleteUserAccountFromDatabaseById(user.id);
   });

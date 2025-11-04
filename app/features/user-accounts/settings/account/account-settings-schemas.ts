@@ -1,31 +1,38 @@
 import { z } from "zod";
 
 import {
-  AVATAR_MAX_FILE_SIZE,
+  DELETE_USER_ACCOUNT_INTENT,
   UPDATE_USER_ACCOUNT_INTENT,
 } from "./account-settings-constants";
 
-export const updateUserAccountFormSchema = z.object({
-  avatar: z
-    .instanceof(File, {
-      message: "settings:user-account.form.avatar-must-be-file",
-    })
-    .refine(
-      (file) => file.size <= AVATAR_MAX_FILE_SIZE,
-      "settings:user-account.form.avatar-max-file-size",
-    )
-    .optional(),
-  email: z.email().optional(),
-  intent: z.literal(UPDATE_USER_ACCOUNT_INTENT),
-  name: z
-    .string({
-      error: "settings:user-account.form.name-required",
-    })
-    .trim()
-    .min(2, "settings:user-account.form.name-min-length")
-    .max(128, "settings:user-account.form.name-max-length"),
+const ONE_MB = 1_000_000;
+const MIN_NAME_LENGTH = 2;
+const MAX_NAME_LENGTH = 128;
+
+z.config({ jitless: true });
+
+export const deleteUserAccountFormSchema = z.object({
+  intent: z.literal(DELETE_USER_ACCOUNT_INTENT),
 });
 
-export type UpdateUserAccountFormSchema = z.infer<
-  typeof updateUserAccountFormSchema
->;
+export const updateUserAccountFormSchema = z.object({
+  avatar: z
+    .file()
+    .max(ONE_MB, {
+      message: "settings:user-account.errors.avatarTooLarge",
+    })
+    .mime(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"], {
+      message: "settings:user-account.errors.invalidFileType",
+    })
+    .optional(),
+  intent: z.literal(UPDATE_USER_ACCOUNT_INTENT),
+  name: z
+    .string()
+    .trim()
+    .min(MIN_NAME_LENGTH, {
+      message: "settings:user-account.errors.nameMin",
+    })
+    .max(MAX_NAME_LENGTH, {
+      message: "settings:user-account.errors.nameMax",
+    }),
+});

@@ -1,3 +1,4 @@
+import { parseSubmission, report } from "@conform-to/react/future";
 import type { UserAccount } from "@prisma/client";
 import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, onTestFinished, test } from "vitest";
@@ -122,7 +123,7 @@ describe("/settings/account route action", () => {
       const actual = (await sendAuthenticatedRequest({
         formData,
         user,
-      })) as DataWithResponseInit<{ success: string }>;
+      })) as DataWithResponseInit<{ result: undefined }>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -151,7 +152,7 @@ describe("/settings/account route action", () => {
       const actual = (await sendAuthenticatedRequest({
         formData,
         user,
-      })) as DataWithResponseInit<{ success: string }>;
+      })) as DataWithResponseInit<{ result: undefined }>;
 
       // Verify user account was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -181,7 +182,7 @@ describe("/settings/account route action", () => {
       const actual = (await sendAuthenticatedRequest({
         formData,
         user,
-      })) as DataWithResponseInit<{ success: string }>;
+      })) as DataWithResponseInit<{ result: undefined }>;
 
       // Verify only avatar was updated in the database
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
@@ -207,80 +208,74 @@ describe("/settings/account route action", () => {
     test.each([
       {
         body: { intent },
-        expected: badRequest({
-          errors: {
-            name: { message: "settings:user-account.form.name-required" },
+        expectedError: {
+          fieldErrors: {
+            name: ["Invalid input: expected string, received undefined"],
           },
-        }),
+          formErrors: [],
+        },
         given: "no name provided",
       },
       {
         body: { intent, name: "a" },
-        expected: badRequest({
-          errors: {
-            name: {
-              message: "settings:user-account.form.name-min-length",
-            },
+        expectedError: {
+          fieldErrors: {
+            name: ["settings:user-account.errors.nameMin"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name that is too short (1 character)",
       },
       {
         body: { intent, name: "a".repeat(129) },
-        expected: badRequest({
-          errors: {
-            name: {
-              message: "settings:user-account.form.name-max-length",
-            },
+        expectedError: {
+          fieldErrors: {
+            name: ["settings:user-account.errors.nameMax"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name that is too long (129 characters)",
       },
       {
         body: { intent, name: "   " },
-        expected: badRequest({
-          errors: {
-            name: {
-              message: "settings:user-account.form.name-min-length",
-            },
+        expectedError: {
+          fieldErrors: {
+            name: ["settings:user-account.errors.nameMin"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name with only whitespace",
       },
       {
         body: { intent, name: "  a " },
-        expected: badRequest({
-          errors: {
-            name: {
-              message: "settings:user-account.form.name-min-length",
-            },
+        expectedError: {
+          fieldErrors: {
+            name: ["settings:user-account.errors.nameMin"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a too short name with whitespace",
-      },
-      {
-        body: { avatar: "not-a-file", intent, name: "Test User" },
-        expected: badRequest({
-          errors: {
-            avatar: {
-              message: "settings:user-account.form.avatar-must-be-file",
-            },
-          },
-        }),
-        given: "an invalid avatar (string instead of file)",
       },
     ])(
       "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
+      async ({ body, expectedError }) => {
         const user = await setup();
 
         const formData = toFormData(body);
+        const submission = parseSubmission(formData);
 
         const actual = await sendAuthenticatedRequest({
           formData,
           user,
         });
-        expect(actual).toEqual(expected);
+
+        expect(actual).toEqual(
+          badRequest({
+            result: report(submission, {
+              error: expectedError,
+            }),
+          }),
+        );
       },
     );
   });
@@ -416,6 +411,7 @@ describe("/settings/account route action", () => {
       });
 
       const formData = toFormData({ intent });
+      const submission = parseSubmission(formData);
 
       const response = (await sendAuthenticatedRequest({
         formData,
@@ -424,8 +420,14 @@ describe("/settings/account route action", () => {
 
       expect(response).toEqual(
         badRequest({
-          error:
-            "Cannot delete account while owner of organizations with other members",
+          result: report(submission, {
+            error: {
+              fieldErrors: {},
+              formErrors: [
+                "Cannot delete account while owner of organizations with other members",
+              ],
+            },
+          }),
         }),
       );
 

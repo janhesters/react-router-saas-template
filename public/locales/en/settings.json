@@ -21,26 +21,23 @@
       "title": "Danger Zone"
     },
     "description": "Manage your account settings.",
+    "errors": {
+      "avatarTooLarge": "Avatar must be less than 1MB.",
+      "invalidFileType": "Invalid file type. Only PNG, JPG, JPEG, GIF, and WebP images are allowed.",
+      "nameMax": "Your name must be at most 128 characters long.",
+      "nameMin": "Your name must be at least 2 characters long."
+    },
     "form": {
-      "avatar-alt": "Avatar",
       "avatar-description": "Your avatar will be shown across the application.",
+      "avatar-formats": "PNG, JPG, GIF, or WebP (max. 1MB)",
       "avatar-label": "Avatar",
-      "avatar-max-file-size": "Image size must be less than 1MB",
-      "avatar-must-be-file": "Avatar must be a file.",
+      "avatar-preview-alt": "Avatar preview",
       "email-description": "Your email address is used to identify you and cannot be changed.",
       "email-label": "Email",
       "email-placeholder": "Your email address ...",
-      "errors": {
-        "delete-old-avatar-failed": "Failed to delete old avatar.",
-        "unexpected-error": "An unexpected error occurred.",
-        "upload-failed": "Avatar upload failed."
-      },
       "name-description": "Your name will be shown in all organizations across the application.",
       "name-label": "Name",
-      "name-max-length": "Your name must be at most 128 characters long.",
-      "name-min-length": "Your name must be at least 2 characters long.",
       "name-placeholder": "Your name ...",
-      "name-required": "Please enter your name (required).",
       "save": "Save changes",
       "saving": "Saving changes ..."
     },

@@ -1,3 +1,4 @@
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { href, redirect } from "react-router";
 
 import { requireUserNeedsOnboarding } from "../onboarding-helpers.server";
@@ -24,9 +25,13 @@ export async function onboardingUserAccountAction({
     request,
   });
   const { supabase } = context.get(authContext);
-  const result = await validateFormData(request, onboardingUserAccountSchema, {
-    maxFileSize: 1_000_000, // 1MB
-  });
+  const result = await validateFormData(
+    request,
+    coerceFormValue(onboardingUserAccountSchema),
+    {
+      maxFileSize: 1_000_000, // 1MB
+    },
+  );
 
   if (!result.success) {
     return result.response;

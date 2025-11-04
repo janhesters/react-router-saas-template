@@ -7,14 +7,10 @@ import { Separator } from "~/components/ui/separator";
 import { getInstance } from "~/features/localization/i18n-middleware.server";
 import { AccountSettings } from "~/features/user-accounts/settings/account/account-settings";
 import { accountSettingsAction } from "~/features/user-accounts/settings/account/account-settings-action.server";
-import {
-  DELETE_USER_ACCOUNT_INTENT,
-  UPDATE_USER_ACCOUNT_INTENT,
-} from "~/features/user-accounts/settings/account/account-settings-constants";
+import { DELETE_USER_ACCOUNT_INTENT } from "~/features/user-accounts/settings/account/account-settings-constants";
 import { mapUserAccountWithMembershipsToDangerZoneProps } from "~/features/user-accounts/settings/account/account-settings-helpers.server";
 import { DangerZone } from "~/features/user-accounts/settings/account/danger-zone";
 import { requireAuthenticatedUserWithMembershipsExists } from "~/features/user-accounts/user-accounts-helpers.server";
-import { getFormErrors } from "~/utils/get-form-errors";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -53,11 +49,8 @@ export default function SettingsAccountRoute({
     keyPrefix: "user-account",
   });
   const navigation = useNavigation();
-  const isUpdatingUserAccount =
-    navigation.formData?.get("intent") === UPDATE_USER_ACCOUNT_INTENT;
   const isDeletingAccount =
     navigation.formData?.get("intent") === DELETE_USER_ACCOUNT_INTENT;
-  const errors = getFormErrors(actionData);
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -71,9 +64,7 @@ export default function SettingsAccountRoute({
         <Separator />
 
         <AccountSettings
-          errors={errors}
-          isUpdatingUserAccount={isUpdatingUserAccount}
-          success={(actionData as { success?: string })?.success}
+          lastResult={actionData?.result}
           user={loaderData.user}
         />
 

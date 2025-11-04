@@ -1,5 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import type { Organization } from "@prisma/client";
 import { Loader2Icon } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
@@ -67,9 +68,7 @@ export function GeneralOrganizationSettings({
 
   const { form, fields } = useForm({
     lastResult,
-    schema: updateOrganizationFormSchema,
-    shouldRevalidate: "onBlur",
-    shouldValidate: "onBlur",
+    schema: coerceFormValue(updateOrganizationFormSchema),
   });
 
   const navigation = useNavigation();
@@ -96,6 +95,7 @@ export function GeneralOrganizationSettings({
             <FieldLabel htmlFor={fields.name.id}>
               {t("form.name-label")}
             </FieldLabel>
+
             <FieldDescription id={fields.name.descriptionId}>
               <Trans
                 components={{
@@ -112,6 +112,7 @@ export function GeneralOrganizationSettings({
               />
             </FieldDescription>
           </FieldContent>
+
           <div>
             <Input
               {...fields.name.inputProps}
@@ -119,12 +120,8 @@ export function GeneralOrganizationSettings({
               defaultValue={organization.name}
               placeholder={t("form.name-placeholder")}
             />
-            {fields.name.errors && fields.name.errors.length > 0 && (
-              <FieldError
-                errors={fields.name.errors}
-                id={fields.name.errorId}
-              />
-            )}
+
+            <FieldError errors={fields.name.errors} id={fields.name.errorId} />
           </div>
         </Field>
 
@@ -153,6 +150,7 @@ export function GeneralOrganizationSettings({
                       className="size-16 md:size-24 rounded-lg object-cover"
                       src={organization.imageUrl ?? ""}
                     />
+
                     <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border text-lg md:text-2xl">
                       {organization.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -161,24 +159,21 @@ export function GeneralOrganizationSettings({
                     <AvatarUploadInput
                       {...fields.logo.inputProps}
                       accept="image/*"
-                      aria-invalid={
-                        fields.logo.ariaInvalid || error ? "true" : undefined
-                      }
                     />
+
                     <AvatarUploadDescription>
                       {t("form.logo-formats")}
                     </AvatarUploadDescription>
                   </div>
                 </div>
-                {(fields.logo.errors?.length || error) && (
-                  <FieldError
-                    errors={[
-                      ...(fields.logo.errors ?? []),
-                      ...(error ? [error] : []),
-                    ]}
-                    id={fields.logo.errorId}
-                  />
-                )}
+
+                <FieldError
+                  errors={[
+                    ...(fields.logo.errors ?? []),
+                    ...(error ? [error] : []),
+                  ]}
+                  id={fields.logo.errorId}
+                />
               </div>
             </Field>
           )}

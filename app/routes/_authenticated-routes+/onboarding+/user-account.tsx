@@ -1,4 +1,5 @@
 import { useForm } from "@conform-to/react/future";
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { UserIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { data, Form, useNavigation } from "react-router";
@@ -63,7 +64,7 @@ export default function UserAccountOnboardingRoute({
   const { t } = useTranslation("onboarding", { keyPrefix: "user-account" });
   const { form, fields } = useForm({
     lastResult: actionData?.result,
-    schema: onboardingUserAccountSchema,
+    schema: coerceFormValue(onboardingUserAccountSchema),
   });
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";

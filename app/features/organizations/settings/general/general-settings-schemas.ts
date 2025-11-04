@@ -36,11 +36,3 @@ export const updateOrganizationFormSchema = z.object({
       message: "organizations:settings.general.errors.nameMax",
     }),
 });
-
-export type UpdateOrganizationFormSchema = z.infer<
-  typeof updateOrganizationFormSchema
->;
-
-export type DeleteOrganizationFormSchema = z.infer<
-  typeof deleteOrganizationFormSchema
->;
