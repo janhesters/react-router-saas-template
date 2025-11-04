@@ -1,6 +1,6 @@
 import { OrganizationMembershipRole } from "@prisma/client";
 import { useTranslation } from "react-i18next";
-import { data, useNavigation } from "react-router";
+import { data } from "react-router";
 
 import type { Route } from "./+types/general";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -10,12 +10,7 @@ import { organizationMembershipContext } from "~/features/organizations/organiza
 import { DangerZone } from "~/features/organizations/settings/general/danger-zone";
 import { GeneralOrganizationSettings } from "~/features/organizations/settings/general/general-organization-settings";
 import { generalOrganizationSettingsAction } from "~/features/organizations/settings/general/general-organization-settings-action.server";
-import {
-  DELETE_ORGANIZATION_INTENT,
-  UPDATE_ORGANIZATION_INTENT,
-} from "~/features/organizations/settings/general/general-settings-constants";
 import { OrganizationInfo } from "~/features/organizations/settings/general/organization-info";
-import { getFormErrors } from "~/utils/get-form-errors";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export function loader({ context }: Route.LoaderArgs) {
@@ -55,15 +50,6 @@ export default function GeneralOrganizationSettingsRoute({
     keyPrefix: "settings.general",
   });
   const { userIsOwner, organization } = loaderData;
-  const errors = getFormErrors(
-    actionData as Awaited<ReturnType<typeof action>>,
-  );
-  const navigation = useNavigation();
-  const isUpdatingOrganization =
-    navigation.formData?.get("intent") === UPDATE_ORGANIZATION_INTENT;
-  const isDeletingOrganization =
-    navigation.formData?.get("intent") === DELETE_ORGANIZATION_INTENT;
-  const isSubmitting = isUpdatingOrganization || isDeletingOrganization;
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
@@ -79,18 +65,13 @@ export default function GeneralOrganizationSettingsRoute({
         {userIsOwner ? (
           <>
             <GeneralOrganizationSettings
-              errors={errors}
-              isUpdatingOrganization={isUpdatingOrganization}
+              lastResult={actionData?.result}
               organization={loaderData?.organization}
             />
 
             <Separator />
 
-            <DangerZone
-              isDeletingOrganization={isDeletingOrganization}
-              isSubmitting={isSubmitting}
-              organizationName={organization.name}
-            />
+            <DangerZone organizationName={organization.name} />
           </>
         ) : (
           <OrganizationInfo

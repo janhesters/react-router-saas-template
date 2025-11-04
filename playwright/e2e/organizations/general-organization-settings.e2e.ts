@@ -4,7 +4,6 @@ import { expect, test } from "@playwright/test";
 import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
-  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -163,8 +162,6 @@ test.describe("general organization settings", () => {
         role: OrganizationMembershipRole.owner,
       });
 
-      await enableClientMswMocks({ page });
-
       await page.goto(`/organizations/${organization.slug}/settings/general`);
 
       // Verify page content
@@ -188,30 +185,24 @@ test.describe("general organization settings", () => {
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
 
-      // Test image upload via drag and drop
-      const dropzone = page.getByText(
-        /drag and drop or select file to upload/i,
-      );
-      await expect(dropzone).toBeVisible();
-
-      // Perform drag and drop of the image
+      // Test image upload
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
 
-      // Enter name again to ensure form is ready
+      // Enter name again to ensure form is ready (sometimes with MSW activated
+      // on the server, it takes time for the fields to become available)
       await page.getByRole("textbox", { name: /organization name/i }).clear();
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
 
-      // Perform drag and drop of the image again for the same reason
+      // Upload the image again for the same reason
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
-      await expect(page.getByText("200x200.jpg")).toBeVisible();
 
       // Save changes
       await page.getByRole("button", { name: /save changes/i }).click();
@@ -233,7 +224,10 @@ test.describe("general organization settings", () => {
         organization.id,
       );
       expect(updatedOrganization?.name).toEqual(newName);
-      expect(updatedOrganization?.imageUrl).toContain("200x200.jpg");
+      // With server-side uploads, the file is uploaded to Supabase storage
+      expect(updatedOrganization?.imageUrl).toMatch(
+        /storage\/v1\/object\/public\/app-images\/organization-logos/,
+      );
 
       await teardownOrganizationAndMember({ organization, user });
     });
@@ -279,12 +273,12 @@ test.describe("general organization settings", () => {
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(faker.string.alpha(256));
+      await page.getByRole("button", { name: /save changes/i }).click();
       await expect(
         page.getByText(
-          /organization name must be less than 255 characters long/i,
+          /organization name must be at most 255 characters long/i,
         ),
       ).toBeVisible();
-      await page.getByRole("button", { name: /save changes/i }).click();
 
       await teardownOrganizationAndMember({ organization, user });
     });

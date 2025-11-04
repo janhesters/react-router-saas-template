@@ -1,9 +1,8 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "@conform-to/react/future";
 import { Loader2Icon } from "lucide-react";
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Form, useSubmit } from "react-router";
+import { Form, useNavigation } from "react-router";
 import { z } from "zod";
 
 import { DELETE_ORGANIZATION_INTENT } from "./general-settings-constants";
@@ -19,60 +18,47 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormProvider,
-} from "~/components/ui/form";
+import { Field, FieldError, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 
 export type DangerZoneProps = {
-  isDeletingOrganization?: boolean;
-  isSubmitting?: boolean;
   organizationName: string;
 };
 
-export function DangerZone({
-  isDeletingOrganization = false,
-  isSubmitting = false,
-  organizationName,
-}: DangerZoneProps) {
+export function DangerZone({ organizationName }: DangerZoneProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.general.danger-zone",
+    keyPrefix: "settings.general.dangerZone",
   });
-  const submit = useSubmit();
 
   const localDeleteOrganizationFormSchema = useMemo(
     () =>
-      z
-        .object({
-          confirmation: z.string().min(1),
-        })
-        .merge(deleteOrganizationFormSchema)
-        .refine((data) => data.confirmation === organizationName, {
-          message: t("dialog-confirmation-mismatch"),
-          path: ["confirmation"],
+      deleteOrganizationFormSchema.and(
+        z.object({
+          confirmation: z
+            .string()
+            .min(1, {
+              message:
+                "organizations:settings.general.dangerZone.errors.confirmationRequired",
+            })
+            .refine((value) => value === organizationName, {
+              message:
+                "organizations:settings.general.dangerZone.errors.confirmationMismatch",
+            }),
         }),
-    [organizationName, t],
+      ),
+    [organizationName],
   );
 
-  type LocalDeleteSchema = z.infer<typeof localDeleteOrganizationFormSchema>;
-
-  const form = useForm<LocalDeleteSchema>({
-    defaultValues: {
-      confirmation: "",
-      intent: DELETE_ORGANIZATION_INTENT,
-    },
-    // Validate on change to enable/disable button dynamically.
-    mode: "onChange",
-    resolver: zodResolver(localDeleteOrganizationFormSchema),
+  const { form, fields, intent } = useForm({
+    schema: localDeleteOrganizationFormSchema,
+    shouldRevalidate: "onInput",
+    shouldValidate: "onInput",
   });
 
-  const handleSubmit = async (values: LocalDeleteSchema) => {
-    await submit(values, { method: "POST", replace: true });
-  };
+  const navigation = useNavigation();
+  const isSubmitting =
+    navigation.state === "submitting" &&
+    navigation.formData?.get("intent") === DELETE_ORGANIZATION_INTENT;
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -93,15 +79,14 @@ export function DangerZone({
           </div>
 
           <Dialog
-            // Reset form when dialog is closed
             onOpenChange={(isOpen) => {
               if (!isOpen) {
-                form.reset();
+                intent.reset();
               }
             }}
           >
             <DialogTrigger asChild>
-              <Button variant="destructive">{t("delete-button")}</Button>
+              <Button variant="destructive">{t("trigger-button")}</Button>
             </DialogTrigger>
 
             <DialogContent>
@@ -110,38 +95,23 @@ export function DangerZone({
                 <DialogDescription>{t("dialog-description")}</DialogDescription>
               </DialogHeader>
 
-              <FormProvider {...form}>
-                <Form
-                  id="delete-organization-form"
-                  method="POST"
-                  onSubmit={form.handleSubmit(handleSubmit)}
-                  replace
-                >
-                  <fieldset className="w-full" disabled={isSubmitting}>
-                    <FormField
-                      control={form.control}
-                      name="confirmation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {t("dialog-confirmation-label", {
-                              organizationName: organizationName,
-                            })}
-                          </FormLabel>
-
-                          <FormControl>
-                            <Input
-                              placeholder={t("dialog-confirmation-placeholder")}
-                              required
-                              {...field}
-                            />
-                          </FormControl>
-                        </FormItem>
-                      )}
+              <Form method="POST" {...form.props}>
+                <fieldset disabled={isSubmitting}>
+                  <Field data-invalid={fields.confirmation.ariaInvalid}>
+                    <FieldLabel htmlFor={fields.confirmation.id}>
+                      {t("confirmation-label", { organizationName })}
+                    </FieldLabel>
+                    <Input
+                      {...fields.confirmation.inputProps}
+                      placeholder={t("confirmation-placeholder")}
                     />
-                  </fieldset>
-                </Form>
-              </FormProvider>
+                    <FieldError
+                      errors={fields.confirmation.errors}
+                      id={fields.confirmation.errorId}
+                    />
+                  </Field>
+                </fieldset>
+              </Form>
 
               <DialogFooter className="sm:justify-end">
                 <DialogClose asChild>
@@ -151,25 +121,29 @@ export function DangerZone({
                     type="button"
                     variant="secondary"
                   >
-                    {t("cancel")}
+                    {t("cancel-button")}
                   </Button>
                 </DialogClose>
 
                 <Button
-                  disabled={isSubmitting || !form.formState.isValid}
-                  form="delete-organization-form"
+                  disabled={
+                    isSubmitting ||
+                    !fields.confirmation.touched ||
+                    !fields.confirmation.valid
+                  }
+                  form={form.props.id}
                   name="intent"
                   type="submit"
                   value={DELETE_ORGANIZATION_INTENT}
                   variant="destructive"
                 >
-                  {isDeletingOrganization ? (
+                  {isSubmitting ? (
                     <>
                       <Loader2Icon className="animate-spin" />
-                      {t("deleting")}
+                      {t("delete-button-submitting")}
                     </>
                   ) : (
-                    t("delete-this-organization")
+                    t("delete-button")
                   )}
                 </Button>
               </DialogFooter>

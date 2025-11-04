@@ -5,6 +5,12 @@ import {
   UPDATE_ORGANIZATION_INTENT,
 } from "./general-settings-constants";
 
+const ONE_MB = 1_000_000;
+const MIN_NAME_LENGTH = 3;
+const MAX_NAME_LENGTH = 255;
+
+z.config({ jitless: true });
+
 export const deleteOrganizationFormSchema = z.object({
   intent: z.literal(DELETE_ORGANIZATION_INTENT),
 });
@@ -12,18 +18,29 @@ export const deleteOrganizationFormSchema = z.object({
 export const updateOrganizationFormSchema = z.object({
   intent: z.literal(UPDATE_ORGANIZATION_INTENT),
   logo: z
-    .string()
-    .url("organizations:settings.general.form.logo-must-be-url")
+    .file()
+    .max(ONE_MB, {
+      message: "organizations:settings.general.errors.logoTooLarge",
+    })
+    .mime(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"], {
+      message: "organizations:settings.general.errors.invalidFileType",
+    })
     .optional(),
   name: z
-    .string({
-      error: "organizations:settings.general.form.name-required",
-    })
+    .string()
     .trim()
-    .min(3, "organizations:settings.general.form.name-min-length")
-    .max(255, "organizations:settings.general.form.name-max-length"),
+    .min(MIN_NAME_LENGTH, {
+      message: "organizations:settings.general.errors.nameMin",
+    })
+    .max(MAX_NAME_LENGTH, {
+      message: "organizations:settings.general.errors.nameMax",
+    }),
 });
 
 export type UpdateOrganizationFormSchema = z.infer<
   typeof updateOrganizationFormSchema
+>;
+
+export type DeleteOrganizationFormSchema = z.infer<
+  typeof deleteOrganizationFormSchema
 >;

@@ -184,9 +184,11 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       {
         body: { intent },
         expected: badRequest({
-          errors: {
-            name: {
-              message: "organizations:settings.general.form.name-required",
+          result: {
+            error: {
+              fieldErrors: {
+                name: ["Invalid input: expected string, received undefined"],
+              },
             },
           },
         }),
@@ -195,9 +197,11 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       {
         body: { intent, name: "ab" },
         expected: badRequest({
-          errors: {
-            name: {
-              message: "organizations:settings.general.form.name-min-length",
+          result: {
+            error: {
+              fieldErrors: {
+                name: ["organizations:settings.general.errors.nameMin"],
+              },
             },
           },
         }),
@@ -206,9 +210,11 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       {
         body: { intent, name: "a".repeat(256) },
         expected: badRequest({
-          errors: {
-            name: {
-              message: "organizations:settings.general.form.name-max-length",
+          result: {
+            error: {
+              fieldErrors: {
+                name: ["organizations:settings.general.errors.nameMax"],
+              },
             },
           },
         }),
@@ -217,9 +223,11 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       {
         body: { intent, name: "   " },
         expected: badRequest({
-          errors: {
-            name: {
-              message: "organizations:settings.general.form.name-min-length",
+          result: {
+            error: {
+              fieldErrors: {
+                name: ["organizations:settings.general.errors.nameMin"],
+              },
             },
           },
         }),
@@ -228,9 +236,11 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       {
         body: { intent, name: "  a " },
         expected: badRequest({
-          errors: {
-            name: {
-              message: "organizations:settings.general.form.name-min-length",
+          result: {
+            error: {
+              fieldErrors: {
+                name: ["organizations:settings.general.errors.nameMin"],
+              },
             },
           },
         }),
@@ -250,7 +260,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
           user,
         });
 
-        expect(response).toEqual(expected);
+        expect(response).toMatchObject(expected);
       },
     );
   });
