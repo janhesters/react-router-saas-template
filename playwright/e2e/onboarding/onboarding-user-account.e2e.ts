@@ -2,7 +2,6 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import {
-  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -67,8 +66,6 @@ test.describe("onboarding user account page", () => {
         user: createPopulatedUserAccount({ imageUrl: "", name: "" }),
       });
 
-      await enableClientMswMocks({ page });
-
       await page.goto(path);
 
       // Verify page content
@@ -76,43 +73,29 @@ test.describe("onboarding user account page", () => {
         /user account | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", { level: 1, name: /create your account/i }),
       ).toBeVisible();
-      await expect(page.getByText(/create your account/i)).toBeVisible();
       await expect(
         page.getByText(
           /welcome to the react router saas template! please create your user account to get started./i,
         ),
       ).toBeVisible();
 
-      // Verify onboarding steps
-      await expect(
-        page.getByRole("navigation", { name: /onboarding progress/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /user account/i }),
-      ).toHaveAttribute("aria-current", "step");
-
       // Verify form elements
       await expect(page.getByRole("textbox", { name: /name/i })).toBeVisible();
-      await expect(page.getByRole("button", { name: /save/i })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /continue/i }),
+      ).toBeVisible();
 
       // Create profile
       const newName = createPopulatedUserAccount().name;
       await page.getByRole("textbox", { name: /name/i }).fill(newName);
 
-      // Test image upload via drag and drop
-      const dropzone = page.getByText(
-        /drag and drop or select file to upload/i,
-      );
-      await expect(dropzone).toBeVisible();
-
-      // Perform drag and drop of the image
+      // Test image upload
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
-      await expect(page.getByText("200x200.jpg")).toBeVisible();
 
       // Enter name again. Sometimes with MSW activated on the server,
       // it takes time for the fields to become available, so we do it twice
@@ -120,7 +103,7 @@ test.describe("onboarding user account page", () => {
       await page.getByRole("textbox", { name: /name/i }).clear();
       await page.getByRole("textbox", { name: /name/i }).fill(newName);
 
-      await page.getByRole("button", { name: /save/i }).click();
+      await page.getByRole("button", { name: /continue/i }).click();
 
       // Verify loading state
       await expect(page.getByRole("button", { name: /saving/i })).toBeVisible();
@@ -129,7 +112,14 @@ test.describe("onboarding user account page", () => {
       await expect(page.getByText(/create your organization/i)).toBeVisible();
       const updatedUser = await retrieveUserAccountFromDatabaseById(id);
       expect(updatedUser?.name).toEqual(newName);
-      expect(updatedUser?.imageUrl).toContain("200x200.jpg");
+
+      // Verify image URL is in the correct Supabase storage format
+      const supabaseUrl = process.env.VITE_SUPABASE_URL as string;
+      expect(updatedUser?.imageUrl).toMatch(
+        new RegExp(
+          `${supabaseUrl}/storage/v1/object/public/app-images/user-avatars/${id}\\.jpg$`,
+        ),
+      );
 
       await deleteUserAccountFromDatabaseById(id);
     });
@@ -149,31 +139,18 @@ test.describe("onboarding user account page", () => {
         /user account | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", { level: 1, name: /create your account/i }),
       ).toBeVisible();
-      await expect(page.getByText(/create your account/i)).toBeVisible();
       await expect(
         page.getByText(
           /welcome to the react router saas template! please create your user account to get started./i,
         ),
       ).toBeVisible();
 
-      // Verify onboarding steps - only user account step should be shown
-      const onboardingNav = page.getByRole("navigation", {
-        name: /onboarding progress/i,
-      });
-      await expect(onboardingNav).toBeVisible();
-      await expect(
-        onboardingNav.getByRole("link", { name: /user account/i }),
-      ).toHaveAttribute("aria-current", "step");
-
-      // It ONLY shows the user account step and hides the organization step.
-      await expect(onboardingNav.getByText(/organization/i)).not.toBeVisible();
-
       // Create profile
       const newName = createPopulatedUserAccount().name;
       await page.getByRole("textbox", { name: /name/i }).fill(newName);
-      await page.getByRole("button", { name: /save/i }).click();
+      await page.getByRole("button", { name: /continue/i }).click();
 
       // Verify loading state
       await expect(page.getByRole("button", { name: /saving/i })).toBeVisible();
@@ -206,30 +183,16 @@ test.describe("onboarding user account page", () => {
         /user account | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", { level: 1, name: /create your account/i }),
       ).toBeVisible();
-      await expect(page.getByText(/create your account/i)).toBeVisible();
       await expect(
         page.getByText(
           /welcome to the react router saas template! please create your user account to get started./i,
         ),
       ).toBeVisible();
 
-      // Verify onboarding steps
-      const onboardingNav = page.getByRole("navigation", {
-        name: /onboarding progress/i,
-      });
-      await expect(onboardingNav).toBeVisible();
-      await expect(
-        onboardingNav.getByRole("link", { name: /user account/i }),
-      ).toHaveAttribute("aria-current", "step");
-
-      // If the user lacks an organization, the organization step should be
-      // shown.
-      await expect(onboardingNav.getByText(/organization/i)).toBeVisible();
-
       const nameInput = page.getByRole("textbox", { name: /name/i });
-      const saveButton = page.getByRole("button", { name: /save/i });
+      const saveButton = page.getByRole("button", { name: /continue/i });
 
       // Test whitespace name
       await nameInput.fill("   a   ");
@@ -240,10 +203,10 @@ test.describe("onboarding user account page", () => {
 
       // Test too long name
       await nameInput.fill("a".repeat(129));
+      await saveButton.click();
       await expect(
         page.getByText(/your name must be at most 128 characters long./i),
       ).toBeVisible();
-      await saveButton.click();
 
       await deleteUserAccountFromDatabaseById(id);
     });

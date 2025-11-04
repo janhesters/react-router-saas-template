@@ -1,43 +1,50 @@
+import { createId } from "@paralleldrive/cuid2";
 import { redirect } from "react-router";
 
 import { requireUserNeedsOnboarding } from "../onboarding-helpers.server";
-import type { OnboardingOrganizationErrors } from "./onboarding-organization-schemas";
 import { onboardingOrganizationSchema } from "./onboarding-organization-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/organization";
+import { uploadOrganizationLogo } from "~/features/organizations/organizations-helpers.server";
 import { saveOrganizationWithOwnerToDatabase } from "~/features/organizations/organizations-model.server";
-import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
+import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { slugify } from "~/utils/slugify.server";
-import { validateFormData } from "~/utils/validate-form-data.server";
+import { validateFormData } from "~/utils/validate-form-data-conform.server";
 
 export async function onboardingOrganizationAction({
   request,
   context,
 }: Route.ActionArgs) {
-  try {
-    const { user, headers } = await requireUserNeedsOnboarding({
-      context,
-      request,
-    });
-    const data = await validateFormData(request, onboardingOrganizationSchema);
+  const { user, headers } = await requireUserNeedsOnboarding({
+    context,
+    request,
+  });
+  const { supabase } = context.get(authContext);
+  const result = await validateFormData(request, onboardingOrganizationSchema, {
+    maxFileSize: 1_000_000, // 1MB
+  });
 
-    const organization = await saveOrganizationWithOwnerToDatabase({
-      organization: {
-        id: data.organizationId,
-        imageUrl: data.logo,
-        name: data.name,
-        slug: slugify(data.name),
-      },
-      userId: user.id,
-    });
-
-    return redirect(`/organizations/${organization.slug}`, { headers });
-  } catch (error) {
-    if (
-      getIsDataWithResponseInit<{ errors: OnboardingOrganizationErrors }>(error)
-    ) {
-      return error;
-    }
-
-    throw error;
+  if (!result.success) {
+    return result.response;
   }
+
+  const organizationId = createId();
+  const imageUrl = result.data.logo
+    ? await uploadOrganizationLogo({
+        file: result.data.logo,
+        organizationId,
+        supabase,
+      })
+    : "";
+
+  const organization = await saveOrganizationWithOwnerToDatabase({
+    organization: {
+      id: organizationId,
+      imageUrl,
+      name: result.data.name,
+      slug: slugify(result.data.name),
+    },
+    userId: user.id,
+  });
+
+  return redirect(`/organizations/${organization.slug}`, { headers });
 }

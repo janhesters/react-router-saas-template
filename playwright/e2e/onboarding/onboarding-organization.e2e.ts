@@ -4,7 +4,6 @@ import { expect, test } from "@playwright/test";
 import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
-  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -65,8 +64,6 @@ test.describe("onboarding organization page", () => {
     }) => {
       const user = await loginAndSaveUserAccountToDatabase({ page });
 
-      await enableClientMswMocks({ page });
-
       await page.goto(path);
 
       // Verify page content
@@ -74,22 +71,16 @@ test.describe("onboarding organization page", () => {
         /organization | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", {
+          level: 1,
+          name: /create your organization/i,
+        }),
       ).toBeVisible();
-      await expect(page.getByText(/create your organization/i)).toBeVisible();
       await expect(
         page.getByText(
           /you can invite other users to join your organization later/i,
         ),
       ).toBeVisible();
-
-      // Verify onboarding steps
-      await expect(
-        page.getByRole("navigation", { name: /onboarding progress/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /organization/i }),
-      ).toHaveAttribute("aria-current", "step");
 
       // Enter organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();
@@ -97,13 +88,7 @@ test.describe("onboarding organization page", () => {
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
 
-      // Test image upload via drag and drop
-      const dropzone = page.getByText(
-        /drag and drop or select file to upload/i,
-      );
-      await expect(dropzone).toBeVisible();
-
-      // Perform drag and drop of the image
+      // Test image upload
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
@@ -117,18 +102,19 @@ test.describe("onboarding organization page", () => {
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
 
-      // Perform drag and drop of the image again for the same reason
+      // Upload the image again for the same reason
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
-      await expect(page.getByText("200x200.jpg")).toBeVisible();
 
       // Create organization
-      await page.getByRole("button", { name: /save/i }).click();
+      await page.getByRole("button", { name: /continue/i }).click();
 
       // Verify loading state
-      await expect(page.getByRole("button", { name: /saving/i })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /creating/i }),
+      ).toBeVisible();
 
       // Verify redirect and database update
       await expect(
@@ -146,6 +132,14 @@ test.describe("onboarding organization page", () => {
         OrganizationMembershipRole.owner,
       );
 
+      // Verify logo URL is in the correct Supabase storage format
+      const supabaseUrl = process.env.VITE_SUPABASE_URL as string;
+      expect(createdOrganization?.imageUrl).toMatch(
+        new RegExp(
+          `${supabaseUrl}/storage/v1/object/public/app-images/organization-logos/${createdOrganization?.id}\\.jpg$`,
+        ),
+      );
+
       await deleteUserAccountFromDatabaseById(user.id);
     });
 
@@ -154,8 +148,6 @@ test.describe("onboarding organization page", () => {
     }) => {
       const user = await loginAndSaveUserAccountToDatabase({ page });
 
-      await enableClientMswMocks({ page });
-
       await page.goto(path);
 
       // Verify page content
@@ -163,28 +155,24 @@ test.describe("onboarding organization page", () => {
         /organization | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", {
+          level: 1,
+          name: /create your organization/i,
+        }),
       ).toBeVisible();
-      await expect(page.getByText(/create your organization/i)).toBeVisible();
       await expect(
         page.getByText(
           /you can invite other users to join your organization later/i,
         ),
       ).toBeVisible();
 
-      // Verify onboarding steps
-      await expect(
-        page.getByRole("navigation", { name: /onboarding progress/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByRole("link", { name: /organization/i }),
-      ).toHaveAttribute("aria-current", "step");
-
       // Verify page content
       await expect(
         page.getByRole("textbox", { name: /organization name/i }),
       ).toBeVisible();
-      await expect(page.getByRole("button", { name: /save/i })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /continue/i }),
+      ).toBeVisible();
 
       // Enter organization name
       const { name: newName, slug: newSlug } = createPopulatedOrganization();
@@ -193,10 +181,12 @@ test.describe("onboarding organization page", () => {
         .fill(newName);
 
       // Create organization
-      await page.getByRole("button", { name: /save/i }).click();
+      await page.getByRole("button", { name: /continue/i }).click();
 
       // Verify loading state
-      await expect(page.getByRole("button", { name: /saving/i })).toBeVisible();
+      await expect(
+        page.getByRole("button", { name: /creating/i }),
+      ).toBeVisible();
 
       // Verify redirect and database update
       await expect(
@@ -229,9 +219,11 @@ test.describe("onboarding organization page", () => {
         /organization | react router saas template/i,
       );
       await expect(
-        page.getByRole("heading", { level: 1, name: /onboarding/i }),
+        page.getByRole("heading", {
+          level: 1,
+          name: /create your organization/i,
+        }),
       ).toBeVisible();
-      await expect(page.getByText(/create your organization/i)).toBeVisible();
       await expect(
         page.getByText(
           /you can invite other users to join your organization later/i,
@@ -241,7 +233,7 @@ test.describe("onboarding organization page", () => {
       const nameInput = page.getByRole("textbox", {
         name: /organization name/i,
       });
-      const saveButton = page.getByRole("button", { name: /save/i });
+      const saveButton = page.getByRole("button", { name: /continue/i });
 
       // Test whitespace name
       await nameInput.fill("   a   ");
@@ -254,12 +246,12 @@ test.describe("onboarding organization page", () => {
 
       // Test too long name
       await nameInput.fill(faker.string.alpha(256));
+      await saveButton.click();
       await expect(
         page.getByText(
           /your organization name must be at most 255 characters long./i,
         ),
       ).toBeVisible();
-      await saveButton.click();
 
       await deleteUserAccountFromDatabaseById(id);
     });

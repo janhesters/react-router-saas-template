@@ -1,15 +1,33 @@
+import { useForm } from "@conform-to/react/future";
+import { BuildingIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { data, href, useNavigation } from "react-router";
+import { data, Form, useNavigation } from "react-router";
 
 import type { Route } from "./+types/organization";
+import {
+  AvatarUpload,
+  AvatarUploadDescription,
+  AvatarUploadInput,
+  AvatarUploadPreviewImage,
+} from "~/components/avatar-upload";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
 import { getInstance } from "~/features/localization/i18n-middleware.server";
 import { requireUserNeedsOnboarding } from "~/features/onboarding/onboarding-helpers.server";
-import { OnboardingSteps } from "~/features/onboarding/onboarding-steps";
 import { onboardingOrganizationAction } from "~/features/onboarding/organization/onboarding-organization-action.server";
 import { ONBOARDING_ORGANIZATION_INTENT } from "~/features/onboarding/organization/onboarding-organization-consants";
-import { OnboardingOrganizationFormCard } from "~/features/onboarding/organization/onboarding-organization-form-card";
-import { getFormErrors } from "~/utils/get-form-errors";
+import { onboardingOrganizationSchema } from "~/features/onboarding/organization/onboarding-organization-schemas";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -20,7 +38,9 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   return data(
-    { title: getPageTitle(i18n.t.bind(i18n), "onboarding:organization.title") },
+    {
+      title: getPageTitle(i18n.t.bind(i18n), "onboarding:organization.title"),
+    },
     { headers: auth.headers },
   );
 }
@@ -33,47 +53,108 @@ export async function action(args: Route.ActionArgs) {
   return await onboardingOrganizationAction(args);
 }
 
+const ONE_MB = 1_000_000;
+
 export default function OrganizationOnboardingRoute({
   actionData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation("onboarding");
+  const { t } = useTranslation("onboarding", { keyPrefix: "organization" });
+  const { form, fields } = useForm({
+    lastResult: actionData?.result,
+    schema: onboardingOrganizationSchema,
+  });
   const navigation = useNavigation();
-  const isCreatingOrganization =
-    navigation.formData?.get("intent") === ONBOARDING_ORGANIZATION_INTENT;
-  const errors = getFormErrors(actionData);
+  const isSubmitting = navigation.state === "submitting";
 
   return (
-    <>
-      <header className="sr-only">
-        <h1>{t("common.onboarding")}</h1>
-      </header>
+    <Form encType="multipart/form-data" method="POST" {...form.props}>
+      <FieldSet disabled={isSubmitting}>
+        <FieldGroup>
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold">{t("heading")}</h1>
+            <p className="text-muted-foreground text-sm text-pretty">
+              {t("subtitle")}
+            </p>
+          </div>
 
-      <main className="mx-auto flex min-h-svh max-w-7xl flex-col space-y-4 py-4 sm:px-6 md:h-full md:space-y-0 md:px-8">
-        <OnboardingSteps
-          className="px-4 sm:px-0"
-          label={t("common.onboarding-progress")}
-          steps={[
-            {
-              href: href("/onboarding/user-account"),
-              name: t("user-account.title"),
-              status: "complete",
-            },
-            {
-              href: href("/onboarding/organization"),
-              name: t("organization.title"),
-              status: "current",
-            },
-          ]}
-        />
+          <Field data-invalid={fields.name.ariaInvalid}>
+            <FieldLabel htmlFor={fields.name.id}>{t("nameLabel")}</FieldLabel>
+            <FieldDescription id={fields.name.descriptionId}>
+              {t("nameDescription")}
+            </FieldDescription>
+            <Input
+              {...fields.name.inputProps}
+              autoComplete="organization"
+              placeholder={t("namePlaceholder")}
+            />
+            <FieldError errors={fields.name.errors} id={fields.name.errorId} />
+          </Field>
 
-        <div className="flex flex-grow flex-col items-center justify-center px-4 py-4">
-          <OnboardingOrganizationFormCard
-            errors={errors}
-            isCreatingOrganization={isCreatingOrganization}
-          />
-        </div>
-      </main>
-    </>
+          <AvatarUpload maxFileSize={ONE_MB}>
+            {({ error }) => (
+              <>
+                <Field
+                  data-invalid={
+                    fields.logo.ariaInvalid || error ? "true" : undefined
+                  }
+                >
+                  <FieldLabel htmlFor={fields.logo.id}>
+                    {t("logoLabel")}
+                  </FieldLabel>
+                  <FieldDescription id={fields.logo.descriptionId}>
+                    {t("logoDescription")}
+                  </FieldDescription>
+                  <div className="flex items-center gap-x-4 md:gap-x-8">
+                    <Avatar className="size-16 md:size-24 rounded-lg">
+                      <AvatarUploadPreviewImage
+                        alt={t("logoPreviewAlt")}
+                        className="size-16 md:size-24 rounded-lg"
+                        src=""
+                      />
+                      <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
+                        <BuildingIcon className="size-8 md:size-12" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-2">
+                      <AvatarUploadInput
+                        {...fields.logo.inputProps}
+                        accept="image/png,image/jpeg,image/gif,image/webp"
+                      />
+                      <AvatarUploadDescription>
+                        {t("logoFormats")}
+                      </AvatarUploadDescription>
+                    </div>
+                  </div>
+                  <FieldError
+                    errors={[
+                      ...(fields.logo.errors ?? []),
+                      ...(error ? [error] : []),
+                    ]}
+                    id={fields.logo.errorId}
+                  />
+                </Field>
+              </>
+            )}
+          </AvatarUpload>
+
+          <Field>
+            <Button
+              name="intent"
+              type="submit"
+              value={ONBOARDING_ORGANIZATION_INTENT}
+            >
+              {isSubmitting ? (
+                <>
+                  <Spinner /> {t("saving")}
+                </>
+              ) : (
+                t("save")
+              )}
+            </Button>
+          </Field>
+        </FieldGroup>
+      </FieldSet>
+    </Form>
   );
 }
 

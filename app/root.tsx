@@ -12,6 +12,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useMatches,
   useRouteError,
 } from "react-router";
 import { useChangeLanguage } from "remix-i18next/react";
@@ -30,6 +31,7 @@ import {
   i18nextMiddleware,
 } from "./features/localization/i18n-middleware.server";
 import { useToast } from "./hooks/use-toast";
+import { cn } from "./lib/utils";
 import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
 import { honeypot } from "./utils/honeypot.server";
@@ -92,6 +94,12 @@ export function Layout({
   const error = useRouteError();
   const isErrorFromRoute = isRouteErrorResponse(error);
   const colorScheme = useColorScheme();
+  const matches = useMatches();
+  const hideOverflow = matches.some(
+    (match) =>
+      match.pathname.startsWith("/onboarding") ||
+      match.id === "routes/_auth/_layout",
+  );
 
   const { i18n } = useTranslation();
 
@@ -99,7 +107,11 @@ export function Layout({
   useToast(data?.toast);
 
   return (
-    <html className={colorScheme} dir={i18n.dir()} lang={locale}>
+    <html
+      className={cn(colorScheme, hideOverflow && "overflow-y-hidden")}
+      dir={i18n.dir()}
+      lang={locale}
+    >
       <head>
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />

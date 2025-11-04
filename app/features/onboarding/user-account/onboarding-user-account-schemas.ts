@@ -1,25 +1,36 @@
-import type { FieldErrors } from "react-hook-form";
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { z } from "zod";
 
 import { ONBOARDING_USER_ACCOUNT_INTENT } from "./onboarding-user-account-constants";
 
-export const onboardingUserAccountSchema = z.object({
-  avatar: z
-    .string()
-    .url("onboarding:user-account.avatar-must-be-url")
-    .optional(),
-  intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
-  name: z
-    .string({
-      error: "onboarding:user-account.name-required",
-    })
-    .trim()
-    .min(2, "onboarding:user-account.name-min-length")
-    .max(128, "onboarding:user-account.name-max-length"),
-});
+const MIN_NAME_LENGTH = 2;
+const MAX_NAME_LENGTH = 128;
+const ONE_MB = 1_000_000;
+
+z.config({ jitless: true });
+
+export const onboardingUserAccountSchema = coerceFormValue(
+  z.object({
+    image: z
+      .file()
+      .max(ONE_MB, { message: "onboarding:user-account.errors.photoTooLarge" })
+      .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
+        message: "onboarding:user-account.errors.invalidFileType",
+      })
+      .optional(),
+    intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
+    name: z
+      .string()
+      .trim()
+      .min(MIN_NAME_LENGTH, {
+        message: "onboarding:user-account.errors.nameMin",
+      })
+      .max(MAX_NAME_LENGTH, {
+        message: "onboarding:user-account.errors.nameMax",
+      }),
+  }),
+);
 
 export type OnboardingUserAccountSchema = z.infer<
   typeof onboardingUserAccountSchema
 >;
-export type OnboardingUserAccountErrors =
-  FieldErrors<OnboardingUserAccountSchema>;

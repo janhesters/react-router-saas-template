@@ -1,28 +1,36 @@
-import type { FieldErrors } from "react-hook-form";
+import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { z } from "zod";
 
 import { ONBOARDING_ORGANIZATION_INTENT } from "./onboarding-organization-consants";
 
-export const onboardingOrganizationSchema = z.object({
-  intent: z.literal(ONBOARDING_ORGANIZATION_INTENT),
-  logo: z
-    .string({
-      error: "onboarding:organization.logo-invalid",
-    })
-    .url("onboarding:organization.logo-must-be-url")
-    .optional(),
-  name: z
-    .string({
-      error: "onboarding:organization.name-required",
-    })
-    .trim()
-    .min(3, "onboarding:organization.name-min-length")
-    .max(255, "onboarding:organization.name-max-length"),
-  organizationId: z.string().optional(),
-});
+const MIN_NAME_LENGTH = 3;
+const MAX_NAME_LENGTH = 255;
+const ONE_MB = 1_000_000;
+
+z.config({ jitless: true });
+
+export const onboardingOrganizationSchema = coerceFormValue(
+  z.object({
+    intent: z.literal(ONBOARDING_ORGANIZATION_INTENT),
+    logo: z
+      .file()
+      .max(ONE_MB, { message: "onboarding:organization.errors.logoTooLarge" })
+      .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
+        message: "onboarding:organization.errors.invalidFileType",
+      })
+      .optional(),
+    name: z
+      .string()
+      .trim()
+      .min(MIN_NAME_LENGTH, {
+        message: "onboarding:organization.errors.nameMin",
+      })
+      .max(MAX_NAME_LENGTH, {
+        message: "onboarding:organization.errors.nameMax",
+      }),
+  }),
+);
 
 export type OnboardingOrganizationSchema = z.infer<
   typeof onboardingOrganizationSchema
 >;
-export type OnboardingOrganizationErrors =
-  FieldErrors<OnboardingOrganizationSchema>;

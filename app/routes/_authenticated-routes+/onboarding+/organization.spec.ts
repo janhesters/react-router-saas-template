@@ -21,7 +21,6 @@ import {
   createAuthenticatedRequest,
   createAuthTestContextProvider,
 } from "~/test/test-utils";
-import { badRequest } from "~/utils/http-responses.server";
 import { slugify } from "~/utils/slugify.server";
 import { toFormData } from "~/utils/to-form-data";
 
@@ -226,47 +225,82 @@ describe("/onboarding/organization route action", () => {
     test.each([
       {
         body: { intent } as const,
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:organization.name-required" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["Invalid input: expected string, received undefined"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "no name provided",
       },
       {
         body: { intent, name: "ab" } as const,
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:organization.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:organization.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name that is too short (2 characters)",
       },
       {
         body: { intent, name: "a".repeat(256) } as const,
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:organization.name-max-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:organization.errors.nameMax"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name that is too long (256 characters)",
       },
       {
         body: { intent, name: "   " },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:organization.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:organization.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name with only whitespace",
       },
       {
         body: { intent, name: "  a " },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:organization.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:organization.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a too short name with whitespace",
       },
     ])(
@@ -280,19 +314,17 @@ describe("/onboarding/organization route action", () => {
           userAccount,
         });
 
-        expect(response).toEqual(expected);
+        expect(response).toMatchObject(expected);
       },
     );
 
-    test("given: a valid organization id, name and a logo url, should: create organization with logo url", async () => {
+    test("given: a valid name, should: create organization", async () => {
       const { userAccount } = await setup();
       const organization = createPopulatedOrganization();
 
       const formData = toFormData({
         intent,
-        logo: organization.imageUrl,
         name: organization.name,
-        organizationId: organization.id,
       });
 
       const response = (await sendAuthenticatedRequest({
@@ -307,14 +339,13 @@ describe("/onboarding/organization route action", () => {
         `/organizations/${slug}`,
       );
 
-      // Verify organization was created with correct data including logo
+      // Verify organization was created
       const createdOrganization =
         await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
-        id: organization.id,
-        imageUrl: organization.imageUrl, // Verify the logo URL was saved
+        imageUrl: "", // No logo uploaded
         name: organization.name,
         slug: slug,
       });

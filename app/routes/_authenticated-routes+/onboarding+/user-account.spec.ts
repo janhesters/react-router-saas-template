@@ -21,7 +21,6 @@ import {
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
-  retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
@@ -30,7 +29,6 @@ import {
   createAuthenticatedRequest,
   createAuthTestContextProvider,
 } from "~/test/test-utils";
-import { badRequest } from "~/utils/http-responses.server";
 import { toFormData } from "~/utils/to-form-data";
 import { getToast } from "~/utils/toast.server";
 
@@ -153,7 +151,7 @@ describe("/onboarding/user-account route action", () => {
       );
     });
 
-    test("given: a valid name and avatar URL for a user without organizations, should: update name and avatar and redirect to organization onboarding", async () => {
+    test("given: a valid name for a user without organizations, should: update name and redirect to organization onboarding", async () => {
       const userAccount = createPopulatedUserAccount({
         imageUrl: "",
         name: "",
@@ -163,8 +161,8 @@ describe("/onboarding/user-account route action", () => {
         await deleteUserAccountFromDatabaseById(userAccount.id);
       });
 
-      const { name, imageUrl } = createPopulatedUserAccount();
-      const formData = toFormData({ avatar: imageUrl, intent, name });
+      const { name } = createPopulatedUserAccount();
+      const formData = toFormData({ intent, name });
 
       const response = (await sendAuthenticatedRequest({
         formData,
@@ -175,68 +173,88 @@ describe("/onboarding/user-account route action", () => {
       expect(response.headers.get("Location")).toEqual(
         "/onboarding/organization",
       );
-
-      // Verify the avatar URL was saved
-      const updatedUser = await retrieveUserAccountFromDatabaseById(
-        userAccount.id,
-      );
-      expect(updatedUser?.imageUrl).toEqual(imageUrl);
     });
 
     test.each([
       {
         body: { intent },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:user-account.name-required" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["Invalid input: expected string, received undefined"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "no name provided",
       },
       {
         body: { intent, name: "a" },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:user-account.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:user-account.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name that is too short (1 character)",
       },
       {
         body: { intent, name: "a".repeat(129) },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:user-account.name-max-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:user-account.errors.nameMax"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name that is too long (129 characters)",
       },
       {
         body: { intent, name: "   " },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:user-account.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:user-account.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a name with only whitespace",
       },
       {
         body: { intent, name: "  a " },
-        expected: badRequest({
-          errors: {
-            name: { message: "onboarding:user-account.name-min-length" },
+        expected: {
+          data: {
+            result: {
+              error: {
+                fieldErrors: {
+                  name: ["onboarding:user-account.errors.nameMin"],
+                },
+              },
+            },
           },
-        }),
+          init: { status: 400 },
+        },
         given: "a too short name with whitespace",
-      },
-      {
-        body: { avatar: "not-a-url", intent, name: "Test User" },
-        expected: badRequest({
-          errors: {
-            avatar: { message: "onboarding:user-account.avatar-must-be-url" },
-          },
-        }),
-        given: "an invalid avatar URL",
       },
     ])(
       "given: $given, should: return a 400 status code with an error message",
@@ -254,7 +272,7 @@ describe("/onboarding/user-account route action", () => {
           userAccount,
         });
 
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject(expected);
       },
     );
 

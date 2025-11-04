@@ -209,7 +209,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify the user is redirected to the onboarding page.
     await expect(
-      page.getByRole("heading", { level: 1, name: /onboarding/i }),
+      page.getByRole("heading", { level: 1, name: /create your account/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual("/onboarding/user-account");
 
@@ -221,7 +221,7 @@ test.describe(`${path} API route`, () => {
     // Enter the account details
     const { name } = createPopulatedUserAccount();
     await page.getByRole("textbox", { name: /name/i }).fill(name);
-    await page.getByRole("button", { name: /save/i }).click();
+    await page.getByRole("button", { name: /continue/i }).click();
 
     // Verify success toast
     await expect(
@@ -393,7 +393,7 @@ test.describe(`${path} API route`, () => {
 
     // Verify the user is redirected to the onboarding page.
     await expect(
-      page.getByRole("heading", { level: 1, name: /onboarding/i }),
+      page.getByRole("heading", { level: 1, name: /create your account/i }),
     ).toBeVisible();
     expect(getPath(page)).toEqual("/onboarding/user-account");
 
@@ -405,7 +405,7 @@ test.describe(`${path} API route`, () => {
     // Enter the account details
     const { name } = createPopulatedUserAccount();
     await page.getByRole("textbox", { name: /name/i }).fill(name);
-    await page.getByRole("button", { name: /save/i }).click();
+    await page.getByRole("button", { name: /continue/i }).click();
 
     // Verify success toast
     await expect(

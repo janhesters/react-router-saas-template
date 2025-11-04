@@ -5,6 +5,8 @@ import type {
   UserAccount,
 } from "@prisma/client";
 import { OrganizationMembershipRole } from "@prisma/client";
+import type { FileUpload } from "@remix-run/form-data-parser";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { i18n } from "i18next";
 import type { RouterContextProvider } from "react-router";
 import { href } from "react-router";
@@ -24,6 +26,7 @@ import { destroyEmailInviteInfoSession } from "./accept-email-invite/accept-emai
 import { getValidInviteLinkInfo } from "./accept-invite-link/accept-invite-link-helpers.server";
 import { destroyInviteLinkInfoSession } from "./accept-invite-link/accept-invite-link-session.server";
 import { saveInviteLinkUseToDatabase } from "./accept-invite-link/invite-link-use-model.server";
+import { BUCKET_NAME, LOGO_PATH_PREFIX } from "./organization-constants";
 import { updateEmailInviteLinkInDatabaseById } from "./organizations-email-invite-link-model.server";
 import {
   addMembersToOrganizationInDatabaseById,
@@ -33,6 +36,8 @@ import {
 } from "./organizations-model.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
+import { createAdminS3Client } from "~/utils/s3.server";
+import { uploadToStorage } from "~/utils/storage.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
 import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 import { redirectWithToast } from "~/utils/toast.server";
@@ -339,4 +344,33 @@ export async function getInviteInfoForAuthRoutes(request: Request) {
         ? { ...inviteLinkInfo.inviteLinkInfo, type: "inviteLink" }
         : undefined,
   };
+}
+
+/**
+ * Uploads an organization's logo to storage and returns its public URL.
+ *
+ * @param file - The logo file to upload
+ * @param organizationId - The ID of the organization whose logo is being uploaded
+ * @param supabase - The Supabase client instance
+ * @returns The public URL of the uploaded logo
+ */
+export async function uploadOrganizationLogo({
+  file,
+  organizationId,
+  supabase,
+}: {
+  file: File | FileUpload;
+  organizationId: string;
+  supabase: SupabaseClient;
+}) {
+  const fileExtension = file.name.split(".").pop() ?? "";
+  const key = `${LOGO_PATH_PREFIX}/${organizationId}.${fileExtension}`;
+  await uploadToStorage({
+    bucket: BUCKET_NAME,
+    client: createAdminS3Client(),
+    contentType: file.type,
+    file,
+    key,
+  });
+  return supabase.storage.from(BUCKET_NAME).getPublicUrl(key).data.publicUrl;
 }
