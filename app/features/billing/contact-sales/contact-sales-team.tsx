@@ -1,14 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
+import type { SubmissionResult } from "@conform-to/react/future";
+import { useForm } from "@conform-to/react/future";
 import { useTranslation } from "react-i18next";
-import { Form, useSubmit } from "react-router";
+import { Form } from "react-router";
 import { HoneypotInputs } from "remix-utils/honeypot/react";
 
-import type {
-  ContactSalesFormErrors,
-  ContactSalesFormSchema,
-} from "./contact-sales-schemas";
+import { CONTACT_SALES_INTENT } from "./contact-sales-constants";
 import { contactSalesFormSchema } from "./contact-sales-schemas";
 import { Button } from "~/components/ui/button";
 import {
@@ -19,45 +15,26 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormProvider,
-} from "~/components/ui/form";
+import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
 import { Textarea } from "~/components/ui/textarea";
 
 export type ContactSalesTeamProps = {
-  errors?: ContactSalesFormErrors;
   isContactingSales?: boolean;
+  lastResult?: SubmissionResult;
 };
 
 export function ContactSalesTeam({
-  errors,
   isContactingSales = false,
+  lastResult,
 }: ContactSalesTeamProps) {
   const { t } = useTranslation("billing", { keyPrefix: "contact-sales" });
 
-  const form = useForm<ContactSalesFormSchema>({
-    defaultValues: {
-      companyName: "",
-      firstName: "",
-      lastName: "",
-      message: "",
-      phoneNumber: "",
-      workEmail: "",
-    },
-    errors,
-    resolver: zodResolver(contactSalesFormSchema),
+  const { form, fields } = useForm({
+    lastResult,
+    schema: contactSalesFormSchema,
   });
-
-  const submit = useSubmit();
-  const onSubmit = async (data: ContactSalesFormSchema) => {
-    await submit(data, { method: "POST", replace: true });
-  };
 
   return (
     <Card>
@@ -71,147 +48,122 @@ export function ContactSalesTeam({
         </CardDescription>
       </CardHeader>
 
-      <FormProvider {...form}>
-        <Form method="POST" onSubmit={form.handleSubmit(onSubmit)}>
-          <fieldset className="space-y-6" disabled={isContactingSales}>
-            <CardContent className="space-y-6">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("first-name-label")}</FormLabel>
-
-                    <FormControl>
-                      <Input
-                        autoComplete="given-name"
-                        placeholder={t("first-name-placeholder")}
-                        {...field}
-                      />
-                    </FormControl>
-
-                    <FormMessage />
-                  </FormItem>
-                )}
+      <Form method="POST" {...form.props}>
+        <FieldSet className="space-y-6" disabled={isContactingSales}>
+          <CardContent className="space-y-6">
+            <Field data-invalid={fields.firstName.ariaInvalid}>
+              <FieldLabel htmlFor={fields.firstName.id}>
+                {t("first-name-label")}
+              </FieldLabel>
+              <Input
+                {...fields.firstName.inputProps}
+                autoComplete="given-name"
+                placeholder={t("first-name-placeholder")}
               />
-
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("last-name-label")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="family-name"
-                        placeholder={t("last-name-placeholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FieldError
+                errors={fields.firstName.errors}
+                id={fields.firstName.errorId}
               />
+            </Field>
 
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("company-name-label")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="organization"
-                        placeholder={t("company-name-placeholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <Field data-invalid={fields.lastName.ariaInvalid}>
+              <FieldLabel htmlFor={fields.lastName.id}>
+                {t("last-name-label")}
+              </FieldLabel>
+              <Input
+                {...fields.lastName.inputProps}
+                autoComplete="family-name"
+                placeholder={t("last-name-placeholder")}
               />
-
-              <FormField
-                control={form.control}
-                name="workEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("work-email-label")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="email"
-                        placeholder={t("work-email-placeholder")}
-                        type="email"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FieldError
+                errors={fields.lastName.errors}
+                id={fields.lastName.errorId}
               />
+            </Field>
 
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("phone-number-label")}</FormLabel>
-                    <FormControl>
-                      <Input
-                        autoComplete="tel"
-                        placeholder={t("phone-number-placeholder")}
-                        type="tel"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <Field data-invalid={fields.companyName.ariaInvalid}>
+              <FieldLabel htmlFor={fields.companyName.id}>
+                {t("company-name-label")}
+              </FieldLabel>
+              <Input
+                {...fields.companyName.inputProps}
+                autoComplete="organization"
+                placeholder={t("company-name-placeholder")}
               />
-
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t("message-label")}</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        className="min-h-[90px] resize-none"
-                        placeholder={t("message-placeholder")}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+              <FieldError
+                errors={fields.companyName.errors}
+                id={fields.companyName.errorId}
               />
+            </Field>
 
-              <HoneypotInputs label="Please leave this field blank" />
-            </CardContent>
+            <Field data-invalid={fields.workEmail.ariaInvalid}>
+              <FieldLabel htmlFor={fields.workEmail.id}>
+                {t("work-email-label")}
+              </FieldLabel>
+              <Input
+                {...fields.workEmail.inputProps}
+                autoComplete="email"
+                placeholder={t("work-email-placeholder")}
+                type="email"
+              />
+              <FieldError
+                errors={fields.workEmail.errors}
+                id={fields.workEmail.errorId}
+              />
+            </Field>
 
-            <CardFooter className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-              <p className="text-muted-foreground text-sm">
-                {t("submit-disclaimer")}
-              </p>
+            <Field data-invalid={fields.phoneNumber.ariaInvalid}>
+              <FieldLabel htmlFor={fields.phoneNumber.id}>
+                {t("phone-number-label")}
+              </FieldLabel>
+              <Input
+                {...fields.phoneNumber.inputProps}
+                autoComplete="tel"
+                placeholder={t("phone-number-placeholder")}
+                type="tel"
+              />
+              <FieldError
+                errors={fields.phoneNumber.errors}
+                id={fields.phoneNumber.errorId}
+              />
+            </Field>
 
-              <Button
-                {...form.register("intent", { value: "contactSales" })}
-                type="submit"
-              >
-                {isContactingSales ? (
-                  <>
-                    <Loader2Icon className="animate-spin" />
-                    {t("submit-button-loading")}
-                  </>
-                ) : (
-                  t("submit-button")
-                )}
-              </Button>
-            </CardFooter>
-          </fieldset>
-        </Form>
-      </FormProvider>
+            <Field data-invalid={fields.message.ariaInvalid}>
+              <FieldLabel htmlFor={fields.message.id}>
+                {t("message-label")}
+              </FieldLabel>
+              <Textarea
+                {...fields.message.inputProps}
+                className="min-h-[90px] resize-none"
+                placeholder={t("message-placeholder")}
+              />
+              <FieldError
+                errors={fields.message.errors}
+                id={fields.message.errorId}
+              />
+            </Field>
+
+            <HoneypotInputs label="Please leave this field blank" />
+          </CardContent>
+
+          <CardFooter className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <p className="text-muted-foreground text-sm">
+              {t("submit-disclaimer")}
+            </p>
+
+            <Button name="intent" type="submit" value={CONTACT_SALES_INTENT}>
+              {isContactingSales ? (
+                <>
+                  <Spinner />
+                  {t("submit-button-loading")}
+                </>
+              ) : (
+                t("submit-button")
+              )}
+            </Button>
+          </CardFooter>
+        </FieldSet>
+      </Form>
     </Card>
   );
 }
