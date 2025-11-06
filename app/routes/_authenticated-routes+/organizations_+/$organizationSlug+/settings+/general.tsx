@@ -53,15 +53,7 @@ export default function GeneralOrganizationSettingsRoute({
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
-
-          <p className="text-muted-foreground text-sm">{t("description")}</p>
-        </div>
-
-        <Separator />
-
+      <div className="mx-auto w-full max-w-4xl space-y-6">
         {userIsOwner ? (
           <>
             <GeneralOrganizationSettings
@@ -74,10 +66,22 @@ export default function GeneralOrganizationSettingsRoute({
             <DangerZone organizationName={organization.name} />
           </>
         ) : (
-          <OrganizationInfo
-            organizationLogoUrl={organization.imageUrl}
-            organizationName={organization.name}
-          />
+          <>
+            <div className="flex flex-col gap-2">
+              <h2 className="leading-none font-semibold">{t("page-title")}</h2>
+
+              <p className="text-muted-foreground text-sm">
+                {t("description")}
+              </p>
+            </div>
+
+            <Separator />
+
+            <OrganizationInfo
+              organizationLogoUrl={organization.imageUrl}
+              organizationName={organization.name}
+            />
+          </>
         )}
       </div>
     </div>
