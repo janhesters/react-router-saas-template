@@ -522,9 +522,13 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
       {
         data: {},
         expected: badRequest({
-          errors: {
-            lookupKey: {
-              message: "Invalid input: expected string, received undefined",
+          result: {
+            error: {
+              fieldErrors: {
+                lookupKey: [
+                  "Invalid input: expected string, received undefined",
+                ],
+              },
             },
           },
         }),
@@ -542,7 +546,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           user,
         })) as DataWithResponseInit<object>;
 
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject(expected);
       },
     );
 
@@ -626,10 +630,13 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
       {
         data: {},
         expected: badRequest({
-          errors: {
-            billingEmail: {
-              message:
-                "billing:billing-page.update-billing-email-modal.email-invalid",
+          result: {
+            error: {
+              fieldErrors: {
+                billingEmail: [
+                  "billing:billing-page.update-billing-email-modal.email-invalid",
+                ],
+              },
             },
           },
         }),
@@ -637,10 +644,13 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
       {
         data: { billingEmail: "not-an-email" },
         expected: badRequest({
-          errors: {
-            billingEmail: {
-              message:
-                "billing:billing-page.update-billing-email-modal.email-invalid",
+          result: {
+            error: {
+              fieldErrors: {
+                billingEmail: [
+                  "billing:billing-page.update-billing-email-modal.email-invalid",
+                ],
+              },
             },
           },
         }),
@@ -658,7 +668,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           user,
         })) as DataWithResponseInit<object>;
 
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject(expected);
       },
     );
 

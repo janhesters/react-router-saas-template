@@ -1,3 +1,4 @@
+import type { SubmissionResult } from "@conform-to/react/future";
 import type { Organization } from "@prisma/client";
 import { CircleXIcon, Loader2Icon } from "lucide-react";
 import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
@@ -126,6 +127,7 @@ export type BillingPageProps = {
   isOnFreeTrial: boolean;
   isResumingSubscription?: boolean;
   isViewingInvoices?: boolean;
+  lastResult?: SubmissionResult;
   maxSeats: number;
   organizationSlug: string;
   pendingChange?: PendingDowngradeBannerProps;
@@ -148,6 +150,7 @@ export function BillingPage({
   isOnFreeTrial,
   isResumingSubscription = false,
   isViewingInvoices = false,
+  lastResult,
   maxSeats,
   organizationSlug,
   pendingChange,
@@ -246,7 +249,7 @@ export function BillingPage({
               </Alert>
             </div>
 
-            <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+            <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
               <DialogHeader>
                 <DialogTitle>
                   {t("subscription-cancelled-banner.modal.title")}
@@ -327,7 +330,7 @@ export function BillingPage({
                 </Alert>
               </div>
 
-              <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+              <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
                 <DialogHeader>
                   <DialogTitle>
                     {t("free-trial-banner.modal.title")}
@@ -521,6 +524,7 @@ export function BillingPage({
                       <EditBillingEmailModalContent
                         billingEmail={billingEmail}
                         isUpdatingBillingEmail={isUpdatingBillingEmail}
+                        lastResult={lastResult}
                       />
                     </Dialog>
                   </DescriptionListRow>
@@ -534,7 +538,7 @@ export function BillingPage({
           onOpenChange={setIsPlanManagementModalOpen}
           open={isPlanManagementModalOpen}
         >
-          <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+          <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
             <DialogHeader>
               <DialogTitle>{t("pricing-modal.title")}</DialogTitle>
 

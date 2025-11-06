@@ -1,4 +1,3 @@
-import type { FieldErrors } from "react-hook-form";
 import { z } from "zod";
 
 import {
@@ -36,9 +35,12 @@ export const switchSubscriptionSchema = z.object({
 export const updateBillingEmailSchema = z.object({
   billingEmail: z
     .email({
-      error: "billing:billing-page.update-billing-email-modal.email-invalid",
+      message: "billing:billing-page.update-billing-email-modal.email-invalid",
     })
-    .min(1, "billing:billing-page.update-billing-email-modal.email-required"),
+    .trim()
+    .min(1, {
+      message: "billing:billing-page.update-billing-email-modal.email-required",
+    }),
   intent: z.literal(UPDATE_BILLING_EMAIL_INTENT),
 });
 
@@ -47,4 +49,3 @@ export const viewInvoicesSchema = z.object({
 });
 
 export type UpdateBillingEmailSchema = z.infer<typeof updateBillingEmailSchema>;
-export type UpdateBillingEmailErrors = FieldErrors<UpdateBillingEmailSchema>;

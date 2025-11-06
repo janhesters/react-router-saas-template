@@ -59,6 +59,7 @@ export async function action(args: Route.ActionArgs) {
 }
 
 export default function OrganizationBillingSettingsRoute({
+  actionData,
   loaderData,
 }: Route.ComponentProps) {
   const { billingPageProps } = loaderData;
@@ -80,6 +81,8 @@ export default function OrganizationBillingSettingsRoute({
       isKeepingCurrentSubscription={isKeepingCurrentSubscription}
       isResumingSubscription={isResumingSubscription}
       isViewingInvoices={isViewingInvoices}
+      // @ts-expect-error - actionData is typed as never for some reason
+      lastResult={actionData?.result}
     />
   );
 }

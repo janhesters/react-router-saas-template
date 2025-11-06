@@ -1,14 +1,10 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { SubmissionResult } from "@conform-to/react/future";
+import { useForm } from "@conform-to/react/future";
 import { Loader2Icon } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Form, useSubmit } from "react-router";
+import { Form } from "react-router";
 
 import { UPDATE_BILLING_EMAIL_INTENT } from "./billing-constants";
-import type {
-  UpdateBillingEmailErrors,
-  UpdateBillingEmailSchema,
-} from "./billing-schemas";
 import { updateBillingEmailSchema } from "./billing-schemas";
 import { Button } from "~/components/ui/button";
 import {
@@ -18,44 +14,28 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/components/ui/dialog";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormProvider,
-} from "~/components/ui/form";
+import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 
 type EditBillingEmailModalContentProps = {
   billingEmail: string;
-  errors?: UpdateBillingEmailErrors;
   isUpdatingBillingEmail?: boolean;
+  lastResult?: SubmissionResult;
 };
 
 export function EditBillingEmailModalContent({
   billingEmail,
-  errors,
   isUpdatingBillingEmail = false,
+  lastResult,
 }: EditBillingEmailModalContentProps) {
   const { t } = useTranslation("billing", {
     keyPrefix: "billing-page.update-billing-email-modal",
   });
-  const submit = useSubmit();
 
-  const form = useForm<UpdateBillingEmailSchema>({
-    defaultValues: {
-      billingEmail,
-      intent: UPDATE_BILLING_EMAIL_INTENT,
-    },
-    errors,
-    resolver: zodResolver(updateBillingEmailSchema),
+  const { form, fields } = useForm({
+    lastResult,
+    schema: updateBillingEmailSchema,
   });
-
-  const handleSubmit = async (values: UpdateBillingEmailSchema) => {
-    await submit(values, { method: "POST" });
-  };
 
   return (
     <DialogContent className="sm:max-w-[425px]">
@@ -65,38 +45,32 @@ export function EditBillingEmailModalContent({
         <DialogDescription>{t("description")}</DialogDescription>
       </DialogHeader>
 
-      <FormProvider {...form}>
-        <Form
-          className="py-2"
-          id="edit-billing-email-form"
-          method="POST"
-          onSubmit={form.handleSubmit(handleSubmit)}
-        >
-          <fieldset disabled={isUpdatingBillingEmail}>
-            <FormField
-              control={form.control}
-              name="billingEmail"
-              render={({ field }) => (
-                <FormItem className="grid-cols-4 items-center">
-                  <FormLabel className="text-right">
-                    {t("email-label")}
-                  </FormLabel>
+      <Form
+        {...form.props}
+        className="py-2"
+        id="edit-billing-email-form"
+        method="POST"
+      >
+        <FieldSet disabled={isUpdatingBillingEmail}>
+          <Field data-invalid={fields.billingEmail.ariaInvalid}>
+            <FieldLabel htmlFor={fields.billingEmail.id}>
+              {t("email-label")}
+            </FieldLabel>
 
-                  <FormControl>
-                    <Input
-                      className="col-span-3"
-                      placeholder={t("email-placeholder")}
-                      {...field}
-                    />
-                  </FormControl>
-
-                  <FormMessage className="col-span-4 text-right" />
-                </FormItem>
-              )}
+            <Input
+              {...fields.billingEmail.inputProps}
+              className="col-span-3"
+              defaultValue={billingEmail}
+              placeholder={t("email-placeholder")}
             />
-          </fieldset>
-        </Form>
-      </FormProvider>
+
+            <FieldError
+              errors={fields.billingEmail.errors}
+              id={fields.billingEmail.errorId}
+            />
+          </Field>
+        </FieldSet>
+      </Form>
 
       <DialogFooter>
         <Button

@@ -45,7 +45,7 @@ import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-ini
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
 import { badRequest, conflict, forbidden } from "~/utils/http-responses.server";
 import { createToastHeaders } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data.server";
+import { validateFormData } from "~/utils/validate-form-data-conform.server";
 
 const schema = z.discriminatedUnion("intent", [
   cancelSubscriptionSchema,
@@ -66,8 +66,15 @@ export async function billingAction({
     const { organization, headers, role, user } = context.get(
       organizationMembershipContext,
     );
-    const body = await validateFormData(request, schema);
     const i18n = getInstance(context);
+
+    const result = await validateFormData(request, schema);
+
+    if (!result.success) {
+      return result.response;
+    }
+
+    const body = result.data;
 
     if (role === OrganizationMembershipRole.member) {
       return forbidden();
@@ -117,7 +124,10 @@ export async function billingAction({
           type: "success",
         });
 
-        return data({}, { headers: combineHeaders(toast, headers) });
+        return data(
+          { result: undefined },
+          { headers: combineHeaders(toast, headers) },
+        );
       }
 
       case OPEN_CHECKOUT_SESSION_INTENT: {
@@ -185,7 +195,10 @@ export async function billingAction({
           type: "success",
         });
 
-        return data({}, { headers: combineHeaders(toast, headers) });
+        return data(
+          { result: undefined },
+          { headers: combineHeaders(toast, headers) },
+        );
       }
 
       case SWITCH_SUBSCRIPTION_INTENT: {
@@ -248,7 +261,10 @@ export async function billingAction({
           type: "success",
         });
 
-        return data({}, { headers: combineHeaders(toast, headers) });
+        return data(
+          { result: undefined },
+          { headers: combineHeaders(toast, headers) },
+        );
       }
 
       case VIEW_INVOICES_INTENT: {
