@@ -88,18 +88,15 @@ test.describe("new organization page", () => {
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
 
-      // Test image upload via drag and drop
-      const dropzone = page.getByText(
-        /drag and drop or select file to upload/i,
-      );
-      await expect(dropzone).toBeVisible();
+      // Test image upload via file input
+      const fileInput = page.locator('input[type="file"]');
+      await expect(fileInput).toBeVisible();
 
-      // Perform drag and drop of the image
+      // Upload the image
       await page.setInputFiles(
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
-      await expect(page.getByText("200x200.jpg")).toBeVisible();
 
       // Enter name again. Sometimes with MSW activated on the server,
       // it takes time for the fields to become available, so we do it twice
@@ -382,12 +379,12 @@ test.describe("new organization page", () => {
 
       // Test too long name
       await nameInput.fill(faker.string.alpha(256));
+      await submitButton.click();
       await expect(
         page.getByText(
           /organization name must be less than 255 characters long/i,
         ),
       ).toBeVisible();
-      await submitButton.click();
 
       await teardownOrganizationAndMember({ organization, user });
     });

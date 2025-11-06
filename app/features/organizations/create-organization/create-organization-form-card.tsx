@@ -1,22 +1,19 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createId } from "@paralleldrive/cuid2";
-import { Loader2Icon } from "lucide-react";
-import { useRef } from "react";
-import type { FieldErrors } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import type { SubmissionResult } from "@conform-to/react/future";
+import { useForm } from "@conform-to/react/future";
+import { coerceFormValue } from "@conform-to/zod/v4/future";
+import { BuildingIcon } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
-import { Form, href, Link, useSubmit } from "react-router";
-import type { z } from "zod";
+import { Form, href, Link } from "react-router";
 
-import { BUCKET_NAME, LOGO_PATH_PREFIX } from "../organization-constants";
 import { CREATE_ORGANIZATION_INTENT } from "./create-organization-constants";
-import type { CreateOrganizationFormSchema } from "./create-organization-schemas";
 import { createOrganizationFormSchema } from "./create-organization-schemas";
 import {
-  Dropzone,
-  DropzoneContent,
-  DropzoneEmptyState,
-} from "~/components/dropzone";
+  AvatarUpload,
+  AvatarUploadDescription,
+  AvatarUploadInput,
+  AvatarUploadPreviewImage,
+} from "~/components/avatar-upload";
+import { Avatar, AvatarFallback } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -27,84 +24,31 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormProvider,
-} from "~/components/ui/form";
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+  FieldSet,
+} from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { useSupabaseUpload } from "~/hooks/use-supabase-upload";
-import { toFormData } from "~/utils/to-form-data";
+import { Spinner } from "~/components/ui/spinner";
 
-export type CreateOrganizationFormErrors =
-  FieldErrors<CreateOrganizationFormSchema>;
+const ONE_MB = 1_000_000;
 
 export type CreateOrganizationFormCardProps = {
-  errors?: CreateOrganizationFormErrors;
   isCreatingOrganization?: boolean;
+  lastResult?: SubmissionResult;
 };
 
 export function CreateOrganizationFormCard({
-  errors,
   isCreatingOrganization = false,
+  lastResult,
 }: CreateOrganizationFormCardProps) {
   const { t } = useTranslation("organizations", { keyPrefix: "new.form" });
-  const submit = useSubmit();
-
-  // Since you upload the logo before creating the organization, we need to
-  // generate a unique ID for the organization.
-  const organizationId = useRef(createId());
-  const path = `${LOGO_PATH_PREFIX}/${organizationId.current}`;
-  const uploadHandler = useSupabaseUpload({
-    allowedMimeTypes: ["image/*"],
-    bucketName: BUCKET_NAME,
-    maxFileSize: 1000 * 1000, // 1MB
-    maxFiles: 1,
-    path,
-    upsert: false,
+  const { form, fields } = useForm({
+    lastResult,
+    schema: coerceFormValue(createOrganizationFormSchema),
   });
-
-  const form = useForm<CreateOrganizationFormSchema>({
-    defaultValues: {
-      intent: CREATE_ORGANIZATION_INTENT,
-      logo: undefined,
-      name: "",
-      organizationId: organizationId.current,
-    },
-    errors,
-    resolver: zodResolver(createOrganizationFormSchema),
-  });
-
-  const handleSubmit = async (
-    values: z.infer<typeof createOrganizationFormSchema>,
-  ) => {
-    if (uploadHandler.files.length > 0) {
-      const isUploadSuccess = await uploadHandler.onUpload();
-
-      if (isUploadSuccess) {
-        // Get the public URL of the uploaded file
-        const {
-          data: { publicUrl },
-        } = uploadHandler.supabase.storage
-          .from(BUCKET_NAME)
-          // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a file
-          .getPublicUrl(`${path}/${uploadHandler.files[0]!.name}`, {
-            transform: { height: 128, resize: "cover", width: 128 },
-          });
-        // Submit the form with the logo URL
-        await submit(toFormData({ ...values, logo: publicUrl }), {
-          method: "POST",
-        });
-      }
-    } else {
-      // No logo to upload, just submit the form as is
-      await submit(toFormData(values), { method: "POST" });
-    }
-  };
-
-  const isFormDisabled = isCreatingOrganization || uploadHandler.loading;
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,81 +59,90 @@ export function CreateOrganizationFormCard({
         </CardHeader>
 
         <CardContent>
-          <FormProvider {...form}>
-            <Form
-              id="create-organization-form"
-              method="POST"
-              onSubmit={form.handleSubmit(handleSubmit)}
+          <Form encType="multipart/form-data" method="POST" {...form.props}>
+            <FieldSet
+              className="flex flex-col gap-6"
+              disabled={isCreatingOrganization}
             >
-              <fieldset
-                className="flex flex-col gap-6"
-                disabled={isFormDisabled}
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("name-label")}</FormLabel>
+              <Field data-invalid={fields.name.ariaInvalid}>
+                <FieldLabel htmlFor={fields.name.id}>
+                  {t("name-label")}
+                </FieldLabel>
+                <FieldDescription id={fields.name.descriptionId}>
+                  {t("name-description")}
+                </FieldDescription>
+                <Input
+                  {...fields.name.inputProps}
+                  autoComplete="organization"
+                  autoFocus
+                  placeholder={t("name-placeholder")}
+                />
+                <FieldError
+                  errors={fields.name.errors}
+                  id={fields.name.errorId}
+                />
+              </Field>
 
-                      <FormControl>
-                        <Input
-                          autoComplete="organization"
-                          autoFocus
-                          placeholder={t("name-placeholder")}
-                          required
-                          {...field}
+              <AvatarUpload maxFileSize={ONE_MB}>
+                {({ error }) => (
+                  <Field
+                    data-invalid={
+                      fields.logo.ariaInvalid || error ? "true" : undefined
+                    }
+                  >
+                    <FieldLabel htmlFor={fields.logo.id}>
+                      {t("logo-label")}
+                    </FieldLabel>
+                    <FieldDescription id={fields.logo.descriptionId}>
+                      {t("logo-description")}
+                    </FieldDescription>
+                    <div className="flex items-center gap-x-4 md:gap-x-8">
+                      <Avatar className="size-16 md:size-24 rounded-lg">
+                        <AvatarUploadPreviewImage
+                          alt={t("logo-preview-alt")}
+                          className="size-16 md:size-24 rounded-lg"
+                          src=""
                         />
-                      </FormControl>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="logo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel htmlFor="organizationLogo">
-                        {t("logo-label")}
-                      </FormLabel>
-
-                      <FormControl>
-                        <Dropzone
-                          {...uploadHandler}
-                          getInputProps={(props) => ({
-                            ...field,
-                            ...uploadHandler.getInputProps(props),
-                            id: "organizationLogo",
-                          })}
-                        >
-                          <DropzoneEmptyState />
-                          <DropzoneContent />
-                        </Dropzone>
-                      </FormControl>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </fieldset>
-            </Form>
-          </FormProvider>
+                        <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
+                          <BuildingIcon className="size-8 md:size-12" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col gap-2">
+                        <AvatarUploadInput
+                          {...fields.logo.inputProps}
+                          accept="image/png,image/jpeg,image/gif,image/webp"
+                        />
+                        <AvatarUploadDescription>
+                          {t("logo-formats")}
+                        </AvatarUploadDescription>
+                      </div>
+                    </div>
+                    <FieldError
+                      errors={[
+                        ...(fields.logo.errors ?? []),
+                        ...(error ? [error] : []),
+                      ]}
+                      id={fields.logo.errorId}
+                    />
+                  </Field>
+                )}
+              </AvatarUpload>
+            </FieldSet>
+          </Form>
         </CardContent>
 
         <CardFooter>
           <Button
             className="w-full"
-            disabled={isFormDisabled}
-            form="create-organization-form"
+            disabled={isCreatingOrganization}
+            form={form.id}
             name="intent"
             type="submit"
+            value={CREATE_ORGANIZATION_INTENT}
           >
-            {isFormDisabled ? (
+            {isCreatingOrganization ? (
               <>
-                <Loader2Icon className="animate-spin" />
+                <Spinner />
                 {t("saving")}
               </>
             ) : (

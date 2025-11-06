@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { parseSubmission, report } from "@conform-to/react/future";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./new";
@@ -203,15 +204,19 @@ describe("/organizations/new route action", () => {
       await deleteOrganizationFromDatabaseById(organization!.id);
     });
 
-    test("given: a valid organization id, name and a logo url, should: create organization with logo url", async () => {
+    test("given: a valid name and a logo file, should: create organization with logo", async () => {
       const { userAccount } = await setup();
       const organization = createPopulatedOrganization();
 
+      // Create a mock File object for the logo
+      const logoFile = new File(["logo content"], "logo.png", {
+        type: "image/png",
+      });
+
       const formData = toFormData({
         intent,
-        logo: organization.imageUrl,
+        logo: logoFile,
         name: organization.name,
-        organizationId: organization.id,
       });
 
       const response = (await sendAuthenticatedRequest({
@@ -232,11 +237,11 @@ describe("/organizations/new route action", () => {
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
-        id: organization.id,
-        imageUrl: organization.imageUrl, // Verify the logo URL was saved
         name: organization.name,
         slug: slug,
       });
+      // Logo URL should be set (uploaded to storage)
+      expect(createdOrganization?.imageUrl).toBeTruthy();
       expect(createdOrganization?.memberships).toHaveLength(1);
       expect(createdOrganization?.memberships[0]?.member.id).toEqual(
         userAccount.id,
@@ -250,59 +255,73 @@ describe("/organizations/new route action", () => {
     test.each([
       {
         body: { intent } as const,
-        expected: badRequest({
-          errors: { name: { message: "organizations:new.form.name-required" } },
-        }),
+        expectedError: {
+          fieldErrors: {
+            name: ["organizations:new.form.name-min-length"],
+          },
+          formErrors: [],
+        },
         given: "no name provided",
       },
       {
         body: { intent, name: "ab" } as const,
-        expected: badRequest({
-          errors: {
-            name: { message: "organizations:new.form.name-min-length" },
+        expectedError: {
+          fieldErrors: {
+            name: ["organizations:new.form.name-min-length"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name that is too short (2 characters)",
       },
       {
         body: { intent, name: "a".repeat(256) } as const,
-        expected: badRequest({
-          errors: {
-            name: { message: "organizations:new.form.name-max-length" },
+        expectedError: {
+          fieldErrors: {
+            name: ["organizations:new.form.name-max-length"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name that is too long (256 characters)",
       },
       {
         body: { intent, name: "   " },
-        expected: badRequest({
-          errors: {
-            name: { message: "organizations:new.form.name-min-length" },
+        expectedError: {
+          fieldErrors: {
+            name: ["organizations:new.form.name-min-length"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a name with only whitespace",
       },
       {
         body: { intent, name: "  a " },
-        expected: badRequest({
-          errors: {
-            name: { message: "organizations:new.form.name-min-length" },
+        expectedError: {
+          fieldErrors: {
+            name: ["organizations:new.form.name-min-length"],
           },
-        }),
+          formErrors: [],
+        },
         given: "a too short name with whitespace",
       },
     ])(
       "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
+      async ({ body, expectedError }) => {
         const { userAccount } = await setup();
 
         const formData = toFormData(body);
+        const submission = parseSubmission(formData);
         const response = await sendAuthenticatedRequest({
           formData,
           userAccount,
         });
 
-        expect(response).toEqual(expected);
+        expect(response).toEqual(
+          badRequest({
+            result: report(submission, {
+              error: expectedError,
+            }),
+          }),
+        );
       },
     );
   });

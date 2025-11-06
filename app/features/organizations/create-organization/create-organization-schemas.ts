@@ -2,22 +2,32 @@ import { z } from "zod";
 
 import { CREATE_ORGANIZATION_INTENT } from "./create-organization-constants";
 
+const MIN_NAME_LENGTH = 3;
+const MAX_NAME_LENGTH = 255;
+const ONE_MB = 1_000_000;
+
+z.config({ jitless: true });
+
 export const createOrganizationFormSchema = z.object({
   intent: z.literal(CREATE_ORGANIZATION_INTENT),
   logo: z
-    .string({
-      error: "organizations:new.form.logo-invalid",
+    .file()
+    .max(ONE_MB, { message: "organizations:new.form.logo-too-large" })
+    .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
+      message: "organizations:new.form.logo-invalid-type",
     })
-    .url("organizations:new.form.logo-must-be-url")
     .optional(),
   name: z
     .string({
-      error: "organizations:new.form.name-required",
+      message: "organizations:new.form.name-min-length",
     })
     .trim()
-    .min(3, "organizations:new.form.name-min-length")
-    .max(255, "organizations:new.form.name-max-length"),
-  organizationId: z.string().optional(),
+    .min(MIN_NAME_LENGTH, {
+      message: "organizations:new.form.name-min-length",
+    })
+    .max(MAX_NAME_LENGTH, {
+      message: "organizations:new.form.name-max-length",
+    }),
 });
 
 export type CreateOrganizationFormSchema = z.infer<
