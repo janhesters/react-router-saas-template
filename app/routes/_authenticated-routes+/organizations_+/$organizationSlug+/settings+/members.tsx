@@ -17,7 +17,6 @@ import {
   requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug,
 } from "~/features/organizations/settings/team-members/team-members-helpers.server";
 import { TeamMembersTable } from "~/features/organizations/settings/team-members/team-members-table";
-import { getFormErrors } from "~/utils/get-form-errors";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
@@ -67,7 +66,6 @@ export default function OrganizationMembersRoute({
     organizationIsFull,
     teamMemberTable,
   } = loaderData;
-  const errors = getFormErrors(actionData);
 
   const navigation = useNavigation();
   const isInvitingByEmail =
@@ -119,11 +117,12 @@ export default function OrganizationMembersRoute({
         )}
 
         {teamMemberTable.currentUsersRole !== "member" && (
-          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2">
+          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2">
             <EmailInviteCard
               {...emailInviteCard}
-              errors={errors}
               isInvitingByEmail={isInvitingByEmail}
+              // @ts-expect-error - This is a submission result
+              lastResult={actionData?.result}
               successEmail={
                 (actionData as unknown as { success?: string })?.success
               }

@@ -1,16 +1,12 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+import type { SubmissionResult } from "@conform-to/react/future";
+import { useForm } from "@conform-to/react/future";
 import { OrganizationMembershipRole } from "@prisma/client";
 import { Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { Form, useSubmit } from "react-router";
+import { Form } from "react-router";
 
 import { INVITE_BY_EMAIL_INTENT } from "./team-members-constants";
-import type {
-  InviteByEmailErrors,
-  InviteByEmailSchema,
-} from "./team-members-settings-schemas";
 import { inviteByEmailSchema } from "./team-members-settings-schemas";
 import { Button } from "~/components/ui/button";
 import {
@@ -21,14 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  FormProvider,
-} from "~/components/ui/form";
+import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import {
   Select,
@@ -37,20 +26,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { toFormData } from "~/utils/to-form-data";
 
 export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;
-  errors?: InviteByEmailErrors;
   isInvitingByEmail?: boolean;
+  lastResult?: SubmissionResult;
   organizationIsFull?: boolean;
   successEmail?: string;
 };
 
 export function EmailInviteCard({
   currentUserIsOwner,
-  errors,
   isInvitingByEmail = false,
+  lastResult,
   organizationIsFull = false,
   successEmail,
 }: EmailInviteCardProps) {
@@ -58,28 +46,17 @@ export function EmailInviteCard({
     keyPrefix: "settings.team-members.invite-by-email",
   });
 
-  const submit = useSubmit();
-
-  const form = useForm<InviteByEmailSchema>({
-    defaultValues: {
-      email: "",
-      intent: INVITE_BY_EMAIL_INTENT,
-      role: OrganizationMembershipRole.member,
-    },
-    errors,
-    resolver: zodResolver(inviteByEmailSchema),
+  const { form, fields, intent } = useForm({
+    lastResult,
+    schema: inviteByEmailSchema,
   });
-
-  const handleSubmit = async (values: InviteByEmailSchema) => {
-    await submit(toFormData(values), { method: "POST" });
-  };
 
   // If the invite was successful, clear the email input
   useEffect(() => {
     if (successEmail) {
-      form.setValue("email", "");
+      intent.reset();
     }
-  }, [form.setValue, successEmail]);
+  }, [successEmail, intent]);
 
   const disabled = isInvitingByEmail || organizationIsFull;
 
@@ -92,92 +69,86 @@ export function EmailInviteCard({
       </CardHeader>
 
       <CardContent>
-        <FormProvider {...form}>
-          <Form
-            id="invite-by-email-form"
-            method="POST"
-            onSubmit={form.handleSubmit(handleSubmit)}
-          >
-            <fieldset disabled={disabled}>
+        <Form method="POST" {...form.props}>
+          <FieldSet disabled={disabled}>
+            <div className="space-y-2">
               <div className="flex gap-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem className="min-w-0 flex-1">
-                      <FormLabel>{t("form.email")}</FormLabel>
+                <Field
+                  className="min-w-0 flex-1 *:w-auto w-auto!"
+                  data-invalid={fields.email.ariaInvalid}
+                >
+                  <FieldLabel htmlFor={fields.email.id}>
+                    {t("form.email")}
+                  </FieldLabel>
 
-                      <FormControl>
-                        <Input
-                          autoComplete="email"
-                          placeholder={t("form.email-placeholder")}
-                          required
-                          type="email"
-                          {...field}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                  <Input
+                    {...fields.email.inputProps}
+                    autoComplete="email"
+                    defaultValue=""
+                    key={successEmail}
+                    placeholder={t("form.email-placeholder")}
+                    type="email"
+                  />
+                </Field>
 
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t("form.role")}</FormLabel>
+                <Field
+                  className="shrink-0 *:w-auto w-auto!"
+                  data-invalid={fields.role.ariaInvalid}
+                >
+                  <FieldLabel htmlFor={fields.role.id}>
+                    {t("form.role")}
+                  </FieldLabel>
 
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="min-w-28">
-                            <SelectValue
-                              placeholder={t("form.role-placeholder")}
-                            />
-                          </SelectTrigger>
-                        </FormControl>
+                  <Select
+                    defaultValue={OrganizationMembershipRole.member}
+                    name={fields.role.name}
+                  >
+                    <SelectTrigger
+                      aria-describedby={fields.role.ariaDescribedBy}
+                      aria-invalid={fields.role.ariaInvalid}
+                      className="min-w-28"
+                      id={fields.role.id}
+                    >
+                      <SelectValue placeholder={t("form.role-placeholder")} />
+                    </SelectTrigger>
 
-                        <SelectContent align="end">
-                          <SelectItem value={OrganizationMembershipRole.member}>
-                            {t("form.role-member")}
-                          </SelectItem>
+                    <SelectContent align="end">
+                      <SelectItem value={OrganizationMembershipRole.member}>
+                        {t("form.role-member")}
+                      </SelectItem>
 
-                          <SelectItem value={OrganizationMembershipRole.admin}>
-                            {t("form.role-admin")}
-                          </SelectItem>
+                      <SelectItem value={OrganizationMembershipRole.admin}>
+                        {t("form.role-admin")}
+                      </SelectItem>
 
-                          {currentUserIsOwner && (
-                            <SelectItem
-                              value={OrganizationMembershipRole.owner}
-                            >
-                              {t("form.role-owner")}
-                            </SelectItem>
-                          )}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      {currentUserIsOwner && (
+                        <SelectItem value={OrganizationMembershipRole.owner}>
+                          {t("form.role-owner")}
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </Field>
               </div>
 
-              {form.formState.errors.email && (
-                <FormMessage className="mt-2">
-                  {form.formState.errors.email.message}
-                </FormMessage>
-              )}
-            </fieldset>
-          </Form>
-        </FormProvider>
+              <FieldError
+                errors={fields.email.errors}
+                id={fields.email.errorId}
+              />
+              <FieldError
+                errors={fields.role.errors}
+                id={fields.role.errorId}
+              />
+            </div>
+          </FieldSet>
+        </Form>
       </CardContent>
 
       <CardFooter>
         <Button
           className="w-full"
           disabled={disabled}
-          form="invite-by-email-form"
+          form={form.props.id}
           name="intent"
           type="submit"
           value={INVITE_BY_EMAIL_INTENT}

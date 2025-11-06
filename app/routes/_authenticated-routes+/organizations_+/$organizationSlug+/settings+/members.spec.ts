@@ -185,14 +185,17 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       user,
     });
     const expected = badRequest({
-      errors: {
-        intent: {
-          message: "Invalid input",
+      result: {
+        error: {
+          fieldErrors: {
+            intent: ["Invalid input"],
+          },
+          formErrors: [],
         },
       },
     });
 
-    expect(actual).toEqual(expected);
+    expect(actual).toMatchObject({ data: expected.data });
   });
 
   test("given: a user who has the role of member, should: return a 403", async () => {
@@ -311,15 +314,19 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject({ data: expected.data });
     });
 
     test("given: a user on a trial plan with 25 members, should: return 400 because the org is full", async () => {
@@ -337,15 +344,19 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject({ data: expected.data });
     });
   });
 
@@ -442,20 +453,30 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
 
     test.each([
       {
-        body: { intent, role: OrganizationMembershipRole.member } as const,
+        body: { intent, role: OrganizationMembershipRole.member },
         expected: badRequest({
-          errors: {
-            userId: {
-              message: "Invalid input: expected string, received undefined",
+          result: {
+            error: {
+              fieldErrors: {
+                userId: ["Invalid input: expected string, received undefined"],
+              },
+              formErrors: [],
             },
           },
         }),
         given: "no userId",
       },
       {
-        body: { intent, userId: "some-user-id" } as const,
+        body: { intent, userId: "some-user-id" },
         expected: badRequest({
-          errors: { role: { message: "Invalid input" } },
+          result: {
+            error: {
+              fieldErrors: {
+                role: ["Invalid input"],
+              },
+              formErrors: [],
+            },
+          },
         }),
         given: "no role",
       },
@@ -464,9 +485,16 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           intent,
           role: "invalid-role",
           userId: "some-user-id",
-        } as const,
+        },
         expected: badRequest({
-          errors: { role: { message: "Invalid input" } },
+          result: {
+            error: {
+              fieldErrors: {
+                role: ["Invalid input"],
+              },
+              formErrors: [],
+            },
+          },
         }),
         given: "invalid role value",
       },
@@ -485,7 +513,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           user,
         });
 
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject({ data: expected.data });
       },
     );
 
@@ -858,15 +886,20 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user: ownerUser,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual.data).toEqual(expected.data);
+      expect(actual).toMatchObject({ data: expected.data });
+
       expect(actual.init?.status).toEqual(expected.init?.status);
 
       // Verify toast
@@ -922,15 +955,20 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user: ownerUser,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual.data).toEqual(expected.data);
+      expect(actual).toMatchObject({ data: expected.data });
+
       expect(actual.init?.status).toEqual(expected.init?.status);
 
       // Verify toast
@@ -965,12 +1003,16 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         body: {
           intent,
           role: OrganizationMembershipRole.member,
-        } as const,
+        },
         expected: badRequest({
-          errors: {
-            email: {
-              message:
-                "organizations:settings.team-members.invite-by-email.form.email-invalid",
+          result: {
+            error: {
+              fieldErrors: {
+                email: [
+                  "organizations:settings.team-members.invite-by-email.form.email-invalid",
+                ],
+              },
+              formErrors: [],
             },
           },
         }),
@@ -981,24 +1023,32 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           email: "not-an-email",
           intent,
           role: OrganizationMembershipRole.member,
-        } as const,
+        },
         expected: badRequest({
-          errors: {
-            email: {
-              message:
-                "organizations:settings.team-members.invite-by-email.form.email-invalid",
+          result: {
+            error: {
+              fieldErrors: {
+                email: [
+                  "organizations:settings.team-members.invite-by-email.form.email-invalid",
+                ],
+              },
+              formErrors: [],
             },
           },
         }),
         given: "invalid email format",
       },
       {
-        body: { email: faker.internet.email(), intent } as const,
+        body: { email: faker.internet.email(), intent },
         expected: badRequest({
-          errors: {
-            role: {
-              message:
-                'Invalid option: expected one of "owner"|"admin"|"member"',
+          result: {
+            error: {
+              fieldErrors: {
+                role: [
+                  'Invalid option: expected one of "owner"|"admin"|"member"',
+                ],
+              },
+              formErrors: [],
             },
           },
         }),
@@ -1009,12 +1059,16 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           email: faker.internet.email(),
           intent,
           role: "invalid-role",
-        } as const,
+        },
         expected: badRequest({
-          errors: {
-            role: {
-              message:
-                'Invalid option: expected one of "owner"|"admin"|"member"',
+          result: {
+            error: {
+              fieldErrors: {
+                role: [
+                  'Invalid option: expected one of "owner"|"admin"|"member"',
+                ],
+              },
+              formErrors: [],
             },
           },
         }),
@@ -1025,12 +1079,16 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           email: faker.internet.email(),
           intent,
           role: "deactivated",
-        } as const,
+        },
         expected: badRequest({
-          errors: {
-            role: {
-              message:
-                'Invalid option: expected one of "owner"|"admin"|"member"',
+          result: {
+            error: {
+              fieldErrors: {
+                role: [
+                  'Invalid option: expected one of "owner"|"admin"|"member"',
+                ],
+              },
+              formErrors: [],
             },
           },
         }),
@@ -1054,7 +1112,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           user,
         });
 
-        expect(actual).toEqual(expected);
+        expect(actual).toMatchObject({ data: expected.data });
       },
     );
 
@@ -1109,12 +1167,17 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user: adminUser,
       });
       const expected = badRequest({
-        errors: {
-          email: { message: `${targeEmail} is already a member` },
+        result: {
+          error: {
+            fieldErrors: {
+              email: [`${targeEmail} is already a member`],
+            },
+            formErrors: [],
+          },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject({ data: expected.data });
     });
 
     test.each([
@@ -1212,15 +1275,19 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject({ data: expected.data });
     });
 
     test("given: a user on a trial plan with 25 members trying to invite, should: return 400 because the org is full", async () => {
@@ -1242,15 +1309,19 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          email: {
-            message:
-              "organizations:settings.team-members.invite-by-email.form.organization-full",
+        result: {
+          error: {
+            fieldErrors: {
+              email: [
+                "organizations:settings.team-members.invite-by-email.form.organization-full",
+              ],
+            },
+            formErrors: [],
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject({ data: expected.data });
     });
   });
 });

@@ -1,3 +1,4 @@
+import { report } from "@conform-to/react/future";
 import { createId } from "@paralleldrive/cuid2";
 import type { Prisma } from "@prisma/client";
 import { OrganizationMembershipRole } from "@prisma/client";
@@ -37,7 +38,7 @@ import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest, created, forbidden } from "~/utils/http-responses.server";
 import { createToastHeaders } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data.server";
+import { validateFormData } from "~/utils/validate-form-data-conform.server";
 
 const schema = z.discriminatedUnion("intent", [
   inviteByEmailSchema,
@@ -60,18 +61,28 @@ export async function teamMembersAction({
       throw forbidden();
     }
 
-    const body = await validateFormData(request, schema);
+    const result = await validateFormData(request, schema);
+
+    if (!result.success) {
+      return result.response;
+    }
+
+    const { data: body, submission } = result;
 
     switch (body.intent) {
       case CREATE_NEW_INVITE_LINK_INTENT: {
         if (getOrganizationIsFull(organization)) {
           return badRequest({
-            errors: {
-              email: {
-                message:
-                  "organizations:settings.team-members.invite-by-email.form.organization-full",
+            result: report(submission, {
+              error: {
+                fieldErrors: {
+                  email: [
+                    "organizations:settings.team-members.invite-by-email.form.organization-full",
+                  ],
+                },
+                formErrors: [],
               },
-            },
+            }),
           });
         }
 
@@ -204,12 +215,16 @@ export async function teamMembersAction({
               });
               return badRequest(
                 {
-                  errors: {
-                    email: {
-                      message:
-                        "organizations:settings.team-members.invite-by-email.form.organization-full",
+                  result: report(submission, {
+                    error: {
+                      fieldErrors: {
+                        email: [
+                          "organizations:settings.team-members.invite-by-email.form.organization-full",
+                        ],
+                      },
+                      formErrors: [],
                     },
-                  },
+                  }),
                 },
                 { headers: combineHeaders(headers, toastHeaders) },
               );
@@ -239,12 +254,16 @@ export async function teamMembersAction({
       case INVITE_BY_EMAIL_INTENT: {
         if (getOrganizationIsFull(organization)) {
           return badRequest({
-            errors: {
-              email: {
-                message:
-                  "organizations:settings.team-members.invite-by-email.form.organization-full",
+            result: report(submission, {
+              error: {
+                fieldErrors: {
+                  email: [
+                    "organizations:settings.team-members.invite-by-email.form.organization-full",
+                  ],
+                },
+                formErrors: [],
               },
-            },
+            }),
           });
         }
 
@@ -267,14 +286,19 @@ export async function teamMembersAction({
 
         if (existingMember) {
           return badRequest({
-            errors: {
-              email: {
-                message: i18n.t(
-                  "organizations:settings.team-members.invite-by-email.form.email-already-member",
-                  { email: body.email },
-                ),
+            result: report(submission, {
+              error: {
+                fieldErrors: {
+                  email: [
+                    i18n.t(
+                      "organizations:settings.team-members.invite-by-email.form.email-already-member",
+                      { email: body.email },
+                    ),
+                  ],
+                },
+                formErrors: [],
               },
-            },
+            }),
           });
         }
 
@@ -329,7 +353,12 @@ export async function teamMembersAction({
 
         if (result.status === "error") {
           return badRequest({
-            errors: { email: { message: result.error.message } },
+            result: report(submission, {
+              error: {
+                fieldErrors: { email: [result.error.message] },
+                formErrors: [],
+              },
+            }),
           });
         }
 
