@@ -1,4 +1,3 @@
-import { useTranslation } from "react-i18next";
 import { data, useNavigation } from "react-router";
 
 import type { Route } from "./+types/account";
@@ -45,24 +44,13 @@ export default function SettingsAccountRoute({
   actionData,
   loaderData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation("settings", {
-    keyPrefix: "user-account",
-  });
   const navigation = useNavigation();
   const isDeletingAccount =
     navigation.formData?.get("intent") === DELETE_USER_ACCOUNT_INTENT;
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-4xl">
       <div className="space-y-6 px-4 py-4 md:py-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
-
-          <p className="text-muted-foreground text-sm">{t("description")}</p>
-        </div>
-
-        <Separator />
-
         <AccountSettings
           lastResult={actionData?.result}
           user={loaderData.user}
