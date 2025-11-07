@@ -1,4 +1,4 @@
-import { Loader2Icon, TriangleAlertIcon } from "lucide-react";
+import { TriangleAlertIcon } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form } from "react-router";
 
@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Spinner } from "~/components/ui/spinner";
 
 export type LoginVerificationAwaitingProps = {
   email: string;
@@ -65,7 +66,7 @@ export function LoginVerificationAwaiting({
               >
                 {isResending ? (
                   <>
-                    <Loader2Icon className="animate-spin" />
+                    <Spinner />
                     {t("resend-button-loading")}
                   </>
                 ) : (

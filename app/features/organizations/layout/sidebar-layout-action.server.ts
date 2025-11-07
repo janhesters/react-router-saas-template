@@ -52,7 +52,10 @@ export async function sidebarLayoutAction({
     const { user, organization, headers, role } = context.get(
       organizationMembershipContext,
     );
-    const body = await validateFormData(request, schema);
+    const result = await validateFormData(request, schema);
+    if (!result.success) return result.response;
+
+    const body = result.data;
 
     switch (body.intent) {
       case SWITCH_ORGANIZATION_INTENT: {

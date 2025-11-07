@@ -1,0 +1,44 @@
+
+> test
+> vitest --reporter=verbose --run
+
+
+ RUN  v4.0.6 /Users/jan/dev/react-router-saas-template
+
+No test files found, exiting with code 1
+
+
+|unit-tests| 
+
+include: app/**/*.test.ts
+exclude:  **/node_modules/**, **/.git/**
+
+|integration-tests| 
+
+include: app/**/*.spec.ts
+exclude:  **/node_modules/**, **/.git/**
+
+|react-happy-dom-tests| 
+
+include: app/**/*.test.tsx
+exclude:  **/node_modules/**, **/.git/**
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: Failed to load url ../../../public/locales/en/dropzone.json (resolved id: ../../../public/locales/en/dropzone.json) in /Users/jan/dev/react-router-saas-template/app/features/localization/resources.ts. Does the file exist?
+ ❯ reviveInvokeError node_modules/vite/dist/node/module-runner.js:472:14
+ ❯ Object.invoke node_modules/vite/dist/node/module-runner.js:488:33
+ ❯ ServerModuleRunner.getModuleInformation node_modules/vite/dist/node/module-runner.js:1052:7
+ ❯ request node_modules/vite/dist/node/module-runner.js:1069:83
+ ❯ app/features/localization/resources.ts:13:1
+ ❯ VitestModuleEvaluator.runInlinedModule node_modules/vitest/dist/module-evaluator.js:136:4
+ ❯ ServerModuleRunner.directRequest node_modules/vite/dist/node/module-runner.js:1112:59
+ ❯ ServerModuleRunner.cachedRequest node_modules/vite/dist/node/module-runner.js:1030:73
+ ❯ app/features/localization/i18n.ts:3:1
+ ❯ VitestModuleEvaluator.runInlinedModule node_modules/vitest/dist/module-evaluator.js:136:4
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+Serialized Error: { code: 'ERR_LOAD_URL' }
+
+
+

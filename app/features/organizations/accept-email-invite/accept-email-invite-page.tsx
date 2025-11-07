@@ -1,11 +1,11 @@
 import type { Organization, UserAccount } from "@prisma/client";
-import { Loader2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
 
 import { ACCEPT_EMAIL_INVITE_INTENT } from "./accept-email-invite-constants";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
+import { Spinner } from "~/components/ui/spinner";
 
 export type AcceptEmailInvitePageProps = {
   inviterName: UserAccount["name"];
@@ -67,7 +67,7 @@ export function AcceptEmailInvitePage({
             >
               {isAcceptingInvite ? (
                 <>
-                  <Loader2Icon className="animate-spin" />
+                  <Spinner />
                   {t("accepting-invite")}
                 </>
               ) : (

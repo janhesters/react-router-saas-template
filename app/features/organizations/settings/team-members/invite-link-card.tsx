@@ -1,10 +1,5 @@
 import copyToClipboard from "copy-to-clipboard";
-import {
-  AlertTriangleIcon,
-  ClipboardCheckIcon,
-  CopyIcon,
-  Loader2Icon,
-} from "lucide-react";
+import { AlertTriangleIcon, ClipboardCheckIcon, CopyIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
@@ -23,6 +18,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { inputClassName } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
 
 export type InviteLinkCardProps = {
@@ -171,7 +167,7 @@ export function InviteLinkCard({
                 >
                   {isCreatingNewLink ? (
                     <>
-                      <Loader2Icon className="animate-spin" />
+                      <Spinner />
                       {t("regenerating")}
                     </>
                   ) : (
@@ -190,7 +186,7 @@ export function InviteLinkCard({
                 >
                   {isDeactivatingLink ? (
                     <>
-                      <Loader2Icon className="animate-spin" />
+                      <Spinner />
                       {t("deactivating")}
                     </>
                   ) : (
@@ -225,7 +221,7 @@ export function InviteLinkCard({
             >
               {isCreatingNewLink ? (
                 <>
-                  <Loader2Icon className="animate-spin" />
+                  <Spinner />
                   {t("creating")}
                 </>
               ) : (

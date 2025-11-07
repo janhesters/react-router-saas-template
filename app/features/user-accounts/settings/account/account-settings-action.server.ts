@@ -26,7 +26,7 @@ import { combineHeaders } from "~/utils/combine-headers.server";
 import { badRequest } from "~/utils/http-responses.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 const accountSettingsActionSchema = coerceFormValue(
   z.discriminatedUnion("intent", [

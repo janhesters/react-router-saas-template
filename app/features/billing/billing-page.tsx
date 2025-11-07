@@ -1,6 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import type { Organization } from "@prisma/client";
-import { CircleXIcon, Loader2Icon } from "lucide-react";
+import { CircleXIcon } from "lucide-react";
 import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -40,6 +40,7 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { Separator } from "~/components/ui/separator";
+import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
 
 type PendingDowngradeBannerProps = {
@@ -95,7 +96,7 @@ function PendingDowngradeBanner({
         >
           {isKeepingCurrentSubscription ? (
             <>
-              <Loader2Icon className="animate-spin" />
+              <Spinner />
               {t("loading-button")}
             </>
           ) : (
@@ -291,7 +292,7 @@ export function BillingPage({
               >
                 {isResumingSubscription ? (
                   <>
-                    <Loader2Icon className="animate-spin" />
+                    <Spinner />
                     {t("cancel-at-period-end-banner.resuming-subscription")}
                   </>
                 ) : (
@@ -481,7 +482,7 @@ export function BillingPage({
                     >
                       {isViewingInvoices ? (
                         <>
-                          <Loader2Icon className="animate-spin" />
+                          <Spinner />
                           {t("opening-customer-portal")}
                         </>
                       ) : (
@@ -616,7 +617,7 @@ export function BillingPage({
                 >
                   {isCancellingSubscription ? (
                     <>
-                      <Loader2Icon className="animate-spin" />
+                      <Spinner />
                       {t("cancel-subscription-modal.cancelling-subscription")}
                     </>
                   ) : (

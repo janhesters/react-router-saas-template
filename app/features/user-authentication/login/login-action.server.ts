@@ -9,7 +9,7 @@ import { getInstance } from "~/features/localization/i18n-middleware.server";
 import { retrieveUserAccountFromDatabaseByEmail } from "~/features/user-accounts/user-accounts-model.server";
 import { getErrorMessage } from "~/utils/get-error-message";
 import { badRequest } from "~/utils/http-responses.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 const loginSchema = z.discriminatedUnion("intent", [
   loginWithEmailSchema,

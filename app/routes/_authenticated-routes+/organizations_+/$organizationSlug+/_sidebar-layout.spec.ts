@@ -290,14 +290,16 @@ describe("/organizations/:organizationSlug route action", () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          intent: {
-            message: "Invalid input",
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining(["Invalid input"]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: a request with an invalid intent, should: return a 400 with validation errors", async () => {
@@ -318,14 +320,16 @@ describe("/organizations/:organizationSlug route action", () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          intent: {
-            message: "Invalid input",
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining(["Invalid input"]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: no organization ID, should: return a 400 with validation errors", async () => {
@@ -340,14 +344,18 @@ describe("/organizations/:organizationSlug route action", () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          organizationId: {
-            message: "Invalid input: expected string, received undefined",
+        result: {
+          error: {
+            fieldErrors: {
+              organizationId: expect.arrayContaining([
+                expect.stringContaining("expected string, received undefined"),
+              ]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: no current path, should: return a 400 with validation errors", async () => {
@@ -362,14 +370,18 @@ describe("/organizations/:organizationSlug route action", () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          currentPath: {
-            message: "Invalid input: expected string, received undefined",
+        result: {
+          error: {
+            fieldErrors: {
+              currentPath: expect.arrayContaining([
+                expect.stringContaining("expected string, received undefined"),
+              ]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
   });
 
@@ -453,14 +465,18 @@ describe("/organizations/:organizationSlug route action", () => {
         user,
       });
       const expected = badRequest({
-        errors: {
-          recipientId: {
-            message: "Invalid input: expected string, received undefined",
+        result: {
+          error: {
+            fieldErrors: {
+              recipientId: expect.arrayContaining([
+                expect.stringContaining("expected string, received undefined"),
+              ]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: a recipient belonging to another user, should: return a 404", async () => {

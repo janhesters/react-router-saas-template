@@ -19,7 +19,7 @@ const registerIntents = {
 } as const;
 
 const registerWithEmailSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   intent: z.literal(registerIntents.registerWithEmail),
   username: z.string().min(3),
 });
@@ -42,132 +42,220 @@ const testSchema = z
   });
 
 describe("validateFormData()", () => {
-  test("given: valid email registration data, should: return parsed data", async () => {
+  test("given: valid email registration data, should: return success with parsed data and submission", async () => {
+    expect.assertions(4);
+
     const request = createRequest([
       ["intent", "registerWithEmail"],
       ["username", "john_doe"],
       ["email", "john@example.com"],
     ]);
 
-    const actual = await validateFormData(request, testSchema);
-    const expected = {
-      email: "john@example.com",
-      intent: "registerWithEmail",
-      username: "john_doe",
-    };
+    const result = await validateFormData(request, testSchema);
 
-    expect(actual).toEqual(expected);
+    expect(result.success).toEqual(true);
+    if (result.success) {
+      expect(result.data).toEqual({
+        email: "john@example.com",
+        intent: "registerWithEmail",
+        username: "john_doe",
+      });
+      expect(result.submission).toBeDefined();
+      expect(result.submission.payload).toEqual({
+        email: "john@example.com",
+        intent: "registerWithEmail",
+        username: "john_doe",
+      });
+    }
   });
 
-  test("given: valid google registration data, should: return parsed data", async () => {
+  test("given: valid google registration data, should: return success with parsed data", async () => {
+    expect.assertions(2);
+
     const request = createRequest([
       ["intent", "registerWithGoogle"],
       ["username", "john_doe"],
     ]);
 
-    const actual = await validateFormData(request, testSchema);
-    const expected = {
-      intent: "registerWithGoogle",
-      username: "john_doe",
-    };
+    const result = await validateFormData(request, testSchema);
 
-    expect(actual).toEqual(expected);
+    expect(result.success).toEqual(true);
+    if (result.success) {
+      expect(result.data).toEqual({
+        intent: "registerWithGoogle",
+        username: "john_doe",
+      });
+    }
   });
 
-  test("given: missing intent, should: throw badRequest with error for intent", async () => {
+  test("given: missing intent, should: return failure with badRequest response", async () => {
+    expect.assertions(5);
+
     const request = createRequest([
       ["username", "john_doe"],
       ["email", "john@example.com"],
     ]);
 
-    const expectedErrors = {
-      errors: {
-        intent: {
-          message: "Invalid input",
-        },
-      },
-    };
+    const result = await validateFormData(request, testSchema);
 
-    await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: expectedErrors,
-      init: { status: 400 },
-      type: "DataWithResponseInit",
-    });
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+      if (result.response.data.result.error) {
+        expect(
+          result.response.data.result.error.fieldErrors?.intent,
+        ).toBeDefined();
+      }
+    }
   });
 
-  test("given: reserved username, should: throw badRequest with form error", async () => {
+  test("given: reserved username, should: return failure with form-level error", async () => {
+    expect.assertions(6);
+
     const request = createRequest([
       ["intent", "registerWithEmail"],
       ["username", "admin"],
       ["email", "john@example.com"],
     ]);
 
-    const expectedErrors = {
-      errors: { root: { message: 'Username "admin" is reserved' } },
-    };
+    const result = await validateFormData(request, testSchema);
 
-    await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: expectedErrors,
-      init: { status: 400 },
-      type: "DataWithResponseInit",
-    });
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+      // Form-level errors appear in formErrors array
+      if (result.response.data.result.error) {
+        expect(result.response.data.result.error.formErrors).toBeDefined();
+        expect(result.response.data.result.error.formErrors[0]).toContain(
+          'Username "admin" is reserved',
+        );
+      }
+    }
   });
 
-  test("given: email registration with invalid email, should: throw badRequest with error for email", async () => {
+  test("given: email registration with invalid email, should: return failure with field error", async () => {
+    expect.assertions(6);
+
     const request = createRequest([
       ["intent", "registerWithEmail"],
       ["username", "john_doe"],
       ["email", "not-an-email"],
     ]);
 
-    const expectedErrors = {
-      errors: { email: { message: "Invalid email address" } },
-    };
+    const result = await validateFormData(request, testSchema);
 
-    await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: expectedErrors,
-      init: { status: 400 },
-      type: "DataWithResponseInit",
-    });
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+      if (result.response.data.result.error) {
+        expect(
+          result.response.data.result.error.fieldErrors?.email,
+        ).toBeDefined();
+        if (result.response.data.result.error.fieldErrors?.email) {
+          expect(
+            result.response.data.result.error.fieldErrors.email[0],
+          ).toContain("Invalid email");
+        }
+      }
+    }
   });
 
-  test("given: google registration with short username, should: throw badRequest with error for username", async () => {
+  test("given: google registration with short username, should: return failure with custom error message", async () => {
+    expect.assertions(6);
+
     const request = createRequest([
       ["intent", "registerWithGoogle"],
       ["username", "jo"],
     ]);
 
-    const expectedErrors = {
-      errors: {
-        username: { message: "Username must be at least 3 characters long" },
-      },
-    };
+    const result = await validateFormData(request, testSchema);
 
-    await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: expectedErrors,
-      init: { status: 400 },
-      type: "DataWithResponseInit",
-    });
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+      if (result.response.data.result.error) {
+        expect(
+          result.response.data.result.error.fieldErrors?.username,
+        ).toBeDefined();
+        if (result.response.data.result.error.fieldErrors?.username) {
+          expect(
+            result.response.data.result.error.fieldErrors.username[0],
+          ).toContain("Username must be at least 3 characters long");
+        }
+      }
+    }
   });
 
-  test("given: multiple errors including reserved username, should: throw badRequest with form and field errors", async () => {
+  test("given: multiple errors including reserved username, should: return failure with multiple errors", async () => {
+    expect.assertions(6);
+
     const request = createRequest([
       ["intent", "registerWithEmail"],
       ["username", "admin"],
       ["email", "not-an-email"],
     ]);
 
-    const expectedErrors = {
-      errors: {
-        email: { message: "Invalid email address" },
-        root: { message: 'Username "admin" is reserved' },
-      },
-    };
+    const result = await validateFormData(request, testSchema);
 
-    await expect(validateFormData(request, testSchema)).rejects.toEqual({
-      data: expectedErrors,
-      init: { status: 400 },
-      type: "DataWithResponseInit",
-    });
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+      // Should have both email field error and form-level error
+      if (result.response.data.result.error) {
+        expect(
+          result.response.data.result.error.fieldErrors?.email,
+        ).toBeDefined();
+        expect(result.response.data.result.error.formErrors[0]).toContain(
+          'Username "admin" is reserved',
+        );
+      }
+    }
+  });
+
+  test("given: valid data, should: preserve submission payload", async () => {
+    expect.assertions(3);
+
+    const request = createRequest([
+      ["intent", "registerWithEmail"],
+      ["username", "john_doe"],
+      ["email", "john@example.com"],
+    ]);
+
+    const result = await validateFormData(request, testSchema);
+
+    expect(result.success).toEqual(true);
+    if (result.success) {
+      expect(result.submission).toBeDefined();
+      expect(result.submission.payload).toEqual({
+        email: "john@example.com",
+        intent: "registerWithEmail",
+        username: "john_doe",
+      });
+    }
+  });
+
+  test("given: empty form data, should: return failure with validation errors", async () => {
+    expect.assertions(4);
+
+    const request = createRequest([]);
+
+    const result = await validateFormData(request, testSchema);
+
+    expect(result.success).toEqual(false);
+    if (!result.success) {
+      expect(result.response).toBeDefined();
+      expect(result.response.init?.status).toEqual(400);
+      expect(result.response.data.result.error).toBeDefined();
+    }
   });
 });

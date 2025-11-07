@@ -27,7 +27,10 @@ export async function acceptInviteLinkAction({
 }: Route.ActionArgs) {
   try {
     const i18n = getInstance(context);
-    const data = await validateFormData(request, acceptInviteLinkSchema);
+    const result = await validateFormData(request, acceptInviteLinkSchema);
+    if (!result.success) return result.response;
+
+    const data = result.data;
 
     switch (data.intent) {
       case ACCEPT_INVITE_LINK_INTENT: {

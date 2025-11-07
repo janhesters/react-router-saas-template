@@ -30,7 +30,10 @@ export async function acceptEmailInviteAction({
 }: Route.ActionArgs) {
   try {
     const i18n = getInstance(context);
-    const data = await validateFormData(request, acceptEmailInviteSchema);
+    const result = await validateFormData(request, acceptEmailInviteSchema);
+    if (!result.success) return result.response;
+
+    const data = result.data;
 
     switch (data.intent) {
       case ACCEPT_EMAIL_INVITE_INTENT: {

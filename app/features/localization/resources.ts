@@ -7,12 +7,6 @@ import colorScheme from "../../../public/locales/en/color-scheme.json" with {
 import common from "../../../public/locales/en/common.json" with {
   type: "json",
 };
-import dragAndDrop from "../../../public/locales/en/drag-and-drop.json" with {
-  type: "json",
-};
-import dropzone from "../../../public/locales/en/dropzone.json" with {
-  type: "json",
-};
 import landing from "../../../public/locales/en/landing.json" with {
   type: "json",
 };
@@ -39,8 +33,6 @@ export const resources = {
     billing,
     "color-scheme": colorScheme,
     common,
-    "drag-and-drop": dragAndDrop,
-    dropzone,
     landing,
     notifications,
     onboarding,

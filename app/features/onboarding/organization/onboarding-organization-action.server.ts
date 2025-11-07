@@ -9,7 +9,7 @@ import { uploadOrganizationLogo } from "~/features/organizations/organizations-h
 import { saveOrganizationWithOwnerToDatabase } from "~/features/organizations/organizations-model.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { slugify } from "~/utils/slugify.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 export async function onboardingOrganizationAction({
   request,

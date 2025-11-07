@@ -1,4 +1,4 @@
-import { CheckIcon, Loader2Icon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import type { ComponentProps, MouseEventHandler } from "react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -27,6 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { Spinner } from "~/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export type CancelOrModifySubscriptionModalContentProps = {
@@ -97,12 +98,12 @@ export function CancelOrModifySubscriptionModalContent({
     if (switchingToThisTier) {
       const label = isUpgrade ? (
         <>
-          <Loader2Icon className="animate-spin" />
+          <Spinner />
           {tModal("upgrading")}
         </>
       ) : (
         <>
-          <Loader2Icon className="animate-spin" />
+          <Spinner />
           {tModal("downgrading")}
         </>
       );

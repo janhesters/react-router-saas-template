@@ -95,14 +95,18 @@ describe("/organizations/invite-link route action", () => {
 
       const actual = await sendRequest({ formData });
       const expected = badRequest({
-        errors: {
-          intent: {
-            message: 'Invalid input: expected "acceptInviteLink"',
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining([
+                'Invalid input: expected "acceptInviteLink"',
+              ]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: an unauthenticated request with no token, should: return a 400 response with an error message and a toast header", async () => {
@@ -182,14 +186,18 @@ describe("/organizations/invite-link route action", () => {
         userAccount: user,
       });
       const expected = badRequest({
-        errors: {
-          intent: {
-            message: 'Invalid input: expected "acceptInviteLink"',
+        result: {
+          error: {
+            fieldErrors: {
+              intent: expect.arrayContaining([
+                'Invalid input: expected "acceptInviteLink"',
+              ]),
+            },
           },
         },
       });
 
-      expect(actual).toEqual(expected);
+      expect(actual).toMatchObject(expected);
     });
 
     test("given: an authenticated request with invalid token, should: return a 400 response with an error message and a toast header", async () => {

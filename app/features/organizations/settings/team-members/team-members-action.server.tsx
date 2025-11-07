@@ -38,7 +38,7 @@ import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest, created, forbidden } from "~/utils/http-responses.server";
 import { createToastHeaders } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 const schema = z.discriminatedUnion("intent", [
   inviteByEmailSchema,

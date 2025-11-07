@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: Checks ensure for null values */
-import { CheckIcon, Loader2Icon } from "lucide-react";
+import { CheckIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -28,6 +28,7 @@ import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
+import { Spinner } from "~/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export type CreateSubscriptionModalContentProps = {
@@ -88,7 +89,7 @@ export function CreateSubscriptionModalContent({
     return {
       children: isSubscribing ? (
         <>
-          <Loader2Icon className="animate-spin" />
+          <Spinner />
           {tModal("tier-card-busy")}
         </>
       ) : (

@@ -45,7 +45,7 @@ import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-ini
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
 import { badRequest, conflict, forbidden } from "~/utils/http-responses.server";
 import { createToastHeaders } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 const schema = z.discriminatedUnion("intent", [
   cancelSubscriptionSchema,

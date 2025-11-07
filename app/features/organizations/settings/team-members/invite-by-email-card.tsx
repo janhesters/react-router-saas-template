@@ -1,7 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
 import { OrganizationMembershipRole } from "@prisma/client";
-import { Loader2Icon } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
@@ -26,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Spinner } from "~/components/ui/spinner";
 
 export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;
@@ -155,7 +155,7 @@ export function EmailInviteCard({
         >
           {isInvitingByEmail ? (
             <>
-              <Loader2Icon className="animate-spin" />
+              <Spinner />
               {t("form.inviting")}
             </>
           ) : (

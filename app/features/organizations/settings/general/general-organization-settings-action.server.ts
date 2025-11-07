@@ -26,7 +26,7 @@ import { forbidden } from "~/utils/http-responses.server";
 import { slugify } from "~/utils/slugify.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 const generalOrganizationSettingsActionSchema = coerceFormValue(
   z.discriminatedUnion("intent", [

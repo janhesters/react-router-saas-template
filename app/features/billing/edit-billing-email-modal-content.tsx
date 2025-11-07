@@ -1,6 +1,5 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
-import { Loader2Icon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 
@@ -16,6 +15,7 @@ import {
 } from "~/components/ui/dialog";
 import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
+import { Spinner } from "~/components/ui/spinner";
 
 type EditBillingEmailModalContentProps = {
   billingEmail: string;
@@ -82,7 +82,7 @@ export function EditBillingEmailModalContent({
         >
           {isUpdatingBillingEmail ? (
             <>
-              <Loader2Icon className="animate-spin" />
+              <Spinner />
               {t("saving-changes")}
             </>
           ) : (

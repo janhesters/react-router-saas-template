@@ -9,7 +9,7 @@ import { saveOrganizationWithOwnerToDatabase } from "~/features/organizations/or
 import { requireAuthenticatedUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { slugify } from "~/utils/slugify.server";
-import { validateFormData } from "~/utils/validate-form-data-conform.server";
+import { validateFormData } from "~/utils/validate-form-data.server";
 
 export async function createOrganizationAction({
   context,
