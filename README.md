@@ -528,6 +528,58 @@ terminal open, replay the Stripe events in a third terminal.
 npm run stripe:resend-events
 ```
 
+### Security Configuration
+
+This application implements Content Security Policy (CSP) with nonces for XSS
+protection and provides control over search engine indexing.
+
+#### ALLOW_INDEXING Environment Variable
+
+Controls whether search engines can index your site. The application uses two
+mechanisms to prevent indexing:
+
+- **HTTP Header:** `X-Robots-Tag: noindex, nofollow`
+- **HTML Meta Tag:** `<meta name="robots" content="noindex, nofollow">`
+
+**Values:**
+
+- `"true"` - Allow search engine indexing (recommended for production)
+- `"false"` - Prevent search engine indexing (recommended for
+  staging/dev/preview environments)
+- Omitted - Defaults to allowing indexing
+
+**Example:**
+
+```bash
+# Production
+ALLOW_INDEXING=true
+
+# Staging/Development/Preview
+ALLOW_INDEXING=false
+```
+
+**When to Use:**
+
+| Environment         | Recommended Value | Reason                                                       |
+| ------------------- | ----------------- | ------------------------------------------------------------ |
+| **Production**      | `"true"` or omit  | Allow search engines to index your public site               |
+| **Staging**         | `"false"`         | Prevent duplicate content and indexing of test environments  |
+| **Development**     | `"false"`         | Prevent local development sites from being indexed           |
+| **Preview/PR**      | `"false"`         | Prevent temporary preview deployments from being indexed     |
+
+#### Content Security Policy (CSP)
+
+The application uses nonces for CSP compliance. All inline scripts are protected
+by cryptographically random nonces that are generated on each request.
+
+**Configuration:**
+
+- CSP is in **report-only mode** in development and test environments
+- CSP is **enforced** in production
+- All inline scripts require a valid nonce attribute
+- WebSocket connections are allowed in development for Hot Module Replacement
+  (HMR)
+
 ### Project helper scripts
 
 - `"build"` - Compiles the application using React Router's build process.

@@ -6,6 +6,8 @@ import {
   INVITE_BY_EMAIL_INTENT,
 } from "./team-members-constants";
 
+z.config({ jitless: true });
+
 export const inviteByEmailSchema = z.object({
   email: z.email({
     message:

@@ -35,6 +35,8 @@ import { cn } from "./lib/utils";
 import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
 import { honeypot } from "./utils/honeypot.server";
+import { useNonce } from "./utils/nonce-provider";
+import { securityMiddleware } from "./utils/security-middleware.server";
 import { getToast } from "./utils/toast.server";
 
 export const links: Route.LinksFunction = () => [
@@ -57,7 +59,7 @@ export const shouldRevalidate = ({
   return defaultShouldRevalidate;
 };
 
-export const middleware = [i18nextMiddleware];
+export const middleware = [securityMiddleware, i18nextMiddleware];
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { colorScheme, honeypotInputProps, toastData } = await promiseHash({
@@ -90,6 +92,7 @@ export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
   const data = useLoaderData<typeof loader>();
+  const nonce = useNonce();
   const locale = data?.locale ?? "en";
   const error = useRouteError();
   const isErrorFromRoute = isRouteErrorResponse(error);
@@ -106,6 +109,9 @@ export function Layout({
   useChangeLanguage(locale);
   useToast(data?.toast);
 
+  // Control search engine indexing via meta tag
+  const allowIndexing = data?.ENV.ALLOW_INDEXING !== "false";
+
   return (
     <html
       className={cn(colorScheme, hideOverflow && "overflow-y-hidden")}
@@ -115,6 +121,12 @@ export function Layout({
       <head>
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
+
+        {/* Prevent search engine indexing when ALLOW_INDEXING=false */}
+        {allowIndexing ? null : (
+          <meta content="noindex, nofollow" name="robots" />
+        )}
+
         <Meta />
         <Links />
         {isErrorFromRoute && (
@@ -132,6 +144,8 @@ export function Layout({
             {children}
           </HoneypotProvider>
         </FormOptionsProvider>
+
+        {/* Add nonce to inline scripts */}
         <script
           /**
            * biome-ignore lint/security/noDangerouslySetInnerHtml: This is how
@@ -141,9 +155,12 @@ export function Layout({
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {})}`,
           }}
+          nonce={nonce}
         />
-        <ScrollRestoration />
-        <Scripts />
+
+        {/* React Router's built-in components accept nonce prop */}
+        <ScrollRestoration nonce={nonce} />
+        <Scripts nonce={nonce} />
         <Toaster position="bottom-right" />
       </body>
     </html>

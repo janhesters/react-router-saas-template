@@ -7,6 +7,8 @@ import {
   NOTIFICATION_PANEL_OPENED_INTENT,
 } from "./notification-constants";
 
+z.config({ jitless: true });
+
 /* Notification types */
 
 export const linkNotificationDataSchema = z.object({

@@ -10,6 +10,7 @@
     "@aws-sdk/s3-request-presigner": "3.922.0",
     "@conform-to/react": "1.13.2",
     "@conform-to/zod": "1.13.2",
+    "@nichtsam/helmet": "0.3.1",
     "@oslojs/crypto": "1.0.1",
     "@oslojs/encoding": "1.1.0",
     "@paralleldrive/cuid2": "3.0.4",

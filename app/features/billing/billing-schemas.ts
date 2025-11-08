@@ -10,6 +10,8 @@ import {
   VIEW_INVOICES_INTENT,
 } from "./billing-constants";
 
+z.config({ jitless: true });
+
 export const cancelSubscriptionSchema = z.object({
   intent: z.literal(CANCEL_SUBSCRIPTION_INTENT),
 });

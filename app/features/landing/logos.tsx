@@ -31,39 +31,81 @@ export function Logos() {
         {/* Marquee with fading edges */}
         <Marquee className="max-w-full">
           {[
-            <>
-              <RRLockupDarkIcon className="hidden h-24 w-auto dark:block" />
-              <RRLockupLightIcon className="block h-24 w-auto dark:hidden" />
-            </>,
-            <SiTypescript className="size-16" key="ts" title="TypeScript" />,
-            <SiSupabase className="size-16" key="supabase" title="Supabase" />,
-            <FaStripe className="size-16" key="stripe" title="Stripe" />,
-            <SiTailwindcss
-              className="size-16"
-              key="tailwind"
-              title="Tailwind CSS"
-            />,
-            <SiShadcnui className="size-16" key="shadcn" title="shadcn/ui" />,
-            <SiVitest className="size-16" key="vitest" title="Vitest" />,
-            <PlaywrightIcon className="size-16" key="playwright" />,
-            <SiPostgresql className="size-16" key="pg" title="PostgreSQL" />,
-            <SiPrisma className="size-16" key="prisma" title="Prisma" />,
-            <SiMockserviceworker
-              className="size-16"
-              key="msw"
-              title="MSW (Mock Service Worker)"
-            />,
-            <SiTestinglibrary
-              className="size-16"
-              key="rtl"
-              title="React Testing Library"
-            />,
-            <SiEslint className="size-16" key="eslint" title="ESLint" />,
-            <SiPrettier className="size-16" key="prettier" title="Prettier" />,
-          ].map((icon) => (
+            {
+              icon: (
+                <>
+                  <RRLockupDarkIcon className="hidden h-24 w-auto dark:block" />
+                  <RRLockupLightIcon className="block h-24 w-auto dark:hidden" />
+                </>
+              ),
+              key: "react-router",
+            },
+            {
+              icon: <SiTypescript className="size-16" title="TypeScript" />,
+              key: "typescript",
+            },
+            {
+              icon: <SiSupabase className="size-16" title="Supabase" />,
+              key: "supabase",
+            },
+            {
+              icon: <FaStripe className="size-16" title="Stripe" />,
+              key: "stripe",
+            },
+            {
+              icon: <SiTailwindcss className="size-16" title="Tailwind CSS" />,
+              key: "tailwind",
+            },
+            {
+              icon: <SiShadcnui className="size-16" title="shadcn/ui" />,
+              key: "shadcn",
+            },
+            {
+              icon: <SiVitest className="size-16" title="Vitest" />,
+              key: "vitest",
+            },
+            {
+              icon: <PlaywrightIcon className="size-16" />,
+              key: "playwright",
+            },
+            {
+              icon: <SiPostgresql className="size-16" title="PostgreSQL" />,
+              key: "postgresql",
+            },
+            {
+              icon: <SiPrisma className="size-16" title="Prisma" />,
+              key: "prisma",
+            },
+            {
+              icon: (
+                <SiMockserviceworker
+                  className="size-16"
+                  title="MSW (Mock Service Worker)"
+                />
+              ),
+              key: "msw",
+            },
+            {
+              icon: (
+                <SiTestinglibrary
+                  className="size-16"
+                  title="React Testing Library"
+                />
+              ),
+              key: "rtl",
+            },
+            {
+              icon: <SiEslint className="size-16" title="ESLint" />,
+              key: "eslint",
+            },
+            {
+              icon: <SiPrettier className="size-16" title="Prettier" />,
+              key: "prettier",
+            },
+          ].map(({ key, icon }) => (
             <div
               className="flex size-32 items-center justify-center text-4xl opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
-              key={icon.toString()}
+              key={key}
             >
               {icon}
             </div>
