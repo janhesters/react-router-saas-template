@@ -5,7 +5,6 @@ import { expect, test } from "@playwright/test";
 import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
-  enableClientMswMocks,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -54,8 +53,6 @@ test.describe("new organization page", () => {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
       });
-
-      await enableClientMswMocks({ page });
 
       await page.goto(path);
 
@@ -143,8 +140,6 @@ test.describe("new organization page", () => {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
       });
-
-      await enableClientMswMocks({ page });
 
       await page.goto(path);
 

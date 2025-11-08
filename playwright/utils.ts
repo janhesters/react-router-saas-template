@@ -313,33 +313,6 @@ export async function setupEmailInviteCookie({
 }
 
 /**
- * Enables MSW mocks for the client.
- * NOTE: This can make the test flaky because it takes time for JavaScript
- * and CSS to load because MSW is slowing down the loading of the page.
- * You might need to repeat inputs (e.g. typing, clicking) multiple times to
- * make sure the test isn't flaky when using this function.
- *
- * @param page - The Playwright page to add the init script to.
- *
- * @example
- * ```ts
- * await enableClientMswMocks({ page });
- * await page.goto('/');
- * await page.fill('input[name="email"]', 'test@example.com');
- * await page.click('button[type="submit"]');
- * ```
- */
-export async function enableClientMswMocks({ page }: { page: Page }) {
-  await page.addInitScript(() => {
-    // This code is executed in the browser's global scope
-    globalThis.__ENABLE_MSW__ = true;
-
-    // Add a console log inside the browser context for confirmation
-    console.log("Playwright init script: Set globalThis.__ENABLE_MSW__ = true");
-  });
-}
-
-/**
  * Defines valid JSON data structures for type-safe parsing.
  */
 export type Json =

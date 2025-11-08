@@ -1,6 +1,15 @@
 name: Pull Request
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -167,7 +176,7 @@ jobs:
         run: npm run prisma:wipe
 
       - name: 🏗️ Build Application (with mocks)
-        run: npm run build-with-mocks
+        run: npm run build
 
       - name: 🎭 Playwright Run Chrome
         run: npx playwright test --project=chromium

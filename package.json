@@ -102,7 +102,6 @@
   "private": true,
   "scripts": {
     "build": "react-router build",
-    "build-with-mocks": "react-router build && npx msw init ./build/client --no-save",
     "check": "biome check --write .",
     "dev": "react-router dev",
     "dev-with-mocks": "cross-env VITE_CLIENT_MOCKS=true SERVER_MOCKS=true npm run dev",
