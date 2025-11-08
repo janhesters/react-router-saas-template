@@ -158,7 +158,7 @@ describe("/login route action", () => {
               error: {
                 fieldErrors: {
                   email: expect.arrayContaining([
-                    "user-authentication:login.errors.invalidEmail",
+                    "userAuthentication:login.errors.invalidEmail",
                   ]),
                 },
               },
@@ -180,7 +180,7 @@ describe("/login route action", () => {
             error: {
               fieldErrors: {
                 email: expect.arrayContaining([
-                  "user-authentication:login.form.user-doesnt-exist",
+                  "userAuthentication:login.form.userDoesntExist",
                 ]),
               },
             },
@@ -207,7 +207,7 @@ describe("/login route action", () => {
             error: {
               fieldErrors: {
                 email: expect.arrayContaining([
-                  "user-authentication:login.form.login-failed",
+                  "userAuthentication:login.form.loginFailed",
                 ]),
               },
             },

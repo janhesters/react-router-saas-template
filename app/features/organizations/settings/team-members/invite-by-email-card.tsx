@@ -43,7 +43,7 @@ export function EmailInviteCard({
   successEmail,
 }: EmailInviteCardProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.team-members.invite-by-email",
+    keyPrefix: "settings.teamMembers.inviteByEmail",
   });
 
   const { form, fields, intent } = useForm({
@@ -63,9 +63,9 @@ export function EmailInviteCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("card-title")}</CardTitle>
+        <CardTitle>{t("cardTitle")}</CardTitle>
 
-        <CardDescription>{t("card-description")}</CardDescription>
+        <CardDescription>{t("cardDescription")}</CardDescription>
       </CardHeader>
 
       <CardContent>
@@ -86,7 +86,7 @@ export function EmailInviteCard({
                     autoComplete="email"
                     defaultValue=""
                     key={successEmail}
-                    placeholder={t("form.email-placeholder")}
+                    placeholder={t("form.emailPlaceholder")}
                     type="email"
                   />
                 </Field>
@@ -109,21 +109,21 @@ export function EmailInviteCard({
                       className="min-w-28"
                       id={fields.role.id}
                     >
-                      <SelectValue placeholder={t("form.role-placeholder")} />
+                      <SelectValue placeholder={t("form.rolePlaceholder")} />
                     </SelectTrigger>
 
                     <SelectContent align="end">
                       <SelectItem value={OrganizationMembershipRole.member}>
-                        {t("form.role-member")}
+                        {t("form.roleMember")}
                       </SelectItem>
 
                       <SelectItem value={OrganizationMembershipRole.admin}>
-                        {t("form.role-admin")}
+                        {t("form.roleAdmin")}
                       </SelectItem>
 
                       {currentUserIsOwner && (
                         <SelectItem value={OrganizationMembershipRole.owner}>
-                          {t("form.role-owner")}
+                          {t("form.roleOwner")}
                         </SelectItem>
                       )}
                     </SelectContent>
@@ -159,7 +159,7 @@ export function EmailInviteCard({
               {t("form.inviting")}
             </>
           ) : (
-            t("form.submit-button")
+            t("form.submitButton")
           )}
         </Button>
       </CardFooter>

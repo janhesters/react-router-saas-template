@@ -4,7 +4,7 @@ import { href, redirect } from "react-router";
 import { requireUserNeedsOnboarding } from "../onboarding-helpers.server";
 import { onboardingUserAccountSchema } from "./onboarding-user-account-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/onboarding+/+types/user-account";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { destroyEmailInviteInfoSession } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
 import { destroyInviteLinkInfoSession } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
 import { updateEmailInviteLinkInDatabaseById } from "~/features/organizations/organizations-email-invite-link-model.server";
@@ -69,14 +69,12 @@ export async function onboardingUserAccountAction({
       }),
       {
         description: i18n.t(
-          "organizations:accept-invite-link.join-success-toast-description",
+          "organizations:acceptInviteLink.joinSuccessToastDescription",
           {
             organizationName: inviteLinkInfo.organizationName,
           },
         ),
-        title: i18n.t(
-          "organizations:accept-invite-link.join-success-toast-title",
-        ),
+        title: i18n.t("organizations:acceptInviteLink.joinSuccessToastTitle"),
         type: "success",
       },
       {

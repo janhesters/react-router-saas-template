@@ -59,7 +59,7 @@ function PendingDowngradeBanner({
   isSubmitting,
 }: PendingDowngradeBannerProps) {
   const { t, i18n } = useTranslation("billing", {
-    keyPrefix: "billing-page.pending-downgrade-banner",
+    keyPrefix: "billingPage.pendingDowngradeBanner",
   });
   const { t: tTier } = useTranslation("billing", {
     keyPrefix: "pricing.plans",
@@ -97,7 +97,7 @@ function PendingDowngradeBanner({
           {isKeepingCurrentSubscription ? (
             <>
               <Spinner />
-              {t("loading-button")}
+              {t("loadingButton")}
             </>
           ) : (
             t("button")
@@ -158,7 +158,7 @@ export function BillingPage({
   projectedTotal,
   subscriptionStatus,
 }: BillingPageProps) {
-  const { t, i18n } = useTranslation("billing", { keyPrefix: "billing-page" });
+  const { t, i18n } = useTranslation("billing", { keyPrefix: "billingPage" });
   const { t: tTier } = useTranslation("billing", {
     keyPrefix: "pricing.plans",
   });
@@ -215,10 +215,10 @@ export function BillingPage({
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
+          <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
 
           <p className="text-muted-foreground text-sm">
-            {t("page-description")}
+            {t("pageDescription")}
           </p>
         </div>
 
@@ -232,11 +232,11 @@ export function BillingPage({
                 variant="destructive"
               >
                 <AlertTitle>
-                  {t("subscription-cancelled-banner.title")}
+                  {t("subscriptionCancelledBanner.title")}
                 </AlertTitle>
 
                 <AlertDescription>
-                  {t("subscription-cancelled-banner.description")}
+                  {t("subscriptionCancelledBanner.description")}
                 </AlertDescription>
 
                 <DialogTrigger asChild>
@@ -244,7 +244,7 @@ export function BillingPage({
                     className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
                     size="sm"
                   >
-                    {t("subscription-cancelled-banner.button")}
+                    {t("subscriptionCancelledBanner.button")}
                   </Button>
                 </DialogTrigger>
               </Alert>
@@ -253,12 +253,12 @@ export function BillingPage({
             <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
               <DialogHeader>
                 <DialogTitle>
-                  {t("subscription-cancelled-banner.modal.title")}
+                  {t("subscriptionCancelledBanner.modal.title")}
                 </DialogTitle>
 
                 <VisuallyHiddenPrimitive.Root>
                   <DialogDescription>
-                    {t("subscription-cancelled-banner.modal.description")}
+                    {t("subscriptionCancelledBanner.modal.description")}
                   </DialogDescription>
                 </VisuallyHiddenPrimitive.Root>
               </DialogHeader>
@@ -274,10 +274,10 @@ export function BillingPage({
               className="flex flex-col gap-2 @xl/alert:block"
               variant="destructive"
             >
-              <AlertTitle>{t("cancel-at-period-end-banner.title")}</AlertTitle>
+              <AlertTitle>{t("cancelAtPeriodEndBanner.title")}</AlertTitle>
 
               <AlertDescription>
-                {t("cancel-at-period-end-banner.description", {
+                {t("cancelAtPeriodEndBanner.description", {
                   date: formattedDate,
                 })}
               </AlertDescription>
@@ -293,10 +293,10 @@ export function BillingPage({
                 {isResumingSubscription ? (
                   <>
                     <Spinner />
-                    {t("cancel-at-period-end-banner.resuming-subscription")}
+                    {t("cancelAtPeriodEndBanner.resumingSubscription")}
                   </>
                 ) : (
-                  t("cancel-at-period-end-banner.button")
+                  t("cancelAtPeriodEndBanner.button")
                 )}
               </Button>
             </Alert>
@@ -312,10 +312,10 @@ export function BillingPage({
             <Dialog>
               <div className="@container/alert">
                 <Alert className="flex flex-col gap-2 @xl/alert:block">
-                  <AlertTitle>{t("free-trial-banner.title")}</AlertTitle>
+                  <AlertTitle>{t("freeTrialBanner.title")}</AlertTitle>
 
                   <AlertDescription>
-                    {t("free-trial-banner.description", {
+                    {t("freeTrialBanner.description", {
                       date: formattedDate,
                     })}
                   </AlertDescription>
@@ -325,7 +325,7 @@ export function BillingPage({
                       className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
                       size="sm"
                     >
-                      {t("free-trial-banner.button")}
+                      {t("freeTrialBanner.button")}
                     </Button>
                   </DialogTrigger>
                 </Alert>
@@ -333,13 +333,11 @@ export function BillingPage({
 
               <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
                 <DialogHeader>
-                  <DialogTitle>
-                    {t("free-trial-banner.modal.title")}
-                  </DialogTitle>
+                  <DialogTitle>{t("freeTrialBanner.modal.title")}</DialogTitle>
 
                   <VisuallyHiddenPrimitive.Root>
                     <DialogDescription>
-                      {t("free-trial-banner.modal.description")}
+                      {t("freeTrialBanner.modal.description")}
                     </DialogDescription>
                   </VisuallyHiddenPrimitive.Root>
                 </DialogHeader>
@@ -354,7 +352,7 @@ export function BillingPage({
 
         <div>
           <h3 className="text-base font-medium">
-            {t("plan-information.heading")}
+            {t("planInformation.heading")}
           </h3>
 
           <Form method="POST" replace>
@@ -365,7 +363,7 @@ export function BillingPage({
                   <DescriptionListRow className="flex-col @xl/form:grid @xl/form:grid-cols-[auto_1fr]">
                     <div className="flex items-center justify-between">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t("plan-information.current-plan")}
+                        {t("planInformation.currentPlan")}
                       </DescriptionTerm>
 
                       <Button
@@ -375,7 +373,7 @@ export function BillingPage({
                         type="button"
                         variant="outline"
                       >
-                        {t("plan-information.manage-plan")}
+                        {t("planInformation.managePlan")}
                       </Button>
                     </div>
 
@@ -392,9 +390,10 @@ export function BillingPage({
                             }}
                             i18nKey={
                               currentInterval === "monthly"
-                                ? "billing:billing-page.plan-information.rate-format-monthly"
-                                : "billing:billing-page.plan-information.rate-format-annual"
+                                ? "billingPage.planInformation.rateFormatMonthly"
+                                : "billingPage.planInformation.rateFormatAnnual"
                             }
+                            ns="billing"
                             values={{ amount: currentMonthlyRatePerUser }}
                           />
                         </DescriptionDetail>
@@ -407,7 +406,7 @@ export function BillingPage({
                         type="button"
                         variant="outline"
                       >
-                        {t("plan-information.manage-plan")}
+                        {t("planInformation.managePlan")}
                       </Button>
                     </div>
                   </DescriptionListRow>
@@ -418,7 +417,7 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t("plan-information.users")}
+                        {t("planInformation.users")}
                       </DescriptionTerm>
 
                       <DescriptionDetail
@@ -426,7 +425,7 @@ export function BillingPage({
                           currentSeats > maxSeats && "text-destructive",
                         )}
                       >
-                        {t("plan-information.users-format", {
+                        {t("planInformation.usersFormat", {
                           current: currentSeats,
                           max: maxSeats,
                         })}
@@ -440,7 +439,7 @@ export function BillingPage({
                           { organizationSlug },
                         )}
                       >
-                        {t("plan-information.manage-users")}
+                        {t("planInformation.manageUsers")}
                       </Link>
                     </Button>
                   </DescriptionListRow>
@@ -450,11 +449,11 @@ export function BillingPage({
                   {/* Projected Total */}
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10 @xl/form:justify-start">
                     <DescriptionTerm className="@xl/form:w-36">
-                      {t("plan-information.projected-total")}
+                      {t("planInformation.projectedTotal")}
                     </DescriptionTerm>
 
                     <DescriptionDetail>
-                      {t("plan-information.amount-format", {
+                      {t("planInformation.amountFormat", {
                         amount: projectedTotal,
                       })}
                     </DescriptionDetail>
@@ -466,7 +465,7 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t("plan-information.next-billing-date")}
+                        {t("planInformation.nextBillingDate")}
                       </DescriptionTerm>
 
                       <DescriptionDetail>{formattedDate}</DescriptionDetail>
@@ -483,10 +482,10 @@ export function BillingPage({
                       {isViewingInvoices ? (
                         <>
                           <Spinner />
-                          {t("opening-customer-portal")}
+                          {t("openingCustomerPortal")}
                         </>
                       ) : (
-                        t("plan-information.view-invoices")
+                        t("planInformation.viewInvoices")
                       )}
                     </Button>
                   </DescriptionListRow>
@@ -499,7 +498,7 @@ export function BillingPage({
         {billingEmail && (
           <div>
             <h3 className="text-base font-medium">
-              {t("payment-information.heading")}
+              {t("paymentInformation.heading")}
             </h3>
 
             <div className="@container/form">
@@ -509,7 +508,7 @@ export function BillingPage({
                   <DescriptionListRow className="items-center justify-between @xl/form:h-10">
                     <div className="flex flex-col gap-2 @xl/form:flex-row">
                       <DescriptionTerm className="@xl/form:w-36">
-                        {t("payment-information.billing-email")}
+                        {t("paymentInformation.billingEmail")}
                       </DescriptionTerm>
 
                       <DescriptionDetail>{billingEmail}</DescriptionDetail>
@@ -518,7 +517,7 @@ export function BillingPage({
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="outline">
-                          {t("payment-information.edit-button")}
+                          {t("paymentInformation.editButton")}
                         </Button>
                       </DialogTrigger>
 
@@ -541,11 +540,11 @@ export function BillingPage({
         >
           <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
             <DialogHeader>
-              <DialogTitle>{t("pricing-modal.title")}</DialogTitle>
+              <DialogTitle>{t("pricingModal.title")}</DialogTitle>
 
               <VisuallyHiddenPrimitive.Root>
                 <DialogDescription>
-                  {t("pricing-modal.description")}
+                  {t("pricingModal.description")}
                 </DialogDescription>
               </VisuallyHiddenPrimitive.Root>
             </DialogHeader>
@@ -573,17 +572,17 @@ export function BillingPage({
         <Dialog onOpenChange={setIsCancelModalOpen} open={isCancelModalOpen}>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("cancel-subscription-modal.title")}</DialogTitle>
+              <DialogTitle>{t("cancelSubscriptionModal.title")}</DialogTitle>
 
               <DialogDescription>
-                {t("cancel-subscription-modal.description")}
+                {t("cancelSubscriptionModal.description")}
               </DialogDescription>
             </DialogHeader>
 
             <div className="py-4">
               <ul className="flex flex-col gap-2">
                 {(
-                  t("cancel-subscription-modal.features", {
+                  t("cancelSubscriptionModal.features", {
                     returnObjects: true,
                   }) as string[]
                 ).map((feature) => (
@@ -604,7 +603,7 @@ export function BillingPage({
                 }}
                 variant="outline"
               >
-                {t("cancel-subscription-modal.change-plan")}
+                {t("cancelSubscriptionModal.changePlan")}
               </Button>
 
               <Form method="POST" replace>
@@ -618,10 +617,10 @@ export function BillingPage({
                   {isCancellingSubscription ? (
                     <>
                       <Spinner />
-                      {t("cancel-subscription-modal.cancelling-subscription")}
+                      {t("cancelSubscriptionModal.cancellingSubscription")}
                     </>
                   ) : (
-                    t("cancel-subscription-modal.confirm")
+                    t("cancelSubscriptionModal.confirm")
                   )}
                 </Button>
               </Form>

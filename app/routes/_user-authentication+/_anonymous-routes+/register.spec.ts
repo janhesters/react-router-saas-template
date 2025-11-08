@@ -154,7 +154,7 @@ describe("/register route action", () => {
               error: {
                 fieldErrors: {
                   email: expect.arrayContaining([
-                    "user-authentication:register.errors.invalidEmail",
+                    "userAuthentication:register.errors.invalidEmail",
                   ]),
                 },
               },
@@ -181,7 +181,7 @@ describe("/register route action", () => {
             error: {
               fieldErrors: {
                 email: expect.arrayContaining([
-                  "user-authentication:register.form.user-already-exists",
+                  "userAuthentication:register.form.userAlreadyExists",
                 ]),
               },
             },
@@ -203,7 +203,7 @@ describe("/register route action", () => {
             error: {
               fieldErrors: {
                 email: expect.arrayContaining([
-                  "user-authentication:register.form.registration-failed",
+                  "userAuthentication:register.form.registrationFailed",
                 ]),
               },
             },

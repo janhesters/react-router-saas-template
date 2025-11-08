@@ -37,11 +37,11 @@ export const switchSubscriptionSchema = z.object({
 export const updateBillingEmailSchema = z.object({
   billingEmail: z
     .email({
-      message: "billing:billing-page.update-billing-email-modal.email-invalid",
+      message: "billing:billingPage.updateBillingEmailModal.emailInvalid",
     })
     .trim()
     .min(1, {
-      message: "billing:billing-page.update-billing-email-modal.email-required",
+      message: "billing:billingPage.updateBillingEmailModal.emailRequired",
     }),
   intent: z.literal(UPDATE_BILLING_EMAIL_INTENT),
 });

@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireOnboardedUserAccountExists } from "~/features/onboarding/onboarding-helpers.server";
 import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
@@ -35,7 +35,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     memberships: user.memberships,
     title: getPageTitle(
       i18n.t.bind(i18n),
-      "organizations:organizations-list.title",
+      "organizations:organizationsList.title",
     ),
   };
 }
@@ -49,14 +49,14 @@ export default function OrganizationsRoute({
 }: Route.ComponentProps) {
   const { memberships } = loaderData;
   const { t } = useTranslation("organizations", {
-    keyPrefix: "organizations-list",
+    keyPrefix: "organizationsList",
   });
 
   return (
     <>
       <header className="flex h-(--header-height) items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
-          <h1 className="text-base font-medium">{t("page-title")}</h1>
+          <h1 className="text-base font-medium">{t("pageTitle")}</h1>
 
           <ThemeToggle />
         </div>
@@ -65,9 +65,9 @@ export default function OrganizationsRoute({
       <main className="mx-auto max-w-xl p-4 md:px-0 md:py-12">
         <Card>
           <CardHeader>
-            <CardTitle>{t("card-title")}</CardTitle>
+            <CardTitle>{t("cardTitle")}</CardTitle>
 
-            <CardDescription>{t("card-description")}</CardDescription>
+            <CardDescription>{t("cardDescription")}</CardDescription>
           </CardHeader>
 
           <CardContent>

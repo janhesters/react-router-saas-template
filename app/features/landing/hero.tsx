@@ -17,7 +17,7 @@ const imageFadeStyle: CSSProperties = {
 
 export function Hero() {
   const { t } = useTranslation("landing", { keyPrefix: "hero" });
-  const { t: tCommon } = useTranslation("common");
+  const { t: tCommon } = useTranslation("translation");
 
   return (
     <section className="relative z-0 py-24 text-center sm:pt-32">
@@ -40,7 +40,8 @@ export function Hero() {
             components={{
               1: <span className="underline" />,
             }}
-            i18nKey="landing:hero.badge"
+            i18nKey="hero.badge"
+            ns="landing"
           />
         </Badge>
 
@@ -57,7 +58,7 @@ export function Hero() {
             {t("title")}
           </span>
 
-          <span className="sr-only">{tCommon("app-name")}</span>
+          <span className="sr-only">{tCommon("appName")}</span>
         </h1>
 
         <p className="text-muted-foreground mt-8 text-lg sm:text-xl/8">
@@ -70,7 +71,8 @@ export function Hero() {
                   </span>
                 ),
               }}
-              i18nKey="landing:hero.description"
+              i18nKey="hero.description"
+              ns="landing"
             />
           </span>
         </p>

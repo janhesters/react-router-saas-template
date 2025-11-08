@@ -6,7 +6,7 @@ import { GeneralErrorBoundary } from "~/components/general-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 import { EmailInviteCard } from "~/features/organizations/settings/team-members/invite-by-email-card";
 import { InviteLinkCard } from "~/features/organizations/settings/team-members/invite-link-card";
@@ -31,7 +31,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     {
       title: getPageTitle(
         i18n.t.bind(i18n),
-        "organizations:settings.team-members.page-title",
+        "organizations:settings.teamMembers.pageTitle",
       ),
       ...mapOrganizationDataToTeamMemberSettingsProps({
         currentUsersId: user.id,
@@ -58,7 +58,7 @@ export default function OrganizationMembersRoute({
   params,
 }: Route.ComponentProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.team-members",
+    keyPrefix: "settings.teamMembers",
   });
   const {
     emailInviteCard,
@@ -75,11 +75,11 @@ export default function OrganizationMembersRoute({
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="@container/main mx-auto flex w-full max-w-5xl flex-col gap-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("page-title")}</h2>
+          <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
 
           <p className="text-muted-foreground text-sm">
             {teamMemberTable.currentUsersRole === "member"
-              ? t("description-member")
+              ? t("descriptionMember")
               : t("description")}
           </p>
         </div>
@@ -92,10 +92,10 @@ export default function OrganizationMembersRoute({
               className="flex flex-col gap-2 @2xl/alert:block"
               variant="destructive"
             >
-              <AlertTitle>{t("organization-is-full-alert.title")}</AlertTitle>
+              <AlertTitle>{t("organizationIsFullAlert.title")}</AlertTitle>
 
               <AlertDescription>
-                {t("organization-is-full-alert.description")}
+                {t("organizationIsFullAlert.description")}
               </AlertDescription>
 
               <Button
@@ -109,7 +109,7 @@ export default function OrganizationMembersRoute({
                     { organizationSlug: params.organizationSlug },
                   )}
                 >
-                  {t("organization-is-full-alert.button")}
+                  {t("organizationIsFullAlert.button")}
                 </Link>
               </Button>
             </Alert>

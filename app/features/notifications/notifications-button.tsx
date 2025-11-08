@@ -2,6 +2,7 @@ import { BellIcon, CheckCheckIcon } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetcher } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { NotificationsDot } from "./notification-components";
 import {
@@ -38,7 +39,7 @@ export function NotificationsButton({
   unreadNotifications,
 }: NotificationsButtonProps) {
   const { t } = useTranslation("notifications", {
-    keyPrefix: "notifications-button",
+    keyPrefix: "notificationsButton",
   });
 
   /* Notification panel opened state */
@@ -69,6 +70,7 @@ export function NotificationsButton({
 
   /* Mark one as read */
   const pendingNotifications = usePendingNotifications();
+  const hydrated = useHydrated();
 
   return (
     <Popover onOpenChange={handlePopoverOpenChange} open={popoverOpen}>
@@ -76,10 +78,12 @@ export function NotificationsButton({
         <Button
           aria-label={
             optimisticShowBadge
-              ? t("open-unread-notifications")
-              : t("open-notifications")
+              ? t("openUnreadNotifications")
+              : t("openNotifications")
           }
           className="relative size-8"
+          // Playwright shouldn't try to click the button before it's hydrated
+          disabled={!hydrated}
           size="icon"
           variant="outline"
         >
@@ -107,7 +111,7 @@ export function NotificationsButton({
             <markAllAsReadFetcher.Form method="post">
               <TooltipTrigger asChild>
                 <Button
-                  aria-label={t("mark-all-as-read")}
+                  aria-label={t("markAllAsRead")}
                   name="intent"
                   size="sm"
                   type="submit"
@@ -119,9 +123,7 @@ export function NotificationsButton({
               </TooltipTrigger>
             </markAllAsReadFetcher.Form>
 
-            <TooltipContent side="bottom">
-              {t("mark-all-as-read")}
-            </TooltipContent>
+            <TooltipContent side="bottom">{t("markAllAsRead")}</TooltipContent>
           </Tooltip>
         </div>
 

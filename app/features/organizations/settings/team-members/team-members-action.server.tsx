@@ -32,7 +32,7 @@ import {
 } from "./team-members-settings-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members";
 import { adjustSeats } from "~/features/billing/stripe-helpers.server";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
@@ -77,7 +77,7 @@ export async function teamMembersAction({
               error: {
                 fieldErrors: {
                   email: [
-                    "organizations:settings.team-members.invite-by-email.form.organization-full",
+                    "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
                   ],
                 },
                 formErrors: [],
@@ -206,10 +206,10 @@ export async function teamMembersAction({
             if (getOrganizationIsFull(organization)) {
               const toastHeaders = await createToastHeaders({
                 description: i18n.t(
-                  "organizations:settings.team-members.invite-by-email.organization-full-toast-description",
+                  "organizations:settings.teamMembers.inviteByEmail.organizationFullToastDescription",
                 ),
                 title: i18n.t(
-                  "organizations:settings.team-members.invite-by-email.organization-full-toast-title",
+                  "organizations:settings.teamMembers.inviteByEmail.organizationFullToastTitle",
                 ),
                 type: "error",
               });
@@ -219,7 +219,7 @@ export async function teamMembersAction({
                     error: {
                       fieldErrors: {
                         email: [
-                          "organizations:settings.team-members.invite-by-email.form.organization-full",
+                          "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
                         ],
                       },
                       formErrors: [],
@@ -258,7 +258,7 @@ export async function teamMembersAction({
               error: {
                 fieldErrors: {
                   email: [
-                    "organizations:settings.team-members.invite-by-email.form.organization-full",
+                    "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
                   ],
                 },
                 formErrors: [],
@@ -291,7 +291,7 @@ export async function teamMembersAction({
                 fieldErrors: {
                   email: [
                     i18n.t(
-                      "organizations:settings.team-members.invite-by-email.form.email-already-member",
+                      "organizations:settings.teamMembers.inviteByEmail.form.emailAlreadyMember",
                       { email: body.email },
                     ),
                   ],
@@ -316,35 +316,35 @@ export async function teamMembersAction({
           react: (
             <InviteEmail
               buttonText={i18n.t(
-                "organizations:settings.team-members.invite-by-email.invite-email.button-text",
+                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.buttonText",
                 {
                   organizationName: organization.name,
                 },
               )}
               buttonUrl={joinUrl}
               callToAction={i18n.t(
-                "organizations:settings.team-members.invite-by-email.invite-email.call-to-action",
+                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.callToAction",
               )}
               description={i18n.t(
-                "organizations:settings.team-members.invite-by-email.invite-email.description",
+                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.description",
                 {
-                  appName: i18n.t("common:app-name"),
+                  appName: i18n.t("translation:appName"),
                   inviterName: user.name,
                   organizationName: organization.name,
                 },
               )}
               title={i18n.t(
-                "organizations:settings.team-members.invite-by-email.invite-email.title",
+                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.title",
                 {
-                  appName: i18n.t("common:app-name"),
+                  appName: i18n.t("translation:appName"),
                 },
               )}
             />
           ),
           subject: i18n.t(
-            "organizations:settings.team-members.invite-by-email.invite-email.subject",
+            "organizations:settings.teamMembers.inviteByEmail.inviteEmail.subject",
             {
-              appName: i18n.t("common:app-name"),
+              appName: i18n.t("translation:appName"),
               inviteName: user.name,
             },
           ),
@@ -364,7 +364,7 @@ export async function teamMembersAction({
 
         const toastHeaders = await createToastHeaders({
           title: i18n.t(
-            "organizations:settings.team-members.invite-by-email.success-toast-title",
+            "organizations:settings.teamMembers.inviteByEmail.successToastTitle",
           ),
           type: "success",
         });

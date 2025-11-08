@@ -6,7 +6,7 @@ z.config({ jitless: true });
 
 export const registerWithEmailSchema = z.object({
   email: z.email({
-    message: "user-authentication:register.errors.invalidEmail",
+    message: "userAuthentication:register.errors.invalidEmail",
   }),
   intent: z.literal(registerIntents.registerWithEmail),
 });

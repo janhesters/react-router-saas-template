@@ -39,7 +39,7 @@ import {
 import { updateStripeSubscriptionInDatabaseById } from "./stripe-subscription-model.server";
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from "./stripe-subscription-schedule-model.server";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
@@ -119,7 +119,7 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            "billing:billing-page.pending-downgrade-banner.success-title",
+            "billing:billingPage.pendingDowngradeBanner.successTitle",
           ),
           type: "success",
         });
@@ -190,7 +190,7 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            "billing:billing-page.cancel-at-period-end-banner.resume-success-title",
+            "billing:billingPage.cancelAtPeriodEndBanner.resumeSuccessTitle",
           ),
           type: "success",
         });
@@ -256,7 +256,7 @@ export async function billingAction({
 
         const toast = await createToastHeaders({
           title: i18n.t(
-            "billing:billing-page.update-billing-email-modal.success-title",
+            "billing:billingPage.updateBillingEmailModal.successTitle",
           ),
           type: "success",
         });

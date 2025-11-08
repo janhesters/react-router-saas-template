@@ -14,12 +14,12 @@ export default function SettingsLayout() {
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <Button asChild className="size-8" size="icon" variant="outline">
-              <Link aria-label={t("back-button-label")} to="/organizations">
+              <Link aria-label={t("backButtonLabel")} to="/organizations">
                 <TbArrowLeft />
               </Link>
             </Button>
 
-            <h1 className="text-base font-medium">{t("page-title")}</h1>
+            <h1 className="text-base font-medium">{t("pageTitle")}</h1>
           </div>
 
           <ThemeToggle />

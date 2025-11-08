@@ -55,7 +55,7 @@ function DeleteAccountDialogComponent({
   isDeleteBlocked: boolean;
 }) {
   const { t } = useTranslation("settings", {
-    keyPrefix: "user-account.danger-zone",
+    keyPrefix: "userAccount.dangerZone",
   });
 
   const hasImplicitDeletions = imlicitlyDeletedOrganizations.length > 0;
@@ -64,22 +64,23 @@ function DeleteAccountDialogComponent({
     <Dialog>
       <DialogTrigger asChild>
         <Button disabled={isDeleteBlocked} variant="destructive">
-          {t("delete-button")}
+          {t("deleteButton")}
         </Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("dialog-title")}</DialogTitle>
+          <DialogTitle>{t("dialogTitle")}</DialogTitle>
           <div className="space-y-2">
-            <DialogDescription>{t("dialog-description")}</DialogDescription>
+            <DialogDescription>{t("dialogDescription")}</DialogDescription>
 
             {hasImplicitDeletions && (
               <div className="text-muted-foreground text-sm">
                 <Trans
                   components={{ 1: <Strong /> }}
                   count={imlicitlyDeletedOrganizations.length}
-                  i18nKey="settings:user-account.danger-zone.implicitly-deleted-organizations"
+                  i18nKey="userAccount.dangerZone.implicitlyDeletedOrganizations"
+                  ns="settings"
                   shouldUnescape
                   values={{
                     organizations: imlicitlyDeletedOrganizations.join(", "),
@@ -116,7 +117,7 @@ function DeleteAccountDialogComponent({
                   {t("deleting")}
                 </>
               ) : (
-                t("delete-confirm")
+                t("deleteConfirm")
               )}
             </Button>
           </Form>
@@ -132,7 +133,7 @@ export function DangerZone({
   organizationsBlockingAccountDeletion,
 }: DangerZoneProps) {
   const { t } = useTranslation("settings", {
-    keyPrefix: "user-account.danger-zone",
+    keyPrefix: "userAccount.dangerZone",
   });
 
   const isDeleteBlocked = organizationsBlockingAccountDeletion.length > 0;
@@ -147,24 +148,25 @@ export function DangerZone({
       </h2>
       <Item className="border-destructive" variant="outline">
         <ItemContent>
-          <ItemTitle>{t("delete-title")}</ItemTitle>
+          <ItemTitle>{t("deleteTitle")}</ItemTitle>
           <ItemDescription>
             {isDeleteBlocked ? (
               <span className="space-y-1">
                 <Trans
                   components={{ 1: <Strong /> }}
                   count={organizationsBlockingAccountDeletion.length}
-                  i18nKey="settings:user-account.danger-zone.blocking-organizations"
+                  i18nKey="userAccount.dangerZone.blockingOrganizations"
+                  ns="settings"
                   shouldUnescape
                   values={{
                     organizations:
                       organizationsBlockingAccountDeletion.join(", "),
                   }}
                 />{" "}
-                <span>{t("blocking-organizations-help")}</span>
+                <span>{t("blockingOrganizationsHelp")}</span>
               </span>
             ) : (
-              t("delete-description")
+              t("deleteDescription")
             )}
           </ItemDescription>
         </ItemContent>

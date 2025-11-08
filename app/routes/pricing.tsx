@@ -24,11 +24,11 @@ import {
 } from "~/features/billing/pricing";
 import { Footer } from "~/features/landing/footer";
 import { Header } from "~/features/landing/header";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 
 export function loader({ context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
-  return { title: i18n.t("billing:pricing-page.page-title") };
+  return { title: i18n.t("billing:pricingPage.pageTitle") };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -37,26 +37,25 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 
 export default function PricingRoute() {
   const { t } = useTranslation("billing", { keyPrefix: "pricing" });
-  const { t: tPage } = useTranslation("billing", { keyPrefix: "pricing-page" });
+  const { t: tPage } = useTranslation("billing", { keyPrefix: "pricingPage" });
   const [billingPeriod, setBillingPeriod] = useState("annual");
 
-  const getFeatures = (key: string): string[] => {
-    return t(`plans.${key}.features`, { returnObjects: true }) as string[];
-  };
+  const getFeatures = (key: string): string[] =>
+    t(`plans.${key}.features`, "", { returnObjects: true }) as string[];
 
   return (
     <>
       <Header />
       <main className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8 lg:py-48">
         <div className="mx-auto mb-8 max-w-2xl text-center">
-          <h1 className="text-primary">{tPage("page-title")}</h1>
+          <h1 className="text-primary">{tPage("pageTitle")}</h1>
 
           <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
-            {tPage("pricing-heading")}
+            {tPage("pricingHeading")}
           </h2>
 
           <p className="text-muted-foreground mt-6 text-lg text-pretty">
-            {tPage("page-description")}
+            {tPage("pageDescription")}
           </p>
         </div>
 
@@ -69,7 +68,7 @@ export default function PricingRoute() {
             </TabsList>
 
             {billingPeriod === "monthly" && (
-              <p className="text-primary text-sm">{t("save-annually")}</p>
+              <p className="text-primary text-sm">{t("saveAnnually")}</p>
             )}
           </div>
 
@@ -95,7 +94,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.low.features-title")}
+                      {t("plans.low.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -120,7 +119,8 @@ export default function PricingRoute() {
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$30" }}
                       />
                     </TierCardPrice>
@@ -136,7 +136,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.mid.features-title")}
+                      {t("plans.mid.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -154,7 +154,7 @@ export default function PricingRoute() {
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
-                      <Badge>{t("most-popular")}</Badge>
+                      <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
@@ -164,7 +164,8 @@ export default function PricingRoute() {
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$55" }}
                       />
                     </TierCardPrice>
@@ -180,7 +181,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.high.features-title")}
+                      {t("plans.high.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -219,7 +220,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.low.features-title")}
+                      {t("plans.low.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -244,7 +245,8 @@ export default function PricingRoute() {
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$25" }}
                       />
 
@@ -262,7 +264,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.mid.features-title")}
+                      {t("plans.mid.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -280,7 +282,7 @@ export default function PricingRoute() {
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
-                      <Badge>{t("most-popular")}</Badge>
+                      <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
@@ -290,7 +292,8 @@ export default function PricingRoute() {
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$45" }}
                       />
 
@@ -308,7 +311,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.high.features-title")}
+                      {t("plans.high.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -343,7 +346,7 @@ export default function PricingRoute() {
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.enterprise.features-title")}
+                      {t("plans.enterprise.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>

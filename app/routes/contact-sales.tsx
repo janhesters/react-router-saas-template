@@ -11,12 +11,12 @@ import {
 import { contactSalesAction } from "~/features/billing/contact-sales/contact-sales-action.server";
 import { CONTACT_SALES_INTENT } from "~/features/billing/contact-sales/contact-sales-constants";
 import { ContactSalesTeam } from "~/features/billing/contact-sales/contact-sales-team";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { cn } from "~/lib/utils";
 
 export function loader({ context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
-  return { title: i18n.t("billing:contact-sales.page-title") };
+  return { title: i18n.t("billing:contactSales.pageTitle") };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
@@ -28,7 +28,7 @@ export async function action(args: Route.ActionArgs) {
 }
 
 export default function ContactSales({ actionData }: Route.ComponentProps) {
-  const { t } = useTranslation("billing", { keyPrefix: "contact-sales" });
+  const { t } = useTranslation("billing", { keyPrefix: "contactSales" });
 
   const navigation = useNavigation();
   const isContactingSales =
@@ -37,7 +37,7 @@ export default function ContactSales({ actionData }: Route.ComponentProps) {
   return (
     <>
       <header className="sr-only">
-        <h1>{t("page-title")}</h1>
+        <h1>{t("pageTitle")}</h1>
       </header>
 
       <main className="relative isolate mx-auto max-w-7xl px-6 py-8 lg:px-8">
@@ -54,7 +54,7 @@ export default function ContactSales({ actionData }: Route.ComponentProps) {
           />
         </div>
 
-        <h2 className="sr-only">{t("enterprise-sales")}</h2>
+        <h2 className="sr-only">{t("enterpriseSales")}</h2>
 
         <div
           className={cn(
@@ -70,7 +70,7 @@ export default function ContactSales({ actionData }: Route.ComponentProps) {
                 </CardTitle>
 
                 <CardDescription className="text-2xl">
-                  {t("thank-you")}
+                  {t("thankYou")}
                 </CardDescription>
               </CardHeader>
             </Card>

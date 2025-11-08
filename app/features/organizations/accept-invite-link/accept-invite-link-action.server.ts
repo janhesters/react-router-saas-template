@@ -7,7 +7,7 @@ import { ACCEPT_INVITE_LINK_INTENT } from "./accept-invite-link-constants";
 import { getInviteLinkToken } from "./accept-invite-link-helpers.server";
 import { createInviteLinkInfoHeaders } from "./accept-invite-link-session.server";
 import type { Route } from ".react-router/types/app/routes/organizations_+/+types/invite-link";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireSupabaseUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import { createSupabaseServerClient } from "~/features/user-authentication/supabase.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
@@ -45,10 +45,10 @@ export async function acceptInviteLinkAction({
         if (!link) {
           const toastHeaders = await createToastHeaders({
             description: i18n.t(
-              "organizations:accept-invite-link.invite-link-invalid-toast-description",
+              "organizations:acceptInviteLink.inviteLinkInvalidToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-invite-link.invite-link-invalid-toast-title",
+              "organizations:acceptInviteLink.inviteLinkInvalidToastTitle",
             ),
             type: "error",
           });
@@ -78,13 +78,13 @@ export async function acceptInviteLinkAction({
               }),
               {
                 description: i18n.t(
-                  "organizations:accept-invite-link.join-success-toast-description",
+                  "organizations:acceptInviteLink.joinSuccessToastDescription",
                   {
                     organizationName: link.organization.name,
                   },
                 ),
                 title: i18n.t(
-                  "organizations:accept-invite-link.join-success-toast-title",
+                  "organizations:acceptInviteLink.joinSuccessToastTitle",
                 ),
                 type: "success",
               },
@@ -107,13 +107,13 @@ export async function acceptInviteLinkAction({
                 }),
                 {
                   description: i18n.t(
-                    "organizations:accept-invite-link.already-member-toast-description",
+                    "organizations:acceptInviteLink.alreadyMemberToastDescription",
                     {
                       organizationName: link.organization.name,
                     },
                   ),
                   title: i18n.t(
-                    "organizations:accept-invite-link.already-member-toast-title",
+                    "organizations:acceptInviteLink.alreadyMemberToastTitle",
                   ),
                   type: "info",
                 },
@@ -133,10 +133,10 @@ export async function acceptInviteLinkAction({
           href("/register"),
           {
             description: i18n.t(
-              "organizations:accept-invite-link.invite-link-valid-toast-description",
+              "organizations:acceptInviteLink.inviteLinkValidToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-invite-link.invite-link-valid-toast-title",
+              "organizations:acceptInviteLink.inviteLinkValidToastTitle",
             ),
             type: "info",
           },

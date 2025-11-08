@@ -2,6 +2,7 @@ import { useForm } from "@conform-to/react/future";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 import { z } from "zod";
 
 import { DELETE_ORGANIZATION_INTENT } from "./general-settings-constants";
@@ -68,6 +69,7 @@ function DeleteOrganizationDialogComponent({
   const isSubmitting =
     navigation.state === "submitting" &&
     navigation.formData?.get("intent") === DELETE_ORGANIZATION_INTENT;
+  const hydrated = useHydrated();
 
   return (
     <Dialog
@@ -78,24 +80,30 @@ function DeleteOrganizationDialogComponent({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="destructive">{t("trigger-button")}</Button>
+        <Button
+          // Playwright shouldn't try to click the button before it's hydrated
+          disabled={!hydrated}
+          variant="destructive"
+        >
+          {t("triggerButton")}
+        </Button>
       </DialogTrigger>
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("dialog-title")}</DialogTitle>
-          <DialogDescription>{t("dialog-description")}</DialogDescription>
+          <DialogTitle>{t("dialogTitle")}</DialogTitle>
+          <DialogDescription>{t("dialogDescription")}</DialogDescription>
         </DialogHeader>
 
         <Form method="POST" {...form.props}>
           <FieldSet disabled={isSubmitting}>
             <Field data-invalid={fields.confirmation.ariaInvalid}>
               <FieldLabel htmlFor={fields.confirmation.id}>
-                {t("confirmation-label", { organizationName })}
+                {t("confirmationLabel", { organizationName })}
               </FieldLabel>
               <Input
                 {...fields.confirmation.inputProps}
-                placeholder={t("confirmation-placeholder")}
+                placeholder={t("confirmationPlaceholder")}
               />
               <FieldError
                 errors={fields.confirmation.errors}
@@ -113,7 +121,7 @@ function DeleteOrganizationDialogComponent({
               type="button"
               variant="secondary"
             >
-              {t("cancel-button")}
+              {t("cancelButton")}
             </Button>
           </DialogClose>
 
@@ -132,10 +140,10 @@ function DeleteOrganizationDialogComponent({
             {isSubmitting ? (
               <>
                 <Spinner />
-                {t("delete-button-submitting")}
+                {t("deleteButtonSubmitting")}
               </>
             ) : (
-              t("delete-button")
+              t("deleteButton")
             )}
           </Button>
         </DialogFooter>
@@ -159,8 +167,8 @@ export function DangerZone({ organizationName }: DangerZoneProps) {
       </h2>
       <Item className="border-destructive" variant="outline">
         <ItemContent>
-          <ItemTitle>{t("delete-title")}</ItemTitle>
-          <ItemDescription>{t("delete-description")}</ItemDescription>
+          <ItemTitle>{t("deleteTitle")}</ItemTitle>
+          <ItemDescription>{t("deleteDescription")}</ItemDescription>
         </ItemContent>
         <ItemActions>
           <DeleteOrganizationDialogComponent

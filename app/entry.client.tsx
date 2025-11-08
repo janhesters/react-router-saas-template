@@ -1,22 +1,21 @@
 import i18next from "i18next";
-import LanguageDetector from "i18next-browser-languagedetector";
+import I18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
+import Fetch from "i18next-fetch-backend";
 import { StrictMode, startTransition } from "react";
 import { hydrateRoot } from "react-dom/client";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 import { HydratedRouter } from "react-router/dom";
 
-import { i18n } from "./features/localization/i18n";
-
 async function hydrate() {
   await i18next
     .use(initReactI18next)
-    .use(LanguageDetector)
+    .use(Fetch)
+    .use(I18nextBrowserLanguageDetector)
     .init({
-      ...i18n,
-      detection: {
-        caches: [],
-        order: ["htmlTag"],
-      },
+      backend: { loadPath: "/api/locales/{{lng}}/{{ns}}" },
+      detection: { caches: [], order: ["htmlTag"] },
+      fallbackLng: "en",
+      interpolation: { escapeValue: false },
     });
 
   startTransition(() => {

@@ -1,6 +1,7 @@
 import { BadgeCheckIcon, ChevronsUpDownIcon, LogOutIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form, href, Link } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
@@ -30,8 +31,9 @@ export type NavUserProps = {
 export function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
   const { t } = useTranslation("organizations", {
-    keyPrefix: "layout.nav-user",
+    keyPrefix: "layout.navUser",
   });
+  const hydrated = useHydrated();
 
   return (
     <SidebarMenu>
@@ -39,8 +41,10 @@ export function NavUser({ user }: NavUserProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
-              aria-label={t("user-menu-button-label")}
+              aria-label={t("userMenuButtonLabel")}
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              // Playwright shouldn't try to click the button before it's hydrated
+              disabled={!hydrated}
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
@@ -102,7 +106,7 @@ export function NavUser({ user }: NavUserProps) {
                   value="logout"
                 >
                   <LogOutIcon />
-                  {t("log-out")}
+                  {t("logOut")}
                 </button>
               </DropdownMenuItem>
             </Form>

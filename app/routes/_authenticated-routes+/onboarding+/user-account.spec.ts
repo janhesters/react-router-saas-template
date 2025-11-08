@@ -199,7 +199,7 @@ describe("/onboarding/user-account route action", () => {
             result: {
               error: {
                 fieldErrors: {
-                  name: ["onboarding:user-account.errors.nameMin"],
+                  name: ["onboarding:userAccount.errors.nameMin"],
                 },
               },
             },
@@ -215,7 +215,7 @@ describe("/onboarding/user-account route action", () => {
             result: {
               error: {
                 fieldErrors: {
-                  name: ["onboarding:user-account.errors.nameMax"],
+                  name: ["onboarding:userAccount.errors.nameMax"],
                 },
               },
             },
@@ -231,7 +231,7 @@ describe("/onboarding/user-account route action", () => {
             result: {
               error: {
                 fieldErrors: {
-                  name: ["onboarding:user-account.errors.nameMin"],
+                  name: ["onboarding:userAccount.errors.nameMin"],
                 },
               },
             },
@@ -247,7 +247,7 @@ describe("/onboarding/user-account route action", () => {
             result: {
               error: {
                 fieldErrors: {
-                  name: ["onboarding:user-account.errors.nameMin"],
+                  name: ["onboarding:userAccount.errors.nameMin"],
                 },
               },
             },

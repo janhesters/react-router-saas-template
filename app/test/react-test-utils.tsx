@@ -5,17 +5,19 @@ import i18next from "i18next";
 import type { ReactElement, ReactNode } from "react";
 import { I18nextProvider, initReactI18next } from "react-i18next";
 
-import { i18n } from "~/features/localization/i18n";
+import resources from "~/features/localization/locales";
 import { defineCustomMetadata } from "~/utils/define-custom-metadata";
 
 // Initialize i18next for tests with actual translations.
-void i18next.use(initReactI18next).init({
-  ...i18n,
+await i18next.use(initReactI18next).init({
+  defaultNS: "translation",
   initImmediate: false,
+  interpolation: { escapeValue: false },
   lng: "en",
   react: {
     useSuspense: false,
   },
+  resources,
 });
 
 const AllTheProviders = ({ children }: { children: ReactNode }) => {

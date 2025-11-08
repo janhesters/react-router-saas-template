@@ -29,7 +29,7 @@ export function ContactSalesTeam({
   isContactingSales = false,
   lastResult,
 }: ContactSalesTeamProps) {
-  const { t } = useTranslation("billing", { keyPrefix: "contact-sales" });
+  const { t } = useTranslation("billing", { keyPrefix: "contactSales" });
 
   const { form, fields } = useForm({
     lastResult,
@@ -40,11 +40,11 @@ export function ContactSalesTeam({
     <Card>
       <CardHeader className="space-y-6">
         <CardTitle className="text-primary text-5xl">
-          {t("contact-sales-title")}
+          {t("contactSalesTitle")}
         </CardTitle>
 
         <CardDescription className="text-2xl">
-          {t("contact-sales-description")}
+          {t("contactSalesDescription")}
         </CardDescription>
       </CardHeader>
 
@@ -53,12 +53,12 @@ export function ContactSalesTeam({
           <CardContent className="space-y-6">
             <Field data-invalid={fields.firstName.ariaInvalid}>
               <FieldLabel htmlFor={fields.firstName.id}>
-                {t("first-name-label")}
+                {t("firstNameLabel")}
               </FieldLabel>
               <Input
                 {...fields.firstName.inputProps}
                 autoComplete="given-name"
-                placeholder={t("first-name-placeholder")}
+                placeholder={t("firstNamePlaceholder")}
               />
               <FieldError
                 errors={fields.firstName.errors}
@@ -68,12 +68,12 @@ export function ContactSalesTeam({
 
             <Field data-invalid={fields.lastName.ariaInvalid}>
               <FieldLabel htmlFor={fields.lastName.id}>
-                {t("last-name-label")}
+                {t("lastNameLabel")}
               </FieldLabel>
               <Input
                 {...fields.lastName.inputProps}
                 autoComplete="family-name"
-                placeholder={t("last-name-placeholder")}
+                placeholder={t("lastNamePlaceholder")}
               />
               <FieldError
                 errors={fields.lastName.errors}
@@ -83,12 +83,12 @@ export function ContactSalesTeam({
 
             <Field data-invalid={fields.companyName.ariaInvalid}>
               <FieldLabel htmlFor={fields.companyName.id}>
-                {t("company-name-label")}
+                {t("companyNameLabel")}
               </FieldLabel>
               <Input
                 {...fields.companyName.inputProps}
                 autoComplete="organization"
-                placeholder={t("company-name-placeholder")}
+                placeholder={t("companyNamePlaceholder")}
               />
               <FieldError
                 errors={fields.companyName.errors}
@@ -98,12 +98,12 @@ export function ContactSalesTeam({
 
             <Field data-invalid={fields.workEmail.ariaInvalid}>
               <FieldLabel htmlFor={fields.workEmail.id}>
-                {t("work-email-label")}
+                {t("workEmailLabel")}
               </FieldLabel>
               <Input
                 {...fields.workEmail.inputProps}
                 autoComplete="email"
-                placeholder={t("work-email-placeholder")}
+                placeholder={t("workEmailPlaceholder")}
                 type="email"
               />
               <FieldError
@@ -114,12 +114,12 @@ export function ContactSalesTeam({
 
             <Field data-invalid={fields.phoneNumber.ariaInvalid}>
               <FieldLabel htmlFor={fields.phoneNumber.id}>
-                {t("phone-number-label")}
+                {t("phoneNumberLabel")}
               </FieldLabel>
               <Input
                 {...fields.phoneNumber.inputProps}
                 autoComplete="tel"
-                placeholder={t("phone-number-placeholder")}
+                placeholder={t("phoneNumberPlaceholder")}
                 type="tel"
               />
               <FieldError
@@ -130,12 +130,12 @@ export function ContactSalesTeam({
 
             <Field data-invalid={fields.message.ariaInvalid}>
               <FieldLabel htmlFor={fields.message.id}>
-                {t("message-label")}
+                {t("messageLabel")}
               </FieldLabel>
               <Textarea
                 {...fields.message.inputProps}
                 className="min-h-[90px] resize-none"
-                placeholder={t("message-placeholder")}
+                placeholder={t("messagePlaceholder")}
               />
               <FieldError
                 errors={fields.message.errors}
@@ -148,17 +148,17 @@ export function ContactSalesTeam({
 
           <CardFooter className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
             <p className="text-muted-foreground text-sm">
-              {t("submit-disclaimer")}
+              {t("submitDisclaimer")}
             </p>
 
             <Button name="intent" type="submit" value={CONTACT_SALES_INTENT}>
               {isContactingSales ? (
                 <>
                   <Spinner />
-                  {t("submit-button-loading")}
+                  {t("submitButtonLoading")}
                 </>
               ) : (
-                t("submit-button")
+                t("submitButton")
               )}
             </Button>
           </CardFooter>

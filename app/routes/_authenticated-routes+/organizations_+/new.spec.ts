@@ -257,7 +257,7 @@ describe("/organizations/new route action", () => {
         body: { intent } as const,
         expectedError: {
           fieldErrors: {
-            name: ["organizations:new.form.name-min-length"],
+            name: ["organizations:new.form.nameMinLength"],
           },
           formErrors: [],
         },
@@ -267,7 +267,7 @@ describe("/organizations/new route action", () => {
         body: { intent, name: "ab" } as const,
         expectedError: {
           fieldErrors: {
-            name: ["organizations:new.form.name-min-length"],
+            name: ["organizations:new.form.nameMinLength"],
           },
           formErrors: [],
         },
@@ -277,7 +277,7 @@ describe("/organizations/new route action", () => {
         body: { intent, name: "a".repeat(256) } as const,
         expectedError: {
           fieldErrors: {
-            name: ["organizations:new.form.name-max-length"],
+            name: ["organizations:new.form.nameMaxLength"],
           },
           formErrors: [],
         },
@@ -287,7 +287,7 @@ describe("/organizations/new route action", () => {
         body: { intent, name: "   " },
         expectedError: {
           fieldErrors: {
-            name: ["organizations:new.form.name-min-length"],
+            name: ["organizations:new.form.nameMinLength"],
           },
           formErrors: [],
         },
@@ -297,7 +297,7 @@ describe("/organizations/new route action", () => {
         body: { intent, name: "  a " },
         expectedError: {
           fieldErrors: {
-            name: ["organizations:new.form.name-min-length"],
+            name: ["organizations:new.form.nameMinLength"],
           },
           formErrors: [],
         },

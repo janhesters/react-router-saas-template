@@ -1,7 +1,7 @@
 import { href, redirect } from "react-router";
 
 import type { Route } from "./+types/auth.callback";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { getValidEmailInviteInfo } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { destroyEmailInviteInfoSession } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
 import { getValidInviteLinkInfo } from "~/features/organizations/accept-invite-link/accept-invite-link-helpers.server";
@@ -79,13 +79,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             }),
             {
               description: i18n.t(
-                "organizations:accept-invite-link.already-member-toast-description",
+                "organizations:acceptInviteLink.alreadyMemberToastDescription",
                 {
                   organizationName,
                 },
               ),
               title: i18n.t(
-                "organizations:accept-invite-link.already-member-toast-title",
+                "organizations:acceptInviteLink.alreadyMemberToastTitle",
               ),
               type: "info",
             },
@@ -116,13 +116,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             }),
             {
               description: i18n.t(
-                "organizations:accept-invite-link.join-success-toast-description",
+                "organizations:acceptInviteLink.joinSuccessToastDescription",
                 {
                   organizationName: emailInviteInfo.organizationName,
                 },
               ),
               title: i18n.t(
-                "organizations:accept-invite-link.join-success-toast-title",
+                "organizations:acceptInviteLink.joinSuccessToastTitle",
               ),
               type: "success",
             },
@@ -152,13 +152,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             }),
             {
               description: i18n.t(
-                "organizations:accept-invite-link.join-success-toast-description",
+                "organizations:acceptInviteLink.joinSuccessToastDescription",
                 {
                   organizationName: inviteLinkInfo.organizationName,
                 },
               ),
               title: i18n.t(
-                "organizations:accept-invite-link.join-success-toast-title",
+                "organizations:acceptInviteLink.joinSuccessToastTitle",
               ),
               type: "success",
             },

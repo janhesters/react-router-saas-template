@@ -23,7 +23,7 @@ import {
   saveStripePriceToDatabase,
 } from "~/features/billing/stripe-prices-model.server";
 import { saveStripeProductToDatabase } from "~/features/billing/stripe-product-model.server";
-import { i18nextMiddleware } from "~/features/localization/i18n-middleware.server";
+import { i18nextMiddleware } from "~/features/localization/i18next-middleware.server";
 import type { OnboardingUser } from "~/features/onboarding/onboarding-helpers.server";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import { organizationMembershipMiddleware } from "~/features/organizations/organizations-middleware.server";

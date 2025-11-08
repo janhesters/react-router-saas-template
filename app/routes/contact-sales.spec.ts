@@ -43,7 +43,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                firstName: ["billing:contact-sales.first-name-required"],
+                firstName: ["billing:contactSales.firstNameRequired"],
               },
             },
           },
@@ -56,7 +56,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                firstName: ["billing:contact-sales.first-name-required"],
+                firstName: ["billing:contactSales.firstNameRequired"],
               },
             },
           },
@@ -69,7 +69,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                lastName: ["billing:contact-sales.last-name-required"],
+                lastName: ["billing:contactSales.lastNameRequired"],
               },
             },
           },
@@ -82,7 +82,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                companyName: ["billing:contact-sales.company-name-required"],
+                companyName: ["billing:contactSales.companyNameRequired"],
               },
             },
           },
@@ -96,8 +96,8 @@ describe("/contact-sales route action", () => {
             error: {
               fieldErrors: {
                 workEmail: [
-                  "billing:contact-sales.work-email-invalid",
-                  "billing:contact-sales.work-email-required",
+                  "billing:contactSales.workEmailInvalid",
+                  "billing:contactSales.workEmailRequired",
                 ],
               },
             },
@@ -115,7 +115,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                workEmail: ["billing:contact-sales.work-email-invalid"],
+                workEmail: ["billing:contactSales.workEmailInvalid"],
               },
             },
           },
@@ -128,7 +128,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                phoneNumber: ["billing:contact-sales.phone-number-required"],
+                phoneNumber: ["billing:contactSales.phoneNumberRequired"],
               },
             },
           },
@@ -141,7 +141,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                message: ["billing:contact-sales.message-required"],
+                message: ["billing:contactSales.messageRequired"],
               },
             },
           },
@@ -158,7 +158,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                firstName: ["billing:contact-sales.first-name-too-long"],
+                firstName: ["billing:contactSales.firstNameTooLong"],
               },
             },
           },
@@ -175,7 +175,7 @@ describe("/contact-sales route action", () => {
           result: {
             error: {
               fieldErrors: {
-                message: ["billing:contact-sales.message-too-long"],
+                message: ["billing:contactSales.messageTooLong"],
               },
             },
           },

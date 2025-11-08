@@ -10,7 +10,7 @@ import { ACCEPT_EMAIL_INVITE_INTENT } from "./accept-email-invite-constants";
 import { getEmailInviteToken } from "./accept-email-invite-helpers.server";
 import { createEmailInviteInfoHeaders } from "./accept-email-invite-session.server";
 import type { Route } from ".react-router/types/app/routes/organizations_+/+types/email-invite";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireSupabaseUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import { createSupabaseServerClient } from "~/features/user-authentication/supabase.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
@@ -47,10 +47,10 @@ export async function acceptEmailInviteAction({
         if (!token) {
           const toastHeaders = await createToastHeaders({
             description: i18n.t(
-              "organizations:accept-email-invite.invite-email-invalid-toast-description",
+              "organizations:acceptEmailInvite.inviteEmailInvalidToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-email-invite.invite-email-invalid-toast-title",
+              "organizations:acceptEmailInvite.inviteEmailInvalidToastTitle",
             ),
             type: "error",
           });
@@ -67,10 +67,10 @@ export async function acceptEmailInviteAction({
         if (!link) {
           const toastHeaders = await createToastHeaders({
             description: i18n.t(
-              "organizations:accept-email-invite.invite-email-invalid-toast-description",
+              "organizations:acceptEmailInvite.inviteEmailInvalidToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-email-invite.invite-email-invalid-toast-title",
+              "organizations:acceptEmailInvite.inviteEmailInvalidToastTitle",
             ),
             type: "error",
           });
@@ -101,13 +101,13 @@ export async function acceptEmailInviteAction({
               }),
               {
                 description: i18n.t(
-                  "organizations:accept-email-invite.join-success-toast-description",
+                  "organizations:acceptEmailInvite.joinSuccessToastDescription",
                   {
                     organizationName: link.organization.name,
                   },
                 ),
                 title: i18n.t(
-                  "organizations:accept-email-invite.join-success-toast-title",
+                  "organizations:acceptEmailInvite.joinSuccessToastTitle",
                 ),
                 type: "success",
               },
@@ -134,13 +134,13 @@ export async function acceptEmailInviteAction({
                 }),
                 {
                   description: i18n.t(
-                    "organizations:accept-email-invite.already-member-toast-description",
+                    "organizations:acceptEmailInvite.alreadyMemberToastDescription",
                     {
                       organizationName: link.organization.name,
                     },
                   ),
                   title: i18n.t(
-                    "organizations:accept-email-invite.already-member-toast-title",
+                    "organizations:acceptEmailInvite.alreadyMemberToastTitle",
                   ),
                   type: "info",
                 },
@@ -161,10 +161,10 @@ export async function acceptEmailInviteAction({
           href("/register"),
           {
             description: i18n.t(
-              "organizations:accept-email-invite.invite-email-valid-toast-description",
+              "organizations:acceptEmailInvite.inviteEmailValidToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-email-invite.invite-email-valid-toast-title",
+              "organizations:acceptEmailInvite.inviteEmailValidToastTitle",
             ),
             type: "info",
           },

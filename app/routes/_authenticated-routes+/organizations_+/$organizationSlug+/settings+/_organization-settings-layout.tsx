@@ -47,7 +47,7 @@ export default function OrganizationSettingsLayout({
       }),
     },
     {
-      title: t("team-members"),
+      title: t("teamMembers"),
       url: href("/organizations/:organizationSlug/settings/members", {
         organizationSlug: params.organizationSlug,
       }),
@@ -70,7 +70,7 @@ export default function OrganizationSettingsLayout({
         className="flex h-[calc(var(--header-height)-0.5rem)] items-center border-b px-4 lg:px-6"
         data-slot="secondary-sidebar-header"
       >
-        <NavigationMenu aria-label={t("settings-nav")} className="-ml-1.5">
+        <NavigationMenu aria-label={t("settingsNav")} className="-ml-1.5">
           <NavigationMenuList className="gap-2 *:data-[slot=navigation-menu-item]:h-7 **:data-[slot=navigation-menu-link]:py-1 **:data-[slot=navigation-menu-link]:font-medium">
             {routes.map((route) => (
               <NavigationMenuItem key={route.url}>

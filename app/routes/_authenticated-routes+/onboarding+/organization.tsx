@@ -24,7 +24,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireUserNeedsOnboarding } from "~/features/onboarding/onboarding-helpers.server";
 import { onboardingOrganizationAction } from "~/features/onboarding/organization/onboarding-organization-action.server";
 import { ONBOARDING_ORGANIZATION_INTENT } from "~/features/onboarding/organization/onboarding-organization-consants";

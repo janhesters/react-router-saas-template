@@ -14,7 +14,7 @@ import {
 } from "./account-settings-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/settings+/+types/account";
 import { adjustSeats } from "~/features/billing/stripe-helpers.server";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { deleteOrganization } from "~/features/organizations/organizations-helpers.server";
 import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import {
@@ -81,7 +81,7 @@ export async function accountSettingsAction({
       }
 
       const toastHeaders = await createToastHeaders({
-        title: i18n.t("settings:user-account.toast.user-account-updated"),
+        title: i18n.t("settings:userAccount.toast.userAccountUpdated"),
         type: "success",
       });
       return data(
@@ -163,7 +163,7 @@ export async function accountSettingsAction({
       return redirectWithToast(
         "/",
         {
-          title: i18n.t("settings:user-account.toast.user-account-deleted"),
+          title: i18n.t("settings:userAccount.toast.userAccountDeleted"),
           type: "success",
         },
         { headers },

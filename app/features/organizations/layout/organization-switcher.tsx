@@ -2,6 +2,7 @@ import type { Organization } from "@prisma/client";
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form, Link, useLocation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { SWITCH_ORGANIZATION_INTENT } from "./sidebar-layout-constants";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -40,13 +41,14 @@ export function OrganizationSwitcher({
 }: OrganizationSwitcherProps) {
   const { isMobile } = useSidebar();
   const { t } = useTranslation("organizations", {
-    keyPrefix: "layout.organization-switcher",
+    keyPrefix: "layout.organizationSwitcher",
   });
   const { t: tTier } = useTranslation("billing", {
     keyPrefix: "pricing.plans",
   });
   const location = useLocation();
   const currentPath = location.pathname;
+  const hydrated = useHydrated();
 
   if (!currentOrganization) {
     return null;
@@ -59,6 +61,8 @@ export function OrganizationSwitcher({
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              // Playwright shouldn't try to click the button before it's hydrated
+              disabled={!hydrated}
               size="lg"
             >
               <Avatar className="aspect-square size-8 rounded-lg">
@@ -143,7 +147,7 @@ export function OrganizationSwitcher({
                 </div>
 
                 <div className="text-muted-foreground font-medium">
-                  {t("new-organization")}
+                  {t("newOrganization")}
                 </div>
               </DropdownMenuItem>
             </Link>

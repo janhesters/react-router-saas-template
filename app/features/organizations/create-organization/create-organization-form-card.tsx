@@ -54,8 +54,8 @@ export function CreateOrganizationFormCard({
     <div className="flex flex-col gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>{t("card-title")}</CardTitle>
-          <CardDescription>{t("card-description")}</CardDescription>
+          <CardTitle>{t("cardTitle")}</CardTitle>
+          <CardDescription>{t("cardDescription")}</CardDescription>
         </CardHeader>
 
         <CardContent>
@@ -66,16 +66,17 @@ export function CreateOrganizationFormCard({
             >
               <Field data-invalid={fields.name.ariaInvalid}>
                 <FieldLabel htmlFor={fields.name.id}>
-                  {t("name-label")}
+                  {t("nameLabel")}
                 </FieldLabel>
                 <FieldDescription id={fields.name.descriptionId}>
-                  {t("name-description")}
+                  {/* @ts-expect-error - TypeScript can't infer this key from keyPrefix */}
+                  {t("nameDescription")}
                 </FieldDescription>
                 <Input
                   {...fields.name.inputProps}
                   autoComplete="organization"
                   autoFocus
-                  placeholder={t("name-placeholder")}
+                  placeholder={t("namePlaceholder")}
                 />
                 <FieldError
                   errors={fields.name.errors}
@@ -91,15 +92,19 @@ export function CreateOrganizationFormCard({
                     }
                   >
                     <FieldLabel htmlFor={fields.logo.id}>
-                      {t("logo-label")}
+                      {t("logoLabel")}
                     </FieldLabel>
                     <FieldDescription id={fields.logo.descriptionId}>
-                      {t("logo-description")}
+                      {/* @ts-expect-error - TypeScript can't infer this key from keyPrefix */}
+                      {t("logoDescription")}
                     </FieldDescription>
                     <div className="flex items-center gap-x-4 md:gap-x-8">
                       <Avatar className="size-16 md:size-24 rounded-lg">
                         <AvatarUploadPreviewImage
-                          alt={t("logo-preview-alt")}
+                          alt={
+                            // @ts-expect-error - TypeScript can't infer this key from keyPrefix
+                            t("logoPreviewAlt")
+                          }
                           className="size-16 md:size-24 rounded-lg"
                           src=""
                         />
@@ -113,7 +118,8 @@ export function CreateOrganizationFormCard({
                           accept="image/png,image/jpeg,image/gif,image/webp"
                         />
                         <AvatarUploadDescription>
-                          {t("logo-formats")}
+                          {/* @ts-expect-error - TypeScript can't infer this key from keyPrefix */}
+                          {t("logoFormats")}
                         </AvatarUploadDescription>
                       </div>
                     </div>
@@ -146,7 +152,7 @@ export function CreateOrganizationFormCard({
                 {t("saving")}
               </>
             ) : (
-              t("submit-button")
+              t("submitButton")
             )}
           </Button>
         </CardFooter>
@@ -158,7 +164,8 @@ export function CreateOrganizationFormCard({
             1: <Link to={href("/terms-of-service")} />,
             2: <Link to={href("/privacy-policy")} />,
           }}
-          i18nKey="organizations:new.form.terms-and-privacy"
+          i18nKey="new.form.termsAndPrivacy"
+          ns="organizations"
         />
       </div>
     </div>

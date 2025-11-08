@@ -31,7 +31,7 @@ export function InviteLinkCard({
   organizationIsFull = false,
 }: InviteLinkCardProps) {
   const { t, i18n } = useTranslation("organizations", {
-    keyPrefix: "settings.team-members.invite-link",
+    keyPrefix: "settings.teamMembers.inviteLink",
   });
 
   const [linkCopied, setLinkCopied] = useState(false);
@@ -74,8 +74,8 @@ export function InviteLinkCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("card-title")}</CardTitle>
-        <CardDescription>{t("card-description")}</CardDescription>
+        <CardTitle>{t("cardTitle")}</CardTitle>
+        <CardDescription>{t("cardDescription")}</CardDescription>
       </CardHeader>
 
       {inviteLink ? (
@@ -85,7 +85,7 @@ export function InviteLinkCard({
               {/** biome-ignore lint/a11y/useAnchorContent: the a tag has an aria-label */}
               <a
                 aria-describedby="link-expiration-warning"
-                aria-label={t("go-to-link")}
+                aria-label={t("goToLink")}
                 className={cn(
                   inputClassName,
                   "items-center pr-12 read-only:cursor-pointer read-only:opacity-100",
@@ -117,13 +117,13 @@ export function InviteLinkCard({
                   <>
                     <ClipboardCheckIcon />
 
-                    <span className="sr-only">{t("invite-link-copied")}</span>
+                    <span className="sr-only">{t("inviteLinkCopied")}</span>
                   </>
                 ) : (
                   <>
                     <CopyIcon />
 
-                    <span className="sr-only">{t("copy-invite-link")}</span>
+                    <span className="sr-only">{t("copyInviteLink")}</span>
                   </>
                 )}
               </Button>
@@ -133,7 +133,7 @@ export function InviteLinkCard({
                 id="link-expiration-warning"
               >
                 <span className="grow">
-                  {t("link-valid-until", {
+                  {t("linkValidUntil", {
                     date: formatDate(inviteLink.expiryDate),
                   })}
                 </span>
@@ -171,7 +171,7 @@ export function InviteLinkCard({
                       {t("regenerating")}
                     </>
                   ) : (
-                    t("regenerate-link")
+                    t("regenerateLink")
                   )}
                 </Button>
               </Form>
@@ -190,7 +190,7 @@ export function InviteLinkCard({
                       {t("deactivating")}
                     </>
                   ) : (
-                    t("deactivate-link")
+                    t("deactivateLink")
                   )}
                 </Button>
               </Form>
@@ -205,7 +205,7 @@ export function InviteLinkCard({
                 className="text-primary mr-1.5 size-4"
               />
 
-              <span>{t("new-link-deactivates-old")}</span>
+              <span>{t("newLinkDeactivatesOld")}</span>
             </p>
           </CardFooter>
         </>
@@ -225,7 +225,7 @@ export function InviteLinkCard({
                   {t("creating")}
                 </>
               ) : (
-                t("create-new-invite-link")
+                t("createNewInviteLink")
               )}
             </Button>
           </Form>

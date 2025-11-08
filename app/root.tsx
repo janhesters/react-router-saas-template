@@ -1,6 +1,7 @@
 import "./app.css";
 
 import { FormOptionsProvider } from "@conform-to/react/future";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
 import {
@@ -11,11 +12,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
   useMatches,
   useRouteError,
+  useRouteLoaderData,
 } from "react-router";
-import { useChangeLanguage } from "remix-i18next/react";
 import { HoneypotProvider } from "remix-utils/honeypot/react";
 import { promiseHash } from "remix-utils/promise";
 import sonnerStyles from "sonner/dist/styles.css?url";
@@ -29,9 +29,11 @@ import {
   getInstance,
   getLocale,
   i18nextMiddleware,
-} from "./features/localization/i18n-middleware.server";
+  localeCookie,
+} from "./features/localization/i18next-middleware.server";
 import { useToast } from "./hooks/use-toast";
 import { cn } from "./lib/utils";
+import { combineHeaders } from "./utils/combine-headers.server";
 import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
 import { honeypot } from "./utils/honeypot.server";
@@ -69,7 +71,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
   const locale = getLocale(context);
   const i18next = getInstance(context);
-  const title = i18next.t("app-name");
+  const title = i18next.t("appName");
   const { toast, headers: toastHeaders } = toastData;
   return data(
     {
@@ -80,7 +82,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       title,
       toast,
     },
-    { headers: toastHeaders },
+    {
+      headers: combineHeaders(
+        { "Set-Cookie": await localeCookie.serialize(locale) },
+        toastHeaders,
+      ),
+    },
   );
 }
 
@@ -91,32 +98,26 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 export function Layout({
   children,
 }: { children: React.ReactNode } & Route.ComponentProps) {
-  const data = useLoaderData<typeof loader>();
-  const nonce = useNonce();
-  const locale = data?.locale ?? "en";
+  const data = useRouteLoaderData<typeof loader>("root");
+  const { i18n } = useTranslation();
+  const allowIndexing = data?.ENV.ALLOW_INDEXING !== "false";
+  const colorScheme = useColorScheme();
   const error = useRouteError();
   const isErrorFromRoute = isRouteErrorResponse(error);
-  const colorScheme = useColorScheme();
   const matches = useMatches();
+  const nonce = useNonce();
   const hideOverflow = matches.some(
     (match) =>
       match.pathname.startsWith("/onboarding") ||
       match.id === "routes/_auth/_layout",
   );
-
-  const { i18n } = useTranslation();
-
-  useChangeLanguage(locale);
   useToast(data?.toast);
-
-  // Control search engine indexing via meta tag
-  const allowIndexing = data?.ENV.ALLOW_INDEXING !== "false";
 
   return (
     <html
       className={cn(colorScheme, hideOverflow && "overflow-y-hidden")}
-      dir={i18n.dir()}
-      lang={locale}
+      dir={i18n.dir(i18n.language)}
+      lang={i18n.language}
     >
       <head>
         <meta charSet="utf-8" />
@@ -167,7 +168,15 @@ export function Layout({
   );
 }
 
-export default function App() {
+export default function App({ loaderData: { locale } }: Route.ComponentProps) {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    if (i18n.language !== locale) {
+      i18n.changeLanguage(locale);
+    }
+  }, [i18n, locale]);
+
   return <Outlet />;
 }
 

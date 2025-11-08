@@ -19,10 +19,10 @@ export const updateUserAccountFormSchema = z.object({
   avatar: z
     .file()
     .max(ONE_MB, {
-      message: "settings:user-account.errors.avatarTooLarge",
+      message: "settings:userAccount.errors.avatarTooLarge",
     })
     .mime(["image/png", "image/jpeg", "image/jpg", "image/gif", "image/webp"], {
-      message: "settings:user-account.errors.invalidFileType",
+      message: "settings:userAccount.errors.invalidFileType",
     })
     .optional(),
   intent: z.literal(UPDATE_USER_ACCOUNT_INTENT),
@@ -30,9 +30,9 @@ export const updateUserAccountFormSchema = z.object({
     .string()
     .trim()
     .min(MIN_NAME_LENGTH, {
-      message: "settings:user-account.errors.nameMin",
+      message: "settings:userAccount.errors.nameMin",
     })
     .max(MAX_NAME_LENGTH, {
-      message: "settings:user-account.errors.nameMax",
+      message: "settings:userAccount.errors.nameMax",
     }),
 });

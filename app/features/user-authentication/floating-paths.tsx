@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { usePrefersReducedMotion } from "~/hooks/use-prefers-reduced-motion";
 
 export function FloatingPaths({ position }: { position: number }) {
-  const { t } = useTranslation("user-authentication", { keyPrefix: "layout" });
+  const { t } = useTranslation("userAuthentication", { keyPrefix: "layout" });
   const prefersReducedMotion = usePrefersReducedMotion();
 
   const paths = Array.from({ length: 36 }, (_, i) => ({

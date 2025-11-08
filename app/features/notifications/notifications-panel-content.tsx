@@ -29,18 +29,18 @@ export function NotificationsPanelContent({
   notifications,
 }: NotificationsPanelContentProps) {
   const { t } = useTranslation("notifications", {
-    keyPrefix: "notifications-panel",
+    keyPrefix: "notificationsPanel",
   });
 
   if (notifications.length === 0) {
     return (
       <div className="flex min-h-24 flex-col items-center justify-center gap-2 p-4">
         <p className="text-foreground text-lg font-semibold">
-          {t("no-notifications-title")}
+          {t("noNotificationsTitle")}
         </p>
 
         <p className="text-muted-foreground text-sm font-normal">
-          {t("no-notifications-description")}
+          {t("noNotificationsDescription")}
         </p>
       </div>
     );

@@ -11,9 +11,9 @@ z.config({ jitless: true });
 export const onboardingUserAccountSchema = z.object({
   image: z
     .file()
-    .max(ONE_MB, { message: "onboarding:user-account.errors.photoTooLarge" })
+    .max(ONE_MB, { message: "onboarding:userAccount.errors.photoTooLarge" })
     .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
-      message: "onboarding:user-account.errors.invalidFileType",
+      message: "onboarding:userAccount.errors.invalidFileType",
     })
     .optional(),
   intent: z.literal(ONBOARDING_USER_ACCOUNT_INTENT),
@@ -21,9 +21,9 @@ export const onboardingUserAccountSchema = z.object({
     .string()
     .trim()
     .min(MIN_NAME_LENGTH, {
-      message: "onboarding:user-account.errors.nameMin",
+      message: "onboarding:userAccount.errors.nameMin",
     })
     .max(MAX_NAME_LENGTH, {
-      message: "onboarding:user-account.errors.nameMax",
+      message: "onboarding:userAccount.errors.nameMax",
     }),
 });

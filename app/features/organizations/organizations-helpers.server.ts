@@ -183,10 +183,10 @@ export async function acceptInviteLink({
           `${href("/organizations/invite-link")}?token=${inviteLinkToken}`,
           {
             description: i18n.t(
-              "organizations:accept-invite-link.organization-full-toast-description",
+              "organizations:acceptInviteLink.organizationFullToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-invite-link.organization-full-toast-title",
+              "organizations:acceptInviteLink.organizationFullToastTitle",
             ),
             type: "error",
           },
@@ -262,10 +262,10 @@ export async function acceptEmailInvite({
           `${href("/organizations/email-invite")}?token=${emailInviteToken}`,
           {
             description: i18n.t(
-              "organizations:accept-email-invite.organization-full-toast-description",
+              "organizations:acceptEmailInvite.organizationFullToastDescription",
             ),
             title: i18n.t(
-              "organizations:accept-email-invite.organization-full-toast-title",
+              "organizations:acceptEmailInvite.organizationFullToastTitle",
             ),
             type: "error",
           },

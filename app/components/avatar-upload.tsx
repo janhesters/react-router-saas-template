@@ -49,6 +49,7 @@ export function AvatarUpload({
   children: ReactNode | ((props: { error: string }) => ReactNode);
   maxFileSize?: number;
 }) {
+  // @ts-expect-error - avatarUpload keyPrefix doesn't exist yet in translations
   const { t } = useTranslation("translation", { keyPrefix: "avatarUpload" });
   const [error, setError] = useState("");
   const [file, setFile] = useState<File | undefined>();
@@ -61,6 +62,7 @@ export function AvatarUpload({
       if (currentFile) {
         if (typeof maxFileSize === "number" && currentFile.size > maxFileSize) {
           setError(
+            // @ts-expect-error - fileSizeError translation key doesn't exist yet
             t("fileSizeError", {
               fileName: currentFile.name,
               maxSize: formatBytes(maxFileSize),

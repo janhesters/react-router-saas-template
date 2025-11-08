@@ -32,7 +32,6 @@
     "**/.server/**/*",
     "**/.client/**/*",
     ".react-router/types/**/*",
-    "commitlint.config.mjs",
-    "prettier.config.js"
+    "commitlint.config.mjs"
   ]
 }

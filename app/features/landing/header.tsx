@@ -8,7 +8,7 @@ import { cn } from "~/lib/utils";
 
 export function Header({ className, ...props }: ComponentProps<"header">) {
   const { t } = useTranslation("landing", { keyPrefix: "header" });
-  const { t: tCommon } = useTranslation("common");
+  const { t: tCommon } = useTranslation("translation");
 
   return (
     <header
@@ -28,13 +28,13 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
           </div>
 
           <span className="hidden font-mono sm:block">
-            {tCommon("app-name")}
+            {tCommon("appName")}
           </span>
         </Link>
 
         <nav className="flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2">
           <Button asChild size="sm" variant="ghost">
-            <Link to="/pricing">{t("nav-links.pricing")}</Link>
+            <Link to="/pricing">{t("navLinks.pricing")}</Link>
           </Button>
         </nav>
 

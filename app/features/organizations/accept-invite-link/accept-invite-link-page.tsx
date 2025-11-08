@@ -17,9 +17,9 @@ export function AcceptInviteLinkPage({
   organizationName,
 }: AcceptInviteLinkPageProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "accept-invite-link",
+    keyPrefix: "acceptInviteLink",
   });
-  const { t: tCommon } = useTranslation("common");
+  const { t: tCommon } = useTranslation("translation");
   const navigation = useNavigation();
   const isAcceptingInvite =
     navigation.formData?.get("intent") === ACCEPT_INVITE_LINK_INTENT;
@@ -42,17 +42,17 @@ export function AcceptInviteLinkPage({
       <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
         <div className="mb-8 flex justify-center">
           <Badge className="border-border" variant="secondary">
-            {t("welcome-to-app-name", { appName: tCommon("app-name") })}
+            {t("welcomeToAppName", { appName: tCommon("appName") })}
           </Badge>
         </div>
 
         <div className="text-center">
           <h1 className="text-foreground text-xl font-bold tracking-tight sm:text-6xl">
-            {t("invite-you-to-join", { inviterName, organizationName })}
+            {t("inviteYouToJoin", { inviterName, organizationName })}
           </h1>
 
           <p className="text-md text-muted-foreground mt-6 leading-6 text-balance sm:text-lg sm:leading-8">
-            {t("accept-invite-instructions")}
+            {t("acceptInviteInstructions")}
           </p>
 
           <Form
@@ -68,10 +68,10 @@ export function AcceptInviteLinkPage({
               {isAcceptingInvite ? (
                 <>
                   <Spinner />
-                  {t("accepting-invite")}
+                  {t("acceptingInvite")}
                 </>
               ) : (
-                t("accept-invite")
+                t("acceptInvite")
               )}
             </Button>
           </Form>

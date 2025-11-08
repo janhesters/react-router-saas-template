@@ -63,7 +63,7 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
 
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-2">
-            {t("made-with-love")}
+            {t("madeWithLove")}
             <a
               aria-label={t("reactsquad")}
               className="text-foreground h-6 w-auto"

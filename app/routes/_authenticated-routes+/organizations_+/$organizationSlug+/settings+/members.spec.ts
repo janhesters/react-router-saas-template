@@ -318,7 +318,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],
@@ -348,7 +348,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],
@@ -890,7 +890,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],
@@ -959,7 +959,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],
@@ -1009,7 +1009,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
             error: {
               fieldErrors: {
                 email: [
-                  "organizations:settings.team-members.invite-by-email.form.email-invalid",
+                  "organizations:settings.teamMembers.inviteByEmail.form.emailInvalid",
                 ],
               },
               formErrors: [],
@@ -1029,7 +1029,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
             error: {
               fieldErrors: {
                 email: [
-                  "organizations:settings.team-members.invite-by-email.form.email-invalid",
+                  "organizations:settings.teamMembers.inviteByEmail.form.emailInvalid",
                 ],
               },
               formErrors: [],
@@ -1279,7 +1279,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],
@@ -1313,7 +1313,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           error: {
             fieldErrors: {
               email: [
-                "organizations:settings.team-members.invite-by-email.form.organization-full",
+                "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
             formErrors: [],

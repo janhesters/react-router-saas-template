@@ -12,21 +12,21 @@ export const createOrganizationFormSchema = z.object({
   intent: z.literal(CREATE_ORGANIZATION_INTENT),
   logo: z
     .file()
-    .max(ONE_MB, { message: "organizations:new.form.logo-too-large" })
+    .max(ONE_MB, { message: "organizations:new.form.logoTooLarge" })
     .mime(["image/png", "image/jpeg", "image/gif", "image/webp"], {
-      message: "organizations:new.form.logo-invalid-type",
+      message: "organizations:new.form.logoInvalidType",
     })
     .optional(),
   name: z
     .string({
-      message: "organizations:new.form.name-min-length",
+      message: "organizations:new.form.nameMinLength",
     })
     .trim()
     .min(MIN_NAME_LENGTH, {
-      message: "organizations:new.form.name-min-length",
+      message: "organizations:new.form.nameMinLength",
     })
     .max(MAX_NAME_LENGTH, {
-      message: "organizations:new.form.name-max-length",
+      message: "organizations:new.form.nameMaxLength",
     }),
 });
 

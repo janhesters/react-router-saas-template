@@ -38,7 +38,7 @@ export type AccountSettingsProps = {
 
 export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
   const { t } = useTranslation("settings", {
-    keyPrefix: "user-account",
+    keyPrefix: "userAccount",
   });
 
   const { form, fields } = useForm({
@@ -65,7 +65,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
     >
       <FieldSet disabled={isSubmitting}>
         <FieldLegend>
-          <h1>{t("page-title")}</h1>
+          <h1>{t("pageTitle")}</h1>
         </FieldLegend>
         <FieldDescription>{t("description")}</FieldDescription>
 
@@ -77,10 +77,10 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
           >
             <FieldContent>
               <FieldLabel htmlFor={fields.name.id}>
-                {t("form.name-label")}
+                {t("form.nameLabel")}
               </FieldLabel>
               <FieldDescription id={fields.name.descriptionId}>
-                {t("form.name-description")}
+                {t("form.nameDescription")}
               </FieldDescription>
             </FieldContent>
 
@@ -89,7 +89,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                 {...fields.name.inputProps}
                 autoComplete="name"
                 defaultValue={user.name}
-                placeholder={t("form.name-placeholder")}
+                placeholder={t("form.namePlaceholder")}
               />
 
               <FieldError
@@ -102,9 +102,9 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
           {/* Email Field - Read Only */}
           <Field orientation="responsive">
             <FieldContent>
-              <FieldLabel htmlFor="email">{t("form.email-label")}</FieldLabel>
+              <FieldLabel htmlFor="email">{t("form.emailLabel")}</FieldLabel>
               <FieldDescription id="email-description">
-                {t("form.email-description")}
+                {t("form.emailDescription")}
               </FieldDescription>
             </FieldContent>
             <div>
@@ -113,7 +113,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                 disabled
                 id="email"
                 name="email"
-                placeholder={t("form.email-placeholder")}
+                placeholder={t("form.emailPlaceholder")}
                 readOnly
                 value={user.email}
               />
@@ -131,17 +131,17 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
               >
                 <FieldContent>
                   <FieldLabel htmlFor={fields.avatar.id}>
-                    {t("form.avatar-label")}
+                    {t("form.avatarLabel")}
                   </FieldLabel>
                   <FieldDescription id={fields.avatar.descriptionId}>
-                    {t("form.avatar-description")}
+                    {t("form.avatarDescription")}
                   </FieldDescription>
                 </FieldContent>
                 <div>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
                     <Avatar className="size-16 md:size-24 rounded-lg">
                       <AvatarUploadPreviewImage
-                        alt={t("form.avatar-preview-alt")}
+                        alt={t("form.avatarPreviewAlt")}
                         className="size-16 md:size-24 rounded-lg object-cover"
                         src={user.imageUrl ?? ""}
                       />
@@ -158,7 +158,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                       />
 
                       <AvatarUploadDescription>
-                        {t("form.avatar-formats")}
+                        {t("form.avatarFormats")}
                       </AvatarUploadDescription>
                     </div>
                   </div>

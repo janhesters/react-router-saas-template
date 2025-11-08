@@ -61,7 +61,7 @@ type NotificationMenuProps = {
 
 export function NotificationMenu({ recipientId }: NotificationMenuProps) {
   const { t } = useTranslation("notifications", {
-    keyPrefix: "notification-menu",
+    keyPrefix: "notificationMenu",
   });
   const [isOpen, setIsOpen] = useState(false);
   const notificationMenuFetcher = useFetcher();
@@ -70,7 +70,7 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
       <DropdownMenuTrigger asChild>
         <Button
-          aria-label={t("trigger-button")}
+          aria-label={t("triggerButton")}
           className={cn(
             "opacity-0 group-hover:opacity-100 group-focus:opacity-100 hover:bg-transparent focus:opacity-100 dark:hover:bg-transparent",
             isOpen && "opacity-100",
@@ -95,7 +95,7 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
             );
           }}
         >
-          {t("mark-as-read")}
+          {t("markAsRead")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -123,7 +123,7 @@ export function LinkNotification({
   return (
     <Button
       asChild
-      className="text-muted-foreground group h-auto w-full justify-between py-2 break-words whitespace-normal"
+      className="text-muted-foreground group h-auto w-full justify-between py-2 wrap-break-word whitespace-normal"
       size="sm"
       variant="ghost"
     >

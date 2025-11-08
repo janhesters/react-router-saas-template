@@ -7,7 +7,7 @@ import { data, href, Link } from "react-router";
 
 import type { Route } from "./+types/billing_.success";
 import { Button } from "~/components/ui/button";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
@@ -24,7 +24,7 @@ export function loader({ context }: Route.LoaderArgs) {
     {
       title: getPageTitle(
         i18n.t.bind(i18n),
-        "billing:billing-success-page.page-title",
+        "billing:billingSuccessPage.pageTitle",
       ),
     },
     { headers },
@@ -37,7 +37,7 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 
 export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
   const { t } = useTranslation("billing", {
-    keyPrefix: "billing-success-page",
+    keyPrefix: "billingSuccessPage",
   });
   const { organizationSlug } = params;
 
@@ -81,15 +81,15 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
         <BadgeCheckIcon className="mx-auto size-16 text-green-400 dark:text-green-500" />
 
         <h3 className="text-foreground mt-2 text-lg font-semibold">
-          {t("payment-successful")}
+          {t("paymentSuccessful")}
         </h3>
 
         <p className="text-muted-foreground mt-2 text-base text-balance">
-          {t("product-ready")}
+          {t("productReady")}
         </p>
 
         <p className="text-muted-foreground mt-2 text-base text-balance">
-          {t("thank-you")}
+          {t("thankYou")}
         </p>
 
         <Button asChild>
@@ -99,7 +99,7 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
               organizationSlug,
             })}
           >
-            {t("go-to-dashboard")}
+            {t("goToDashboard")}
           </Link>
         </Button>
       </div>

@@ -178,7 +178,7 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar();
   const { t } = useTranslation("organizations", {
-    keyPrefix: "layout.app-sidebar.nav",
+    keyPrefix: "layout.appSidebar.nav",
   });
 
   if (collapsible === "none") {

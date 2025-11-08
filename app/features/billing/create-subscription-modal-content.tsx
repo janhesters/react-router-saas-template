@@ -44,7 +44,7 @@ export function CreateSubscriptionModalContent({
 }: CreateSubscriptionModalContentProps) {
   const { t } = useTranslation("billing", { keyPrefix: "pricing" });
   const { t: tModal } = useTranslation("billing", {
-    keyPrefix: "no-current-plan-modal",
+    keyPrefix: "noCurrentPlanModal",
   });
   const [billingPeriod, setBillingPeriod] = useState("annual");
 
@@ -71,7 +71,7 @@ export function CreateSubscriptionModalContent({
     priceLookupKeysByTierAndInterval.high.annual;
 
   const getFeatures = (key: string): string[] =>
-    t(`plans.${key}.features`, { returnObjects: true }) as string[];
+    t(`plans.${key}.features`, "", { returnObjects: true }) as string[];
 
   const getButtonProps = (
     interval: Interval,
@@ -90,10 +90,10 @@ export function CreateSubscriptionModalContent({
       children: isSubscribing ? (
         <>
           <Spinner />
-          {tModal("tier-card-busy")}
+          {tModal("tierCardBusy")}
         </>
       ) : (
-        tModal("tier-card-cta")
+        tModal("tierCardCta")
       ),
       disabled: isSubscribing || planLimits[tier] < currentSeats,
       name: "lookupKey",
@@ -110,16 +110,16 @@ export function CreateSubscriptionModalContent({
     <Form method="post" replace>
       {unavailable.length > 0 && (
         <Alert className="mb-4">
-          <AlertTitle>{tModal("disabled-plans-alert.title")}</AlertTitle>
+          <AlertTitle>{tModal("disabledPlansAlert.title")}</AlertTitle>
 
           <AlertDescription>
             {unavailable.length === 1
-              ? tModal("disabled-plans-alert.description-singular", {
+              ? tModal("disabledPlansAlert.descriptionSingular", {
                   currentSeats,
                   planCapacity: planLimits[unavailable[0]!],
                   planTitle: t(`plans.${unavailable[0]!}.title`),
                 })
-              : tModal("disabled-plans-alert.description-plural", {
+              : tModal("disabledPlansAlert.descriptionPlural", {
                   currentSeats,
                   plan1Capacity: planLimits[unavailable[0]!],
                   plan1Title: t(`plans.${unavailable[0]!}.title`),
@@ -145,7 +145,7 @@ export function CreateSubscriptionModalContent({
             </TabsList>
 
             {billingPeriod === "monthly" && (
-              <p className="text-primary text-sm">{t("save-annually")}</p>
+              <p className="text-primary text-sm">{t("saveAnnually")}</p>
             )}
           </div>
 
@@ -164,7 +164,8 @@ export function CreateSubscriptionModalContent({
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$17" }}
                       />
                     </TierCardPrice>
@@ -184,7 +185,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.low.features-title")}
+                      {t("plans.low.featuresTitle")}
                     </FeaturesListTitle>
                     <FeaturesList>
                       {getFeatures("low").map((feature) => (
@@ -209,7 +210,8 @@ export function CreateSubscriptionModalContent({
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$30" }}
                       />
                     </TierCardPrice>
@@ -229,7 +231,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.mid.features-title")}
+                      {t("plans.mid.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -248,7 +250,7 @@ export function CreateSubscriptionModalContent({
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
-                      <Badge>{t("most-popular")}</Badge>
+                      <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
@@ -258,7 +260,8 @@ export function CreateSubscriptionModalContent({
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$55" }}
                       />
                     </TierCardPrice>
@@ -278,7 +281,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.high.features-title")}
+                      {t("plans.high.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -311,7 +314,8 @@ export function CreateSubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$15" }}
                         />
                       }
@@ -334,7 +338,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.low.features-title")}
+                      {t("plans.low.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -360,7 +364,8 @@ export function CreateSubscriptionModalContent({
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$25" }}
                       />
 
@@ -382,7 +387,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.mid.features-title")}
+                      {t("plans.mid.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -401,7 +406,7 @@ export function CreateSubscriptionModalContent({
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
-                      <Badge>{t("most-popular")}</Badge>
+                      <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
 
                     <TierCardPrice>
@@ -411,7 +416,8 @@ export function CreateSubscriptionModalContent({
                             <span className="text-muted-foreground text-sm font-normal" />
                           ),
                         }}
-                        i18nKey="billing:pricing.price"
+                        i18nKey="pricing.price"
+                        ns="billing"
                         values={{ price: "$45" }}
                       />
 
@@ -433,7 +439,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.high.features-title")}
+                      {t("plans.high.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>
@@ -469,7 +475,7 @@ export function CreateSubscriptionModalContent({
 
                   <TierCardContent>
                     <FeaturesListTitle>
-                      {t("plans.enterprise.features-title")}
+                      {t("plans.enterprise.featuresTitle")}
                     </FeaturesListTitle>
 
                     <FeaturesList>

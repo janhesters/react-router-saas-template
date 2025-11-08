@@ -1,7 +1,7 @@
 import { useLoaderData } from "react-router";
 
 import type { Route } from "./+types/email-invite";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { acceptEmailInviteAction } from "~/features/organizations/accept-email-invite/accept-email-invite-action.server";
 import {
   getEmailInviteToken,
@@ -18,7 +18,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return {
     title: getPageTitle(
       i18n.t.bind(i18n),
-      "organizations:accept-email-invite.page-title",
+      "organizations:acceptEmailInvite.pageTitle",
     ),
     ...data,
   } as const;

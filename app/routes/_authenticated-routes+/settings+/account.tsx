@@ -3,7 +3,7 @@ import { data, useNavigation } from "react-router";
 import type { Route } from "./+types/account";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
 import { Separator } from "~/components/ui/separator";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { AccountSettings } from "~/features/user-accounts/settings/account/account-settings";
 import { accountSettingsAction } from "~/features/user-accounts/settings/account/account-settings-action.server";
 import { DELETE_USER_ACCOUNT_INTENT } from "~/features/user-accounts/settings/account/account-settings-constants";
@@ -22,10 +22,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return data(
     {
       dangerZone: mapUserAccountWithMembershipsToDangerZoneProps(auth.user),
-      title: getPageTitle(
-        i18n.t.bind(i18n),
-        "settings:user-account.page-title",
-      ),
+      title: getPageTitle(i18n.t.bind(i18n), "settings:userAccount.pageTitle"),
       user: auth.user,
     },
     { headers: auth.headers },

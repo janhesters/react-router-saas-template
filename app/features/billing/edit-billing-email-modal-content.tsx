@@ -29,7 +29,7 @@ export function EditBillingEmailModalContent({
   lastResult,
 }: EditBillingEmailModalContentProps) {
   const { t } = useTranslation("billing", {
-    keyPrefix: "billing-page.update-billing-email-modal",
+    keyPrefix: "billingPage.updateBillingEmailModal",
   });
 
   const { form, fields } = useForm({
@@ -54,14 +54,14 @@ export function EditBillingEmailModalContent({
         <FieldSet disabled={isUpdatingBillingEmail}>
           <Field data-invalid={fields.billingEmail.ariaInvalid}>
             <FieldLabel htmlFor={fields.billingEmail.id}>
-              {t("email-label")}
+              {t("emailLabel")}
             </FieldLabel>
 
             <Input
               {...fields.billingEmail.inputProps}
               className="col-span-3"
               defaultValue={billingEmail}
-              placeholder={t("email-placeholder")}
+              placeholder={t("emailPlaceholder")}
             />
 
             <FieldError
@@ -83,10 +83,10 @@ export function EditBillingEmailModalContent({
           {isUpdatingBillingEmail ? (
             <>
               <Spinner />
-              {t("saving-changes")}
+              {t("savingChanges")}
             </>
           ) : (
-            t("submit-button")
+            t("submitButton")
           )}
         </Button>
       </DialogFooter>

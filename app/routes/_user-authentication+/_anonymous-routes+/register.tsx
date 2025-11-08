@@ -23,7 +23,7 @@ import {
   InputGroupInput,
 } from "~/components/ui/input-group";
 import { Spinner } from "~/components/ui/spinner";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { getInviteInfoForAuthRoutes } from "~/features/organizations/organizations-helpers.server";
 import { registerAction } from "~/features/user-authentication/registration/register-action.server";
 import { registerWithEmailSchema } from "~/features/user-authentication/registration/registration-schemas";
@@ -47,7 +47,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       inviteLinkInfo: linkData.inviteLinkInfo,
       title: getPageTitle(
         i18n.t.bind(i18n),
-        "user-authentication:register.page-title",
+        "userAuthentication:register.pageTitle",
       ),
     },
     { headers: linkData.headers },
@@ -66,7 +66,7 @@ export default function RegisterRoute({
   loaderData,
   actionData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation("user-authentication", {
+  const { t } = useTranslation("userAuthentication", {
     keyPrefix: "register",
   });
   const { inviteLinkInfo } = loaderData;
@@ -102,17 +102,15 @@ export default function RegisterRoute({
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">
             {inviteLinkInfo
-              ? t("form.join-organization", {
-                  interpolation: { escapeValue: false },
+              ? t("form.joinOrganization", {
                   organizationName: inviteLinkInfo.organizationName,
                 })
               : t("title")}
           </h1>
           <p className="text-muted-foreground text-balance text-sm">
             {inviteLinkInfo
-              ? t("form.join-organization-description", {
+              ? t("form.joinOrganizationDescription", {
                   creatorName: inviteLinkInfo.creatorName,
-                  interpolation: { escapeValue: false },
                   organizationName: inviteLinkInfo.organizationName,
                 })
               : t("subtitle")}
@@ -209,7 +207,7 @@ export default function RegisterRoute({
                 ),
               }}
               i18nKey="register.legal"
-              ns="user-authentication"
+              ns="userAuthentication"
             />
           </FieldDescription>
         </Field>
@@ -231,7 +229,7 @@ export default function RegisterRoute({
                 ),
               }}
               i18nKey="register.loginCta"
-              ns="user-authentication"
+              ns="userAuthentication"
             />
           </FieldDescription>
         </Field>

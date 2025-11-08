@@ -5,7 +5,7 @@ import { data } from "react-router";
 import type { Route } from "./+types/general";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
 import { Separator } from "~/components/ui/separator";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 import { DangerZone } from "~/features/organizations/settings/general/danger-zone";
 import { GeneralOrganizationSettings } from "~/features/organizations/settings/general/general-organization-settings";
@@ -68,7 +68,7 @@ export default function GeneralOrganizationSettingsRoute({
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <h2 className="leading-none font-semibold">{t("page-title")}</h2>
+              <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
 
               <p className="text-muted-foreground text-sm">
                 {t("description")}

@@ -17,7 +17,7 @@ import {
 } from "~/features/billing/billing-helpers.server";
 import { BillingPage } from "~/features/billing/billing-page";
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
@@ -44,7 +44,7 @@ export async function loader({ context }: Route.LoaderArgs) {
         }),
         ...getCreateSubscriptionModalProps(organization, products),
       },
-      title: getPageTitle(i18n.t.bind(i18n), "billing:billing-page.page-title"),
+      title: getPageTitle(i18n.t.bind(i18n), "billing:billingPage.pageTitle"),
     },
     { headers },
   );

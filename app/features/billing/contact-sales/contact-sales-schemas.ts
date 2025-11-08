@@ -9,49 +9,49 @@ export const contactSalesFormSchema = z.object({
     .string()
     .trim()
     .min(1, {
-      message: "billing:contact-sales.company-name-required",
+      message: "billing:contactSales.companyNameRequired",
     })
     .max(255, {
-      message: "billing:contact-sales.company-name-too-long",
+      message: "billing:contactSales.companyNameTooLong",
     }),
   firstName: z
     .string()
     .trim()
     .min(1, {
-      message: "billing:contact-sales.first-name-required",
+      message: "billing:contactSales.firstNameRequired",
     })
     .max(255, {
-      message: "billing:contact-sales.first-name-too-long",
+      message: "billing:contactSales.firstNameTooLong",
     }),
   intent: z.literal(CONTACT_SALES_INTENT),
   lastName: z
     .string()
     .trim()
     .min(1, {
-      message: "billing:contact-sales.last-name-required",
+      message: "billing:contactSales.lastNameRequired",
     })
     .max(255, {
-      message: "billing:contact-sales.last-name-too-long",
+      message: "billing:contactSales.lastNameTooLong",
     }),
   message: z
     .string()
     .trim()
     .min(1, {
-      message: "billing:contact-sales.message-required",
+      message: "billing:contactSales.messageRequired",
     })
     .max(5000, {
-      message: "billing:contact-sales.message-too-long",
+      message: "billing:contactSales.messageTooLong",
     }),
   phoneNumber: z.string().trim().min(1, {
-    message: "billing:contact-sales.phone-number-required",
+    message: "billing:contactSales.phoneNumberRequired",
   }),
   workEmail: z
     .email({
-      message: "billing:contact-sales.work-email-invalid",
+      message: "billing:contactSales.workEmailInvalid",
     })
     .trim()
     .min(1, {
-      message: "billing:contact-sales.work-email-required",
+      message: "billing:contactSales.workEmailRequired",
     }),
 });
 

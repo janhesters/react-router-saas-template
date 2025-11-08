@@ -220,7 +220,7 @@ describe("/settings/account route action", () => {
         body: { intent, name: "a" },
         expectedError: {
           fieldErrors: {
-            name: ["settings:user-account.errors.nameMin"],
+            name: ["settings:userAccount.errors.nameMin"],
           },
           formErrors: [],
         },
@@ -230,7 +230,7 @@ describe("/settings/account route action", () => {
         body: { intent, name: "a".repeat(129) },
         expectedError: {
           fieldErrors: {
-            name: ["settings:user-account.errors.nameMax"],
+            name: ["settings:userAccount.errors.nameMax"],
           },
           formErrors: [],
         },
@@ -240,7 +240,7 @@ describe("/settings/account route action", () => {
         body: { intent, name: "   " },
         expectedError: {
           fieldErrors: {
-            name: ["settings:user-account.errors.nameMin"],
+            name: ["settings:userAccount.errors.nameMin"],
           },
           formErrors: [],
         },
@@ -250,7 +250,7 @@ describe("/settings/account route action", () => {
         body: { intent, name: "  a " },
         expectedError: {
           fieldErrors: {
-            name: ["settings:user-account.errors.nameMin"],
+            name: ["settings:userAccount.errors.nameMin"],
           },
           formErrors: [],
         },

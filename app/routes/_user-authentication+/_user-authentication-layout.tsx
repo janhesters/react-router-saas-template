@@ -21,8 +21,8 @@ export async function loader() {
 export default function UserAuthenticationLayout({
   loaderData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation("user-authentication", { keyPrefix: "layout" });
-  const { t: tCommon } = useTranslation("common");
+  const { t } = useTranslation("userAuthentication", { keyPrefix: "layout" });
+  const { t: tCommon } = useTranslation("translation");
   const loginMatch = useMatch(href("/login"));
   const registerMatch = useMatch(href("/register"));
   const { shouldShowAnimations } = loaderData;
@@ -39,7 +39,7 @@ export default function UserAuthenticationLayout({
           <div className="bg-primary text-primary-primary flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEndIcon className="size-4" />
           </div>
-          {tCommon("app-name")}
+          {tCommon("appName")}
         </Link>
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">

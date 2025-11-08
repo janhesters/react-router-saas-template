@@ -5,7 +5,7 @@ import { Link, useNavigation } from "react-router";
 import type { Route } from "./+types/new";
 import { Button } from "~/components/ui/button";
 import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { createOrganizationAction } from "~/features/organizations/create-organization/create-organization-action.server";
 import { CREATE_ORGANIZATION_INTENT } from "~/features/organizations/create-organization/create-organization-constants";
 import { CreateOrganizationFormCard } from "~/features/organizations/create-organization/create-organization-form-card";
@@ -20,7 +20,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   return {
-    title: getPageTitle(i18n.t.bind(i18n), "organizations:new.page-title"),
+    title: getPageTitle(i18n.t.bind(i18n), "organizations:new.pageTitle"),
   };
 }
 
@@ -47,12 +47,12 @@ export default function NewOrganizationRoute({
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
             <Button asChild className="size-8" size="icon" variant="outline">
-              <Link aria-label={t("back-button-label")} to="/organizations">
+              <Link aria-label={t("backButtonLabel")} to="/organizations">
                 <TbArrowLeft />
               </Link>
             </Button>
 
-            <h1 className="text-base font-medium">{t("page-title")}</h1>
+            <h1 className="text-base font-medium">{t("pageTitle")}</h1>
           </div>
 
           <ThemeToggle />

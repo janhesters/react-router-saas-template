@@ -51,7 +51,7 @@ export function CancelOrModifySubscriptionModalContent({
 }: CancelOrModifySubscriptionModalContentProps) {
   const { t } = useTranslation("billing", { keyPrefix: "pricing" });
   const { t: tModal } = useTranslation("billing", {
-    keyPrefix: "billing-page.pricing-modal",
+    keyPrefix: "billingPage.pricingModal",
   });
   const [billingPeriod, setBillingPeriod] = useState("annual");
 
@@ -60,7 +60,7 @@ export function CancelOrModifySubscriptionModalContent({
 
   // TODO: change to "Tier" - high, low, mid, enterprise
   const getFeatures = (key: string): string[] =>
-    t(`plans.${key}.features`, { returnObjects: true }) as string[];
+    t(`plans.${key}.features`, "", { returnObjects: true }) as string[];
 
   const getButtonProps = (
     interval: "monthly" | "annual",
@@ -81,14 +81,14 @@ export function CancelOrModifySubscriptionModalContent({
     if (isCurrentTier) {
       if (interval !== currentTierInterval) {
         return interval === "annual"
-          ? { children: tModal("switch-to-annual-button") }
+          ? { children: tModal("switchToAnnualButton") }
           : {
-              children: tModal("switch-to-monthly-button"),
+              children: tModal("switchToMonthlyButton"),
               variant: "outline",
             };
       }
       return {
-        children: tModal("current-plan"),
+        children: tModal("currentPlan"),
         disabled: true,
         variant: "outline",
       };
@@ -113,8 +113,8 @@ export function CancelOrModifySubscriptionModalContent({
 
     // 3. Default static buttons for upgrade vs downgrade
     return isUpgrade
-      ? { children: tModal("upgrade-button"), disabled: isSubmitting }
-      : { children: tModal("downgrade-button"), variant: "outline" };
+      ? { children: tModal("upgradeButton"), disabled: isSubmitting }
+      : { children: tModal("downgradeButton"), variant: "outline" };
   };
 
   return (
@@ -135,7 +135,7 @@ export function CancelOrModifySubscriptionModalContent({
               </TabsList>
 
               {billingPeriod === "monthly" && (
-                <p className="text-primary text-sm">{t("save-annually")}</p>
+                <p className="text-primary text-sm">{t("saveAnnually")}</p>
               )}
             </div>
 
@@ -154,7 +154,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$17" }}
                         />
                       </TierCardPrice>
@@ -176,7 +177,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.low.features-title")}
+                        {t("plans.low.featuresTitle")}
                       </FeaturesListTitle>
                       <FeaturesList>
                         {getFeatures("low").map((feature) => (
@@ -201,7 +202,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$30" }}
                         />
                       </TierCardPrice>
@@ -223,7 +225,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.mid.features-title")}
+                        {t("plans.mid.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -242,7 +244,7 @@ export function CancelOrModifySubscriptionModalContent({
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
                         {t("plans.high.title")}
-                        <Badge>{t("most-popular")}</Badge>
+                        <Badge>{t("mostPopular")}</Badge>
                       </TierCardTitle>
 
                       <TierCardPrice>
@@ -252,7 +254,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$55" }}
                         />
                       </TierCardPrice>
@@ -274,7 +277,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.high.features-title")}
+                        {t("plans.high.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -306,7 +309,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$15" }}
                         />
 
@@ -330,7 +334,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.low.features-title")}
+                        {t("plans.low.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -356,7 +360,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$25" }}
                         />
 
@@ -380,7 +385,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.mid.features-title")}
+                        {t("plans.mid.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -399,7 +404,7 @@ export function CancelOrModifySubscriptionModalContent({
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
                         {t("plans.high.title")}
-                        <Badge>{t("most-popular")}</Badge>
+                        <Badge>{t("mostPopular")}</Badge>
                       </TierCardTitle>
 
                       <TierCardPrice>
@@ -409,7 +414,8 @@ export function CancelOrModifySubscriptionModalContent({
                               <span className="text-muted-foreground text-sm font-normal" />
                             ),
                           }}
-                          i18nKey="billing:pricing.price"
+                          i18nKey="pricing.price"
+                          ns="billing"
                           values={{ price: "$45" }}
                         />
 
@@ -433,7 +439,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.high.features-title")}
+                        {t("plans.high.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -471,7 +477,7 @@ export function CancelOrModifySubscriptionModalContent({
 
                     <TierCardContent>
                       <FeaturesListTitle>
-                        {t("plans.enterprise.features-title")}
+                        {t("plans.enterprise.featuresTitle")}
                       </FeaturesListTitle>
 
                       <FeaturesList>
@@ -498,11 +504,11 @@ export function CancelOrModifySubscriptionModalContent({
           <div className="@container/alert">
             <Alert className="flex flex-col gap-2 @5xl/alert:block">
               <AlertTitle>
-                {tModal("cancel-subscription-banner.title")}
+                {tModal("cancelSubscriptionBanner.title")}
               </AlertTitle>
 
               <AlertDescription>
-                {tModal("cancel-subscription-banner.description")}
+                {tModal("cancelSubscriptionBanner.description")}
               </AlertDescription>
 
               <Button
@@ -512,7 +518,7 @@ export function CancelOrModifySubscriptionModalContent({
                 type="button"
                 variant="outline"
               >
-                {tModal("cancel-subscription-banner.button")}
+                {tModal("cancelSubscriptionBanner.button")}
               </Button>
             </Alert>
           </div>

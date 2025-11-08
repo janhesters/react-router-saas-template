@@ -1,5 +1,5 @@
 import type { Route } from "./+types/invite-link";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { acceptInviteLinkAction } from "~/features/organizations/accept-invite-link/accept-invite-link-action.server";
 import {
   getInviteLinkToken,
@@ -16,7 +16,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return {
     title: getPageTitle(
       i18n.t.bind(i18n),
-      "organizations:accept-invite-link.page-title",
+      "organizations:acceptInviteLink.pageTitle",
     ),
     token,
     ...data,

@@ -24,7 +24,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireUserNeedsOnboarding } from "~/features/onboarding/onboarding-helpers.server";
 import { onboardingUserAccountAction } from "~/features/onboarding/user-account/onboarding-user-account-action.server";
 import { ONBOARDING_USER_ACCOUNT_INTENT } from "~/features/onboarding/user-account/onboarding-user-account-constants";
@@ -40,7 +40,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   return data(
     {
-      title: getPageTitle(i18n.t.bind(i18n), "onboarding:user-account.title"),
+      title: getPageTitle(i18n.t.bind(i18n), "onboarding:userAccount.title"),
       user: auth.user,
     },
     { headers: auth.headers },
@@ -61,7 +61,7 @@ export default function UserAccountOnboardingRoute({
   actionData,
   loaderData,
 }: Route.ComponentProps) {
-  const { t } = useTranslation("onboarding", { keyPrefix: "user-account" });
+  const { t } = useTranslation("onboarding", { keyPrefix: "userAccount" });
   const { form, fields } = useForm({
     lastResult: actionData?.result,
     schema: coerceFormValue(onboardingUserAccountSchema),

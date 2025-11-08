@@ -41,7 +41,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "layout.app-sidebar.nav",
+    keyPrefix: "layout.appSidebar.nav",
   });
 
   return (
@@ -108,14 +108,14 @@ export function AppSidebar({
           items={[
             {
               icon: SettingsIcon,
-              title: t("settings.organization-settings"),
+              title: t("settings.organizationSettings"),
               url: href("/organizations/:organizationSlug/settings", {
                 organizationSlug,
               }),
             },
             {
               icon: CircleHelpIcon,
-              title: t("settings.get-help"),
+              title: t("settings.getHelp"),
               url: href("/organizations/:organizationSlug/get-help", {
                 organizationSlug,
               }),

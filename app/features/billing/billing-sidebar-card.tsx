@@ -38,7 +38,7 @@ export function BillingSidebarCard({
   trialEndDate,
 }: BillingSidebarCardProps) {
   const { t } = useTranslation("billing", {
-    keyPrefix: "billing-sidebar-card",
+    keyPrefix: "billingSidebarCard",
   });
 
   return (
@@ -59,20 +59,20 @@ export function BillingSidebarCard({
         >
           <CardTitle className="text-sm">
             {state === "trialing"
-              ? t("active-trial.title")
+              ? t("activeTrial.title")
               : state === "cancelled"
-                ? t("subscription-inactive.title")
-                : t("trial-ended.title")}
+                ? t("subscriptionInactive.title")
+                : t("trialEnded.title")}
           </CardTitle>
 
           <CardDescription>
             {state === "trialing"
-              ? t("active-trial.description", {
+              ? t("activeTrial.description", {
                   date: formatDate(trialEndDate, "MMMM dd, yyyy"),
                 })
               : state === "cancelled"
-                ? t("subscription-inactive.description")
-                : t("trial-ended.description", {
+                ? t("subscriptionInactive.description")
+                : t("trialEnded.description", {
                     date: formatDate(trialEndDate, "MMMM dd, yyyy"),
                   })}
           </CardDescription>
@@ -88,10 +88,10 @@ export function BillingSidebarCard({
                 variant="outline"
               >
                 {state === "trialing"
-                  ? t("active-trial.button")
+                  ? t("activeTrial.button")
                   : state === "cancelled"
-                    ? t("subscription-inactive.button")
-                    : t("trial-ended.button")}
+                    ? t("subscriptionInactive.button")
+                    : t("trialEnded.button")}
               </Button>
             </DialogTrigger>
           </CardContent>
@@ -102,13 +102,13 @@ export function BillingSidebarCard({
         <DialogHeader>
           <DialogTitle>
             {state === "cancelled"
-              ? t("subscription-inactive.modal.title")
-              : t("billing-modal.title")}
+              ? t("subscriptionInactive.modal.title")
+              : t("billingModal.title")}
           </DialogTitle>
 
           <VisuallyHiddenPrimitive.Root>
             <DialogDescription>
-              {t("billing-modal.description")}
+              {t("billingModal.description")}
             </DialogDescription>
           </VisuallyHiddenPrimitive.Root>
         </DialogHeader>

@@ -9,7 +9,7 @@ export type NotFoundProps = {
 };
 
 export function NotFound({ className }: NotFoundProps) {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation("translation");
 
   return (
     <main
@@ -20,19 +20,19 @@ export function NotFound({ className }: NotFoundProps) {
     >
       <div className="text-center">
         <p className="text-primary text-base font-semibold">
-          {t("not-found.status")}
+          {t("notFound.status")}
         </p>
 
         <h1 className="text-foreground mt-4 text-3xl font-bold tracking-tighter sm:text-5xl">
-          {t("not-found.title")}
+          {t("notFound.title")}
         </h1>
 
         <p className="text-muted-foreground mt-6 text-base">
-          {t("not-found.description")}
+          {t("notFound.description")}
         </p>
 
         <Button asChild className="mt-10">
-          <Link to="/">{t("not-found.home-link")}</Link>
+          <Link to="/">{t("notFound.homeLink")}</Link>
         </Button>
       </div>
     </main>

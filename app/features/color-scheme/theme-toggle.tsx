@@ -3,6 +3,7 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { TbBrightness } from "react-icons/tb";
 import { Form } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import {
   COLOR_SCHEME_FORM_KEY,
@@ -36,7 +37,7 @@ function ColorSchemeButton({
         {...props}
         className={cn(
           className,
-          isActive && "text-primary [&_svg]:!text-primary",
+          isActive && "text-primary [&_svg]:text-primary!",
         )}
         disabled={isActive}
         name={COLOR_SCHEME_FORM_KEY}
@@ -48,14 +49,17 @@ function ColorSchemeButton({
 }
 
 export function ThemeToggle() {
-  const { t } = useTranslation("color-scheme");
+  const { t } = useTranslation("colorScheme");
+  const hydrated = useHydrated();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          aria-label={t("dropdown-menu-button-label")}
+          aria-label={t("dropdownMenuButtonLabel")}
           className="size-8"
+          // Playwright shouldn't try to click the button before it's hydrated
+          disabled={!hydrated}
           size="icon"
           variant="outline"
         >
@@ -65,7 +69,7 @@ export function ThemeToggle() {
 
       <DropdownMenuContent align="end" sideOffset={4}>
         <DropdownMenuLabel className="sr-only">
-          {t("dropdown-menu-label")}
+          {t("dropdownMenuLabel")}
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator className="sr-only" />
@@ -76,17 +80,17 @@ export function ThemeToggle() {
 
             <ColorSchemeButton value={colorSchemes.light}>
               <SunIcon />
-              {t("dropdown-menu-item-light")}
+              {t("dropdownMenuItemLight")}
             </ColorSchemeButton>
 
             <ColorSchemeButton value={colorSchemes.dark}>
               <MoonIcon />
-              {t("dropdown-menu-item-dark")}
+              {t("dropdownMenuItemDark")}
             </ColorSchemeButton>
 
             <ColorSchemeButton value={colorSchemes.system}>
               <MonitorIcon />
-              {t("dropdown-menu-item-system")}
+              {t("dropdownMenuItemSystem")}
             </ColorSchemeButton>
           </Form>
         </DropdownMenuGroup>

@@ -8,7 +8,7 @@ import {
   registerWithGoogleSchema,
 } from "./registration-schemas";
 import type { Route } from ".react-router/types/app/routes/_user-authentication+/_anonymous-routes+/+types/register";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { retrieveUserAccountFromDatabaseByEmail } from "~/features/user-accounts/user-accounts-model.server";
 import { getErrorMessage } from "~/utils/get-error-message";
 import { badRequest } from "~/utils/http-responses.server";
@@ -41,9 +41,7 @@ export async function registerAction({ request, context }: Route.ActionArgs) {
           result: report(result.submission, {
             error: {
               fieldErrors: {
-                email: [
-                  "user-authentication:register.form.user-already-exists",
-                ],
+                email: ["userAuthentication:register.form.userAlreadyExists"],
               },
               formErrors: [],
             },
@@ -54,7 +52,7 @@ export async function registerAction({ request, context }: Route.ActionArgs) {
       const { data, error } = await supabase.auth.signInWithOtp({
         email: body.email,
         options: {
-          data: { appName: i18n.t("common:app-name"), intent: body.intent },
+          data: { appName: i18n.t("translation:appName"), intent: body.intent },
           shouldCreateUser: true,
         },
       });
@@ -68,7 +66,7 @@ export async function registerAction({ request, context }: Route.ActionArgs) {
               error: {
                 fieldErrors: {
                   email: [
-                    "user-authentication:register.form.registration-failed",
+                    "userAuthentication:register.form.registrationFailed",
                   ],
                 },
                 formErrors: [],

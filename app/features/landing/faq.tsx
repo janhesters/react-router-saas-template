@@ -48,7 +48,9 @@ export function FAQ() {
                         />,
                       ]),
                     )}
-                    i18nKey={`landing:faq.items.${index}.answer`}
+                    // @ts-expect-error - dynamic key based on index
+                    i18nKey={`faq.items.${index}.answer`}
+                    ns="landing"
                   />
                 ) : (
                   item.answer

@@ -9,7 +9,7 @@ import { I18nextProvider } from "react-i18next";
 import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 
-import { getInstance } from "./features/localization/i18n-middleware.server";
+import { getInstance } from "./features/localization/i18next-middleware.server";
 import { init } from "./utils/env.server";
 import { NonceProvider } from "./utils/nonce-provider";
 

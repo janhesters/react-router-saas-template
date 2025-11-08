@@ -19,7 +19,7 @@ import {
 } from "./general-settings-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/general";
 import { updateStripeCustomer } from "~/features/billing/stripe-helpers.server";
-import { getInstance } from "~/features/localization/i18n-middleware.server";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { forbidden } from "~/utils/http-responses.server";
@@ -106,7 +106,7 @@ export async function generalOrganizationSettingsAction({
             }),
             {
               title: i18n.t(
-                "organizations:settings.general.toast.organization-profile-updated",
+                "organizations:settings.general.toast.organizationProfileUpdated",
               ),
               type: "success",
             },
@@ -117,7 +117,7 @@ export async function generalOrganizationSettingsAction({
 
       const toastHeaders = await createToastHeaders({
         title: i18n.t(
-          "organizations:settings.general.toast.organization-profile-updated",
+          "organizations:settings.general.toast.organizationProfileUpdated",
         ),
         type: "success",
       });
@@ -133,7 +133,7 @@ export async function generalOrganizationSettingsAction({
         href("/organizations"),
         {
           title: i18n.t(
-            "organizations:settings.general.toast.organization-deleted",
+            "organizations:settings.general.toast.organizationDeleted",
           ),
           type: "success",
         },

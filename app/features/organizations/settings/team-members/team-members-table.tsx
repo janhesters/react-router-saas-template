@@ -20,6 +20,7 @@ import {
   TbLoader,
 } from "react-icons/tb";
 import { useFetcher } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { CHANGE_ROLE_INTENT } from "./team-members-constants";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -78,7 +79,7 @@ type RoleSwitcherProps = {
 
 function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.team-members.table.role-switcher",
+    keyPrefix: "settings.teamMembers.table.roleSwitcher",
   });
 
   const [open, setOpen] = useState(false);
@@ -86,11 +87,19 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
   const role =
     (fetcher.formData?.get("role") as string) ||
     (member.deactivatedAt ? "deactivated" : member.role);
+  const hydrated = useHydrated();
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
       <PopoverTrigger asChild>
-        <Button className="w-36 justify-between" size="sm" variant="outline">
+        <Button
+          className="w-36 justify-between"
+          // Playwright shouldn't try to click the button before it's hydrated
+          disabled={!hydrated}
+          size="sm"
+          variant="outline"
+        >
+          {/* @ts-expect-error - role is a dynamic string (member/admin/owner/deactivated) */}
           {t(role)}
 
           <ChevronDownIcon
@@ -110,11 +119,11 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
           <input name="userId" type="hidden" value={member.id} />
           <input name="intent" type="hidden" value={CHANGE_ROLE_INTENT} />
 
-          <Command label={t("command-label")}>
-            <CommandInput placeholder={t("roles-placeholder")} />
+          <Command label={t("commandLabel")}>
+            <CommandInput placeholder={t("rolesPlaceholder")} />
 
             <CommandList>
-              <CommandEmpty>{t("no-roles-found")}</CommandEmpty>
+              <CommandEmpty>{t("noRolesFound")}</CommandEmpty>
 
               <CommandGroup>
                 <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
@@ -127,7 +136,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                     <p>{t("member")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t("member-description")}
+                      {t("memberDescription")}
                     </p>
                   </button>
                 </CommandItem>
@@ -142,7 +151,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                     <p>{t("admin")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t("admin-description")}
+                      {t("adminDescription")}
                     </p>
                   </button>
                 </CommandItem>
@@ -158,7 +167,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                       <p>{t("owner")}</p>
 
                       <p className="text-muted-foreground text-sm">
-                        {t("owner-description")}
+                        {t("ownerDescription")}
                       </p>
                     </button>
                   </CommandItem>
@@ -176,7 +185,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                     <p>{t("deactivated")}</p>
 
                     <p className="text-muted-foreground text-sm">
-                      {t("deactivated-description")}
+                      {t("deactivatedDescription")}
                     </p>
                   </button>
                 </CommandItem>
@@ -194,7 +203,7 @@ const createColumns = ({
   t,
 }: {
   currentUsersRole: OrganizationMembership["role"];
-  t: TFunction;
+  t: TFunction<"organizations", "settings.teamMembers.table">;
 }): ColumnDef<Member>[] => [
   {
     accessorKey: "avatar",
@@ -208,18 +217,18 @@ const createColumns = ({
         </Avatar>
       );
     },
-    header: () => <div className="sr-only">{t("avatar-header")}</div>,
+    header: () => <div className="sr-only">{t("avatarHeader")}</div>,
   },
   {
     accessorKey: "name",
     cell: ({ row }) => {
       return <div className="text-sm font-medium">{row.original.name}</div>;
     },
-    header: t("name-header"),
+    header: t("nameHeader"),
   },
   {
     accessorKey: "email",
-    header: t("email-header"),
+    header: t("emailHeader"),
   },
   {
     accessorKey: "status",
@@ -238,7 +247,7 @@ const createColumns = ({
         </Badge>
       );
     },
-    header: t("status-header"),
+    header: t("statusHeader"),
   },
   {
     accessorKey: "role",
@@ -255,8 +264,8 @@ const createColumns = ({
       row.original.status === "emailInvitePending" ? (
         <div className="text-muted-foreground">
           {row.original.deactivatedAt
-            ? t("role-switcher.deactivated")
-            : t(`role-switcher.${row.original.role}`)}
+            ? t("roleSwitcher.deactivated")
+            : t(`roleSwitcher.${row.original.role}`)}
         </div>
       ) : (
         <RoleSwitcher
@@ -266,7 +275,7 @@ const createColumns = ({
           member={row.original}
         />
       ),
-    header: t("role-header"),
+    header: t("roleHeader"),
   },
 ];
 
@@ -280,7 +289,7 @@ export function TeamMembersTable({
   members,
 }: TeamMembersTableProps) {
   const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.team-members.table",
+    keyPrefix: "settings.teamMembers.table",
   });
 
   const columns = useMemo(
@@ -341,7 +350,7 @@ export function TeamMembersTable({
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  {t("no-results")}
+                  {t("noResults")}
                 </TableCell>
               </TableRow>
             )}
@@ -352,7 +361,7 @@ export function TeamMembersTable({
       <div className="flex items-center justify-between px-4">
         <div className="hidden items-center gap-2 lg:flex">
           <Label className="text-sm font-medium" htmlFor="rows-per-page">
-            {t("pagination.rows-per-page")}
+            {t("pagination.rowsPerPage")}
           </Label>
 
           <Select
@@ -377,7 +386,7 @@ export function TeamMembersTable({
 
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="flex w-fit items-center justify-center text-sm font-medium">
-            {t("pagination.page-info", {
+            {t("pagination.pageInfo", {
               current: table.getState().pagination.pageIndex + 1,
               total: table.getPageCount(),
             })}
@@ -390,7 +399,7 @@ export function TeamMembersTable({
               onClick={() => table.setPageIndex(0)}
               variant="outline"
             >
-              <span className="sr-only">{t("pagination.go-to-first")}</span>
+              <span className="sr-only">{t("pagination.goToFirst")}</span>
               <TbChevronsLeft />
             </Button>
 
@@ -401,7 +410,7 @@ export function TeamMembersTable({
               size="icon"
               variant="outline"
             >
-              <span className="sr-only">{t("pagination.go-to-previous")}</span>
+              <span className="sr-only">{t("pagination.goToPrevious")}</span>
               <TbChevronLeft />
             </Button>
 
@@ -412,7 +421,7 @@ export function TeamMembersTable({
               size="icon"
               variant="outline"
             >
-              <span className="sr-only">{t("pagination.go-to-next")}</span>
+              <span className="sr-only">{t("pagination.goToNext")}</span>
               <TbChevronRight />
             </Button>
 
@@ -423,7 +432,7 @@ export function TeamMembersTable({
               size="icon"
               variant="outline"
             >
-              <span className="sr-only">{t("pagination.go-to-last")}</span>
+              <span className="sr-only">{t("pagination.goToLast")}</span>
               <TbChevronsRight />
             </Button>
           </div>

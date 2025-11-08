@@ -634,7 +634,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
             error: {
               fieldErrors: {
                 billingEmail: [
-                  "billing:billing-page.update-billing-email-modal.email-invalid",
+                  "billing:billingPage.updateBillingEmailModal.emailInvalid",
                 ],
               },
             },
@@ -648,7 +648,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
             error: {
               fieldErrors: {
                 billingEmail: [
-                  "billing:billing-page.update-billing-email-modal.email-invalid",
+                  "billing:billingPage.updateBillingEmailModal.emailInvalid",
                 ],
               },
             },

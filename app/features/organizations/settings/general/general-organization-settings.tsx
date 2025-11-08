@@ -93,7 +93,7 @@ export function GeneralOrganizationSettings({
     >
       <FieldSet disabled={isSubmitting}>
         <FieldLegend>
-          <h1>{t("page-title")}</h1>
+          <h1>{t("pageTitle")}</h1>
         </FieldLegend>
         <FieldDescription>{t("description")}</FieldDescription>
 
@@ -105,7 +105,7 @@ export function GeneralOrganizationSettings({
           >
             <FieldContent>
               <FieldLabel htmlFor={fields.name.id}>
-                {t("form.name-label")}
+                {t("form.nameLabel")}
               </FieldLabel>
 
               <FieldDescription id={fields.name.descriptionId}>
@@ -114,11 +114,11 @@ export function GeneralOrganizationSettings({
                     bold: <span className="font-semibold text-foreground" />,
                     warning: (
                       <WarningHoverCard
-                        content={t("form.name-warning-content")}
+                        content={t("form.nameWarningContent")}
                       />
                     ),
                   }}
-                  i18nKey="form.name-description"
+                  i18nKey="form.nameDescription"
                   parent={null}
                   t={t}
                 />
@@ -130,7 +130,7 @@ export function GeneralOrganizationSettings({
                 {...fields.name.inputProps}
                 autoComplete="organization"
                 defaultValue={organization.name}
-                placeholder={t("form.name-placeholder")}
+                placeholder={t("form.namePlaceholder")}
               />
 
               <FieldError
@@ -151,17 +151,17 @@ export function GeneralOrganizationSettings({
               >
                 <FieldContent>
                   <FieldLabel htmlFor={fields.logo.id}>
-                    {t("form.logo-label")}
+                    {t("form.logoLabel")}
                   </FieldLabel>
                   <FieldDescription id={fields.logo.descriptionId}>
-                    {t("form.logo-description")}
+                    {t("form.logoDescription")}
                   </FieldDescription>
                 </FieldContent>
                 <div>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
                     <Avatar className="size-16 md:size-24 rounded-lg">
                       <AvatarUploadPreviewImage
-                        alt={t("form.logo-preview-alt")}
+                        alt={t("form.logoPreviewAlt")}
                         className="size-16 md:size-24 rounded-lg object-cover"
                         src={organization.imageUrl ?? ""}
                       />
@@ -177,7 +177,7 @@ export function GeneralOrganizationSettings({
                       />
 
                       <AvatarUploadDescription>
-                        {t("form.logo-formats")}
+                        {t("form.logoFormats")}
                       </AvatarUploadDescription>
                     </div>
                   </div>

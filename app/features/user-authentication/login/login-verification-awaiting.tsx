@@ -26,8 +26,8 @@ export function LoginVerificationAwaiting({
   isResending = false,
   isSubmitting = false,
 }: LoginVerificationAwaitingProps) {
-  const { t } = useTranslation("user-authentication", {
-    keyPrefix: "login.magic-link",
+  const { t } = useTranslation("userAuthentication", {
+    keyPrefix: "login.magicLink",
   });
 
   const { secondsLeft, reset } = useCountdown(60);
@@ -37,10 +37,10 @@ export function LoginVerificationAwaiting({
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-xl">{t("card-title")}</CardTitle>
+        <CardTitle className="text-xl">{t("cardTitle")}</CardTitle>
 
         <CardDescription className="text-center">
-          {t("card-description")}
+          {t("cardDescription")}
         </CardDescription>
       </CardHeader>
 
@@ -50,7 +50,8 @@ export function LoginVerificationAwaiting({
             <Trans
               components={{ 1: <b /> }}
               count={secondsLeft}
-              i18nKey="user-authentication:login.magic-link.countdown-message"
+              i18nKey="login.magicLink.countdownMessage"
+              ns="userAuthentication"
             />
           </p>
 
@@ -67,10 +68,10 @@ export function LoginVerificationAwaiting({
                 {isResending ? (
                   <>
                     <Spinner />
-                    {t("resend-button-loading")}
+                    {t("resendButtonLoading")}
                   </>
                 ) : (
-                  t("resend-button")
+                  t("resendButton")
                 )}
               </Button>
             </fieldset>
@@ -79,7 +80,7 @@ export function LoginVerificationAwaiting({
           <Alert>
             <TriangleAlertIcon />
 
-            <AlertDescription>{t("alert-description")}</AlertDescription>
+            <AlertDescription>{t("alertDescription")}</AlertDescription>
           </Alert>
         </div>
       </CardContent>

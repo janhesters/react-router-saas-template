@@ -11,7 +11,7 @@ z.config({ jitless: true });
 export const inviteByEmailSchema = z.object({
   email: z.email({
     message:
-      "organizations:settings.team-members.invite-by-email.form.email-invalid",
+      "organizations:settings.teamMembers.inviteByEmail.form.emailInvalid",
   }),
   intent: z.literal(INVITE_BY_EMAIL_INTENT),
   role: z.nativeEnum(OrganizationMembershipRole),
