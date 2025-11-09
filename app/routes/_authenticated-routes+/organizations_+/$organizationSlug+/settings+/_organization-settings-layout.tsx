@@ -9,6 +9,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "~/components/ui/navigation-menu";
+import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 
 export function loader({ request, context, params }: Route.LoaderArgs) {
@@ -22,9 +23,15 @@ export function loader({ request, context, params }: Route.LoaderArgs) {
   }
 
   const { role } = context.get(organizationMembershipContext);
+  const i18n = getInstance(context);
 
   return {
-    headerTitle: "Organization Settings",
+    breadcrump: {
+      title: i18n.t("organizations:settings.breadcrumb"),
+      to: href("/organizations/:organizationSlug/settings", {
+        organizationSlug: params.organizationSlug,
+      }),
+    },
     showBilling:
       role === OrganizationMembershipRole.admin ||
       role === OrganizationMembershipRole.owner,

@@ -45,6 +45,18 @@ export default {
     pageTitle: "Invitation",
     welcomeToAppName: "Welcome to {{appName}}",
   },
+  analytics: {
+    breadcrumb: "Analytics",
+    pageTitle: "Analytics",
+  },
+  dashboard: {
+    breadcrumb: "Dashboard",
+    pageTitle: "Dashboard",
+  },
+  getHelp: {
+    breadcrumb: "Get Help",
+    pageTitle: "Get Help",
+  },
   layout: {
     appSidebar: {
       nav: {
@@ -110,8 +122,18 @@ export default {
     },
     title: "Organization List",
   },
+  projects: {
+    breadcrumb: "All Projects",
+    pageTitle: "All Projects",
+  },
+  projectsActive: {
+    breadcrumb: "Active Projects",
+    pageTitle: "Active Projects",
+  },
   settings: {
+    breadcrumb: "Settings",
     general: {
+      breadcrumb: "General",
       dangerZone: {
         cancelButton: "Cancel",
         confirmationLabel:
@@ -178,6 +200,7 @@ export default {
       teamMembers: "Team Members",
     },
     teamMembers: {
+      breadcrumb: "Team Members",
       description: "Manage your team members and their permissions.",
       descriptionMember: "View who is a member of your organization.",
       inviteByEmail: {

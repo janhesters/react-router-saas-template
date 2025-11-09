@@ -45,7 +45,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return data(
     {
       inviteLinkInfo: linkData.inviteLinkInfo,
-      title: getPageTitle(
+      pageTitle: getPageTitle(
         i18n.t.bind(i18n),
         "userAuthentication:login.pageTitle",
       ),
@@ -55,7 +55,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

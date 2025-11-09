@@ -22,7 +22,7 @@ export function loader({ context }: Route.LoaderArgs) {
 
   return data(
     {
-      title: getPageTitle(
+      pageTitle: getPageTitle(
         i18n.t.bind(i18n),
         "billing:billingSuccessPage.pageTitle",
       ),
@@ -32,7 +32,7 @@ export function loader({ context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export default function BillingSuccessRoute({ params }: Route.ComponentProps) {

@@ -40,14 +40,17 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   return data(
     {
-      title: getPageTitle(i18n.t.bind(i18n), "onboarding:organization.title"),
+      pageTitle: getPageTitle(
+        i18n.t.bind(i18n),
+        "onboarding:organization.title",
+      ),
     },
     { headers: auth.headers },
   );
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

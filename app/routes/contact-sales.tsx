@@ -16,11 +16,11 @@ import { cn } from "~/lib/utils";
 
 export function loader({ context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
-  return { title: i18n.t("billing:contactSales.pageTitle") };
+  return { pageTitle: i18n.t("billing:contactSales.pageTitle") };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

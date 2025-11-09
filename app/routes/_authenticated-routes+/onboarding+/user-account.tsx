@@ -40,7 +40,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   return data(
     {
-      title: getPageTitle(i18n.t.bind(i18n), "onboarding:userAccount.title"),
+      pageTitle: getPageTitle(
+        i18n.t.bind(i18n),
+        "onboarding:userAccount.title",
+      ),
       user: auth.user,
     },
     { headers: auth.headers },
@@ -48,7 +51,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

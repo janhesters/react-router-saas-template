@@ -22,7 +22,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return data(
     {
       dangerZone: mapUserAccountWithMembershipsToDangerZoneProps(auth.user),
-      title: getPageTitle(i18n.t.bind(i18n), "settings:userAccount.pageTitle"),
+      pageTitle: getPageTitle(
+        i18n.t.bind(i18n),
+        "settings:userAccount.pageTitle",
+      ),
       user: auth.user,
     },
     { headers: auth.headers },
@@ -30,7 +33,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

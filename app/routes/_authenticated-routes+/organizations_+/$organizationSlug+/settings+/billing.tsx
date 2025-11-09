@@ -1,5 +1,5 @@
 import { OrganizationMembershipRole } from "@prisma/client";
-import { data, useNavigation } from "react-router";
+import { data, href, useNavigation } from "react-router";
 
 import type { Route } from "./+types/billing";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -22,7 +22,7 @@ import { organizationMembershipContext } from "~/features/organizations/organiza
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
 
-export async function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
   const { organization, headers, role } = context.get(
     organizationMembershipContext,
   );
@@ -30,6 +30,7 @@ export async function loader({ context }: Route.LoaderArgs) {
     allLookupKeys as unknown as string[],
   );
   const i18n = getInstance(context);
+  const t = i18n.t.bind(i18n);
 
   if (role === OrganizationMembershipRole.member) {
     throw notFound();
@@ -44,14 +45,20 @@ export async function loader({ context }: Route.LoaderArgs) {
         }),
         ...getCreateSubscriptionModalProps(organization, products),
       },
-      title: getPageTitle(i18n.t.bind(i18n), "billing:billingPage.pageTitle"),
+      breadcrump: {
+        title: t("billing:billingPage.breadcrumb"),
+        to: href("/organizations/:organizationSlug/settings/billing", {
+          organizationSlug: params.organizationSlug,
+        }),
+      },
+      pageTitle: getPageTitle(t, "billing:billingPage.pageTitle"),
     },
     { headers },
   );
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

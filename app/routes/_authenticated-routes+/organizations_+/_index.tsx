@@ -33,7 +33,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   return {
     memberships: user.memberships,
-    title: getPageTitle(
+    pageTitle: getPageTitle(
       i18n.t.bind(i18n),
       "organizations:organizationsList.title",
     ),
@@ -41,7 +41,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export default function OrganizationsRoute({

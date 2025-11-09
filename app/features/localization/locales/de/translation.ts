@@ -1,5 +1,6 @@
 export default {
   appName: "React Router SaaS Template",
+  breadcrumbNavigation: "Navigationspfad",
   notFound: {
     description:
       "Entschuldigung, wir konnten die Seite, die du suchst, nicht finden.",

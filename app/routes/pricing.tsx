@@ -28,11 +28,11 @@ import { getInstance } from "~/features/localization/i18next-middleware.server";
 
 export function loader({ context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
-  return { title: i18n.t("billing:pricingPage.pageTitle") };
+  return { pageTitle: i18n.t("billing:pricingPage.pageTitle") };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export default function PricingRoute() {

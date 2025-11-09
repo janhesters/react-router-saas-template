@@ -20,12 +20,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   return {
-    title: getPageTitle(i18n.t.bind(i18n), "organizations:new.pageTitle"),
+    pageTitle: getPageTitle(i18n.t.bind(i18n), "organizations:new.pageTitle"),
   };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

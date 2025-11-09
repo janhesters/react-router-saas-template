@@ -16,7 +16,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   return {
-    title: getPageTitle(
+    pageTitle: getPageTitle(
       i18n.t.bind(i18n),
       "organizations:acceptEmailInvite.pageTitle",
     ),
@@ -25,7 +25,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

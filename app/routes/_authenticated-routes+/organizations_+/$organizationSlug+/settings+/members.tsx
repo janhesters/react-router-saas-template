@@ -26,11 +26,18 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
       params.organizationSlug,
     );
   const i18n = getInstance(context);
+  const t = i18n.t.bind(i18n);
 
   return data(
     {
-      title: getPageTitle(
-        i18n.t.bind(i18n),
+      breadcrump: {
+        title: t("organizations:settings.teamMembers.breadcrumb"),
+        to: href("/organizations/:organizationSlug/settings/members", {
+          organizationSlug: params.organizationSlug,
+        }),
+      },
+      pageTitle: getPageTitle(
+        t,
         "organizations:settings.teamMembers.pageTitle",
       ),
       ...mapOrganizationDataToTeamMemberSettingsProps({
@@ -45,7 +52,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

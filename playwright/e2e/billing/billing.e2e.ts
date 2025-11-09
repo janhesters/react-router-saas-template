@@ -134,10 +134,18 @@ test.describe("billing page", () => {
     // Verify page title
     await expect(page).toHaveTitle(/billing | react router saas template/i);
 
-    // Verify headings
+    // Verify breadcrumb heading (last breadcrumb is h1)
     await expect(
-      page.getByRole("heading", { level: 1, name: /settings/i }),
+      page.getByRole("heading", { level: 1, name: /billing/i }),
     ).toBeVisible();
+    // Verify breadcrumb link to Settings
+    const breadcrumbNav = page.getByRole("navigation", {
+      name: "breadcrumb",
+    });
+    await expect(
+      breadcrumbNav.getByRole("link", { name: /settings/i }),
+    ).toBeVisible();
+    // Verify page heading
     await expect(
       page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();
@@ -373,10 +381,18 @@ test.describe("billing page", () => {
     // Verify page title
     await expect(page).toHaveTitle(/billing | react router saas template/i);
 
-    // Verify headings
+    // Verify breadcrumb heading (last breadcrumb is h1)
     await expect(
-      page.getByRole("heading", { level: 1, name: /settings/i }),
+      page.getByRole("heading", { level: 1, name: /billing/i }),
     ).toBeVisible();
+    // Verify breadcrumb link to Settings
+    const breadcrumbNav = page.getByRole("navigation", {
+      name: "breadcrumb",
+    });
+    await expect(
+      breadcrumbNav.getByRole("link", { name: /settings/i }),
+    ).toBeVisible();
+    // Verify page heading
     await expect(
       page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();
@@ -481,9 +497,18 @@ test.describe("billing page", () => {
 
     // Verify page title + headings
     await expect(page).toHaveTitle(/billing | react router saas template/i);
+    // Verify breadcrumb heading (last breadcrumb is h1)
     await expect(
-      page.getByRole("heading", { level: 1, name: /settings/i }),
+      page.getByRole("heading", { level: 1, name: /billing/i }),
     ).toBeVisible();
+    // Verify breadcrumb link to Settings
+    const breadcrumbNav = page.getByRole("navigation", {
+      name: "breadcrumb",
+    });
+    await expect(
+      breadcrumbNav.getByRole("link", { name: /settings/i }),
+    ).toBeVisible();
+    // Verify page heading
     await expect(
       page.getByRole("heading", { level: 2, name: /billing/i }),
     ).toBeVisible();

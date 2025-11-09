@@ -11,7 +11,7 @@ import { mapInitialNotificationsDataToNotificationButtonProps } from "~/features
 import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from "~/features/notifications/notifications-model.server";
 import { AppHeader } from "~/features/organizations/layout/app-header";
 import { AppSidebar } from "~/features/organizations/layout/app-sidebar";
-import { findHeaderTitle } from "~/features/organizations/layout/layout-helpers";
+import { findBreadcrumbs } from "~/features/organizations/layout/layout-helpers";
 import {
   getSidebarState,
   mapOnboardingUserToBillingSidebarCardProps,
@@ -70,7 +70,6 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   return data(
     {
       defaultSidebarOpen,
-      headerTitle: "React Router SaaS Template",
       ...mapOnboardingUserToOrganizationLayoutProps({
         organizationSlug: params.organizationSlug,
         user,
@@ -104,8 +103,8 @@ export default function OrganizationLayoutRoute({
     notificationButtonProps,
     organizationSwitcherProps,
   } = loaderData;
-  const headerTitle = findHeaderTitle(
-    matches as UIMatch<{ headerTitle?: string }>[],
+  const breadcrumbs = findBreadcrumbs(
+    matches as UIMatch<{ breadcrump?: { title: string; to: string } }>[],
   );
 
   return (
@@ -125,8 +124,8 @@ export default function OrganizationLayoutRoute({
 
       <SidebarInset>
         <AppHeader
+          breadcrumbs={breadcrumbs}
           notificationsButtonProps={notificationButtonProps}
-          title={headerTitle}
         />
 
         <Outlet />

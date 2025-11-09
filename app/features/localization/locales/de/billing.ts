@@ -1,6 +1,7 @@
 /** biome-ignore-all lint/suspicious/noTemplateCurlyInString: It's a currency */
 export default {
   billingPage: {
+    breadcrumb: "Abrechnung",
     cancelAtPeriodEndBanner: {
       button: "Abonnement fortsetzen",
       description: "Dein Abonnement läuft am {{date}} aus.",

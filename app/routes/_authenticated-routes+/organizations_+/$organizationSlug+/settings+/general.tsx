@@ -1,6 +1,6 @@
 import { OrganizationMembershipRole } from "@prisma/client";
 import { useTranslation } from "react-i18next";
-import { data } from "react-router";
+import { data, href } from "react-router";
 
 import type { Route } from "./+types/general";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -13,21 +13,25 @@ import { generalOrganizationSettingsAction } from "~/features/organizations/sett
 import { OrganizationInfo } from "~/features/organizations/settings/general/organization-info";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export function loader({ context }: Route.LoaderArgs) {
+export function loader({ context, params }: Route.LoaderArgs) {
   const { headers, organization, role } = context.get(
     organizationMembershipContext,
   );
   const i18n = getInstance(context);
+  const t = i18n.t.bind(i18n);
 
   const userIsOwner = role === OrganizationMembershipRole.owner;
 
   return data(
     {
+      breadcrump: {
+        title: t("organizations:settings.general.breadcrumb"),
+        to: href("/organizations/:organizationSlug/settings/general", {
+          organizationSlug: params.organizationSlug,
+        }),
+      },
       organization,
-      title: getPageTitle(
-        i18n.t.bind(i18n),
-        "organizations:settings.general.page-title",
-      ),
+      pageTitle: getPageTitle(t, "organizations:settings.general.pageTitle"),
       userIsOwner,
     },
     { headers },
@@ -35,7 +39,7 @@ export function loader({ context }: Route.LoaderArgs) {
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
-  { title: loaderData?.title },
+  { title: loaderData?.pageTitle },
 ];
 
 export async function action(args: Route.ActionArgs) {

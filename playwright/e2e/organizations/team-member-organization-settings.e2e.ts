@@ -800,9 +800,11 @@ test.describe("organization settings members page", () => {
       // Locate elements within the "Invite by Email" card
       const emailInput = page.getByLabel(/email/i);
       const roleDropdown = page.getByLabel(/role/i);
+      await expect(roleDropdown).toBeVisible();
       const submitButton = page.getByRole("button", {
         name: /send email invitation/i,
       });
+      await expect(submitButton).toBeVisible();
 
       // Check available roles in dropdown
       await roleDropdown.click();
