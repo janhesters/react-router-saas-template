@@ -33,9 +33,11 @@ import {
 } from "./features/localization/i18next-middleware.server";
 import { useToast } from "./hooks/use-toast";
 import { cn } from "./lib/utils";
+import { ClientHintCheck, getHints } from "./utils/client-hints";
 import { combineHeaders } from "./utils/combine-headers.server";
 import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
+import { getDomainUrl } from "./utils/get-domain-url.server";
 import { honeypot } from "./utils/honeypot.server";
 import { useNonce } from "./utils/nonce-provider";
 import { securityMiddleware } from "./utils/security-middleware.server";
@@ -79,6 +81,12 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       ENV: getEnv(),
       honeypotInputProps,
       locale,
+      requestInfo: {
+        hints: getHints(request),
+        origin: getDomainUrl(request),
+        path: new URL(request.url).pathname,
+        userPrefs: { theme: colorScheme },
+      },
       title,
       toast,
     },
@@ -120,6 +128,7 @@ export function Layout({
       lang={i18n.language}
     >
       <head>
+        <ClientHintCheck nonce={nonce} />
         <meta charSet="utf-8" />
         <meta content="width=device-width, initial-scale=1" name="viewport" />
 
