@@ -1,99 +1,48 @@
-import { OrganizationMembershipRole } from "@prisma/client";
-import { useTranslation } from "react-i18next";
-import { href, Link, Outlet, redirect, useLocation } from "react-router";
+import { data, href, Outlet } from "react-router";
 
 import type { Route } from "./+types/_organization-settings-layout";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "~/components/ui/navigation-menu";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { SettingsSidebar } from "~/features/organizations/settings/settings-sidebar";
 
-export function loader({ request, context, params }: Route.LoaderArgs) {
-  const pathname = new URL(request.url).pathname;
-  if (pathname.endsWith("/settings")) {
-    return redirect(
-      href("/organizations/:organizationSlug/settings/general", {
-        organizationSlug: params.organizationSlug,
-      }),
-    );
-  }
+export async function loader({ params, context }: Route.LoaderArgs) {
+  const { role, headers } = context.get(organizationMembershipContext);
+  const i18next = getInstance(context);
+  const t = i18next.getFixedT(null, "organizations", "settings");
 
-  const { role } = context.get(organizationMembershipContext);
-  const i18n = getInstance(context);
-
-  return {
-    breadcrump: {
-      title: i18n.t("organizations:settings.breadcrumb"),
-      to: href("/organizations/:organizationSlug/settings", {
-        organizationSlug: params.organizationSlug,
-      }),
+  return data(
+    {
+      breadcrump: {
+        title: t("breadcrumb"),
+        to: href("/organizations/:organizationSlug/settings", {
+          organizationSlug: params.organizationSlug,
+        }),
+      },
+      pageTitle: t("meta.title"),
+      role,
     },
-    showBilling:
-      role === OrganizationMembershipRole.admin ||
-      role === OrganizationMembershipRole.owner,
-  };
+    { headers },
+  );
 }
+
+export const meta: Route.MetaFunction = ({ loaderData }) => [
+  { title: loaderData.pageTitle },
+];
 
 export default function OrganizationSettingsLayout({
   loaderData,
   params,
 }: Route.ComponentProps) {
-  const pathname = useLocation().pathname;
-  const { t } = useTranslation("organizations", {
-    keyPrefix: "settings.layout",
-  });
-  const routes = [
-    {
-      title: t("general"),
-      url: href("/organizations/:organizationSlug/settings/general", {
-        organizationSlug: params.organizationSlug,
-      }),
-    },
-    {
-      title: t("teamMembers"),
-      url: href("/organizations/:organizationSlug/settings/members", {
-        organizationSlug: params.organizationSlug,
-      }),
-    },
-    ...(loaderData.showBilling
-      ? [
-          {
-            title: t("billing"),
-            url: href("/organizations/:organizationSlug/settings/billing", {
-              organizationSlug: params.organizationSlug,
-            }),
-          },
-        ]
-      : []),
-  ];
-
   return (
-    <>
-      <div
-        className="flex h-[calc(var(--header-height)-0.5rem)] items-center border-b px-4 lg:px-6"
-        data-slot="secondary-sidebar-header"
-      >
-        <NavigationMenu aria-label={t("settingsNav")} className="-ml-1.5">
-          <NavigationMenuList className="gap-2 *:data-[slot=navigation-menu-item]:h-7 **:data-[slot=navigation-menu-link]:py-1 **:data-[slot=navigation-menu-link]:font-medium">
-            {routes.map((route) => (
-              <NavigationMenuItem key={route.url}>
-                <NavigationMenuLink
-                  asChild
-                  data-active={pathname === route.url}
-                >
-                  <Link to={route.url}>{route.title}</Link>
-                </NavigationMenuLink>
-              </NavigationMenuItem>
-            ))}
-          </NavigationMenuList>
-        </NavigationMenu>
-      </div>
+    <div className="flex flex-1 h-[calc(100vh-4rem)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-[calc(100vh-3rem)]">
+      <SettingsSidebar
+        organizationSlug={params.organizationSlug}
+        role={loaderData.role}
+      />
 
-      <Outlet />
-    </>
+      <div className="flex flex-1 flex-col overflow-y-auto">
+        <Outlet />
+      </div>
+    </div>
   );
 }

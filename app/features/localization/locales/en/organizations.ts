@@ -199,6 +199,9 @@ export default {
       settingsNav: "Settings navigation",
       teamMembers: "Team Members",
     },
+    meta: {
+      title: "Settings",
+    },
     teamMembers: {
       breadcrumb: "Team Members",
       description: "Manage your team members and their permissions.",

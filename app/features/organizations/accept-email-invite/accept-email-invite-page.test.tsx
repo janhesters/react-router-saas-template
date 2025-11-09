@@ -30,11 +30,12 @@ describe("AcceptEmailInvitePage component", () => {
     expect(
       screen.getByText(/welcome to react router saas template/i),
     ).toBeInTheDocument();
-    const escapedInviter = props.inviterName.replace("'", "&#39;");
-    const escapedOrg = props.organizationName.replace("'", "&#39;");
     expect(
       screen.getByText(
-        new RegExp(`${escapedInviter} invites you to join ${escapedOrg}`, "i"),
+        new RegExp(
+          `${props.inviterName} invites you to join ${props.organizationName}`,
+          "i",
+        ),
       ),
     ).toBeInTheDocument();
     expect(

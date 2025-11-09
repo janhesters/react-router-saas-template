@@ -59,6 +59,9 @@ test.describe("organization settings layout", () => {
 
     await page.goto(`/organizations/${organization.slug}/settings`);
 
+    await expect(
+      page.getByRole("heading", { level: 1, name: /general/i }),
+    ).toBeVisible();
     expect(getPath(page)).toEqual(
       `/organizations/${organization.slug}/settings/general`,
     );
@@ -89,7 +92,7 @@ test.describe("organization settings layout", () => {
       "href",
       `/organizations/${organization.slug}/settings/general`,
     );
-    await expect(generalLink).toHaveAttribute("data-active", "true");
+    await expect(generalLink).toHaveAttribute("aria-current", "page");
 
     // Verify members link exists
     const membersLink = settingsNav.getByRole("link", { name: /members/i });
@@ -132,7 +135,7 @@ test.describe("organization settings layout", () => {
       "href",
       `/organizations/${organization.slug}/settings/general`,
     );
-    await expect(generalLink).toHaveAttribute("data-active", "true");
+    await expect(generalLink).toHaveAttribute("aria-current", "page");
 
     // Verify members link exists
     const membersLink = settingsNav.getByRole("link", { name: /members/i });
