@@ -1,6 +1,7 @@
 import { formatDate } from "date-fns";
 import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useTranslation } from "react-i18next";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import type { CreateSubscriptionModalContentProps } from "./create-subscription-modal-content";
 import { CreateSubscriptionModalContent } from "./create-subscription-modal-content";
@@ -40,13 +41,14 @@ export function BillingSidebarCard({
   const { t } = useTranslation("billing", {
     keyPrefix: "billingSidebarCard",
   });
+  const hydrated = useHydrated();
 
   return (
     <Dialog>
       <Card
         className={cn(
           "gap-4 py-4 shadow-none",
-          "from-primary/5 to-card bg-gradient-to-t",
+          "from-primary/5 to-card bg-linear-to-t",
           className,
         )}
       >
@@ -83,6 +85,8 @@ export function BillingSidebarCard({
             <DialogTrigger asChild>
               <Button
                 className="w-full shadow-none"
+                // Playwright shouldn't try to click the button before it's hydrated
+                disabled={!hydrated}
                 size="sm"
                 type="button"
                 variant="outline"
@@ -98,7 +102,7 @@ export function BillingSidebarCard({
         )}
       </Card>
 
-      <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-[77rem]">
+      <DialogContent className="max-h-[calc(100svh-4rem)] overflow-y-auto sm:max-w-308">
         <DialogHeader>
           <DialogTitle>
             {state === "cancelled"

@@ -4,6 +4,7 @@ import { OrganizationMembershipRole } from "@prisma/client";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import { INVITE_BY_EMAIL_INTENT } from "./team-members-constants";
 import { inviteByEmailSchema } from "./team-members-settings-schemas";
@@ -58,6 +59,7 @@ export function EmailInviteCard({
     }
   }, [successEmail, intent]);
 
+  const hydrated = useHydrated();
   const disabled = isInvitingByEmail || organizationIsFull;
 
   return (
@@ -107,6 +109,8 @@ export function EmailInviteCard({
                       aria-describedby={fields.role.ariaDescribedBy}
                       aria-invalid={fields.role.ariaInvalid}
                       className="min-w-28"
+                      // Playwright shouldn't try to click the dropdown before it's hydrated
+                      disabled={!hydrated || disabled}
                       id={fields.role.id}
                     >
                       <SelectValue placeholder={t("form.rolePlaceholder")} />

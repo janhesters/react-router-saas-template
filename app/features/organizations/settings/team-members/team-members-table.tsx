@@ -304,6 +304,8 @@ export function TeamMembersTable({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const hydrated = useHydrated();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-lg border">
@@ -370,7 +372,13 @@ export function TeamMembersTable({
             }}
             value={`${table.getState().pagination.pageSize}`}
           >
-            <SelectTrigger className="w-20" id="rows-per-page" size="sm">
+            <SelectTrigger
+              className="w-20"
+              // Playwright shouldn't try to click the dropdown before it's hydrated
+              disabled={!hydrated}
+              id="rows-per-page"
+              size="sm"
+            >
               <SelectValue placeholder={table.getState().pagination.pageSize} />
             </SelectTrigger>
 

@@ -5,6 +5,7 @@ import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form, href, Link, useNavigation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import type { Interval, Tier } from "./billing-constants";
 import {
@@ -165,6 +166,7 @@ export function BillingPage({
   const [isPlanManagementModalOpen, setIsPlanManagementModalOpen] =
     useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const hydrated = useHydrated();
 
   const formattedDate = useMemo(() => {
     return new Intl.DateTimeFormat(i18n.language || "en-GB", {
@@ -242,6 +244,8 @@ export function BillingPage({
                 <DialogTrigger asChild>
                   <Button
                     className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
+                    // Playwright shouldn't try to click the button before it's hydrated
+                    disabled={!hydrated}
                     size="sm"
                   >
                     {t("subscriptionCancelledBanner.button")}
@@ -323,6 +327,8 @@ export function BillingPage({
                   <DialogTrigger asChild>
                     <Button
                       className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
+                      // Playwright shouldn't try to click the button before it's hydrated
+                      disabled={!hydrated}
                       size="sm"
                     >
                       {t("freeTrialBanner.button")}
@@ -516,7 +522,12 @@ export function BillingPage({
 
                     <Dialog>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="outline">
+                        <Button
+                          // Playwright shouldn't try to click the button before it's hydrated
+                          disabled={!hydrated}
+                          size="sm"
+                          variant="outline"
+                        >
                           {t("paymentInformation.editButton")}
                         </Button>
                       </DialogTrigger>
