@@ -1,9 +1,12 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
+
+import { randomUUID } from "node:crypto";
 import { createId } from "@paralleldrive/cuid2";
 import type { RequestHandler } from "msw";
 import { HttpResponse, http } from "msw";
 import { z } from "zod";
 
+import { writeEmail } from "../../utils";
 import {
   deleteMockSession,
   getMockSession,
@@ -13,10 +16,31 @@ import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
 } from "~/features/user-authentication/user-authentication-factories";
+import { prisma } from "~/utils/database.server";
 
 /*
 Auth handlers
 */
+
+/**
+ * Gets or creates a consistent Supabase user ID for an email address.
+ * This ensures the same email always gets the same Supabase ID by checking
+ * existing database records first.
+ */
+async function getSupabaseUserIdForEmail(email: string): Promise<string> {
+  // Check if user already exists in database
+  const existingUser = await prisma.userAccount.findUnique({
+    select: { supabaseUserId: true },
+    where: { email },
+  });
+
+  if (existingUser) {
+    return existingUser.supabaseUserId;
+  }
+
+  // Create new UUID v4 for new user (Supabase uses UUID v4 for user IDs)
+  return randomUUID();
+}
 
 // supabase.auth.getUser
 
@@ -70,7 +94,9 @@ const signInWithOtpMock = http.post(
   `${process.env.VITE_SUPABASE_URL}/auth/v1/otp`,
   async ({ request }) => {
     // Parse the request body to determine if it's an email or phone OTP request
-    const body = (await request.json()) as Record<string, string>;
+    const body = (await request.json()) as Record<string, string> & {
+      data?: { intent: string };
+    };
 
     if (body.email) {
       if (body.email.includes(rateLimitPrefix)) {
@@ -83,6 +109,35 @@ const signInWithOtpMock = http.post(
           { status: 429 },
         );
       }
+
+      // Generate token_hash with email and consistent id for this email
+      const supabaseUserId = await getSupabaseUserIdForEmail(body.email);
+      const tokenHashData = { email: body.email, id: supabaseUserId };
+      const tokenHash = stringifyTokenHashData(tokenHashData);
+
+      // Determine intent (login vs register)
+      const isLogin = body.data?.intent === "loginWithEmail";
+      const route = isLogin ? "login" : "register";
+
+      // Generate confirmation URL
+      const confirmUrl = `${process.env.APP_URL}/${route}/confirm?token_hash=${encodeURIComponent(tokenHash)}`;
+
+      // Create mock email
+      const email = {
+        from: "noreply@yourapp.com",
+        html: `<p>Click here to ${isLogin ? "login" : "confirm your email"}:</p><a href="${confirmUrl}">${confirmUrl}</a>`,
+        subject: isLogin ? "Login to Your App" : "Confirm your email",
+        text: `Click here to ${isLogin ? "login" : "confirm your email"}: ${confirmUrl}`,
+        to: body.email,
+      };
+
+      // Log to console (like Resend mocks)
+      console.info("🔶 mocked OTP email:", email);
+      console.info("🔗 Magic link:", confirmUrl);
+
+      // Write to fixtures for programmatic access
+      await writeEmail(email);
+
       // Email OTP response
       return HttpResponse.json({
         // For email OTP, the response is typically empty with no error
@@ -196,57 +251,88 @@ const exchangeCodeForSessionMock = http.post(
     // Access query parameters dynamically
     const url = new URL(request.url);
     const grantType = url.searchParams.get("grant_type");
-
-    // Optionally, validate the grant_type if needed.
-    if (grantType !== "pkce") {
-      return HttpResponse.json(
-        {
-          error: "Invalid grant_type",
-          message: 'grant_type must be "pkce"',
-        },
-        { status: 400 },
-      );
-    }
-
-    // Parse the request body to get code_verifier.
     const body = (await request.json()) as Record<string, string>;
-    const { auth_code, code_verifier } = body;
 
-    // Validate the request.
-    if (!auth_code) {
-      return HttpResponse.json(
-        { error: "Invalid code", message: "code is required" },
-        { status: 400 },
-      );
+    // Handle PKCE flow (OAuth callback)
+    if (grantType === "pkce") {
+      const { auth_code, code_verifier } = body;
+
+      // Validate the request.
+      if (!auth_code) {
+        return HttpResponse.json(
+          { error: "Invalid code", message: "code is required" },
+          { status: 400 },
+        );
+      }
+
+      if (!code_verifier) {
+        return HttpResponse.json(
+          {
+            error: "Invalid code_verifier",
+            message: "code_verifier is required",
+          },
+          { status: 400 },
+        );
+      }
+
+      // Create a mock user with an email based on the provider.
+      const { email, id } = parseAuthCodeData(auth_code);
+      const mockUser = createPopulatedSupabaseUser({ email, id });
+
+      // Create a session with the user.
+      const mockSession = createPopulatedSupabaseSession({ user: mockUser });
+      await setMockSession(mockSession.access_token, mockSession);
+
+      // Return the session data in the format expected by _sessionResponse.
+      return HttpResponse.json({
+        access_token: mockSession.access_token,
+        expires_at: mockSession.expires_at,
+        expires_in: mockSession.expires_in,
+        refresh_token: mockSession.refresh_token,
+        token_type: mockSession.token_type,
+        user: mockUser,
+      });
     }
 
-    if (!code_verifier) {
-      return HttpResponse.json(
-        {
-          error: "Invalid code_verifier",
-          message: "code_verifier is required",
-        },
-        { status: 400 },
-      );
+    // Handle refresh token flow (session refresh)
+    if (grantType === "refresh_token") {
+      const { refresh_token } = body;
+
+      if (!refresh_token) {
+        return HttpResponse.json(
+          { error: "Invalid request", message: "refresh_token required" },
+          { status: 400 },
+        );
+      }
+
+      // In a real scenario, we'd look up the user by refresh token
+      // For mocks, we'll create a fresh session with a new user
+      // This is sufficient for development testing
+      const mockUser = createPopulatedSupabaseUser();
+      const mockSession = createPopulatedSupabaseSession({
+        refresh_token,
+        user: mockUser,
+      });
+      await setMockSession(mockSession.access_token, mockSession);
+
+      return HttpResponse.json({
+        access_token: mockSession.access_token,
+        expires_at: mockSession.expires_at,
+        expires_in: mockSession.expires_in,
+        refresh_token: mockSession.refresh_token,
+        token_type: mockSession.token_type,
+        user: mockUser,
+      });
     }
 
-    // Create a mock user with an email based on the provider.
-    const { email, id } = parseAuthCodeData(auth_code);
-    const mockUser = createPopulatedSupabaseUser({ email, id });
-
-    // Create a session with the user.
-    const mockSession = createPopulatedSupabaseSession({ user: mockUser });
-    await setMockSession(mockSession.access_token, mockSession);
-
-    // Return the session data in the format expected by _sessionResponse.
-    return HttpResponse.json({
-      access_token: mockSession.access_token,
-      expires_at: mockSession.expires_at,
-      expires_in: mockSession.expires_in,
-      refresh_token: mockSession.refresh_token,
-      token_type: mockSession.token_type,
-      user: mockUser,
-    });
+    // Unknown grant type
+    return HttpResponse.json(
+      {
+        error: "Invalid grant_type",
+        message: 'grant_type must be "pkce" or "refresh_token"',
+      },
+      { status: 400 },
+    );
   },
 );
 

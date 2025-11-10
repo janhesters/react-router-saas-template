@@ -1,9 +1,46 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import type { RequestHandler } from "msw";
 import { HttpResponse, http } from "msw";
 
 /*
 Storage handlers
 */
+
+const FIXTURES_DIR = path.join(
+  process.cwd(),
+  "app",
+  "tests",
+  "mocks",
+  "fixtures",
+);
+const MOCK_STORAGE_DIR = path.join(FIXTURES_DIR, "supabase-storage");
+
+// Map of file extensions to MIME types
+const MIME_TYPES: Record<string, string> = {
+  ".css": "text/css",
+  ".gif": "image/gif",
+  ".html": "text/html",
+  ".jpeg": "image/jpeg",
+  ".jpg": "image/jpeg",
+  ".js": "application/javascript",
+  ".json": "application/json",
+  ".pdf": "application/pdf",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+  ".txt": "text/plain",
+  ".webp": "image/webp",
+  ".xml": "application/xml",
+};
+
+function getMimeType(filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  return MIME_TYPES[ext] || "application/octet-stream";
+}
+
+// Store multipart upload parts in memory
+// Key: uploadId, Value: Map of partNumber to Buffer
+const multipartUploads = new Map<string, Map<number, Buffer>>();
 
 const uploadMock = http.post(
   // Use a wildcard for the path
@@ -62,7 +99,7 @@ type RemoveRequestBody = {
 
 const removeMock = http.delete(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/:bucketId`,
-  async ({ request }) => {
+  async ({ request, params }) => {
     try {
       // Use the generic type argument for request.json()
       // This tells TS what shape to expect *if* parsing succeeds.
@@ -87,32 +124,36 @@ const removeMock = http.delete(
         );
       }
 
-      // --- Uncomment to log the prefixes ---
-      // const bucketId = params.bucketId as string;
-      // console.log(
-      //   `MSW Mock: Simulating removal of paths in bucket ${bucketId}:`,
-      //   prefixes,
-      // );
+      const bucket = params.bucketId as string;
 
-      // --- Simulate Specific Error Case (Example) ---
-      // if (prefixes.includes('path/that/should/fail.txt')) {
-      //   console.warn('MSW Mock (remove): Simulating failure for path/that/should/fail.txt');
-      //    return HttpResponse.json(
-      //      { statusCode: '500', error: 'Internal Server Error', message: 'Failed to delete file' },
-      //      { status: 500 }
-      //    );
-      // }
-      // --- End Error Simulation ---
-
-      // Simulate a successful removal response.
-      const deletedFilesData: FileObject[] = prefixes.map((path) => ({
-        created_at: undefined,
-        id: undefined,
-        last_accessed_at: undefined,
-        metadata: undefined,
-        name: path.split("/").pop() ?? path,
-        updated_at: undefined,
-      }));
+      // Actually delete files from disk
+      const deletedFilesData: FileObject[] = [];
+      for (const prefix of prefixes) {
+        const keyParts = prefix.split("/");
+        const filePath = path.join(MOCK_STORAGE_DIR, bucket, ...keyParts);
+        try {
+          await fs.unlink(filePath);
+          console.info(`🗑️  Deleted file: ${filePath}`);
+          deletedFilesData.push({
+            created_at: undefined,
+            id: undefined,
+            last_accessed_at: undefined,
+            metadata: undefined,
+            name: prefix.split("/").pop() ?? prefix,
+            updated_at: undefined,
+          });
+        } catch {
+          // File doesn't exist, but still add to response
+          deletedFilesData.push({
+            created_at: undefined,
+            id: undefined,
+            last_accessed_at: undefined,
+            metadata: undefined,
+            name: prefix.split("/").pop() ?? prefix,
+            updated_at: undefined,
+          });
+        }
+      }
 
       return HttpResponse.json(deletedFilesData);
     } catch (error) {
@@ -140,7 +181,7 @@ const s3UploadMock: RequestHandler = http.put(
   // Path‐style S3 endpoint under Supabase:
   //   https://<project>.supabase.co/storage/v1/s3/<bucket>/<key>
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
-  ({ params, request }) => {
+  async ({ params, request }) => {
     const bucket = params.bucketName as string;
     const url = new URL(request.url);
     // everything after `/storage/v1/s3/<bucket>/`
@@ -148,6 +189,17 @@ const s3UploadMock: RequestHandler = http.put(
     if (!objectKey) {
       return new HttpResponse("Missing key", { status: 400 });
     }
+
+    // Save file to disk
+    const keyParts = objectKey.split("/");
+    const filePath = path.join(MOCK_STORAGE_DIR, bucket, ...keyParts);
+    const parentDir = path.dirname(filePath);
+    await fs.mkdir(parentDir, { recursive: true });
+
+    const fileBuffer = Buffer.from(await request.arrayBuffer());
+    await fs.writeFile(filePath, fileBuffer);
+
+    console.info(`💾 Saved file to: ${filePath}`);
 
     // S3's PutObject returns an empty body + an ETag header
     return new HttpResponse(undefined, {
@@ -160,8 +212,22 @@ const s3UploadMock: RequestHandler = http.put(
 const s3DeleteMock: RequestHandler = http.delete(
   // Matches DELETE on https://<project>/storage/v1/s3/<bucket>/<key>
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
-  () => {
-    // You could pull out params.bucketName and the key if you need to assert them
+  async ({ params, request }) => {
+    const bucket = params.bucketName as string;
+    const url = new URL(request.url);
+    const objectKey = url.pathname.split(`/storage/v1/s3/${bucket}/`)[1];
+
+    if (objectKey) {
+      const keyParts = objectKey.split("/");
+      const filePath = path.join(MOCK_STORAGE_DIR, bucket, ...keyParts);
+      try {
+        await fs.unlink(filePath);
+        console.info(`🗑️  Deleted file: ${filePath}`);
+      } catch {
+        // File doesn't exist, but that's ok
+      }
+    }
+
     return new HttpResponse(undefined, { status: 204 });
   },
 );
@@ -169,7 +235,6 @@ const s3DeleteMock: RequestHandler = http.delete(
 const s3InitMultipartMock: RequestHandler = http.post(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
   ({ params, request }) => {
-    const uploadId = "mock-upload-id";
     const url = new URL(request.url);
 
     // Check if this is an uploads request
@@ -184,6 +249,13 @@ const s3InitMultipartMock: RequestHandler = http.post(
     const keyPath = url.pathname.split(
       `/storage/v1/s3/${params.bucketName}/`,
     )[1];
+
+    // Generate a unique upload ID
+    const uploadId = `mock-upload-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+    // Initialize parts storage for this upload
+    multipartUploads.set(uploadId, new Map());
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <InitiateMultipartUploadResult>
   <Bucket>${params.bucketName}</Bucket>
@@ -202,7 +274,7 @@ const s3InitMultipartMock: RequestHandler = http.post(
 */
 const s3UploadPartMock: RequestHandler = http.put(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
-  ({ request }) => {
+  async ({ request }) => {
     const url = new URL(request.url);
     const uploadId = url.searchParams.get("uploadId");
     const partNumber = url.searchParams.get("partNumber");
@@ -211,8 +283,16 @@ const s3UploadPartMock: RequestHandler = http.put(
         status: 400,
       });
     }
+
+    // Store the part data in memory
+    const partData = Buffer.from(await request.arrayBuffer());
+    const parts = multipartUploads.get(uploadId);
+    if (parts) {
+      parts.set(Number.parseInt(partNumber, 10), partData);
+    }
+
     return new HttpResponse(undefined, {
-      headers: { ETag: '"mocked-part-etag"' },
+      headers: { ETag: `"mocked-part-etag-${partNumber}"` },
       status: 200,
     });
   },
@@ -223,7 +303,7 @@ const s3UploadPartMock: RequestHandler = http.put(
 */
 const s3CompleteMultipartMock: RequestHandler = http.post(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
-  ({ params, request }) => {
+  async ({ params, request }) => {
     const url = new URL(request.url);
     const uploadId = url.searchParams.get("uploadId");
     if (!uploadId) {
@@ -234,13 +314,41 @@ const s3CompleteMultipartMock: RequestHandler = http.post(
       return new HttpResponse("Missing bucket name", { status: 400 });
     }
 
-    const keyPath = url.pathname.split(
-      `/storage/v1/s3/${params.bucketName}/`,
-    )[1];
+    const bucket = params.bucketName;
+    const keyPath = url.pathname.split(`/storage/v1/s3/${bucket}/`)[1];
+
+    if (!keyPath) {
+      return new HttpResponse("Missing key path", { status: 400 });
+    }
+
+    // Combine all parts and write to disk
+    const parts = multipartUploads.get(uploadId);
+    if (parts && parts.size > 0) {
+      // Sort parts by part number and combine them
+      const sortedParts = Array.from(parts.entries()).sort(
+        (a, b) => a[0] - b[0],
+      );
+      const combinedBuffer = Buffer.concat(
+        sortedParts.map(([_, buffer]) => buffer),
+      );
+
+      // Save to disk
+      const keyParts = keyPath.split("/");
+      const filePath = path.join(MOCK_STORAGE_DIR, bucket, ...keyParts);
+      const parentDir = path.dirname(filePath);
+      await fs.mkdir(parentDir, { recursive: true });
+      await fs.writeFile(filePath, combinedBuffer);
+
+      console.info(`💾 Completed multipart upload to: ${filePath}`);
+
+      // Clean up the stored parts
+      multipartUploads.delete(uploadId);
+    }
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <CompleteMultipartUploadResult>
   <Location>${request.url.split("?")[0]}</Location>
-  <Bucket>${params.bucketName}</Bucket>
+  <Bucket>${bucket}</Bucket>
   <Key>${keyPath}</Key>
   <ETag>"mocked-complete-etag"</ETag>
 </CompleteMultipartUploadResult>`;
@@ -251,9 +359,47 @@ const s3CompleteMultipartMock: RequestHandler = http.post(
   },
 );
 
+/*
+  GET handler for public object URLs
+  This is what gets called when the app requests uploaded files
+*/
+const getPublicObjectMock: RequestHandler = http.get(
+  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/:bucketName/*`,
+  async ({ params, request }) => {
+    const bucket = params.bucketName as string;
+    const url = new URL(request.url);
+    const objectKey = url.pathname.split(
+      `/storage/v1/object/public/${bucket}/`,
+    )[1];
+
+    if (!objectKey) {
+      return new HttpResponse("Missing key", { status: 400 });
+    }
+
+    const keyParts = objectKey.split("/");
+    const filePath = path.join(MOCK_STORAGE_DIR, bucket, ...keyParts);
+
+    try {
+      const file = await fs.readFile(filePath);
+      const contentType = getMimeType(keyParts.at(-1) || "");
+
+      return new HttpResponse(file, {
+        headers: {
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Content-Length": file.length.toString(),
+          "Content-Type": contentType,
+        },
+      });
+    } catch {
+      return new HttpResponse("Not found", { status: 404 });
+    }
+  },
+);
+
 export const supabaseStorageHandlers: RequestHandler[] = [
   uploadMock,
   removeMock,
+  getPublicObjectMock,
   s3UploadMock,
   s3DeleteMock,
   s3InitMultipartMock,

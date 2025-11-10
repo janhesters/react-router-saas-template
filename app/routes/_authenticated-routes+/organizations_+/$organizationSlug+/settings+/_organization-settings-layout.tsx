@@ -34,7 +34,7 @@ export default function OrganizationSettingsLayout({
   params,
 }: Route.ComponentProps) {
   return (
-    <div className="flex flex-1 h-[calc(100vh-4rem)] group-has-data-[collapsible=icon]/sidebar-wrapper:h-[calc(100vh-3rem)]">
+    <div className="flex flex-1 h-[calc(100vh-4rem)] overflow-hidden rounded-bl-xl group-has-data-[collapsible=icon]/sidebar-wrapper:h-[calc(100vh-3rem)]">
       <SettingsSidebar
         organizationSlug={params.organizationSlug}
         role={loaderData.role}

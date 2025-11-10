@@ -35,9 +35,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: process.env.CI
-      ? "npm run start-with-server-mocks"
-      : "npm run dev-with-server-mocks",
+    command: process.env.CI ? "npm run start:mocks" : "npm run dev:mocks",
     env: { NODE_ENV: "test" },
     port: 3000,
     reuseExistingServer: !process.env.CI,

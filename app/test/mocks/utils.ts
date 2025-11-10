@@ -65,6 +65,13 @@ export async function deleteEmails() {
   }
 }
 
+export async function deleteMockStorage() {
+  const storageDir = path.join(fixturesDirPath, "supabase-storage");
+  if (existsSync(storageDir)) {
+    await rm(storageDir, { force: true, recursive: true });
+  }
+}
+
 export function requireHeader(headers: Headers, header: string) {
   if (!headers.has(header)) {
     const headersString = JSON.stringify(

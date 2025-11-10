@@ -256,7 +256,7 @@ describe("/onboarding/organization route action", () => {
         given: "a name that is too short (2 characters)",
       },
       {
-        body: { intent, name: "a".repeat(256) } as const,
+        body: { intent, name: "a".repeat(73) } as const,
         expected: {
           data: {
             result: {
@@ -269,7 +269,7 @@ describe("/onboarding/organization route action", () => {
           },
           init: { status: 400 },
         },
-        given: "a name that is too long (256 characters)",
+        given: "a name that is too long (73 characters)",
       },
       {
         body: { intent, name: "   " },

@@ -29,7 +29,7 @@ export function SettingsSidebar({
   return (
     <aside
       className={cn(
-        "bg-background text-sidebar-foreground flex flex-col border-r",
+        "bg-background text-sidebar-foreground flex flex-col border-r md:peer-data-[variant=inset]:rounded-bl-xl",
         // Full width on mobile when on settings index, normal sidebar width
         // on desktop
         isOnSettingsIndex

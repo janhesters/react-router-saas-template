@@ -11,7 +11,7 @@ import type { Factory } from "~/utils/types";
  * @returns A populated Supabase user with given params.
  */
 export const createPopulatedSupabaseUser: Factory<User> = ({
-  id = createId(),
+  id = faker.string.uuid(),
   email = faker.internet.email(),
   app_metadata = {},
   user_metadata = {},

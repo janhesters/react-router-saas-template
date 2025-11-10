@@ -117,7 +117,7 @@ export function Layout({
   const hideOverflow = matches.some(
     (match) =>
       match.pathname.startsWith("/onboarding") ||
-      match.id === "routes/_auth/_layout",
+      match.id === "routes/_user-authentication+/_user-authentication-layout",
   );
   useToast(data?.toast);
 

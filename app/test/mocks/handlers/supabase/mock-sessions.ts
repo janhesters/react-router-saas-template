@@ -72,9 +72,13 @@ export async function getMockSession(
  * @returns A promise that resolves when the session is deleted
  */
 export async function deleteMockSession(accessToken: string) {
-  await prisma.mockAccessTokenSession.delete({
-    where: { accessToken },
-  });
+  try {
+    await prisma.mockAccessTokenSession.delete({
+      where: { accessToken },
+    });
+  } catch (_error) {
+    // Session might not exist, which is fine
+  }
 }
 
 /**

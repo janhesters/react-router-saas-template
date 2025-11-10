@@ -29,7 +29,7 @@ async function initializeMockServer() {
     return;
   }
 
-  if (process.env.SERVER_MOCKS === "true") {
+  if (process.env.MOCKS === "true") {
     const { supabaseHandlers } = await import("~/test/mocks/handlers/supabase");
     const { resendHandlers } = await import("~/test/mocks/handlers/resend");
     const { stripeHandlers } = await import("~/test/mocks/handlers/stripe");

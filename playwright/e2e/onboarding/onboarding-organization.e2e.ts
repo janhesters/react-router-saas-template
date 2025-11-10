@@ -249,7 +249,7 @@ test.describe("onboarding organization page", () => {
       await saveButton.click();
       await expect(
         page.getByText(
-          /your organization name must be at most 255 characters long./i,
+          /your organization name must be at most 72 characters long./i,
         ),
       ).toBeVisible();
 
