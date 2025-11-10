@@ -10,10 +10,11 @@ import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 
 import { getInstance } from "./features/localization/i18next-middleware.server";
-import { init } from "./utils/env.server";
+import { getEnv, init } from "./utils/env.server";
 import { NonceProvider } from "./utils/nonce-provider";
 
 init();
+global.ENV = getEnv();
 
 export const streamTimeout = 5000;
 

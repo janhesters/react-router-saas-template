@@ -154,6 +154,33 @@ test.describe("register page", () => {
     test("given: a logged out user, should: log the user and redirect to the google login page", async ({
       page,
     }) => {
+      // Mock the Supabase OAuth authorize endpoint to return a mock Google sign-in page
+      await page.route("**/auth/v1/authorize*", async (route) => {
+        const url = new URL(route.request().url());
+        const provider = url.searchParams.get("provider");
+
+        if (provider === "google") {
+          await route.fulfill({
+            body: `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign in - Google Accounts</title>
+</head>
+<body>
+  <h1>Sign in</h1>
+  <p>Sign in with Google</p>
+  <p>to continue to vpszwsdvgeeazuheoxfw.supabase.co</p>
+</body>
+</html>
+            `,
+            contentType: "text/html",
+          });
+        } else {
+          await route.continue();
+        }
+      });
+
       await page.goto(path);
 
       // Click the Google registration button.
