@@ -71,6 +71,8 @@ Install the dependencies:
 npm install
 ```
 
+For a quick start, see ["Local Development with Mocks"](#local-development-with-mocks). Just copy `.env.example` to `.env` and start developing.
+
 Create `.env` file. You can find the `.env.example` file in the root of the
 project to see all the variables you need to set.
 
