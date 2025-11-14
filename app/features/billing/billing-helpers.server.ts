@@ -52,7 +52,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
       isOnFreeTrial: true,
       maxSeats: 25,
       organizationSlug: organization.slug,
-      projectedTotal: 85 * organization._count.memberships,
+      projectedTotal: Number((85 * organization._count.memberships).toFixed(2)),
       subscriptionStatus: "active",
     };
   }
@@ -98,9 +98,10 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     subscriptionStatus = "inactive";
   }
 
-  // 7. Projected total = per-user rate × seats
-  const projectedTotal =
-    currentMonthlyRatePerUser * organization._count.memberships;
+  // 7. Projected total = per-user rate × seats (rounded to 2 decimal places)
+  const projectedTotal = Number(
+    (currentMonthlyRatePerUser * organization._count.memberships).toFixed(2),
+  );
 
   // 8. Cancel or modify subscription modal props
   const { tier, interval } = getTierAndIntervalForLookupKey(price.lookupKey);

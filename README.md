@@ -647,6 +647,61 @@ steps should be:
    events. (Anohter terminal that forwards the webhooks must already be
    running.)
 
+### Local Development with Mocks
+
+For local development without connecting to real external services (Stripe,
+Supabase, etc.), you can use the mock mode. This uses
+[MSW (Mock Service Worker)](https://mswjs.io/) to intercept API calls.
+
+**Setup:**
+
+1. First, seed your database with demo data:
+   ```bash
+   npm run prisma:seed
+   ```
+   This creates three demo organizations with subscriptions:
+   - `hobby@example.com` - Hobby Plan (1 seat, monthly)
+   - `startup@example.com` - Startup Plan (5 seats, annual)
+   - `business@example.com` - Business Plan (25 seats, monthly)
+
+   Each organization also has 2-4 random team members added.
+
+2. Start the development server with mocks enabled:
+   ```bash
+   npm run dev:mocks
+   ```
+
+**Logging In:**
+
+When running with `MOCKS=true`, authentication is handled by mocked Supabase
+endpoints. To log in as one of the seeded users:
+
+1. Navigate to the login page
+2. Enter one of the demo email addresses (e.g., `hobby@example.com`)
+3. Click the magic link button
+4. The mock will automatically "send" the email and you can access the app
+
+**Resetting Data:**
+
+To start fresh with a clean database:
+
+```bash
+npm run prisma:wipe  # Resets the database
+npm run prisma:seed  # Re-seeds demo data
+npm run dev:mocks    # Start dev server
+```
+
+Or use the combined command:
+
+```bash
+npm run prisma:reset-dev  # Wipes, seeds, and starts dev server
+```
+
+**Note:** The seed script creates demo users with subscriptions that include
+seats, Stripe customer IDs, and all necessary billing data. This allows you to
+test billing flows, team management, and subscription features without
+connecting to real Stripe or Supabase instances.
+
 ### Routing
 
 This template uses [flat routes](https://github.com/kiliman/remix-flat-routes).
