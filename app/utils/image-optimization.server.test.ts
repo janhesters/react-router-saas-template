@@ -83,6 +83,54 @@ describe("getImageSource", () => {
         expect(text).toContain("Invalid file type");
       }
     });
+
+    test("should: reject extension after valid extension", async () => {
+      const request = new Request(createUrl("/images/test.png.exe"));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(400);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid file type");
+      }
+    });
+  });
+
+  describe("given: request with absolute URL", () => {
+    test("should: reject external URLs", async () => {
+      const request = new Request(
+        "http://localhost:3000/resources/images?src=http://evil.com/malware.png",
+      );
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(403);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid image path");
+      }
+    });
+
+    test("should: reject https URLs", async () => {
+      const request = new Request(
+        "http://localhost:3000/resources/images?src=https://example.com/image.png",
+      );
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(403);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid image path");
+      }
+    });
   });
 
   describe("given: request with valid image path", () => {

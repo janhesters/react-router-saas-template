@@ -52,6 +52,46 @@ test.describe("image optimization", () => {
     expect(response.headers()["content-type"]).toMatch(/^image\//);
   });
 
+  test("should: handle format parameter (webp)", async ({ request }) => {
+    const response = await request.get(
+      "/resources/images?src=/images/app-light.png&w=1920&format=webp",
+    );
+
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/^image\//);
+
+    const buffer = await response.body();
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  test("should: handle format parameter (avif)", async ({ request }) => {
+    const response = await request.get(
+      "/resources/images?src=/images/app-light.png&w=1920&format=avif",
+    );
+
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toMatch(/^image\//);
+
+    const buffer = await response.body();
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  test("should: apply fit parameter correctly", async ({ request }) => {
+    const coverResponse = await request.get(
+      "/resources/images?src=/images/app-light.png&w=1920&h=680&fit=cover",
+    );
+
+    expect(coverResponse.status()).toBe(200);
+    expect(coverResponse.headers()["content-type"]).toMatch(/^image\//);
+
+    const containResponse = await request.get(
+      "/resources/images?src=/images/app-light.png&w=1920&h=680&fit=contain",
+    );
+
+    expect(containResponse.status()).toBe(200);
+    expect(containResponse.headers()["content-type"]).toMatch(/^image\//);
+  });
+
   test("should: load optimized images in landing page", async ({ page }) => {
     await page.goto("/");
 
@@ -62,7 +102,10 @@ test.describe("image optimization", () => {
     // Check that image src uses optimization endpoint
     const src = await lightImage.getAttribute("src");
     expect(src).toContain("/resources/images");
-    expect(src).toContain("src=/images/");
+
+    // Decode URL and check src parameter
+    const decodedSrc = decodeURIComponent(src || "");
+    expect(decodedSrc).toContain("src=/images/");
 
     // Verify image actually loaded (not broken)
     const naturalWidth = await lightImage.evaluate(
@@ -80,8 +123,43 @@ test.describe("image optimization", () => {
     const srcset = await heroImage.getAttribute("srcset");
     expect(srcset).toBeTruthy();
 
-    // Verify srcset contains multiple sizes
-    expect(srcset).toContain("600w");
+    // Verify srcset contains multiple responsive sizes
+    expect(srcset).toContain("640w");
     expect(srcset).toContain("1200w");
+
+    // Decode and verify it uses optimization endpoint
+    const decodedSrcset = decodeURIComponent(srcset || "");
+    expect(decodedSrcset).toContain("/resources/images");
+    expect(decodedSrcset).toContain("src=/images/");
+  });
+
+  test("should: load all visible images on landing page without errors", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Get all visible img elements on the landing page
+    const images = await page.locator("img:visible").all();
+    expect(images.length).toBeGreaterThan(0);
+
+    // Check each visible image loaded successfully
+    for (const img of images) {
+      await expect(img).toBeVisible();
+
+      // Verify image actually loaded (not broken)
+      const naturalWidth = await img.evaluate(
+        (element: HTMLImageElement) => element.naturalWidth,
+      );
+      expect(naturalWidth).toBeGreaterThan(0);
+
+      // Verify uses optimization endpoint (except external images)
+      const src = await img.getAttribute("src");
+      if (src?.startsWith("/")) {
+        expect(src).toContain("/resources/images");
+
+        const decodedSrc = decodeURIComponent(src);
+        expect(decodedSrc).toContain("src=/images/");
+      }
+    }
   });
 });
