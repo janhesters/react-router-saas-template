@@ -15,12 +15,21 @@ import { getImageSource } from "~/utils/image-optimization.server";
  * - fit: How to fit the image (cover, contain, fill, inside, outside)
  */
 export async function loader({ request }: Route.LoaderArgs) {
-  const headers = new Headers();
-  // Set long-term cache headers for optimized images
-  headers.set("Cache-Control", "public, max-age=31536000, immutable");
-
-  return getImgResponse(request, {
+  const response = await getImgResponse(request, {
     getImgSource: getImageSource,
-    headers,
   });
+
+  // Only set long-term cache headers for successful responses
+  // Don't cache errors (404, 403, 400, etc.)
+  if (response.ok) {
+    response.headers.set(
+      "Cache-Control",
+      "public, max-age=31536000, immutable",
+    );
+  } else {
+    // Cache errors for a short time to prevent repeated processing
+    response.headers.set("Cache-Control", "public, max-age=60");
+  }
+
+  return response;
 }

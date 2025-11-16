@@ -1,5 +1,5 @@
-import { existsSync } from "node:fs";
-import { extname, resolve } from "node:path";
+import { access } from "node:fs/promises";
+import { extname, resolve, sep } from "node:path";
 import type { ImgSource } from "openimg/node";
 
 const ALLOWED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif"];
@@ -28,7 +28,7 @@ export async function getImageSource({
 
   // Only allow /images/ paths
   if (!src.startsWith("/images/")) {
-    throw new Response("Only images from /images/ directory are allowed", {
+    throw new Response("Invalid image path", {
       status: 403,
     });
   }
@@ -36,10 +36,7 @@ export async function getImageSource({
   // Check file extension
   const ext = extname(src).toLowerCase();
   if (!ALLOWED_EXTENSIONS.includes(ext)) {
-    throw new Response(
-      `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}`,
-      { status: 400 },
-    );
+    throw new Response("Invalid file type", { status: 400 });
   }
 
   // Build full path
@@ -47,13 +44,16 @@ export async function getImageSource({
   const fullPath = resolve(process.cwd(), "public", filePath);
 
   // Security: Ensure path is within public/images
-  const allowedDir = resolve(process.cwd(), "public", "images");
+  // Add path separator to prevent prefix attacks (e.g., /images-backup/)
+  const allowedDir = resolve(process.cwd(), "public", "images") + sep;
   if (!fullPath.startsWith(allowedDir)) {
     throw new Response("Invalid image path", { status: 403 });
   }
 
-  // Check if file exists
-  if (!existsSync(fullPath)) {
+  // Check if file exists (async to avoid blocking event loop)
+  try {
+    await access(fullPath);
+  } catch {
     throw new Response("Image not found", { status: 404 });
   }
 

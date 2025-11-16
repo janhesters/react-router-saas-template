@@ -33,9 +33,7 @@ describe("getImageSource", () => {
         expect(error).toBeInstanceOf(Response);
         expect((error as Response).status).toEqual(403);
         const text = await (error as Response).text();
-        expect(text).toContain(
-          "Only images from /images/ directory are allowed",
-        );
+        expect(text).toContain("Invalid image path");
       }
     });
   });
@@ -51,30 +49,29 @@ describe("getImageSource", () => {
         expect(error).toBeInstanceOf(Response);
         expect((error as Response).status).toEqual(403);
         const text = await (error as Response).text();
-        expect(text).toContain(
-          "Only images from /images/ directory are allowed",
-        );
+        expect(text).toContain("Invalid image path");
       }
     });
-  });
 
-  describe("given: request with invalid file extension", () => {
-    test("should: reject .exe files", async () => {
-      const request = new Request(createUrl("/images/malicious.exe"));
+    test("should: reject path separator prefix attacks", async () => {
+      // Attempting to access /public/images-backup/ by exploiting string prefix matching
+      const request = new Request(createUrl("/images-backup/secret.png"));
 
       try {
         await getImageSource({ request });
         expect.fail("Expected function to throw");
       } catch (error) {
         expect(error).toBeInstanceOf(Response);
-        expect((error as Response).status).toEqual(400);
+        expect((error as Response).status).toEqual(403);
         const text = await (error as Response).text();
-        expect(text).toContain("Invalid file type");
+        expect(text).toContain("Invalid image path");
       }
     });
+  });
 
-    test("should: reject .json files", async () => {
-      const request = new Request(createUrl("/images/config.json"));
+  describe("given: request with invalid file extension", () => {
+    test("should: reject non-image files", async () => {
+      const request = new Request(createUrl("/images/malicious.exe"));
 
       try {
         await getImageSource({ request });
@@ -89,38 +86,30 @@ describe("getImageSource", () => {
   });
 
   describe("given: request with valid image path", () => {
-    test("should: accept png files and return filesystem source", async () => {
+    test("should: return filesystem source for existing image", async () => {
       const request = new Request(createUrl("/images/app-light.png"));
 
       const result = await getImageSource({ request });
 
       expect(result.type).toEqual("fs");
-      expect(result.path).toContain("public");
-      expect(result.path).toContain("images");
-      expect(result.path).toContain("app-light.png");
-    });
-
-    test("should: accept jpg files or throw 404 if not found", async () => {
-      const request = new Request(createUrl("/images/test.jpg"));
-
-      try {
-        const result = await getImageSource({ request });
-        expect(result.type).toEqual("fs");
-      } catch (error) {
-        expect(error).toBeInstanceOf(Response);
-        expect((error as Response).status).toEqual(404);
+      if (result.type === "fs") {
+        expect(result.path).toContain("public");
+        expect(result.path).toContain("images");
+        expect(result.path).toContain("app-light.png");
       }
     });
 
-    test("should: accept webp files or throw 404 if not found", async () => {
-      const request = new Request(createUrl("/images/test.webp"));
+    test("should: throw 404 for non-existent image", async () => {
+      const request = new Request(createUrl("/images/non-existent.png"));
 
       try {
-        const result = await getImageSource({ request });
-        expect(result.type).toEqual("fs");
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
       } catch (error) {
         expect(error).toBeInstanceOf(Response);
         expect((error as Response).status).toEqual(404);
+        const text = await (error as Response).text();
+        expect(text).toContain("Image not found");
       }
     });
   });
