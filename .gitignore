@@ -25,3 +25,7 @@ stripe-events.txt
 # Test fixtures
 /tests/fixtures/
 /app/tests/mocks/fixtures/
+
+# Image optimization cache
+/data/images/*
+!/data/images/.gitkeep

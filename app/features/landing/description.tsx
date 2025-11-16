@@ -1,4 +1,5 @@
 import { BookOpenIcon, SlidersIcon, TestTubeIcon, ZapIcon } from "lucide-react";
+import { Img } from "openimg/react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
@@ -58,18 +59,20 @@ export function Description() {
             </div>
           </div>
 
-          <img
+          <Img
             alt={t("image.light")}
             className={cn(imageClassNames, "dark:hidden")}
-            height={1442}
+            height={1390}
+            sizes="(max-width: 1024px) 100vw, 50vw"
             src="/images/app-light-members.png"
             width={2432}
           />
 
-          <img
+          <Img
             alt={t("image.dark")}
             className={cn(imageClassNames, "hidden dark:block")}
-            height={1442}
+            height={1390}
+            sizes="(max-width: 1024px) 100vw, 50vw"
             src="/images/app-dark-members.png"
             width={2432}
           />

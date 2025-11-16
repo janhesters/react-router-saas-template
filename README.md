@@ -32,6 +32,8 @@ explaining the template.
   [Supabase](https://supabase.com/docs/guides/database/overview)
 - 🗃️ File upload with
   [Supabase Storage](https://supabase.com/docs/guides/storage)
+- 🖼️ Image optimization with [Openimg](https://github.com/andrelandgraf/openimg)
+  (responsive images, WebP/AVIF, automatic caching)
 - 💳 Billing with [Stripe](https://stripe.com/)
 - 📧 Emails with [Resend](https://resend.com/)
 - 👥 Multi-tenant organizations with role-based memberships
@@ -707,6 +709,28 @@ connecting to real Stripe or Supabase instances.
 ### Routing
 
 This template uses [flat routes](https://github.com/kiliman/remix-flat-routes).
+
+### Image Optimization
+
+For images use [Openimg](https://github.com/andrelandgraf/openimg) for automatic optimization - responsive sizes, WebP format, and disk caching.
+
+**Usage:**
+```tsx
+import { Img } from 'openimg/react';
+
+<Img
+  src="/images/screenshot.png"
+  alt="App screenshot"
+  width={1200}
+  height={800}
+  sizes="(max-width: 768px) 100vw, 1200px"
+  isAboveFold={true} // For critical above-fold images
+/>
+```
+
+- `width`/`height` - Intrinsic dimensions (aspect ratio, prevents layout shift)
+- `sizes` - How much viewport width the image occupies
+- `isAboveFold` - Prioritizes loading for critical images
 
 ### i18n
 
