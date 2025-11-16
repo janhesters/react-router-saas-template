@@ -15,7 +15,10 @@ import { getImageSource } from "~/utils/image-optimization.server";
  * - fit: How to fit the image (cover, contain, fill, inside, outside)
  */
 export async function loader({ request }: Route.LoaderArgs) {
+  const cacheFolder = process.env.OPENIMG_CACHE_DIR || "./data/images";
+
   const response = await getImgResponse(request, {
+    cacheFolder,
     getImgSource: getImageSource,
   });
 
