@@ -116,6 +116,7 @@
     "prisma:setup": "prisma generate && prisma migrate deploy && prisma db push",
     "prisma:studio": "npx prisma studio",
     "prisma:wipe": "npx prisma migrate reset --force && npx prisma db push",
+    "quickstart": "cp .env.example .env && npm run prisma:setup && npm run prisma:seed && npm run dev:mocks",
     "start": "react-router-serve ./build/server/index.js",
     "start:mocks": "cross-env MOCKS=true npm run start",
     "stripe:resend-events": "xargs -n1 stripe events resend < stripe-events.txt",

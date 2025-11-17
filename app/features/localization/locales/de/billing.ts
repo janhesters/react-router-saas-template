@@ -223,7 +223,7 @@ export default {
         title: "Enterprise",
       },
       high: {
-        cta: "Starte eine 14-tägige kostenlose Testphase",
+        cta: "14 Tage kostenlos testen",
         description: "Für Profis und Unternehmen, die wachsen möchten.",
         features: ["SSO", "Bis zu 25 Mitglieder", "Prioritäts-Support"],
         featuresTitle: "Alles in Startup plus:",
@@ -241,7 +241,7 @@ export default {
         title: "Hobby",
       },
       mid: {
-        cta: "Starte eine 14-tägige kostenlose Testphase",
+        cta: "14 Tage kostenlos testen",
         description:
           "Perfekt für Startups mit kleinen Teams, die skalieren müssen.",
         features: [

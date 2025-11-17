@@ -36,7 +36,7 @@ export default function UserAuthenticationLayout({
           className="z-10 flex items-center gap-2 font-medium"
           to={href("/")}
         >
-          <div className="bg-primary text-primary-primary flex size-6 items-center justify-center rounded-md">
+          <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
             <GalleryVerticalEndIcon className="size-4" />
           </div>
           {tCommon("appName")}

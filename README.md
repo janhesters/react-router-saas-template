@@ -71,6 +71,29 @@ Install the dependencies:
 npm install
 ```
 
+#### Quick Start
+
+For the fastest way to get started with local development using mocks (no external services required):
+
+```bash
+npm run quickstart
+```
+
+This command will:
+1. Copy `.env.example` to `.env`
+2. Set up Prisma (generate client, run migrations, push schema)
+3. Seed the database with demo data
+4. Start the development server with mocks enabled
+
+You can then log in with any of the demo accounts:
+- `hobby@example.com` - Hobby Plan (1 seat, monthly)
+- `startup@example.com` - Startup Plan (5 seats, annual)  
+- `business@example.com` - Business Plan (25 seats, monthly)
+
+For more details on working with mocks, see ["Local Development with Mocks"](#local-development-with-mocks).
+
+#### Manual Setup
+
 For a quick start, see ["Local Development with Mocks"](#local-development-with-mocks). Just copy `.env.example` to `.env` and start developing.
 
 Create `.env` file. You can find the `.env.example` file in the root of the
@@ -109,6 +132,9 @@ setting up the required services.
 - `VITE_SUPABASE_URL` - The URL of your Supabase project. NOTE: If you won't use
   client side uploads, you can also call it `SUPABASE_URL` instead. The `VITE_`
   prefix is used for client side variables.
+
+4. From `https://supabase.com/dashboard/project/<project-id>/settings/api-keys`, you can grab:
+
 - `VITE_SUPABASE_ANON_KEY` - The anonymous key of your Supabase project. It's
   marked as `anon` and `public` in your dashboard. NOTE: If you won't use client
   side uploads, you can also call it `SUPABASE_URL` instead. The `VITE_` prefix
@@ -117,8 +143,8 @@ setting up the required services.
   It's marked as `service_role` and `secret` in your dashboard. It must only be
   used on the server side.
 
-4. Go to your project's storage settings, e.g.
-   `https://supabase.com/dashboard/project/<project-id>/settings/storage`.
+5. Go to your project's storage settings, e.g.
+   `https://supabase.com/dashboard/project/<project-id>/storage/s3`.
    You'll need to click on "New access key". Then you can grab from this screen:
 
 - `STORAGE_ACCESS_KEY_ID` - The access key ID of your Supabase project.
