@@ -28,7 +28,7 @@ import { cn } from "~/lib/utils";
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state";
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = "16rem";
+const SIDEBAR_WIDTH = "13rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
@@ -506,7 +506,7 @@ const sidebarMenuButtonVariants = cva(
     },
     variants: {
       size: {
-        default: "h-10 text-xs font-normal data-[active=true]:font-normal",
+        default: "h-10 text-xs font-medium data-[active=true]:font-medium",
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
         sm: "h-7 text-xs",
       },
