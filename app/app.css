@@ -343,6 +343,7 @@
 }
 
 @custom-variant supports-squircle {
+  /* biome-ignore lint/correctness/noUnknownProperty: very new property, lsp not yet support it */
   @supports (corner-shape: squircle) {
     @slot;
   }
