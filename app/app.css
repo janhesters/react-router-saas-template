@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -21,7 +22,7 @@
 
 :root {
   /* Define light theme color values */
-  --background-light: oklch(1 0 0);
+  --background-light: oklch(96.12% 0 0);
   --foreground-light: oklch(0.145 0 0);
 
   --card-light: oklch(1 0 0);
@@ -30,7 +31,7 @@
   --popover-light: oklch(1 0 0);
   --popover-foreground-light: oklch(0.145 0 0);
 
-  --primary-light: oklch(0.6451 0.2132 21.54);
+  --primary-light: oklch(68.82% 0.1743 246.5);
   --primary-foreground-light: oklch(0.985 0 0);
 
   --secondary-light: oklch(0.97 0 0);
@@ -54,7 +55,7 @@
   --chart-4-light: oklch(0.828 0.189 84.429);
   --chart-5-light: oklch(0.769 0.188 70.08);
 
-  --sidebar-light: oklch(0.985 0 0);
+  --sidebar-light: oklch(98.81% 0 0);
   --sidebar-foreground-light: oklch(0.145 0 0);
   --sidebar-primary-light: oklch(0.205 0 0);
   --sidebar-primary-foreground-light: oklch(0.985 0 0);
@@ -64,7 +65,7 @@
   --sidebar-ring-light: oklch(0.708 0 0);
 
   /* Define dark theme color values */
-  --background-dark: oklch(0.145 0 0);
+  --background-dark: oklch(18.22% 0 0);
   --foreground-dark: oklch(0.985 0 0);
 
   --card-dark: oklch(0.205 0 0);
@@ -73,7 +74,7 @@
   --popover-dark: oklch(0.205 0 0);
   --popover-foreground-dark: oklch(0.985 0 0);
 
-  --primary-dark: oklch(0.6451 0.2132 21.54);
+  --primary-dark: oklch(68.82% 0.1743 246.5);
   --primary-foreground-dark: oklch(0.985 0 0);
 
   --secondary-dark: oklch(0.269 0 0);
@@ -97,7 +98,7 @@
   --chart-4-dark: oklch(0.627 0.265 303.9);
   --chart-5-dark: oklch(0.645 0.246 16.439);
 
-  --sidebar-dark: oklch(0.205 0 0);
+  --sidebar-dark: oklch(20.46% 0 0);
   --sidebar-foreground-dark: oklch(0.985 0 0);
   --sidebar-primary-dark: oklch(0.488 0.243 264.376);
   --sidebar-primary-foreground-dark: oklch(0.985 0 0);
@@ -151,6 +152,8 @@
 
   --radius: 0.625rem;
   --header-height: calc(var(--spacing) * 12 + 1px);
+
+  --surface: oklch(98.81% 0 0);
 }
 
 .dark {
@@ -197,6 +200,8 @@
   --sidebar-accent-foreground: var(--sidebar-accent-foreground-dark);
   --sidebar-border: var(--sidebar-border-dark);
   --sidebar-ring: var(--sidebar-ring-dark);
+
+  --surface: oklch(20.46% 0 0);
 }
 
 .system {
@@ -275,6 +280,9 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+  /* --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem; */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -283,6 +291,7 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-surface: var(--surface);
 
   --animate-marquee: marquee var(--duration) infinite linear;
   --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
@@ -305,138 +314,36 @@
   }
 }
 
+@utility squircle-rounded-2xl {
+  @apply rounded-2xl squircle;
+  @apply supports-squircle:rounded-[calc(var(--radius-2xl)*2)];
+}
+
+@utility squircle-rounded-3xl {
+  @apply rounded-3xl squircle;
+  @apply supports-squircle:rounded-[calc(var(--radius-3xl)*2)];
+}
+
+@utility squircle-rounded-4xl {
+  @apply rounded-4xl squircle;
+  @apply supports-squircle:rounded-[calc(var(--radius-4xl)*2)];
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
   }
 }
 
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 100;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Thin.woff2") format("woff2");
+@utility squircle {
+  @apply supports-squircle:[corner-shape:squircle];
 }
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 100;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-ThinItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 200;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-ExtraLight.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 200;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-ExtraLightItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Light.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 300;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-LightItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Regular.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 400;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Italic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Medium.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 500;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-MediumItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-SemiBold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 600;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-SemiBoldItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Bold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-BoldItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 800;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-ExtraBold.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 800;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-ExtraBoldItalic.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 900;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-Black.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Inter";
-  font-style: italic;
-  font-weight: 900;
-  font-display: swap;
-  src: url("/fonts/inter/Inter-BlackItalic.woff2") format("woff2");
+
+@custom-variant supports-squircle {
+  @supports (corner-shape: squircle) {
+    @slot;
+  }
 }
