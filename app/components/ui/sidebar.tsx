@@ -1,6 +1,7 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
 import { PanelLeftIcon } from "lucide-react";
+import { motion } from "motion/react";
 import { Slot as SlotPrimitive } from "radix-ui";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -331,7 +332,7 @@ function SidebarInset({ className, ...props }: React.ComponentProps<"main">) {
     <main
       className={cn(
         "bg-background relative flex w-full flex-1 flex-col",
-        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
+        "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:squircle-rounded-3xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2",
         "peer-data-[variant=sidebar]:**:data-[slot=secondary-sidebar-header]:dark:bg-sidebar", // Add `data-slot="secondary-sidebar-header"` to any secondary sidebar header to give it a nice background color on dark mode for the sidebar varient.
         className,
       )}
@@ -497,7 +498,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-lg p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent/5 hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-transparent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     defaultVariants: {
       size: "default",
@@ -505,18 +506,45 @@ const sidebarMenuButtonVariants = cva(
     },
     variants: {
       size: {
-        default: "h-8 text-sm",
+        default: "h-10 text-xs font-normal data-[active=true]:font-normal",
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
         sm: "h-7 text-xs",
       },
       variant: {
-        default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+        default:
+          "hover:bg-sidebar-accent/5 hover:text-sidebar-accent-foreground",
         outline:
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
     },
   },
 );
+
+function SidebarMenuButtonIndicator() {
+  return (
+    <>
+      <motion.div
+        className="bg-background absolute inset-0 rounded-lg squircle supports-squircle:rounded-[calc(var(--radius)*2)] -z-10 grid w-[calc(100%-2px)]"
+        layoutId="sidebar-indicator"
+        transition={{
+          damping: 30,
+          stiffness: 500,
+          type: "spring",
+        }}
+      />
+      <motion.span
+        className="bg-primary w-1 h-1/2 inset-y-0 my-auto rounded-lg absolute -right-2"
+        layoutId="sidebar-indicator-dot"
+        transition={{
+          damping: 20,
+          delay: 0.1,
+          stiffness: 400,
+          type: "spring",
+        }}
+      />
+    </>
+  );
+}
 
 function SidebarMenuButton({
   asChild = false,
@@ -525,6 +553,7 @@ function SidebarMenuButton({
   size = "default",
   tooltip,
   className,
+  children,
   ...props
 }: React.ComponentProps<"button"> & {
   asChild?: boolean;
@@ -534,7 +563,21 @@ function SidebarMenuButton({
   const Comp = asChild ? SlotPrimitive.Slot : "button";
   const { isMobile, state } = useSidebar();
 
-  const button = (
+  const button = asChild ? (
+    <>
+      <Comp
+        className={cn(sidebarMenuButtonVariants({ size, variant }), className)}
+        data-active={isActive}
+        data-sidebar="menu-button"
+        data-size={size}
+        data-slot="sidebar-menu-button"
+        {...props}
+      >
+        {children}
+      </Comp>
+      {isActive && <SidebarMenuButtonIndicator />}
+    </>
+  ) : (
     <Comp
       className={cn(sidebarMenuButtonVariants({ size, variant }), className)}
       data-active={isActive}
@@ -542,7 +585,10 @@ function SidebarMenuButton({
       data-size={size}
       data-slot="sidebar-menu-button"
       {...props}
-    />
+    >
+      {children}
+      {isActive && <SidebarMenuButtonIndicator />}
+    </Comp>
   );
 
   if (!tooltip) {
