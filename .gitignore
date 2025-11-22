@@ -25,3 +25,5 @@ stripe-events.txt
 # Test fixtures
 /tests/fixtures/
 /app/tests/mocks/fixtures/
+
+build_log_*
