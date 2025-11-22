@@ -57,12 +57,17 @@ export default {
     breadcrumb: "Get Help",
     pageTitle: "Get Help",
   },
+  jobsAndClients: {
+    breadcrumb: "Jobs & Clients",
+    pageTitle: "Jobs & Clients",
+  },
   layout: {
     appSidebar: {
       nav: {
         app: {
           analytics: "Analytics",
           dashboard: "Dashboard",
+          jobsAndClients: "Jobs & Clients",
           projects: {
             active: "Active",
             all: "All",

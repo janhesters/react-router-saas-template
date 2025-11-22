@@ -72,7 +72,7 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
                       size={size}
                       tooltip={item.title}
                     >
-                      {item.icon && <item.icon />}
+                      {item.icon && <item.icon strokeWidth={1.4} />}
                       <span>{item.title}</span>
                       <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                     </SidebarMenuButton>
@@ -105,7 +105,7 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
 
           return (
             <SidebarMenuItem key={item.title}>
-              <NavLink to={item.url}>
+              <NavLink className="relative isolate" to={item.url}>
                 {({ isActive }) => (
                   <SidebarMenuButton
                     asChild
@@ -114,7 +114,7 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
                     tooltip={item.title}
                   >
                     <div>
-                      {item.icon && <item.icon />}
+                      {item.icon && <item.icon strokeWidth={1.4} />}
                       <span>{item.title}</span>
                     </div>
                   </SidebarMenuButton>
