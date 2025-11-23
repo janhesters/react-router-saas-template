@@ -2,6 +2,7 @@ import { href } from "react-router";
 
 import type { Route } from "./+types/jobs-and-clients";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
+import { Agenda } from "~/features/organizations/jobs-and-clients/agenda";
 import { CandidateSources } from "~/features/organizations/jobs-and-clients/candidate-sources";
 import { ClientSnapshot } from "~/features/organizations/jobs-and-clients/client-snapshot";
 import { CurrentVacancies } from "~/features/organizations/jobs-and-clients/current-vacancies";
@@ -34,9 +35,7 @@ export default function JobsAndClientsRoute() {
       <div className="grid grid-cols-[minmax(0,1fr)_300px] grid-rows-[175px_1fr] gap-5 h-fit">
         <UpcomingInterview />
 
-        <div className="col-span-1 row-span-2 bg-surface squircle-rounded-3xl h-full p-6">
-          <p className="text-lg font-medium">Daily Agenda</p>
-        </div>
+        <Agenda />
 
         <div className="col-span-1 row-span-1 grid grid-cols-3 gap-5">
           <ClientSnapshot />
