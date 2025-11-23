@@ -344,8 +344,79 @@
 }
 
 @custom-variant supports-squircle {
-  /* biome-ignore lint/correctness/noUnknownProperty: very new property, lsp not yet support it */
+  /* biome-ignore lint/correctness/noUnknownProperty: very new property, lsp not yet supports it */
   @supports (corner-shape: squircle) {
     @slot;
   }
+}
+
+/* Calendar Custom Styles */
+.rbc-custom-dark {
+  color: var(--foreground);
+}
+
+.rbc-custom-dark .rbc-header {
+  border-bottom: none;
+  padding: 10px 0;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+.rbc-custom-dark .rbc-time-view {
+  border: none;
+}
+
+.rbc-custom-dark .rbc-time-header {
+  border-bottom: 1px solid var(--border);
+}
+
+.rbc-custom-dark .rbc-time-content {
+  border-top: none;
+}
+
+.rbc-custom-dark .rbc-timeslot-group {
+  border-bottom: 1px solid var(--border);
+}
+
+.rbc-custom-dark .rbc-day-slot .rbc-time-slot {
+  border-top: none;
+}
+
+.rbc-custom-dark .rbc-day-slot .rbc-event {
+  border: none;
+}
+
+.rbc-custom-dark .rbc-time-gutter .rbc-timeslot-group {
+  border-bottom: none;
+}
+
+.rbc-custom-dark .rbc-label {
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+.rbc-custom-dark .rbc-event {
+  background-color: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.rbc-custom-dark .rbc-event-label {
+  display: none;
+}
+
+.rbc-custom-dark .rbc-current-time-indicator {
+  background-color: var(--primary);
+}
+
+.rbc-custom-dark .rbc-today {
+  background-color: transparent;
+}
+
+.rbc-custom-dark .rbc-event.rbc-selected {
+  background-color: transparent;
 }
