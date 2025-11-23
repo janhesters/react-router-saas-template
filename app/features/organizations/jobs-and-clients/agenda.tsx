@@ -6,6 +6,8 @@ import {
   VideoIcon,
 } from "lucide-react";
 
+import { cn } from "~/lib/utils";
+
 const tasks = [
   {
     icon: VideoIcon,
@@ -48,36 +50,45 @@ const suggestions = [
   },
 ];
 
-export const Agenda = () => {
+export const Agenda = ({ className }: { className?: string }) => {
   return (
-    <div className="bg-surface squircle-rounded-3xl col-span-1 row-span-2 h-full p-6 text-black dark:text-white">
+    <div
+      className={cn(
+        "bg-surface squircle-rounded-3xl h-full p-6 text-black dark:text-white",
+        className,
+      )}
+    >
       <h2 className="mb-6 text-lg font-medium">Daily Agenda</h2>
 
       <div className="mb-8">
-        <h3 className="mb-4 text-base font-medium text-gray-200">
+        <h3 className="mb-4 text-base font-medium text-black dark:text-white">
           Today&rsquo;s Tasks
         </h3>
 
         <ul className="space-y-3">
           {tasks.map((task) => (
             <li className="flex items-start gap-3" key={task.id}>
-              <task.icon className="mt-0.5 size-4 shrink-0 text-gray-400" />
-              <span className="text-sm text-gray-200">{task.text}</span>
+              <task.icon className="mt-0.5 size-4 shrink-0 text-neutral-300 dark:text-neutral-700" />
+              <span className="text-sm text-neutral-900 dark:text-gray-200">
+                {task.text}
+              </span>
             </li>
           ))}
         </ul>
       </div>
 
       <div>
-        <h3 className="mb-4 text-base font-medium text-gray-200">
+        <h3 className="mb-4 text-base font-medium text-black dark:text-white">
           AI Suggestions
         </h3>
 
         <ul className="space-y-3">
           {suggestions.map((suggestion) => (
             <li className="flex items-start gap-3" key={suggestion.id}>
-              <SparklesIcon className="mt-0.5 size-4 shrink-0 text-gray-400" />
-              <span className="text-sm text-gray-200">{suggestion.text}</span>
+              <SparklesIcon className="mt-0.5 size-4 shrink-0 text-neutral-300 dark:text-neutral-700" />
+              <span className="text-sm text-neutral-900 dark:text-gray-200">
+                {suggestion.text}
+              </span>
             </li>
           ))}
         </ul>

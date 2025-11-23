@@ -28,6 +28,7 @@ export const LiveCalendar = () => {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>(
     undefined,
   );
+  const [date, setDate] = useState(new Date());
 
   const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event);
@@ -37,20 +38,26 @@ export const LiveCalendar = () => {
     setSelectedEvent(undefined);
   };
 
+  const handleNavigate = (newDate: Date) => {
+    setDate(newDate);
+  };
+
   return (
-    <div className="h-[1000px] bg-surface squircle-rounded-2xl p-6 flex flex-col">
+    <div className="h-[1000px] bg-surface squircle-rounded-2xl py-6 px-4 flex flex-col">
       <Calendar
         className="rbc-custom-dark"
         components={{
           event: CalendarEventComponent,
           toolbar: CalendarToolbar,
         }}
+        date={date}
         dayLayoutAlgorithm="no-overlap"
         endAccessor="end"
         events={events}
         localizer={localizer}
         max={new Date(0, 0, 0, 20, 0, 0)}
         min={new Date(0, 0, 0, 8, 0, 0)}
+        onNavigate={handleNavigate}
         onSelectEvent={handleSelectEvent}
         onSelectSlot={handleSelectSlot}
         selectable

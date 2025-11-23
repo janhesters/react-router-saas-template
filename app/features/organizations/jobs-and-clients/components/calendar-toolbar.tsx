@@ -37,7 +37,7 @@ export const CalendarToolbar = (props: ToolbarProps<CalendarEvent>) => {
         >
           <ChevronLeft className="size-4" />
         </Button>
-        <span className="font-medium">{label}</span>
+        <span className="text-sm font-medium md:text-base">{label}</span>
         <Button
           className="h-8 w-8"
           onClick={goToNext}
@@ -51,8 +51,10 @@ export const CalendarToolbar = (props: ToolbarProps<CalendarEvent>) => {
           Today
         </Button>
       </div>
-      <Button className="gap-2" onClick={handleSchedule}>
-        Schedule Interview
+
+      <Button className="gap-2" onClick={handleSchedule} size="default">
+        <Plus className="size-4" />
+        <span className="hidden md:inline">Schedule Interview</span>
       </Button>
     </div>
   );

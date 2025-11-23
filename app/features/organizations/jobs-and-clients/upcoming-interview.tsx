@@ -2,16 +2,18 @@ import { BriefcaseBusiness, Timer, UsersRound } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 
-export function UpcomingInterview() {
+export function UpcomingInterview({ className }: { className?: string }) {
   return (
-    <div className="col-span-1 row-span-1 bg-surface h-[175px] squircle-rounded-3xl p-6 flex flex-col justify-between">
+    <div
+      className={`bg-surface squircle-rounded-3xl p-6 flex flex-col justify-between gap-6 ${className}`}
+    >
       <div className="flex items-start justify-between">
         <p className="text-lg font-medium">Upcoming Interview</p>
 
         <Button>Join meeting</Button>
       </div>
 
-      <div className="flex items-center gap-10 overflow-hidden">
+      <div className="flex flex-wrap items-center gap-4 overflow-hidden md:gap-10">
         <div className="flex items-center gap-3 w-fit shrink-0">
           <div className="aspect-square h-12 rounded-full bg-white/20">
             <img

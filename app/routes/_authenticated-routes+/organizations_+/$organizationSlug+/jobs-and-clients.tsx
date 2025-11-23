@@ -32,12 +32,12 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 export default function JobsAndClientsRoute() {
   return (
     <div className="flex flex-1 flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
-      <div className="grid grid-cols-[minmax(0,1fr)_300px] grid-rows-[175px_1fr] gap-5 h-fit">
-        <UpcomingInterview />
+      <div className="grid h-fit grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[175px_1fr]">
+        <UpcomingInterview className="col-span-1 row-span-1 h-auto min-h-[175px] lg:h-[175px]" />
 
-        <Agenda />
+        <Agenda className="col-span-1 row-span-1 lg:row-span-2" />
 
-        <div className="col-span-1 row-span-1 grid grid-cols-3 gap-5">
+        <div className="col-span-1 row-span-1 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           <ClientSnapshot />
           <CurrentVacancies />
           <CandidateSources />

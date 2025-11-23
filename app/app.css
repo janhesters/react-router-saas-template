@@ -315,6 +315,11 @@
   }
 }
 
+@utility squircle-rounded-lg {
+  @apply rounded-lg squircle;
+  @apply supports-squircle:rounded-[calc(var(--radius-lg)*2)];
+}
+
 @utility squircle-rounded-xl {
   @apply rounded-xl squircle;
   @apply supports-squircle:rounded-[calc(var(--radius-xl)*2)];
