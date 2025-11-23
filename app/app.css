@@ -315,6 +315,11 @@
   }
 }
 
+@utility squircle-rounded-xl {
+  @apply rounded-xl squircle;
+  @apply supports-squircle:rounded-[calc(var(--radius-xl)*2)];
+}
+
 @utility squircle-rounded-2xl {
   @apply rounded-2xl squircle;
   @apply supports-squircle:rounded-[calc(var(--radius-2xl)*2)];
