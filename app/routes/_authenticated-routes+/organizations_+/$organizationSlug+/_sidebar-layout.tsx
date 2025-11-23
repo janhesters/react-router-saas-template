@@ -108,7 +108,10 @@ export default function OrganizationLayoutRoute({
   );
 
   return (
-    <SidebarProvider defaultOpen={defaultSidebarOpen}>
+    <SidebarProvider
+      className="max-h-screen overflow-hidden"
+      defaultOpen={defaultSidebarOpen}
+    >
       <AppSidebar
         billingSidebarCardProps={
           billingSidebarCardProps && {
@@ -122,13 +125,15 @@ export default function OrganizationLayoutRoute({
         variant="inset"
       />
 
-      <SidebarInset>
+      <SidebarInset className="overflow-hidden">
         <AppHeader
           breadcrumbs={breadcrumbs}
           notificationsButtonProps={notificationButtonProps}
         />
 
-        <Outlet />
+        <div className="flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
