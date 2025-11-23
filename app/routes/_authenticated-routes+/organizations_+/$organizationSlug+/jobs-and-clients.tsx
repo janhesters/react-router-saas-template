@@ -2,6 +2,10 @@ import { href } from "react-router";
 
 import type { Route } from "./+types/jobs-and-clients";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
+import { CandidateSources } from "~/features/organizations/jobs-and-clients/candidate-sources";
+import { ClientSnapshot } from "~/features/organizations/jobs-and-clients/client-snapshot";
+import { CurrentVacancies } from "~/features/organizations/jobs-and-clients/current-vacancies";
+import { LiveCalendar } from "~/features/organizations/jobs-and-clients/live-calendar";
 import { UpcomingInterview } from "~/features/organizations/jobs-and-clients/upcoming-interview";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
@@ -26,26 +30,22 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 
 export default function JobsAndClientsRoute() {
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
-      <div className="grid grid-cols-6 grid-rows-[175px_1fr] gap-5 h-[500px]">
+    <div className="flex flex-1 flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_300px] grid-rows-[175px_1fr] gap-5 h-fit">
         <UpcomingInterview />
 
-        <div className="col-span-2 row-span-2 bg-surface squircle-rounded-3xl h-full p-6">
+        <div className="col-span-1 row-span-2 bg-surface squircle-rounded-3xl h-full p-6">
           <p className="text-lg font-medium">Daily Agenda</p>
         </div>
 
-        <div className="col-span-4 row-span-1 grid grid-cols-3 gap-5">
-          <div className="bg-surface h-full squircle-rounded-3xl p-6">
-            <p className="font-medium">Client Snapshot</p>
-          </div>
-          <div className="bg-surface h-full squircle-rounded-3xl p-6">
-            <p className="font-medium">Current Vacancies</p>
-          </div>
-          <div className="bg-surface h-full squircle-rounded-3xl p-6">
-            <p className="font-medium">Candidate Sources</p>
-          </div>
+        <div className="col-span-1 row-span-1 grid grid-cols-3 gap-5">
+          <ClientSnapshot />
+          <CurrentVacancies />
+          <CandidateSources />
         </div>
       </div>
+
+      <LiveCalendar />
     </div>
   );
 }

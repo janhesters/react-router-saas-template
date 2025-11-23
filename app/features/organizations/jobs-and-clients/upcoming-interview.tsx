@@ -4,14 +4,14 @@ import { Button } from "~/components/ui/button";
 
 export function UpcomingInterview() {
   return (
-    <div className="col-span-4 row-span-1 bg-surface h-[175px] squircle-rounded-3xl p-6 flex flex-col justify-between">
+    <div className="col-span-1 row-span-1 bg-surface h-[175px] squircle-rounded-3xl p-6 flex flex-col justify-between">
       <div className="flex items-start justify-between">
         <p className="text-lg font-medium">Upcoming Interview</p>
 
         <Button>Join meeting</Button>
       </div>
 
-      <div className="flex items-center gap-8 overflow-hidden">
+      <div className="flex items-center gap-10 overflow-hidden">
         <div className="flex items-center gap-3 w-fit shrink-0">
           <div className="aspect-square h-12 rounded-full bg-white/20">
             <img
@@ -93,7 +93,7 @@ export function UpcomingInterview() {
             </div>
 
             <p className="line-clamp-1 truncate whitespace-nowrap text-xs">
-              +2 people
+              +2 others
             </p>
           </div>
         </div>
