@@ -1,6 +1,10 @@
-import type { Organization, Prisma, StripeSubscription } from "@prisma/client";
 import type Stripe from "stripe";
 
+import type {
+  Organization,
+  Prisma,
+  StripeSubscription,
+} from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

@@ -1,5 +1,4 @@
-import type { ContactSalesFormSubmission, Prisma } from "@prisma/client";
-
+import type { ContactSalesFormSubmission, Prisma } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

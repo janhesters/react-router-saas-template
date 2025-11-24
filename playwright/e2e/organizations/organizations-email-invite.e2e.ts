@@ -1,13 +1,13 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type { OrganizationEmailInviteLink } from "@prisma/client";
 import { promiseHash } from "remix-utils/promise";
 
 import { getPath, setupOrganizationAndLoginAsMember } from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
 import { createPopulatedOrganizationEmailInviteLink } from "~/features/organizations/organizations-factories.server";
+import type { OrganizationEmailInviteLink } from "~/generated/client";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,

@@ -1,17 +1,17 @@
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
+import { addDays } from "date-fns";
+
+import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from "../billing/billing-factories.server";
+import type { OrganizationWithMembershipsAndSubscriptions } from "../onboarding/onboarding-helpers.server";
 import type {
   InviteLinkUse,
   Organization,
   OrganizationEmailInviteLink,
   OrganizationInviteLink,
   OrganizationMembership,
-} from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
-import { addDays } from "date-fns";
-
-import { createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct } from "../billing/billing-factories.server";
-import type { OrganizationWithMembershipsAndSubscriptions } from "../onboarding/onboarding-helpers.server";
+} from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { slugify } from "~/utils/slugify.server";
 import type { Factory } from "~/utils/types";
 

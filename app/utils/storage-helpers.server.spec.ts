@@ -46,13 +46,13 @@ describe("getBucketAndKeyFromUrl()", () => {
       },
       url: "https://project-ref.supabase.co/storage/v1/render/image/public/app-images/user-avatars/gfcqufunx7kdf20k54bdhpez/avatar.png?width=128&height=128&resize=cover",
     },
-  ])(
-    "given: a url $url, should: return bucket $expected.bucket and key $expected.key",
-    ({ url, expected }) => {
-      const actual = getBucketAndKeyFromUrl(url);
-      expect(actual).toEqual(expected);
-    },
-  );
+  ])("given: a url $url, should: return bucket $expected.bucket and key $expected.key", ({
+    url,
+    expected,
+  }) => {
+    const actual = getBucketAndKeyFromUrl(url);
+    expect(actual).toEqual(expected);
+  });
 
   test('given: an invalid URL string, should: throw error "Invalid URL"', () => {
     const url = "not a url";

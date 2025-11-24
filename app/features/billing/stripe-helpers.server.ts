@@ -1,8 +1,8 @@
-import type { Organization, UserAccount } from "@prisma/client";
 import { href } from "react-router";
 import type Stripe from "stripe";
 
 import { stripeAdmin } from "~/features/billing/stripe-admin.server";
+import type { Organization, UserAccount } from "~/generated/client";
 
 /**
  * Creates a Stripe Checkout Session for a subscription purchase or update.

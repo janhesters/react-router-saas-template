@@ -1,5 +1,4 @@
-import type { OrganizationInviteLink, Prisma } from "@prisma/client";
-
+import type { OrganizationInviteLink, Prisma } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

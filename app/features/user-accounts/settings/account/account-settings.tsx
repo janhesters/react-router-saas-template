@@ -1,7 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import type { UserAccount } from "@prisma/client";
 import { UserIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
@@ -28,6 +27,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import type { UserAccount } from "~/generated/browser";
 
 const ONE_MB = 1_000_000;
 

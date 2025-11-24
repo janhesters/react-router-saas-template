@@ -1,12 +1,11 @@
-import type { Organization } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
-
 import type { NavUserProps } from "./nav-user";
 import type { OrganizationSwitcherProps } from "./organization-switcher";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { getTierAndIntervalForLookupKey } from "~/features/billing/billing-helpers";
 import type { BillingSidebarCardProps } from "~/features/billing/billing-sidebar-card";
 import type { OnboardingUser } from "~/features/onboarding/onboarding-helpers.server";
+import type { Organization } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 
 /**
  * Gets the sidebar state from the request cookies. This is used to determine

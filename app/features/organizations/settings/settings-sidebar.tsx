@@ -1,9 +1,9 @@
-import type { OrganizationMembershipRole } from "@prisma/client";
 import { Building2Icon, CreditCardIcon, UsersIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { href, useMatch } from "react-router";
 
 import { NavGroup } from "../layout/nav-group";
+import type { OrganizationMembershipRole } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 
 type SettingsSidebarProps = {

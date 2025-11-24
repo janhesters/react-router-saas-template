@@ -1,16 +1,16 @@
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
-import type {
-  Notification,
-  NotificationPanel,
-  NotificationRecipient,
-  Prisma,
-} from "@prisma/client";
 
 import { LINK_NOTIFICATION_TYPE } from "./notification-constants";
 import type { NotificationQueryResult } from "./notifications-model.server";
 import type { NotificationType } from "./notifications-panel-content";
 import type { LinkNotificationData } from "./notifications-schemas";
+import type {
+  Notification,
+  NotificationPanel,
+  NotificationRecipient,
+  Prisma,
+} from "~/generated/client";
 import type { Factory } from "~/utils/types";
 
 /**

@@ -1,6 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
-import type { Organization, UserAccount } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
+
 import { data, href } from "react-router";
 import { describe, expect, onTestFinished, test } from "vitest";
 
@@ -35,6 +34,8 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import type { Organization, UserAccount } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
@@ -566,90 +567,81 @@ describe("/organizations/:organizationSlug route action", () => {
     test.each([
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
-    ])(
-      "given: a valid request from a %s, but their organization already has a subscription, should: return a 409",
-      async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
-          role,
-        });
+    ])("given: a valid request from a %s, but their organization already has a subscription, should: return a 409", async (role) => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role,
+      });
 
-        const actual = (await sendAuthenticatedRequest({
-          formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
-          organizationSlug: organization.slug,
-          user,
-        })) as DataWithResponseInit<object>;
-        const expected = conflict();
+      const actual = (await sendAuthenticatedRequest({
+        formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+        organizationSlug: organization.slug,
+        user,
+      })) as DataWithResponseInit<object>;
+      const expected = conflict();
 
-        expect(actual).toEqual(expected);
-      },
-    );
+      expect(actual).toEqual(expected);
+    });
 
     test.each([
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
-    ])(
-      "given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409",
-      async (role) => {
-        const { user, organization } =
-          await setupUserWithTrialOrgAndAddAsMember({
-            role,
-          });
-        const otherUser = createPopulatedUserAccount();
-        await saveUserAccountToDatabase(otherUser);
-        await addMembersToOrganizationInDatabaseById({
-          id: organization.id,
-          members: [otherUser.id],
-        });
-        onTestFinished(async () => {
-          await deleteUserAccountFromDatabaseById(otherUser.id);
-        });
+    ])("given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409", async (role) => {
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        role,
+      });
+      const otherUser = createPopulatedUserAccount();
+      await saveUserAccountToDatabase(otherUser);
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [otherUser.id],
+      });
+      onTestFinished(async () => {
+        await deleteUserAccountFromDatabaseById(otherUser.id);
+      });
 
-        const actual = (await sendAuthenticatedRequest({
-          formData: toFormData({
-            intent,
-            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
-          }),
-          organizationSlug: organization.slug,
-          user,
-        })) as DataWithResponseInit<object>;
-        const expected = conflict();
+      const actual = (await sendAuthenticatedRequest({
+        formData: toFormData({
+          intent,
+          lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
+        }),
+        organizationSlug: organization.slug,
+        user,
+      })) as DataWithResponseInit<object>;
+      const expected = conflict();
 
-        expect(actual).toEqual(expected);
-      },
-    );
+      expect(actual).toEqual(expected);
+    });
 
     test.each([
       OrganizationMembershipRole.admin,
       OrganizationMembershipRole.owner,
-    ])(
-      "given: a valid request from a %s, should: return a 302 and redirect to the customer portal",
-      async (role) => {
-        let checkoutSessionCalled = false;
-        const checkoutListener = ({ request }: { request: Request }) => {
-          if (new URL(request.url).pathname === "/v1/checkout/sessions") {
-            checkoutSessionCalled = true;
-          }
-        };
-        server.events.on("response:mocked", checkoutListener);
-        onTestFinished(() => {
-          server.events.removeListener("response:mocked", checkoutListener);
-        });
+    ])("given: a valid request from a %s, should: return a 302 and redirect to the customer portal", async (role) => {
+      let checkoutSessionCalled = false;
+      const checkoutListener = ({ request }: { request: Request }) => {
+        if (new URL(request.url).pathname === "/v1/checkout/sessions") {
+          checkoutSessionCalled = true;
+        }
+      };
+      server.events.on("response:mocked", checkoutListener);
+      onTestFinished(() => {
+        server.events.removeListener("response:mocked", checkoutListener);
+      });
 
-        const { user, organization } =
-          await setupUserWithTrialOrgAndAddAsMember({ role });
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        role,
+      });
 
-        const response = (await sendAuthenticatedRequest({
-          formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
-          organizationSlug: organization.slug,
-          user,
-        })) as Response;
+      const response = (await sendAuthenticatedRequest({
+        formData: toFormData({ intent, lookupKey: getRandomLookupKey() }),
+        organizationSlug: organization.slug,
+        user,
+      })) as Response;
 
-        expect(response.status).toEqual(302);
-        expect(response.headers.get("Location")).toMatch(
-          /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
-        );
-        expect(checkoutSessionCalled).toEqual(true);
-      },
-    );
+      expect(response.status).toEqual(302);
+      expect(response.headers.get("Location")).toMatch(
+        /^https:\/\/checkout\.stripe\.com\/pay\/cs_[\dA-Za-z]+(?:\?.*)?$/,
+      );
+      expect(checkoutSessionCalled).toEqual(true);
+    });
   });
 });

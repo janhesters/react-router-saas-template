@@ -3,12 +3,6 @@ import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import type {
-  Organization,
-  OrganizationInviteLink,
-  UserAccount,
-} from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
   getPath,
@@ -39,6 +33,12 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import type {
+  Organization,
+  OrganizationInviteLink,
+  UserAccount,
+} from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
 import { asyncForEach } from "~/utils/async-for-each.server";
 

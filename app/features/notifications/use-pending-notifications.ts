@@ -1,7 +1,7 @@
-import type { NotificationRecipient } from "@prisma/client";
 import { useFetchers } from "react-router";
 
 import { MARK_ONE_NOTIFICATION_AS_READ_INTENT } from "./notification-constants";
+import type { NotificationRecipient } from "~/generated/browser";
 
 type PendingNotification = {
   intent: typeof MARK_ONE_NOTIFICATION_AS_READ_INTENT;

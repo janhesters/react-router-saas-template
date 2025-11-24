@@ -1,4 +1,3 @@
-import type { Organization, UserAccount } from "@prisma/client";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
 
@@ -6,6 +5,7 @@ import { ACCEPT_EMAIL_INVITE_INTENT } from "./accept-email-invite-constants";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
+import type { Organization, UserAccount } from "~/generated/browser";
 
 export type AcceptEmailInvitePageProps = {
   inviterName: UserAccount["name"];

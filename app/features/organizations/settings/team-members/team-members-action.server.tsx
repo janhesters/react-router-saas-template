@@ -1,7 +1,5 @@
 import { report } from "@conform-to/react/future";
 import { createId } from "@paralleldrive/cuid2";
-import type { Prisma } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { addDays } from "date-fns";
 import { data } from "react-router";
 import { z } from "zod";
@@ -33,6 +31,8 @@ import {
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members";
 import { adjustSeats } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
+import type { Prisma } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";

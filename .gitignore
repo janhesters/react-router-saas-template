@@ -25,3 +25,6 @@ stripe-events.txt
 # Test fixtures
 /tests/fixtures/
 /app/tests/mocks/fixtures/
+
+# Prisma
+/app/generated/

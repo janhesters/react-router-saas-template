@@ -1,7 +1,7 @@
-import type { StripeSubscriptionSchedule } from "@prisma/client";
 import type Stripe from "stripe";
 
 import type { StripeSubscriptionScheduleWithPhasesAndPrice } from "./billing-factories.server";
+import type { StripeSubscriptionSchedule } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

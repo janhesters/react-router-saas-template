@@ -142,28 +142,27 @@ describe("/register route action", () => {
         body: { email: "invalid-email", intent },
         given: "an invalid email",
       },
-    ])(
-      "given: $given, should: return a 400 status code with an error message",
-      async ({ body }) => {
-        const formData = toFormData(body);
+    ])("given: $given, should: return a 400 status code with an error message", async ({
+      body,
+    }) => {
+      const formData = toFormData(body);
 
-        const actual = await sendRequest({ formData });
-        expect(actual).toMatchObject({
-          data: {
-            result: {
-              error: {
-                fieldErrors: {
-                  email: expect.arrayContaining([
-                    "userAuthentication:register.errors.invalidEmail",
-                  ]),
-                },
+      const actual = await sendRequest({ formData });
+      expect(actual).toMatchObject({
+        data: {
+          result: {
+            error: {
+              fieldErrors: {
+                email: expect.arrayContaining([
+                  "userAuthentication:register.errors.invalidEmail",
+                ]),
               },
             },
           },
-          init: { status: 400 },
-        });
-      },
-    );
+        },
+        init: { status: 400 },
+      });
+    });
 
     test("given: a valid email for an existing user, should: return a 400 status code with an error message", async () => {
       const userAccount = createPopulatedUserAccount();

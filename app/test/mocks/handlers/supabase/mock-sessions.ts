@@ -29,9 +29,10 @@ function isSession(data: unknown): data is Session {
  * @returns A promise that resolves when the session is saved
  */
 export async function setMockSession(accessToken: string, session: Session) {
+  const sessionData = JSON.parse(JSON.stringify(session));
   await prisma.mockAccessTokenSession.upsert({
-    create: { accessToken, sessionData: session },
-    update: { sessionData: session },
+    create: { accessToken, sessionData },
+    update: { sessionData },
     where: { accessToken },
   });
 }

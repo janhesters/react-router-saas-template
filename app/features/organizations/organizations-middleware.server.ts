@@ -1,9 +1,9 @@
-import type { OrganizationMembershipRole } from "@prisma/client";
 import type { MiddlewareFunction } from "react-router";
 import { createContext } from "react-router";
 
 import type { OnboardingUser } from "../onboarding/onboarding-helpers.server";
 import { requireUserIsMemberOfOrganization } from "./organizations-helpers.server";
+import type { OrganizationMembershipRole } from "~/generated/client";
 
 export const organizationMembershipContext = createContext<{
   headers: Headers;

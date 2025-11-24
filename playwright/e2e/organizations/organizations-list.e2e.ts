@@ -1,6 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
   getPath,
@@ -15,6 +14,7 @@ import {
 } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
 
 const path = "/organizations";

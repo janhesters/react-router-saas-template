@@ -256,25 +256,25 @@ describe("/onboarding/user-account route action", () => {
         },
         given: "a too short name with whitespace",
       },
-    ])(
-      "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
-        const userAccount = createPopulatedUserAccount({ name: "" });
-        await saveUserAccountToDatabase(userAccount);
-        onTestFinished(async () => {
-          await deleteUserAccountFromDatabaseById(userAccount.id);
-        });
+    ])("given: $given, should: return a 400 status code with an error message", async ({
+      body,
+      expected,
+    }) => {
+      const userAccount = createPopulatedUserAccount({ name: "" });
+      await saveUserAccountToDatabase(userAccount);
+      onTestFinished(async () => {
+        await deleteUserAccountFromDatabaseById(userAccount.id);
+      });
 
-        const formData = toFormData(body);
+      const formData = toFormData(body);
 
-        const actual = await sendAuthenticatedRequest({
-          formData,
-          userAccount,
-        });
+      const actual = await sendAuthenticatedRequest({
+        formData,
+        userAccount,
+      });
 
-        expect(actual).toMatchObject(expected);
-      },
-    );
+      expect(actual).toMatchObject(expected);
+    });
 
     test("given: a user who needs onboarding with a invite link session info in the request, should: redirect to the organizations dashboard page and show a toast", async () => {
       // The user who was invited and just picked their name.

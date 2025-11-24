@@ -1,11 +1,6 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import type { Organization } from "@prisma/client";
-import {
-  OrganizationMembershipRole,
-  StripeSubscriptionStatus,
-} from "@prisma/client";
 import { expect, test } from "playwright/test";
 import {
   getPath,
@@ -33,6 +28,11 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import type { Organization } from "~/generated/client";
+import {
+  OrganizationMembershipRole,
+  StripeSubscriptionStatus,
+} from "~/generated/client";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
 
 const createPath = (organizationSlug: Organization["slug"]) =>

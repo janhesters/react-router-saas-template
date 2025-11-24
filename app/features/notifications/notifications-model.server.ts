@@ -3,9 +3,8 @@ import type {
   NotificationRecipient,
   Organization,
   UserAccount,
-} from "@prisma/client";
-import { Prisma } from "@prisma/client";
-
+} from "~/generated/client";
+import { Prisma } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 // Define the structure of the notification data we expect from the raw query

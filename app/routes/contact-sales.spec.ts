@@ -182,16 +182,16 @@ describe("/contact-sales route action", () => {
         }),
         given: "message too long",
       },
-    ])(
-      "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
-        const formData = toFormData(body as Payload);
+    ])("given: $given, should: return a 400 status code with an error message", async ({
+      body,
+      expected,
+    }) => {
+      const formData = toFormData(body as Payload);
 
-        const actual = await sendRequest({ formData });
+      const actual = await sendRequest({ formData });
 
-        expect(actual).toMatchObject(expected);
-      },
-    );
+      expect(actual).toMatchObject(expected);
+    });
 
     test("given: honeypot field is filled, should: throw a 400 error", async () => {
       const formData = toFormData({

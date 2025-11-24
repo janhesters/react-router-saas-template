@@ -47,12 +47,6 @@ const rootConfig = defineConfig({
     staticCacheHeaders(),
     sudoFilesPlugin,
   ],
-  resolve: {
-    alias: {
-      ".prisma/client/index-browser":
-        "./node_modules/.prisma/client/index-browser.js",
-    },
-  },
   server: { port: 3000 },
 });
 

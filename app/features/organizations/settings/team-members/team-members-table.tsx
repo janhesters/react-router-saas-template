@@ -1,5 +1,3 @@
-import type { OrganizationMembership, UserAccount } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
@@ -56,6 +54,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import type { OrganizationMembership, UserAccount } from "~/generated/browser";
+import { OrganizationMembershipRole } from "~/generated/browser";
 
 export type Member = {
   avatar: UserAccount["imageUrl"];

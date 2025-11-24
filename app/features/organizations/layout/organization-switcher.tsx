@@ -1,4 +1,3 @@
-import type { Organization } from "@prisma/client";
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Form, Link, useLocation } from "react-router";
@@ -21,6 +20,7 @@ import {
   useSidebar,
 } from "~/components/ui/sidebar";
 import type { Tier } from "~/features/billing/billing-constants";
+import type { Organization } from "~/generated/browser";
 
 type OrganizationSwitcherOrganization = {
   id: Organization["id"];

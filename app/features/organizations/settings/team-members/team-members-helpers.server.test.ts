@@ -1,7 +1,6 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import {
@@ -18,6 +17,7 @@ import {
 import type { StripeSubscriptionWithItemsAndPriceAndProduct } from "~/features/billing/billing-factories.server";
 import { createPopulatedStripeSubscriptionWithItemsAndPriceAndProduct } from "~/features/billing/billing-factories.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 
 const createOrganizationWithLinksAndMembers = ({
   emailInviteCount,

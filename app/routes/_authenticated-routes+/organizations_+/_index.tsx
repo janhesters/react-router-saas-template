@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { useTranslation } from "react-i18next";
 import { href, Link, redirect } from "react-router";
 
@@ -16,6 +15,7 @@ import {
 import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireOnboardedUserAccountExists } from "~/features/onboarding/onboarding-helpers.server";
+import { OrganizationMembershipRole } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
 

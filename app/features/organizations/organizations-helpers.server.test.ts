@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: Test code */
-import { OrganizationMembershipRole } from "@prisma/client";
+
 import { describe, expect, test } from "vitest";
 
 import { createPopulatedOrganization } from "./organizations-factories.server";
@@ -7,6 +7,7 @@ import {
   findOrganizationIfUserIsMemberById,
   findOrganizationIfUserIsMemberBySlug,
 } from "./organizations-helpers.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { createOnboardingUser } from "~/test/test-utils";
 import { notFound } from "~/utils/http-responses.server";
 

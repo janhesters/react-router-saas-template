@@ -1,5 +1,3 @@
-import { StripeSubscriptionStatus } from "@prisma/client";
-
 import type { OrganizationWithMembershipsAndSubscriptions } from "../onboarding/onboarding-helpers.server";
 import type { Interval, Tier } from "./billing-constants";
 import type { StripeSubscriptionSchedulePhaseWithPrice } from "./billing-factories.server";
@@ -9,6 +7,7 @@ import type { CancelOrModifySubscriptionModalContentProps } from "./cancel-or-mo
 import type { CreateSubscriptionModalContentProps } from "./create-subscription-modal-content";
 import type { retrieveProductsFromDatabaseByPriceLookupKeys } from "./stripe-product-model.server";
 import type { retrieveLatestStripeSubscriptionWithActiveScheduleAndPhasesByOrganizationId } from "./stripe-subscription-model.server";
+import { StripeSubscriptionStatus } from "~/generated/client";
 
 const cancellableSubscriptionStatuses: StripeSubscriptionStatus[] = [
   StripeSubscriptionStatus.active,

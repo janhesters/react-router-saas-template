@@ -1,5 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
+
+import { allLookupKeys, allTiers } from "./billing-constants";
 import type {
   StripePrice,
   StripeProduct,
@@ -7,10 +9,8 @@ import type {
   StripeSubscriptionItem,
   StripeSubscriptionSchedule,
   StripeSubscriptionSchedulePhase,
-} from "@prisma/client";
-import { StripePriceInterval } from "@prisma/client";
-
-import { allLookupKeys, allTiers } from "./billing-constants";
+} from "~/generated/client";
+import { StripePriceInterval } from "~/generated/client";
 import type { DeepPartial, Factory } from "~/utils/types";
 
 export const getRandomTier = () => faker.helpers.arrayElement(allTiers);

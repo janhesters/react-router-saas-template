@@ -1,7 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
 import { expect, test } from "@playwright/test";
-import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
   getPath,
@@ -12,6 +11,7 @@ import { createPopulatedOrganization } from "~/features/organizations/organizati
 import { retrieveOrganizationFromDatabaseById } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,

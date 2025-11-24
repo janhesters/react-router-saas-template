@@ -1,11 +1,11 @@
-import { OrganizationMembershipRole } from "@prisma/client";
-import type { Return } from "@prisma/client/runtime/library";
+import type { Return } from "@prisma/client/runtime/client";
 import type { FileUpload } from "@remix-run/form-data-parser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { AVATAR_PATH_PREFIX, BUCKET_NAME } from "../../user-account-constants";
 import type { requireAuthenticatedUserWithMembershipsExists } from "../../user-accounts-helpers.server";
 import type { DangerZoneProps } from "./danger-zone";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { createAdminS3Client } from "~/utils/s3.server";
 import { uploadToStorage } from "~/utils/storage.server";
 

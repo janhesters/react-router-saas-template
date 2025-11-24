@@ -1,9 +1,9 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import { mapUserAccountWithMembershipsToDangerZoneProps } from "./account-settings-helpers.server";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 
 describe("mapUserAccountWithMembershipsToDangerZoneProps()", () => {
   test("given: a user account with no memberships, should: return danger zone props with empty arrays", () => {

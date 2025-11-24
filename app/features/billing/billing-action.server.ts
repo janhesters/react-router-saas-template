@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { data, redirect } from "react-router";
 import { z } from "zod";
 
@@ -40,6 +39,7 @@ import { updateStripeSubscriptionInDatabaseById } from "./stripe-subscription-mo
 import { deleteStripeSubscriptionScheduleFromDatabaseById } from "./stripe-subscription-schedule-model.server";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";

@@ -1,11 +1,11 @@
 import { faker } from "@faker-js/faker";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import type { Member } from "./team-members-table";
 import { TeamMembersTable } from "./team-members-table";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import { OrganizationMembershipRole } from "~/generated/browser";
 import { createRoutesStub, render, screen } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 

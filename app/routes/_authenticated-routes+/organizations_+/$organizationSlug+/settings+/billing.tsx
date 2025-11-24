@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { data, href, useNavigation } from "react-router";
 
 import type { Route } from "./+types/billing";
@@ -19,6 +18,7 @@ import { BillingPage } from "~/features/billing/billing-page";
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { OrganizationMembershipRole } from "~/generated/browser";
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
 

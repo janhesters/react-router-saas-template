@@ -1,4 +1,3 @@
-import type { Organization } from "@prisma/client";
 import { Trans, useTranslation } from "react-i18next";
 import { Form } from "react-router";
 
@@ -21,6 +20,7 @@ import {
   ItemTitle,
 } from "~/components/ui/item";
 import { Spinner } from "~/components/ui/spinner";
+import type { Organization } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 
 export const DELETE_USER_ACCOUNT_INTENT = "delete-user-account";

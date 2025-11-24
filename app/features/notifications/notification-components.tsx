@@ -1,4 +1,3 @@
-import type { NotificationRecipient } from "@prisma/client";
 import { MoreVerticalIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
@@ -14,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import type { NotificationRecipient } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 import { toFormData } from "~/utils/to-form-data";
 

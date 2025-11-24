@@ -1,7 +1,12 @@
+import "dotenv/config";
 import { init } from "@paralleldrive/cuid2";
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+
+import { Prisma, PrismaClient } from "~/generated/client";
 
 const cuid = init({ length: 8 });
+const connectionString = process.env.DATABASE_URL;
+const adapter = new PrismaPg({ connectionString });
 
 // Define the slug extension first so we can use it to infer the type
 const slugExtension = Prisma.defineExtension({
@@ -69,7 +74,7 @@ const trialEndExtension = Prisma.defineExtension({
 });
 
 // Create a dummy extended client to infer the correct type.
-const dummyClient = new PrismaClient()
+const dummyClient = new PrismaClient({ adapter })
   .$extends(slugExtension)
   .$extends(trialEndExtension);
 type ExtendedPrismaClient = typeof dummyClient;
@@ -91,12 +96,12 @@ const reservedSlugs = new Set([
 // create a new connection to the DB with every change either.
 // In production we'll have a single connection to the DB.
 if (process.env.NODE_ENV === "production") {
-  prisma = new PrismaClient()
+  prisma = new PrismaClient({ adapter })
     .$extends(slugExtension)
     .$extends(trialEndExtension);
 } else {
   if (!globalThis.__database__) {
-    globalThis.__database__ = new PrismaClient()
+    globalThis.__database__ = new PrismaClient({ adapter })
       .$extends(slugExtension)
       .$extends(trialEndExtension);
   }

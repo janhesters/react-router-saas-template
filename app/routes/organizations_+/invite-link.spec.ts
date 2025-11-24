@@ -1,4 +1,3 @@
-import type { UserAccount } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import { action } from "./invite-link";
@@ -7,6 +6,7 @@ import { getInviteLinkInfoFromSession } from "~/features/organizations/accept-in
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import { createPopulatedOrganizationInviteLink } from "~/features/organizations/organizations-factories.server";
 import { saveOrganizationInviteLinkToDatabase } from "~/features/organizations/organizations-invite-link-model.server";
+import type { UserAccount } from "~/generated/client";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";

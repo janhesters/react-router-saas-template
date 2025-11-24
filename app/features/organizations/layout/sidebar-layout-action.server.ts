@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { data, redirect } from "react-router";
 import { safeRedirect } from "remix-utils/safe-redirect";
 import { z } from "zod";
@@ -30,6 +29,7 @@ import {
   markOneAsReadSchema,
   notificationPanelOpenedSchema,
 } from "~/features/notifications/notifications-schemas";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";

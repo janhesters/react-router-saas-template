@@ -1,5 +1,4 @@
 import type { SubmissionResult } from "@conform-to/react/future";
-import type { Organization } from "@prisma/client";
 import { CircleXIcon } from "lucide-react";
 import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useMemo, useState } from "react";
@@ -42,6 +41,7 @@ import {
 } from "~/components/ui/dialog";
 import { Separator } from "~/components/ui/separator";
 import { Spinner } from "~/components/ui/spinner";
+import type { Organization } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 
 type PendingDowngradeBannerProps = {
