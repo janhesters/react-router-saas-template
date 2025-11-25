@@ -5,7 +5,6 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 
 import { CalendarEventComponent } from "./components/calendar-event";
 import { CalendarToolbar } from "./components/calendar-toolbar";
-import { useCalendarData } from "./hooks/use-calendar-data";
 import type { CalendarEvent } from "./types";
 
 const locales = {
@@ -20,11 +19,10 @@ const localizer = dateFnsLocalizer({
   startOfWeek,
 });
 
-export const LiveCalendar = () => {
+export const LiveCalendar = ({ events }: { events: CalendarEvent[] }) => {
   const [view] = useState<"day" | "week" | "month" | "work_week" | "agenda">(
     "day",
   );
-  const { events } = useCalendarData();
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | undefined>(
     undefined,
   );

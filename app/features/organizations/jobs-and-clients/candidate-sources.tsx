@@ -13,54 +13,53 @@ const Fallback = () => {
   );
 };
 
-export const CandidateSources = () => {
-  const option = {
+export const CandidateSources = ({
+  data,
+}: {
+  data: {
     legend: {
-      bottom: "0",
-      data: ["Meta", "Amazon", "Google", "Netflix", "ReactSquad", "Others"],
-      icon: "roundRect",
-      itemGap: 20,
-      itemHeight: 12,
-      itemWidth: 12,
-      left: "center",
+      bottom: string;
+      data: string[];
+      icon: string;
+      itemGap: number;
+      itemHeight: number;
+      itemWidth: number;
+      left: string;
       textStyle: {
-        color: "#9ca3af", // gray-400
-        fontSize: 12,
-      },
-    },
-    series: [
-      {
-        center: ["50%", "40%"],
-        data: [
-          { itemStyle: { color: "#0099ff" }, name: "Meta", value: 35 },
-          { itemStyle: { color: "#33adff" }, name: "Google", value: 30 },
-          { itemStyle: { color: "#66c2ff" }, name: "Amazon", value: 25 },
-          { itemStyle: { color: "#80ccff" }, name: "Netflix", value: 20 },
-          { itemStyle: { color: "#99d6ff" }, name: "ReactSquad", value: 15 },
-          { itemStyle: { color: "#b3e0ff" }, name: "Others", value: 10 },
-        ],
+        color: string;
+        fontSize: number;
+      };
+    };
+    series: {
+      center: string[];
+      data: {
         itemStyle: {
-          borderRadius: 6,
-        },
-        label: {
-          show: false,
-        },
-        name: "Candidate Sources",
-        radius: ["20%", "60%"],
-        roseType: "area",
-        type: "pie",
-      },
-    ],
+          color: string;
+        };
+        name: string;
+        value: number;
+      }[];
+      itemStyle: {
+        borderRadius: number;
+      };
+      label: {
+        show: boolean;
+      };
+      name: string;
+      radius: string[];
+      roseType: string;
+      type: string;
+    }[];
     tooltip: {
-      backgroundColor: "#1f2937",
-      borderColor: "#374151",
+      backgroundColor: string;
+      borderColor: string;
       textStyle: {
-        color: "#f3f4f6",
-      },
-      trigger: "item",
-    },
+        color: string;
+      };
+      trigger: string;
+    };
   };
-
+}) => {
   return (
     <div className="bg-surface h-full squircle-rounded-3xl p-6 flex flex-col">
       <p className="font-medium text-lg mb-2">Candidate Sources</p>
@@ -69,7 +68,7 @@ export const CandidateSources = () => {
           {() => (
             <ReactECharts
               className="size-full"
-              option={option}
+              option={data}
               opts={{ renderer: "svg" }}
             />
           )}

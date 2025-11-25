@@ -2,7 +2,21 @@ import { BriefcaseBusiness, Timer, UsersRound } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 
-export function UpcomingInterview({ className }: { className?: string }) {
+export function UpcomingInterview({
+  className,
+  interview,
+}: {
+  className?: string;
+  interview: {
+    attendees: string[];
+    company: string;
+    date: string;
+    extraAttendees: number;
+    image: string;
+    name: string;
+    role: string;
+  };
+}) {
   return (
     <div
       className={`bg-surface squircle-rounded-3xl p-6 flex flex-col justify-between gap-6 ${className}`}
@@ -19,14 +33,14 @@ export function UpcomingInterview({ className }: { className?: string }) {
             <img
               alt="interview-user"
               className="w-full aspect-square"
-              src="/images/monarch-image.png"
+              src={interview.image}
             />
           </div>
 
           <div>
-            <p className="line-clamp-1">Ugbah Isioma</p>
+            <p className="line-clamp-1">{interview.name}</p>
             <p className="text-xs text-neutral-400 line-clamp-1">
-              Senior frontend engineer
+              {interview.role}
             </p>
           </div>
         </div>
@@ -38,7 +52,7 @@ export function UpcomingInterview({ className }: { className?: string }) {
           </div>
 
           <p className="line-clamp-1 truncate whitespace-nowrap">
-            10:30am - 11:00am
+            {interview.date}
           </p>
         </div>
 
@@ -52,7 +66,9 @@ export function UpcomingInterview({ className }: { className?: string }) {
             <p className="text-xs text-neutral-400">Company</p>
           </div>
 
-          <p className="line-clamp-1 truncate whitespace-nowrap">React Squad</p>
+          <p className="line-clamp-1 truncate whitespace-nowrap">
+            {interview.company}
+          </p>
         </div>
 
         <div className="flex flex-col gap-1">
@@ -67,35 +83,18 @@ export function UpcomingInterview({ className }: { className?: string }) {
 
           <div className="flex items-center gap-1">
             <div className="flex -space-x-1">
-              <img
-                alt="dp"
-                className="size-5 rounded-full ring-3 ring-surface"
-                src="/images/dp1.png"
-              />
-              <img
-                alt="dp"
-                className="size-5 rounded-full ring-3 ring-surface"
-                src="/images/dp2.png"
-              />
-              <img
-                alt="dp"
-                className="size-5 rounded-full ring-3 ring-surface"
-                src="/images/dp3.png"
-              />
-              <img
-                alt="dp"
-                className="size-5 rounded-full ring-3 ring-surface"
-                src="/images/dp4.png"
-              />
-              <img
-                alt="dp"
-                className="size-5 rounded-full ring-3 ring-surface"
-                src="/images/dp5.png"
-              />
+              {interview.attendees.map((attendee) => (
+                <img
+                  alt="dp"
+                  className="size-5 rounded-full ring-3 ring-surface"
+                  key={attendee}
+                  src={attendee}
+                />
+              ))}
             </div>
 
             <p className="line-clamp-1 truncate whitespace-nowrap text-xs">
-              +2 others
+              +{interview.extraAttendees} others
             </p>
           </div>
         </div>

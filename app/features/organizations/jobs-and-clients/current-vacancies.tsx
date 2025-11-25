@@ -1,38 +1,17 @@
 import { MapPin, UsersRound } from "lucide-react";
 import { Link } from "react-router";
 
-const vacancies = [
-  {
-    hired: 0,
-    id: 1,
-    location: "United states",
-    title: "Product Designer",
-    total: 5,
-  },
-  {
-    hired: 0,
-    id: 2,
-    location: "United states",
-    title: "Product Designer",
-    total: 5,
-  },
-  {
-    hired: 2,
-    id: 3,
-    location: "Canada",
-    title: "UX Researcher",
-    total: 3,
-  },
-  {
-    hired: 2,
-    id: 3,
-    location: "Canada",
-    title: "UX Researcher",
-    total: 3,
-  },
-];
-
-export const CurrentVacancies = () => {
+export const CurrentVacancies = ({
+  vacancies,
+}: {
+  vacancies: {
+    hired: number;
+    id: number;
+    location: string;
+    title: string;
+    total: number;
+  }[];
+}) => {
   return (
     <div className="bg-surface h-full squircle-rounded-3xl p-0 flex flex-col">
       <div className="px-6 pt-6 pb-2">

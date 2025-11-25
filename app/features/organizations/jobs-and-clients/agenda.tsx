@@ -8,49 +8,31 @@ import {
 
 import { cn } from "~/lib/utils";
 
-const tasks = [
-  {
-    icon: VideoIcon,
-    id: 1,
-    text: "Interview with Ugbah Isioma",
-  },
-  {
-    icon: UsersIcon,
-    id: 2,
-    text: "Review 4 new backend developer applications",
-  },
-  {
-    icon: MessageCircleIcon,
-    id: 3,
-    text: "Follow up with Google hiring manager",
-  },
-  {
-    icon: FileTextIcon,
-    id: 4,
-    text: "Prepare offer draft for ReactSquad",
-  },
-];
+const iconMap = {
+  FileTextIcon,
+  MessageCircleIcon,
+  UsersIcon,
+  VideoIcon,
+} as const;
 
-const suggestions = [
-  {
-    id: 1,
-    text: "Want to auto-rank 12 new applicants?",
-  },
-  {
-    id: 2,
-    text: "Move to next stage",
-  },
-  {
-    id: 3,
-    text: "3 candidates match Google’s available Product designer role",
-  },
-  {
-    id: 4,
-    text: "Amazon pipeline looks slow, consider optimizing",
-  },
-];
+type IconName = keyof typeof iconMap;
 
-export const Agenda = ({ className }: { className?: string }) => {
+export const Agenda = ({
+  className,
+  suggestions,
+  tasks,
+}: {
+  className?: string;
+  suggestions: {
+    id: number;
+    text: string;
+  }[];
+  tasks: {
+    icon: IconName;
+    id: number;
+    text: string;
+  }[];
+}) => {
   return (
     <div
       className={cn(
@@ -66,14 +48,17 @@ export const Agenda = ({ className }: { className?: string }) => {
         </h3>
 
         <ul className="space-y-3">
-          {tasks.map((task) => (
-            <li className="flex items-start gap-3" key={task.id}>
-              <task.icon className="mt-0.5 size-4 shrink-0 text-neutral-300 dark:text-neutral-700" />
-              <span className="text-sm text-neutral-900 dark:text-gray-200">
-                {task.text}
-              </span>
-            </li>
-          ))}
+          {tasks.map((task) => {
+            const Icon = iconMap[task.icon];
+            return (
+              <li className="flex items-start gap-3" key={task.id}>
+                <Icon className="mt-0.5 size-4 shrink-0 text-neutral-300 dark:text-neutral-700" />
+                <span className="text-sm text-neutral-900 dark:text-gray-200">
+                  {task.text}
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

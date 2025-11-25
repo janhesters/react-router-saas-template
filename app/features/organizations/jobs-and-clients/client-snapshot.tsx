@@ -1,29 +1,14 @@
 import { Link } from "react-router";
 
-const clients = [
-  {
-    hired: 20,
-    name: "Google",
-    openRoles: 4,
-  },
-  {
-    hired: 15,
-    name: "Microsoft",
-    openRoles: 3,
-  },
-  {
-    hired: 30,
-    name: "Amazon",
-    openRoles: 5,
-  },
-  {
-    hired: 10,
-    name: "Apple",
-    openRoles: 2,
-  },
-];
-
-export const ClientSnapshot = () => {
+export const ClientSnapshot = ({
+  clients,
+}: {
+  clients: {
+    hired: number;
+    name: string;
+    openRoles: number;
+  }[];
+}) => {
   return (
     <div className="bg-surface h-full squircle-rounded-3xl p-6 flex flex-col">
       <p className="font-medium text-lg mb-6">Client Snapshot</p>
