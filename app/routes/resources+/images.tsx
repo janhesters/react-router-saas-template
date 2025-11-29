@@ -16,8 +16,10 @@ import { getImageSource } from "~/utils/image-optimization.server";
  */
 export async function loader({ request }: Route.LoaderArgs) {
   const cacheFolder = process.env.OPENIMG_CACHE_DIR || "./data/images";
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
 
   const response = await getImgResponse(request, {
+    allowlistedOrigins: supabaseUrl ? [supabaseUrl] : [],
     cacheFolder,
     getImgSource: getImageSource,
   });

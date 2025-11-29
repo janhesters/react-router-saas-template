@@ -162,4 +162,28 @@ test.describe("image optimization", () => {
       }
     }
   });
+
+  test("given: Supabase Storage URL from disallowed bucket, should: return 403 error", async ({
+    request,
+  }) => {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const invalidBucketUrl = `${supabaseUrl}/storage/v1/object/public/unauthorized-bucket/image.jpg`;
+    const optimizedUrl = `/resources/images?src=${encodeURIComponent(invalidBucketUrl)}`;
+
+    const response = await request.get(optimizedUrl);
+
+    expect(response.status()).toBe(403);
+  });
+
+  test("given: URL from different origin (not Supabase), should: return 403 error", async ({
+    request,
+  }) => {
+    const externalUrl =
+      "https://evil.com/storage/v1/object/public/app-images/image.jpg";
+    const optimizedUrl = `/resources/images?src=${encodeURIComponent(externalUrl)}`;
+
+    const response = await request.get(optimizedUrl);
+
+    expect(response.status()).toBe(403);
+  });
 });

@@ -99,8 +99,8 @@ describe("getImageSource", () => {
     });
   });
 
-  describe("given: request with absolute URL", () => {
-    test("should: reject external URLs", async () => {
+  describe("given: request with external URL (not Supabase Storage)", () => {
+    test("should: reject arbitrary external URLs", async () => {
       const request = new Request(
         "http://localhost:3000/resources/images?src=http://evil.com/malware.png",
       );
@@ -112,11 +112,11 @@ describe("getImageSource", () => {
         expect(error).toBeInstanceOf(Response);
         expect((error as Response).status).toEqual(403);
         const text = await (error as Response).text();
-        expect(text).toContain("Invalid image path");
+        expect(text).toContain("Invalid storage URL");
       }
     });
 
-    test("should: reject https URLs", async () => {
+    test("should: reject non-Supabase HTTPS URLs", async () => {
       const request = new Request(
         "http://localhost:3000/resources/images?src=https://example.com/image.png",
       );
@@ -128,7 +128,100 @@ describe("getImageSource", () => {
         expect(error).toBeInstanceOf(Response);
         expect((error as Response).status).toEqual(403);
         const text = await (error as Response).text();
-        expect(text).toContain("Invalid image path");
+        expect(text).toContain("Invalid storage URL");
+      }
+    });
+  });
+
+  describe("given: request with Supabase Storage URL", () => {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const validStorageUrl = `${supabaseUrl}/storage/v1/object/public/app-images/user-avatars/abc123.png`;
+
+    test("should: return fetch source for valid Supabase Storage URL", async () => {
+      const request = new Request(createUrl(validStorageUrl));
+
+      const result = await getImageSource({ request });
+
+      expect(result.type).toEqual("fetch");
+      if (result.type === "fetch") {
+        expect(result.url).toEqual(validStorageUrl);
+      }
+    });
+
+    test("should: reject URL from different Supabase instance", async () => {
+      const differentInstanceUrl =
+        "https://different-project.supabase.co/storage/v1/object/public/app-images/avatar.png";
+      const request = new Request(createUrl(differentInstanceUrl));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(403);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid storage URL");
+      }
+    });
+
+    test("should: reject private storage URLs", async () => {
+      // Using /object/ instead of /object/public/
+      const privateUrl = `${supabaseUrl}/storage/v1/object/app-images/avatar.png`;
+      const request = new Request(createUrl(privateUrl));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(403);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid storage path");
+      }
+    });
+
+    test("should: reject unauthorized bucket", async () => {
+      const unauthorizedBucketUrl = `${supabaseUrl}/storage/v1/object/public/unauthorized-bucket/file.png`;
+      const request = new Request(createUrl(unauthorizedBucketUrl));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(403);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid storage bucket");
+      }
+    });
+
+    test("should: reject invalid file extension in Storage URL", async () => {
+      const invalidExtUrl = `${supabaseUrl}/storage/v1/object/public/app-images/user-avatars/malware.exe`;
+      const request = new Request(createUrl(invalidExtUrl));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(400);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid file type");
+      }
+    });
+
+    test("should: reject malformed Storage URL", async () => {
+      const malformedUrl = `${supabaseUrl}/storage/v1/object/public/`;
+      const request = new Request(createUrl(malformedUrl));
+
+      try {
+        await getImageSource({ request });
+        expect.fail("Expected function to throw");
+      } catch (error) {
+        expect(error).toBeInstanceOf(Response);
+        expect((error as Response).status).toEqual(400);
+        const text = await (error as Response).text();
+        expect(text).toContain("Invalid storage URL format");
       }
     });
   });

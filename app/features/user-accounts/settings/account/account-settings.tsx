@@ -28,6 +28,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { getOptimizedImageUrl } from "~/utils/image-url";
 
 const ONE_MB = 1_000_000;
 
@@ -143,7 +144,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                       <AvatarUploadPreviewImage
                         alt={t("form.avatarPreviewAlt")}
                         className="size-16 md:size-24 rounded-lg object-cover"
-                        src={user.imageUrl ?? ""}
+                        src={getOptimizedImageUrl(user.imageUrl) ?? ""}
                       />
 
                       <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">

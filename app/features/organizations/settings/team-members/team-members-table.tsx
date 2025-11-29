@@ -56,6 +56,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { getOptimizedImageUrl } from "~/utils/image-url";
 
 export type Member = {
   avatar: UserAccount["imageUrl"];
@@ -210,7 +211,10 @@ const createColumns = ({
     cell: ({ row }) => {
       return (
         <Avatar>
-          <AvatarImage alt={row.original.name} src={row.original.avatar} />
+          <AvatarImage
+            alt={row.original.name}
+            src={getOptimizedImageUrl(row.original.avatar) ?? ""}
+          />
           <AvatarFallback>
             {row.original.name.slice(0, 2).toUpperCase()}
           </AvatarFallback>

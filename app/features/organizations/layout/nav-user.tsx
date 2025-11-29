@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar";
+import { getOptimizedImageUrl } from "~/utils/image-url";
 
 export type NavUserProps = {
   user: {
@@ -48,7 +49,10 @@ export function NavUser({ user }: NavUserProps) {
               size="lg"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage alt={user.name} src={user.avatar} />
+                <AvatarImage
+                  alt={user.name}
+                  src={getOptimizedImageUrl(user.avatar) ?? ""}
+                />
                 <AvatarFallback className="rounded-lg">
                   {user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -71,7 +75,10 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage alt={user.name} src={user.avatar} />
+                  <AvatarImage
+                    alt={user.name}
+                    src={getOptimizedImageUrl(user.avatar) ?? ""}
+                  />
                   <AvatarFallback className="rounded-lg">
                     {user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
