@@ -1,10 +1,9 @@
-import type { OrganizationMembership, UserAccount } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
-
 import type { EmailInviteCardProps } from "./invite-by-email-card";
 import type { InviteLinkCardProps } from "./invite-link-card";
 import type { TeamMembersTableProps } from "./team-members-table";
 import { retrieveOrganizationWithMembersAndLatestInviteLinkFromDatabaseBySlug } from "~/features/organizations/organizations-model.server";
+import type { OrganizationMembership, UserAccount } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { asyncPipe } from "~/utils/async-pipe.server";
 import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 

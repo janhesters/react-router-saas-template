@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
 import type { APIResponse, Page } from "@playwright/test";
 import { request } from "@playwright/test";
-import type { Organization, UserAccount } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 import dotenv from "dotenv";
 import { promiseHash } from "remix-utils/promise";
 
@@ -22,6 +20,8 @@ import {
 } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { saveUserAccountToDatabase } from "~/features/user-accounts/user-accounts-model.server";
+import type { Organization, UserAccount } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { setMockSession } from "~/test/mocks/handlers/supabase/mock-sessions";
 import {
   createMockSupabaseSession,

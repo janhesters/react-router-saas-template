@@ -303,20 +303,20 @@ describe("/onboarding/organization route action", () => {
         },
         given: "a too short name with whitespace",
       },
-    ])(
-      "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expected }) => {
-        const { userAccount } = await setup();
+    ])("given: $given, should: return a 400 status code with an error message", async ({
+      body,
+      expected,
+    }) => {
+      const { userAccount } = await setup();
 
-        const formData = toFormData(body);
-        const response = await sendAuthenticatedRequest({
-          formData,
-          userAccount,
-        });
+      const formData = toFormData(body);
+      const response = await sendAuthenticatedRequest({
+        formData,
+        userAccount,
+      });
 
-        expect(response).toMatchObject(expected);
-      },
-    );
+      expect(response).toMatchObject(expected);
+    });
 
     test("given: a valid name, should: create organization", async () => {
       const { userAccount } = await setup();

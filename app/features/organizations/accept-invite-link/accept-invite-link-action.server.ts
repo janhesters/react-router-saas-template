@@ -99,6 +99,9 @@ export async function acceptInviteLinkAction({
               ) ||
               message.includes(
                 "Unique constraint failed on the fields: (`userId`,`organizationId`)",
+              ) ||
+              message.includes(
+                'Unique constraint failed on the fields: (`"userId"',
               )
             ) {
               return await redirectWithToast(

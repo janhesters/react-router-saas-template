@@ -1,7 +1,7 @@
-import type { Prisma, StripeProduct } from "@prisma/client";
 import type { Stripe } from "stripe";
 import { z } from "zod";
 
+import type { Prisma, StripeProduct } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 const maxSeatsSchema = z.preprocess((value) => {

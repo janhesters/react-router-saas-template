@@ -1,10 +1,10 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { z } from "zod";
 
 import {
   CHANGE_ROLE_INTENT,
   INVITE_BY_EMAIL_INTENT,
 } from "./team-members-constants";
+import { OrganizationMembershipRole } from "~/generated/browser";
 
 z.config({ jitless: true });
 

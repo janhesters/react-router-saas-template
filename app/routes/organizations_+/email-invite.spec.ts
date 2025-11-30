@@ -1,4 +1,3 @@
-import type { UserAccount } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import { action } from "./email-invite";
@@ -10,6 +9,7 @@ import {
   saveOrganizationEmailInviteLinkToDatabase,
 } from "~/features/organizations/organizations-email-invite-link-model.server";
 import { createPopulatedOrganizationEmailInviteLink } from "~/features/organizations/organizations-factories.server";
+import type { UserAccount } from "~/generated/client";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";

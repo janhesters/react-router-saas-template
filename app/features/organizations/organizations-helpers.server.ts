@@ -1,10 +1,3 @@
-import type {
-  Organization,
-  OrganizationEmailInviteLink,
-  OrganizationInviteLink,
-  UserAccount,
-} from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 import type { FileUpload } from "@remix-run/form-data-parser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { i18n } from "i18next";
@@ -34,6 +27,13 @@ import {
   retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId,
   retrieveOrganizationWithSubscriptionsFromDatabaseById,
 } from "./organizations-model.server";
+import type {
+  Organization,
+  OrganizationEmailInviteLink,
+  OrganizationInviteLink,
+  UserAccount,
+} from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
 import { createAdminS3Client } from "~/utils/s3.server";

@@ -1,5 +1,4 @@
-import type { Organization, Prisma, UserAccount } from "@prisma/client";
-
+import type { Organization, Prisma, UserAccount } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* READ */

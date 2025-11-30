@@ -32,6 +32,9 @@ jobs:
       - name: 📥 Install dependencies
         run: npm ci
 
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
+
       - name: 🛠️ Typegen
         run: npm run typegen
 
@@ -53,6 +56,9 @@ jobs:
 
       - name: 📥 Install dependencies
         run: npm ci
+
+      - name: 🏄 Copy test env vars
+        run: cp .env.example .env
 
       - name: 🔎 Type check
         run: npm run typecheck
@@ -105,6 +111,9 @@ jobs:
       - name: 🛠 Setup Database
         run: npm run prisma:wipe
 
+      - name: 🛠️ Typegen
+        run: npm run typegen
+
       - name: ⚡ Run vitest
         run: npm run test -- --coverage
 
@@ -144,6 +153,9 @@ jobs:
 
       - name: 🛠 Setup Database
         run: npm run prisma:wipe
+
+      - name: 🛠️ Typegen
+        run: npm run typegen
 
       - name: 🏗️ Build Application (with mocks)
         run: npm run build

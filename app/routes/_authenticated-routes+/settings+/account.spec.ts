@@ -1,6 +1,4 @@
 import { parseSubmission, report } from "@conform-to/react/future";
-import type { UserAccount } from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./account";
@@ -24,6 +22,8 @@ import {
   retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import type { UserAccount } from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
@@ -256,28 +256,28 @@ describe("/settings/account route action", () => {
         },
         given: "a too short name with whitespace",
       },
-    ])(
-      "given: $given, should: return a 400 status code with an error message",
-      async ({ body, expectedError }) => {
-        const user = await setup();
+    ])("given: $given, should: return a 400 status code with an error message", async ({
+      body,
+      expectedError,
+    }) => {
+      const user = await setup();
 
-        const formData = toFormData(body);
-        const submission = parseSubmission(formData);
+      const formData = toFormData(body);
+      const submission = parseSubmission(formData);
 
-        const actual = await sendAuthenticatedRequest({
-          formData,
-          user,
-        });
+      const actual = await sendAuthenticatedRequest({
+        formData,
+        user,
+      });
 
-        expect(actual).toEqual(
-          badRequest({
-            result: report(submission, {
-              error: expectedError,
-            }),
+      expect(actual).toEqual(
+        badRequest({
+          result: report(submission, {
+            error: expectedError,
           }),
-        );
-      },
-    );
+        }),
+      );
+    });
   });
 
   describe(`${DELETE_USER_ACCOUNT_INTENT} intent`, () => {

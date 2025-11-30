@@ -8,7 +8,6 @@
 
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
-import { OrganizationMembershipRole } from "@prisma/client";
 
 import {
   getPath,
@@ -26,6 +25,7 @@ import {
   retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,

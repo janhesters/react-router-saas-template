@@ -1,6 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: Test code */
 import { faker } from "@faker-js/faker";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import { createPopulatedOrganization } from "../organizations/organizations-factories.server";
@@ -10,6 +9,7 @@ import {
   throwIfUserIsOnboarded,
   throwIfUserNeedsOnboarding,
 } from "./onboarding-helpers.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { createOnboardingUser } from "~/test/test-utils";
 
 describe("getUserIsOnboarded()", () => {
@@ -171,32 +171,29 @@ describe("redirectUserToOnboardingStep()", () => {
     test.each([
       faker.internet.url(),
       "http://localhost:3000/onboarding/organization",
-    ])(
-      "given: any other request (to %s) and the user has no name, and is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page",
-      (url) => {
-        expect.assertions(3);
+    ])("given: any other request (to %s) and the user has no name, and is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page", (url) => {
+      expect.assertions(3);
 
-        const user = createOnboardingUser({ memberships: [], name: "" });
-        const method = faker.internet.httpMethod();
-        const request = new Request(url, { method });
-        const headers = new Headers({ "X-Test-Header": "test-value" });
+      const user = createOnboardingUser({ memberships: [], name: "" });
+      const method = faker.internet.httpMethod();
+      const request = new Request(url, { method });
+      const headers = new Headers({ "X-Test-Header": "test-value" });
 
-        try {
-          redirectUserToOnboardingStep(request, user, headers);
-        } catch (error) {
-          if (error instanceof Response) {
-            expect(error.status).toEqual(302);
-            expect(error.headers.get("Location")).toEqual(
-              "/onboarding/user-account",
-            );
-            expect([...error.headers.entries()]).toEqual([
-              ["location", "/onboarding/user-account"],
-              ...headers.entries(),
-            ]);
-          }
+      try {
+        redirectUserToOnboardingStep(request, user, headers);
+      } catch (error) {
+        if (error instanceof Response) {
+          expect(error.status).toEqual(302);
+          expect(error.headers.get("Location")).toEqual(
+            "/onboarding/user-account",
+          );
+          expect([...error.headers.entries()]).toEqual([
+            ["location", "/onboarding/user-account"],
+            ...headers.entries(),
+          ]);
         }
-      },
-    );
+      }
+    });
   });
 
   describe("organization onboarding page", () => {
@@ -216,32 +213,29 @@ describe("redirectUserToOnboardingStep()", () => {
     test.each([
       faker.internet.url(),
       "http://localhost:3000/onboarding/future-step",
-    ])(
-      "given: any other request (to %s) and a user that is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page",
-      (url) => {
-        expect.assertions(3);
+    ])("given: any other request (to %s) and a user that is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page", (url) => {
+      expect.assertions(3);
 
-        const user = createOnboardingUser({ memberships: [] });
-        const method = faker.internet.httpMethod();
-        const request = new Request(url, { method });
-        const headers = new Headers({ "X-Test-Header": "test-value" });
+      const user = createOnboardingUser({ memberships: [] });
+      const method = faker.internet.httpMethod();
+      const request = new Request(url, { method });
+      const headers = new Headers({ "X-Test-Header": "test-value" });
 
-        try {
-          redirectUserToOnboardingStep(request, user, headers);
-        } catch (error) {
-          if (error instanceof Response) {
-            expect(error.status).toEqual(302);
-            expect(error.headers.get("Location")).toEqual(
-              "/onboarding/organization",
-            );
-            expect([...error.headers.entries()]).toEqual([
-              ["location", "/onboarding/organization"],
-              ...headers.entries(),
-            ]);
-          }
+      try {
+        redirectUserToOnboardingStep(request, user, headers);
+      } catch (error) {
+        if (error instanceof Response) {
+          expect(error.status).toEqual(302);
+          expect(error.headers.get("Location")).toEqual(
+            "/onboarding/organization",
+          );
+          expect([...error.headers.entries()]).toEqual([
+            ["location", "/onboarding/organization"],
+            ...headers.entries(),
+          ]);
         }
-      },
-    );
+      }
+    });
   });
 });
 

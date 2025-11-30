@@ -122,6 +122,9 @@ export async function acceptEmailInviteAction({
               ) ||
               message.includes(
                 "Unique constraint failed on the fields: (`userId`,`organizationId`)",
+              ) ||
+              message.includes(
+                'Unique constraint failed on the fields: (`"userId"',
               )
             ) {
               await updateEmailInviteLinkInDatabaseById({

@@ -1,5 +1,4 @@
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { data, href } from "react-router";
 import { z } from "zod";
 
@@ -21,6 +20,7 @@ import type { Route } from ".react-router/types/app/routes/_authenticated-routes
 import { updateStripeCustomer } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { forbidden } from "~/utils/http-responses.server";
 import { slugify } from "~/utils/slugify.server";

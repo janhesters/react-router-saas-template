@@ -361,7 +361,6 @@ export default function OrganizationOnboardingRoute({
                   className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary"
                   id={fields.earlyAccessOptIn.id}
                   name={fields.earlyAccessOptIn.name}
-                  value="true"
                 />
                 <div className="grid gap-1.5 font-normal">
                   <FieldTitle>{t("earlyAccessTitle")}</FieldTitle>

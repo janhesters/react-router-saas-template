@@ -1,5 +1,4 @@
-import type { Prisma, UserAccount } from "@prisma/client";
-
+import type { Prisma, UserAccount } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

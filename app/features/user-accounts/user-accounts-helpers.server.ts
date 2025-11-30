@@ -1,4 +1,3 @@
-import type { UserAccount } from "@prisma/client";
 import type { RouterContextProvider } from "react-router";
 
 import { logout } from "../user-authentication/user-authentication-helpers.server";
@@ -8,6 +7,7 @@ import {
   retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId,
   retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId,
 } from "./user-accounts-model.server";
+import type { UserAccount } from "~/generated/client";
 
 /**
  * Ensures that a user account is present.

@@ -3,7 +3,6 @@ import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
 import type { APIRequestContext } from "@playwright/test";
 import { expect, test } from "@playwright/test";
-import { StripePriceInterval } from "@prisma/client";
 import type Stripe from "stripe";
 
 import { getJson } from "../../utils";
@@ -69,6 +68,7 @@ import {
   deleteUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import { StripePriceInterval } from "~/generated/client";
 
 const path = "/api/v1/stripe/webhooks";
 

@@ -1,10 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import { faker } from "@faker-js/faker";
-import type { Organization, UserAccount } from "@prisma/client";
-import {
-  OrganizationMembershipRole,
-  StripePriceInterval,
-} from "@prisma/client";
 import type { MiddlewareFunction, Params } from "react-router";
 import { RouterContextProvider } from "react-router";
 
@@ -43,6 +38,11 @@ import {
   createPopulatedSupabaseUser,
 } from "~/features/user-authentication/user-authentication-factories";
 import { authMiddleware } from "~/features/user-authentication/user-authentication-middleware.server";
+import type { Organization, UserAccount } from "~/generated/client";
+import {
+  OrganizationMembershipRole,
+  StripePriceInterval,
+} from "~/generated/client";
 import type { DeepPartial } from "~/utils/types";
 
 /**

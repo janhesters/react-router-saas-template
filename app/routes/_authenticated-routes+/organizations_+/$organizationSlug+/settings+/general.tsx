@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { useTranslation } from "react-i18next";
 import { data, href } from "react-router";
 
@@ -11,6 +10,7 @@ import { DangerZone } from "~/features/organizations/settings/general/danger-zon
 import { GeneralOrganizationSettings } from "~/features/organizations/settings/general/general-organization-settings";
 import { generalOrganizationSettingsAction } from "~/features/organizations/settings/general/general-organization-settings-action.server";
 import { OrganizationInfo } from "~/features/organizations/settings/general/organization-info";
+import { OrganizationMembershipRole } from "~/generated/browser";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export function loader({ context, params }: Route.LoaderArgs) {

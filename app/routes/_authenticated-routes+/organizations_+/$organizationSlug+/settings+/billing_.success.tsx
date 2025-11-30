@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import confetti from "canvas-confetti";
 import { BadgeCheckIcon } from "lucide-react";
 import { useEffect } from "react";
@@ -9,6 +8,7 @@ import type { Route } from "./+types/billing_.success";
 import { Button } from "~/components/ui/button";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
+import { OrganizationMembershipRole } from "~/generated/browser";
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
 

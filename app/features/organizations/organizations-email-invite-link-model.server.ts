@@ -2,8 +2,7 @@ import type {
   Organization,
   OrganizationEmailInviteLink,
   Prisma,
-} from "@prisma/client";
-
+} from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

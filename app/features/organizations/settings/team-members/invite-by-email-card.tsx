@@ -1,6 +1,5 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
-import { OrganizationMembershipRole } from "@prisma/client";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
@@ -27,6 +26,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
+import { OrganizationMembershipRole } from "~/generated/browser";
 
 export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;

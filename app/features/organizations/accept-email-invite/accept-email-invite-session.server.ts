@@ -1,8 +1,8 @@
-import type { OrganizationEmailInviteLink } from "@prisma/client";
 import { createCookieSessionStorage } from "react-router";
 import { z } from "zod";
 
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "./accept-email-invite-constants";
+import type { OrganizationEmailInviteLink } from "~/generated/client";
 
 // Define keys for the session data
 const EMAIL_INVITE_TOKEN_KEY = "emailInviteToken"; // This is the token NOT the id

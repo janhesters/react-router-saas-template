@@ -1,4 +1,3 @@
-import { StripePriceInterval } from "@prisma/client";
 import { describe, expect, test } from "vitest";
 
 import {
@@ -21,6 +20,7 @@ import {
   mapStripeSubscriptionDataToBillingPageProps,
 } from "./billing-helpers.server";
 import type { BillingPageProps } from "./billing-page";
+import { StripePriceInterval } from "~/generated/client";
 
 describe.skipIf(!!process.env.CI)(
   "mapStripeSubscriptionDataToBillingPageProps()",

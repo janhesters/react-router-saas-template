@@ -29,3 +29,5 @@ stripe-events.txt
 # Image optimization cache
 /data/images/*
 !/data/images/.gitkeep
+# Prisma
+/app/generated/

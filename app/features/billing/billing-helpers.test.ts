@@ -15,13 +15,12 @@ describe("getTierAndIntervalForLookupKey()", () => {
     [priceLookupKeysByTierAndInterval.high.annual, "high", "annual"],
   ];
 
-  test.each(validCases)(
-    'given lookupKey="%s", returns { tier: "%s", interval: "%s" }',
-    (lookupKey, tier, interval) => {
-      const actual = getTierAndIntervalForLookupKey(lookupKey);
-      expect(actual).toEqual({ interval, tier });
-    },
-  );
+  test.each(
+    validCases,
+  )('given lookupKey="%s", returns { tier: "%s", interval: "%s" }', (lookupKey, tier, interval) => {
+    const actual = getTierAndIntervalForLookupKey(lookupKey);
+    expect(actual).toEqual({ interval, tier });
+  });
 
   test("unknown lookupKey throws an “Invalid lookup key” error", () => {
     expect(() => getTierAndIntervalForLookupKey("not-a-real-key")).toThrow(

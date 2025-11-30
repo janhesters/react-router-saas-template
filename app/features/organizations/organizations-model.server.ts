@@ -1,13 +1,13 @@
+import type Stripe from "stripe";
+
+import type { StripeSubscriptionWithItemsAndPrice } from "../billing/billing-factories.server";
 import type {
   Organization,
   OrganizationMembership,
   Prisma,
   UserAccount,
-} from "@prisma/client";
-import { OrganizationMembershipRole } from "@prisma/client";
-import type Stripe from "stripe";
-
-import type { StripeSubscriptionWithItemsAndPrice } from "../billing/billing-factories.server";
+} from "~/generated/client";
+import { OrganizationMembershipRole } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 /* CREATE */

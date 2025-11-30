@@ -1,4 +1,3 @@
-import { OrganizationMembershipRole } from "@prisma/client";
 import { config } from "dotenv";
 
 import { priceLookupKeysByTierAndInterval } from "../app/features/billing/billing-constants";
@@ -11,6 +10,7 @@ import {
   ensureStripeProductsAndPricesExist,
 } from "../app/test/test-utils";
 import { prisma } from "../app/utils/database.server";
+import { OrganizationMembershipRole } from "~/generated/client";
 
 // Load environment variables from .env file
 config();

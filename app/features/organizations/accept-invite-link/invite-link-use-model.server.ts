@@ -2,8 +2,7 @@ import type {
   InviteLinkUse,
   OrganizationInviteLink,
   UserAccount,
-} from "@prisma/client";
-
+} from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
 export type PartialinviteLinkUseParameters = Pick<
