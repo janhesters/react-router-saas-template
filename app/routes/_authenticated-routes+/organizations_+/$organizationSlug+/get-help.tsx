@@ -9,7 +9,7 @@ export function loader({ params, context }: Route.LoaderArgs) {
   const t = i18n.t.bind(i18n);
 
   return {
-    breadcrump: {
+    breadcrumb: {
       title: t("organizations:getHelp.breadcrumb"),
       to: href("/organizations/:organizationSlug/get-help", {
         organizationSlug: params.organizationSlug,

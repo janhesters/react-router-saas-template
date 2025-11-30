@@ -24,7 +24,7 @@ export function loader({ context, params }: Route.LoaderArgs) {
 
   return data(
     {
-      breadcrump: {
+      breadcrumb: {
         title: t("organizations:settings.general.breadcrumb"),
         to: href("/organizations/:organizationSlug/settings/general", {
           organizationSlug: params.organizationSlug,

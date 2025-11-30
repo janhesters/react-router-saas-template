@@ -45,7 +45,7 @@ export async function loader({ context, params }: Route.LoaderArgs) {
         }),
         ...getCreateSubscriptionModalProps(organization, products),
       },
-      breadcrump: {
+      breadcrumb: {
         title: t("billing:billingPage.breadcrumb"),
         to: href("/organizations/:organizationSlug/settings/billing", {
           organizationSlug: params.organizationSlug,

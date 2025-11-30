@@ -12,7 +12,7 @@ export async function loader({ params, context }: Route.LoaderArgs) {
 
   return data(
     {
-      breadcrump: {
+      breadcrumb: {
         title: t("breadcrumb"),
         to: href("/organizations/:organizationSlug/settings", {
           organizationSlug: params.organizationSlug,
