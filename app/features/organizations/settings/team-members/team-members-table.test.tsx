@@ -308,4 +308,41 @@ describe("TeamMembersTable Component", () => {
     const pendingBadge = screen.getByText(/pending/i);
     expect(pendingBadge).toBeInTheDocument();
   });
+
+  describe("Image Optimization", () => {
+    test("given: members with avatar URLs, should: render optimized image URLs", () => {
+      const avatarUrl =
+        "https://test.supabase.co/storage/v1/object/public/app-images/user-avatars/user123.jpg";
+      const member = createMember({ avatar: avatarUrl });
+      const props = createProps({ members: [member] });
+      const { slug } = createPopulatedOrganization();
+      const path = `/organizations/${slug}/settings/team-members`;
+      const RouterStub = createRoutesStub([
+        { Component: () => <TeamMembersTable {...props} />, path },
+      ]);
+
+      render(<RouterStub initialEntries={[path]} />);
+
+      const img = screen.getByAltText(member.name);
+      const src = img.getAttribute("src");
+      expect(src).toContain("/resources/images?src=");
+      expect(src).toContain(encodeURIComponent(avatarUrl));
+    });
+
+    test("given: member with null avatar, should: render fallback without errors", () => {
+      const member = createMember({ avatar: undefined });
+      const props = createProps({ members: [member] });
+      const { slug } = createPopulatedOrganization();
+      const path = `/organizations/${slug}/settings/team-members`;
+      const RouterStub = createRoutesStub([
+        { Component: () => <TeamMembersTable {...props} />, path },
+      ]);
+
+      render(<RouterStub initialEntries={[path]} />);
+
+      expect(
+        screen.getByText(member.name.slice(0, 2).toUpperCase()),
+      ).toBeInTheDocument();
+    });
+  });
 });

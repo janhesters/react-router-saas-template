@@ -26,5 +26,11 @@ stripe-events.txt
 /tests/fixtures/
 /app/tests/mocks/fixtures/
 
+# Image optimization cache
+/data/images/*
+!/data/images/.gitkeep
 # Prisma
 /app/generated/
+prisma/dev.db
+.vscode/launch.json
+.claude/settings.local.json

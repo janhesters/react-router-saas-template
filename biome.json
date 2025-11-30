@@ -36,6 +36,9 @@
   "linter": {
     "enabled": true,
     "rules": {
+      "a11y": {
+        "useAltText": "error"
+      },
       "correctness": {
         "noReactPropAssignments": "error",
         "useHookAtTopLevel": "error",

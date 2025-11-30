@@ -118,4 +118,45 @@ describe("NavUser Component", () => {
       screen.queryByRole("menuitem", { name: /account/i }),
     ).not.toBeInTheDocument();
   });
+
+  describe("Image Optimization", () => {
+    test("given: user with avatar URL, should: render optimized image URL", () => {
+      const avatarUrl =
+        "https://test.supabase.co/storage/v1/object/public/app-images/user-avatars/user123.jpg";
+      const props = createProps({ user: createUser({ avatar: avatarUrl }) });
+      const path = "/test";
+      const RouterStub = createRoutesStub([
+        { Component: () => <NavUser {...props} />, path },
+      ]);
+
+      render(
+        <SidebarProvider>
+          <RouterStub initialEntries={[path]} />
+        </SidebarProvider>,
+      );
+
+      const img = screen.getByAltText(props.user.name);
+      const src = img.getAttribute("src");
+      expect(src).toContain("/resources/images?src=");
+      expect(src).toContain(encodeURIComponent(avatarUrl));
+    });
+
+    test("given: user with null avatar, should: render fallback without errors", () => {
+      const props = createProps({ user: createUser({ avatar: undefined }) });
+      const path = "/test";
+      const RouterStub = createRoutesStub([
+        { Component: () => <NavUser {...props} />, path },
+      ]);
+
+      render(
+        <SidebarProvider>
+          <RouterStub initialEntries={[path]} />
+        </SidebarProvider>,
+      );
+
+      expect(
+        screen.getByText(props.user.name.slice(0, 2).toUpperCase()),
+      ).toBeInTheDocument();
+    });
+  });
 });

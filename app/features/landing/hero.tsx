@@ -1,4 +1,5 @@
 import { BookTextIcon } from "lucide-react";
+import { Img } from "openimg/react";
 import type { CSSProperties } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -92,18 +93,26 @@ export function Hero() {
       </div>
 
       <div className="mt-16 px-4">
-        <img
+        <Img
           alt={t("image.light")}
           className={cn(imageClassNames, "shadow-sm dark:hidden")}
+          height={680}
+          isAboveFold={true}
+          sizes="(max-width: 768px) 100vw, 1200px"
           src="/images/app-light.png"
           style={imageFadeStyle}
+          width={1200}
         />
 
-        <img
+        <Img
           alt={t("image.dark")}
           className={cn(imageClassNames, "hidden dark:block")}
+          height={680}
+          isAboveFold={true}
+          sizes="(max-width: 768px) 100vw, 1200px"
           src="/images/app-dark.png"
           style={imageFadeStyle}
+          width={1200}
         />
       </div>
 

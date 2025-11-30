@@ -1,6 +1,7 @@
 import "./app.css";
 
 import { FormOptionsProvider } from "@conform-to/react/future";
+import { OpenImgContextProvider } from "openimg/react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
@@ -151,7 +152,9 @@ export function Layout({
           shouldValidate="onSubmit"
         >
           <HoneypotProvider {...data?.honeypotInputProps}>
-            {children}
+            <OpenImgContextProvider optimizerEndpoint="/resources/images">
+              {children}
+            </OpenImgContextProvider>
           </HoneypotProvider>
         </FormOptionsProvider>
 

@@ -21,6 +21,7 @@ import {
 } from "~/components/ui/sidebar";
 import type { Tier } from "~/features/billing/billing-constants";
 import type { Organization } from "~/generated/browser";
+import { getOptimizedImageUrl } from "~/utils/image-url";
 
 type OrganizationSwitcherOrganization = {
   id: Organization["id"];
@@ -69,7 +70,7 @@ export function OrganizationSwitcher({
                 <AvatarImage
                   alt={currentOrganization.name}
                   className="object-cover"
-                  src={currentOrganization.logo}
+                  src={getOptimizedImageUrl(currentOrganization.logo) ?? ""}
                 />
 
                 <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground rounded-lg">
@@ -126,7 +127,7 @@ export function OrganizationSwitcher({
                       <AvatarImage
                         alt={organization.name}
                         className="object-cover"
-                        src={organization.logo}
+                        src={getOptimizedImageUrl(organization.logo) ?? ""}
                       />
 
                       <AvatarFallback className="rounded-sm">
