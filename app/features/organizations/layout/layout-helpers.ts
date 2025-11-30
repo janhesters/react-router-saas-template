@@ -6,13 +6,13 @@ type Breadcrumb = {
 };
 
 export const findBreadcrumbs = (
-  matches: UIMatch<{ breadcrump?: Breadcrumb }>[],
+  matches: UIMatch<{ breadcrumb?: Breadcrumb }>[],
 ): Breadcrumb[] => {
   const breadcrumbs: Breadcrumb[] = [];
 
   for (const match of matches) {
-    if (match.loaderData && "breadcrump" in match.loaderData) {
-      const breadcrumb = match.loaderData.breadcrump;
+    if (match.loaderData && "breadcrumb" in match.loaderData) {
+      const breadcrumb = match.loaderData.breadcrumb;
       if (breadcrumb) {
         breadcrumbs.push(breadcrumb);
       }

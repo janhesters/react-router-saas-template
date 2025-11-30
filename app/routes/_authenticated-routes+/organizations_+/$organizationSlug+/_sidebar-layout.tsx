@@ -104,7 +104,7 @@ export default function OrganizationLayoutRoute({
     organizationSwitcherProps,
   } = loaderData;
   const breadcrumbs = findBreadcrumbs(
-    matches as UIMatch<{ breadcrump?: { title: string; to: string } }>[],
+    matches as UIMatch<{ breadcrumb?: { title: string; to: string } }>[],
   );
 
   return (

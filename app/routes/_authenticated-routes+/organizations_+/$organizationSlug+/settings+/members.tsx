@@ -30,7 +30,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
 
   return data(
     {
-      breadcrump: {
+      breadcrumb: {
         title: t("organizations:settings.teamMembers.breadcrumb"),
         to: href("/organizations/:organizationSlug/settings/members", {
           organizationSlug: params.organizationSlug,

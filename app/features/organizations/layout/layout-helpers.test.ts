@@ -6,7 +6,7 @@ import { findBreadcrumbs } from "./layout-helpers";
 describe("findBreadcrumbs()", () => {
   test("given an array of matches: returns all breadcrumbs from matches", () => {
     const matches: UIMatch<
-      { breadcrump?: { title: string; to: string } } & Record<string, unknown>
+      { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
         data: {},
@@ -18,7 +18,7 @@ describe("findBreadcrumbs()", () => {
       },
       {
         data: {
-          breadcrump: {
+          breadcrumb: {
             title: "Organization",
             to: "/organizations/tromp---schinner",
           },
@@ -26,7 +26,7 @@ describe("findBreadcrumbs()", () => {
         handle: {},
         id: "routes/organization_.$organizationSlug",
         loaderData: {
-          breadcrump: {
+          breadcrumb: {
             title: "Organization",
             to: "/organizations/tromp---schinner",
           },
@@ -36,7 +36,7 @@ describe("findBreadcrumbs()", () => {
       },
       {
         data: {
-          breadcrump: {
+          breadcrumb: {
             title: "Dashboard",
             to: "/organizations/tromp---schinner/dashboard",
           },
@@ -44,7 +44,7 @@ describe("findBreadcrumbs()", () => {
         handle: {},
         id: "routes/organization_.$organizationSlug.dashboard",
         loaderData: {
-          breadcrump: {
+          breadcrumb: {
             title: "Dashboard",
             to: "/organizations/tromp---schinner/dashboard",
           },
@@ -71,7 +71,7 @@ describe("findBreadcrumbs()", () => {
 
   test("given matches with no breadcrumbs: returns empty array", () => {
     const matches: UIMatch<
-      { breadcrump?: { title: string; to: string } } & Record<string, unknown>
+      { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
         data: {},
@@ -99,7 +99,7 @@ describe("findBreadcrumbs()", () => {
 
   test("given matches with some breadcrumbs: returns only those with breadcrumbs", () => {
     const matches: UIMatch<
-      { breadcrump?: { title: string; to: string } } & Record<string, unknown>
+      { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
         data: {},
@@ -111,7 +111,7 @@ describe("findBreadcrumbs()", () => {
       },
       {
         data: {
-          breadcrump: {
+          breadcrumb: {
             title: "First",
             to: "/first",
           },
@@ -119,7 +119,7 @@ describe("findBreadcrumbs()", () => {
         handle: {},
         id: "routes/first",
         loaderData: {
-          breadcrump: {
+          breadcrumb: {
             title: "First",
             to: "/first",
           },
@@ -137,7 +137,7 @@ describe("findBreadcrumbs()", () => {
       },
       {
         data: {
-          breadcrump: {
+          breadcrumb: {
             title: "Last",
             to: "/first/middle/last",
           },
@@ -145,7 +145,7 @@ describe("findBreadcrumbs()", () => {
         handle: {},
         id: "routes/last",
         loaderData: {
-          breadcrump: {
+          breadcrumb: {
             title: "Last",
             to: "/first/middle/last",
           },
