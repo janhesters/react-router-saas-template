@@ -1,4 +1,4 @@
-import { href, useLoaderData } from "react-router";
+import { href } from "react-router";
 
 import type { Route } from "./+types/jobs-and-clients";
 import { getInstance } from "~/features/localization/i18next-middleware.server";

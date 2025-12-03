@@ -50,7 +50,7 @@ export const mockSuggestions = [
   },
   {
     id: 3,
-    text: "3 candidates match Google’s available Product designer role",
+    text: "3 candidates match Google's available Product designer role",
   },
   {
     id: 4,
