@@ -58,8 +58,50 @@ export default {
     pageTitle: "Get Help",
   },
   jobsAndClients: {
+    agenda: {
+      aiSuggestions: "AI Suggestions",
+      title: "Daily Agenda",
+      todaysTasks: "Today's Tasks",
+    },
     breadcrumb: "Jobs & Clients",
+    calendar: {
+      attendeeAlt: "Attendee",
+      attendeesLabel: "Attendees",
+      eventTypes: {
+        interview: "Interview",
+        review: "Review",
+        sync: "Sync",
+      },
+      joinMeeting: "Join Meeting",
+      openingModal: "Opening scheduling modal...",
+      scheduleInterview: "Schedule Interview",
+      today: "Today",
+    },
+    candidateSources: {
+      title: "Candidate Sources",
+    },
+    clientSnapshot: {
+      addNewClient: "Add new client",
+      openRolesHired: "{{openRoles}} open roles, {{hired}} hired",
+      title: "Client Snapshot",
+    },
+    currentVacancies: {
+      hiredCount: "{{hired}}/{{total}} hired",
+      seeMore: "See more",
+      title: "Current Vacancies",
+      vacancyAlt: "vacancy",
+    },
     pageTitle: "Jobs & Clients",
+    upcomingInterview: {
+      attendeeAlt: "Attendee",
+      attendees: "Attendees",
+      company: "Company",
+      interviewUserAlt: "Interview user",
+      joinMeeting: "Join meeting",
+      othersCount: "+{{count}} others",
+      time: "Time",
+      title: "Upcoming Interview",
+    },
   },
   layout: {
     appSidebar: {

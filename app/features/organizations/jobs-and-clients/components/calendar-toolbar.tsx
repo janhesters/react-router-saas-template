@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import type { ToolbarProps } from "react-big-calendar";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 import type { CalendarEvent } from "../types";
@@ -7,6 +8,9 @@ import { Button } from "~/components/ui/button";
 
 export const CalendarToolbar = (props: ToolbarProps<CalendarEvent>) => {
   const { onNavigate, label } = props;
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "jobsAndClients.calendar",
+  });
 
   const goToBack = () => {
     onNavigate("PREV");
@@ -21,8 +25,8 @@ export const CalendarToolbar = (props: ToolbarProps<CalendarEvent>) => {
   };
 
   const handleSchedule = () => {
-    toast.success("Schedule Interview", {
-      description: "Opening scheduling modal...",
+    toast.success(t("scheduleInterview"), {
+      description: t("openingModal"),
     });
   };
 
@@ -48,13 +52,13 @@ export const CalendarToolbar = (props: ToolbarProps<CalendarEvent>) => {
         </Button>
 
         <Button onClick={goToToday} variant="ghost">
-          Today
+          {t("today")}
         </Button>
       </div>
 
       <Button className="gap-2" onClick={handleSchedule} size="default">
         <Plus className="size-4" />
-        <span className="hidden md:inline">Schedule Interview</span>
+        <span className="hidden md:inline">{t("scheduleInterview")}</span>
       </Button>
     </div>
   );

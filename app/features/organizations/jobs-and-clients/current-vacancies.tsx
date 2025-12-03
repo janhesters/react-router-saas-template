@@ -1,4 +1,5 @@
 import { MapPin, UsersRound } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 export const CurrentVacancies = ({
@@ -12,10 +13,14 @@ export const CurrentVacancies = ({
     total: number;
   }[];
 }) => {
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "jobsAndClients.currentVacancies",
+  });
+
   return (
     <div className="bg-surface h-full squircle-rounded-3xl p-0 flex flex-col">
       <div className="px-6 pt-6 pb-2">
-        <p className="font-medium text-lg">Current Vacancies</p>
+        <p className="font-medium text-lg">{t("title")}</p>
       </div>
 
       <div className="flex flex-col gap-2 flex-1 px-4 pt-2">
@@ -26,7 +31,7 @@ export const CurrentVacancies = ({
           >
             <div className="size-8 rounded-full overflow-hidden shrink-0">
               <img
-                alt="vacancy"
+                alt={t("vacancyAlt")}
                 className="w-full h-full object-cover"
                 src="/images/client-dp.png"
               />
@@ -46,7 +51,10 @@ export const CurrentVacancies = ({
                 <div className="flex items-center gap-1 flex-1 overflow-hidden shrink-0">
                   <UsersRound size={12} />
                   <span className=" whitespace-nowrap truncate">
-                    {vacancy.hired}/{vacancy.total} hired
+                    {t("hiredCount", {
+                      hired: vacancy.hired,
+                      total: vacancy.total,
+                    })}
                   </span>
                 </div>
               </div>
@@ -57,7 +65,7 @@ export const CurrentVacancies = ({
 
       <div className="mt-4 flex justify-center pb-5">
         <Link className="text-sm underline" to="#">
-          See more
+          {t("seeMore")}
         </Link>
       </div>
     </div>

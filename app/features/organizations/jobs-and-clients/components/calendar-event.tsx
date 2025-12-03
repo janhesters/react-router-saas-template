@@ -10,6 +10,7 @@ import {
   Video,
 } from "lucide-react";
 import type { EventProps } from "react-big-calendar";
+import { useTranslation } from "react-i18next";
 
 import type { CalendarEvent } from "../types";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -25,6 +26,10 @@ import { cn } from "~/lib/utils";
 export const CalendarEventComponent = ({
   event,
 }: EventProps<CalendarEvent>) => {
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "jobsAndClients.calendar",
+  });
+
   const getEventStyle = (type: CalendarEvent["type"]) => {
     switch (type) {
       case "interview":
@@ -65,7 +70,7 @@ export const CalendarEventComponent = ({
           <div className="flex items-center gap-1 mt-auto">
             {event.attendees?.map((avatar: string) => (
               <img
-                alt="Attendee"
+                alt={t("attendeeAlt")}
                 className="size-4 rounded-full border border-background ring-1 ring-background"
                 key={avatar}
                 src={avatar}
@@ -83,9 +88,7 @@ export const CalendarEventComponent = ({
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-2 font-semibold text-foreground">
               {getIcon(event.type)}
-              <span className="text-sm">
-                {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
-              </span>
+              <span className="text-sm">{t(`eventTypes.${event.type}`)}</span>
             </div>
             <div className="flex items-center gap-1">
               <Button className="h-6 w-6" size="icon" variant="ghost">
@@ -141,7 +144,7 @@ export const CalendarEventComponent = ({
 
           <div className="space-y-2">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Attendees
+              {t("attendeesLabel")}
             </p>
             <div className="flex items-center gap-2">
               {event.attendees?.map((avatar: string, i: number) => (
@@ -172,7 +175,7 @@ export const CalendarEventComponent = ({
               size="sm"
             >
               <Video className="size-4" />
-              Join Meeting
+              {t("joinMeeting")}
             </Button>
           </div>
         )}

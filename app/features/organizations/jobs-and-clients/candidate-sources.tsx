@@ -1,6 +1,7 @@
 "use client";
 
 import ReactECharts from "echarts-for-react";
+import { useTranslation } from "react-i18next";
 import { ClientOnly } from "remix-utils/client-only";
 
 import { Spinner } from "~/components/ui/spinner";
@@ -60,9 +61,13 @@ export const CandidateSources = ({
     };
   };
 }) => {
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "jobsAndClients.candidateSources",
+  });
+
   return (
     <div className="bg-surface h-full squircle-rounded-3xl p-6 flex flex-col">
-      <p className="font-medium text-lg mb-2">Candidate Sources</p>
+      <p className="font-medium text-lg mb-2">{t("title")}</p>
       <div className="flex-1 min-h-0">
         <ClientOnly fallback={<Fallback />}>
           {() => (

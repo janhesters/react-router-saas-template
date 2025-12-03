@@ -5,6 +5,7 @@ import {
   UsersIcon,
   VideoIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
 
@@ -33,6 +34,10 @@ export const Agenda = ({
     text: string;
   }[];
 }) => {
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "jobsAndClients.agenda",
+  });
+
   return (
     <div
       className={cn(
@@ -40,11 +45,11 @@ export const Agenda = ({
         className,
       )}
     >
-      <h2 className="mb-6 text-lg font-medium">Daily Agenda</h2>
+      <h2 className="mb-6 text-lg font-medium">{t("title")}</h2>
 
       <div className="mb-8">
         <h3 className="mb-4 text-base font-medium text-black dark:text-white">
-          Today&rsquo;s Tasks
+          {t("todaysTasks")}
         </h3>
 
         <ul className="space-y-3">
@@ -64,7 +69,7 @@ export const Agenda = ({
 
       <div>
         <h3 className="mb-4 text-base font-medium text-black dark:text-white">
-          AI Suggestions
+          {t("aiSuggestions")}
         </h3>
 
         <ul className="space-y-3">

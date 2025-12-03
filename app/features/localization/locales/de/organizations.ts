@@ -62,8 +62,50 @@ export default {
     pageTitle: "Hilfe erhalten",
   },
   jobsAndClients: {
+    agenda: {
+      aiSuggestions: "KI-Vorschläge",
+      title: "Tagesordnung",
+      todaysTasks: "Heutige Aufgaben",
+    },
     breadcrumb: "Jobs & Kunden",
+    calendar: {
+      attendeeAlt: "Teilnehmer",
+      attendeesLabel: "Teilnehmer",
+      eventTypes: {
+        interview: "Vorstellungsgespräch",
+        review: "Überprüfung",
+        sync: "Synchronisation",
+      },
+      joinMeeting: "Meeting beitreten",
+      openingModal: "Planungsmodal wird geöffnet...",
+      scheduleInterview: "Vorstellungsgespräch planen",
+      today: "Heute",
+    },
+    candidateSources: {
+      title: "Kandidatenquellen",
+    },
+    clientSnapshot: {
+      addNewClient: "Neuen Kunden hinzufügen",
+      openRolesHired: "{{openRoles}} offene Stellen, {{hired}} eingestellt",
+      title: "Kundenübersicht",
+    },
+    currentVacancies: {
+      hiredCount: "{{hired}}/{{total}} eingestellt",
+      seeMore: "Mehr anzeigen",
+      title: "Aktuelle Stellenangebote",
+      vacancyAlt: "Stellenangebot",
+    },
     pageTitle: "Jobs & Kunden",
+    upcomingInterview: {
+      attendeeAlt: "Teilnehmer",
+      attendees: "Teilnehmer",
+      company: "Unternehmen",
+      interviewUserAlt: "Vorstellungsgespräch-Teilnehmer",
+      joinMeeting: "Meeting beitreten",
+      othersCount: "+{{count}} weitere",
+      time: "Zeit",
+      title: "Bevorstehendes Vorstellungsgespräch",
+    },
   },
   layout: {
     appSidebar: {
