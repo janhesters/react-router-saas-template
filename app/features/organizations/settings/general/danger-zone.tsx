@@ -59,8 +59,8 @@ function DeleteOrganizationDialogComponent({
     [organizationName],
   );
 
-  const { form, fields, intent } = useForm({
-    schema: localDeleteOrganizationFormSchema,
+  const { form, fields, intent } = useForm(localDeleteOrganizationFormSchema, {
+    lastResult: null,
     shouldRevalidate: "onInput",
     shouldValidate: "onInput",
   });

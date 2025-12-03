@@ -80,10 +80,12 @@ export default function OrganizationOnboardingRoute({
   actionData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("onboarding", { keyPrefix: "organization" });
-  const { form, fields } = useForm({
-    lastResult: actionData?.result,
-    schema: coerceFormValue(onboardingOrganizationSchema),
-  });
+  const { form, fields } = useForm(
+    coerceFormValue(onboardingOrganizationSchema),
+    {
+      lastResult: actionData?.result,
+    },
+  );
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 

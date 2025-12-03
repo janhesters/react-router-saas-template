@@ -69,10 +69,12 @@ export function GeneralOrganizationSettings({
     keyPrefix: "settings.general",
   });
 
-  const { form, fields } = useForm({
-    lastResult,
-    schema: coerceFormValue(updateOrganizationFormSchema),
-  });
+  const { form, fields } = useForm(
+    coerceFormValue(updateOrganizationFormSchema),
+    {
+      lastResult,
+    },
+  );
 
   const navigation = useNavigation();
   const isSubmitting =

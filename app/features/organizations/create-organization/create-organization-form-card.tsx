@@ -45,10 +45,12 @@ export function CreateOrganizationFormCard({
   lastResult,
 }: CreateOrganizationFormCardProps) {
   const { t } = useTranslation("organizations", { keyPrefix: "new.form" });
-  const { form, fields } = useForm({
-    lastResult,
-    schema: coerceFormValue(createOrganizationFormSchema),
-  });
+  const { form, fields } = useForm(
+    coerceFormValue(createOrganizationFormSchema),
+    {
+      lastResult,
+    },
+  );
 
   return (
     <div className="flex flex-col gap-6">

@@ -65,10 +65,12 @@ export default function UserAccountOnboardingRoute({
   loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("onboarding", { keyPrefix: "userAccount" });
-  const { form, fields } = useForm({
-    lastResult: actionData?.result,
-    schema: coerceFormValue(onboardingUserAccountSchema),
-  });
+  const { form, fields } = useForm(
+    coerceFormValue(onboardingUserAccountSchema),
+    {
+      lastResult: actionData?.result,
+    },
+  );
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
 

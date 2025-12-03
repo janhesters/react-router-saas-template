@@ -32,7 +32,7 @@ import type { InputOTP } from "~/components/ui/input-otp";
  *
  * // Then access in any form component
  * function LoginForm() {
- *   const { fields } = useForm({ ... });
+ *   const { fields } = useForm(schema, { ... });
  *   return <Input {...fields.email.inputProps} />;
  * }
  * ```

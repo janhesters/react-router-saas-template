@@ -41,10 +41,12 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
     keyPrefix: "userAccount",
   });
 
-  const { form, fields } = useForm({
-    lastResult,
-    schema: coerceFormValue(updateUserAccountFormSchema),
-  });
+  const { form, fields } = useForm(
+    coerceFormValue(updateUserAccountFormSchema),
+    {
+      lastResult,
+    },
+  );
 
   const navigation = useNavigation();
   const isSubmitting =

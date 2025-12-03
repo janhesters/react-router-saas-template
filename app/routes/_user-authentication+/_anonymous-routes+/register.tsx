@@ -74,9 +74,8 @@ export default function RegisterRoute({
   const isAwaitingEmailConfirmation =
     getIsAwaitingEmailConfirmation(actionData);
 
-  const { form, fields } = useForm({
+  const { form, fields } = useForm(registerWithEmailSchema, {
     lastResult: actionData?.result,
-    schema: registerWithEmailSchema,
   });
 
   const navigation = useNavigation();

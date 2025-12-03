@@ -31,9 +31,8 @@ export function ContactSalesTeam({
 }: ContactSalesTeamProps) {
   const { t } = useTranslation("billing", { keyPrefix: "contactSales" });
 
-  const { form, fields } = useForm({
+  const { form, fields } = useForm(contactSalesFormSchema, {
     lastResult,
-    schema: contactSalesFormSchema,
   });
 
   return (

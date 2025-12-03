@@ -72,9 +72,8 @@ export default function LoginRoute({
   const isAwaitingEmailConfirmation =
     getIsAwaitingEmailConfirmation(actionData);
 
-  const { form, fields } = useForm({
+  const { form, fields } = useForm(loginWithEmailSchema, {
     lastResult: actionData?.result,
-    schema: loginWithEmailSchema,
   });
 
   const navigation = useNavigation();

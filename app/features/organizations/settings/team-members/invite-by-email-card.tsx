@@ -47,9 +47,8 @@ export function EmailInviteCard({
     keyPrefix: "settings.teamMembers.inviteByEmail",
   });
 
-  const { form, fields, intent } = useForm({
+  const { form, fields, intent } = useForm(inviteByEmailSchema, {
     lastResult,
-    schema: inviteByEmailSchema,
   });
 
   // If the invite was successful, clear the email input

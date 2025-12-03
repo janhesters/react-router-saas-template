@@ -13,7 +13,8 @@ export const contactSalesFormSchema = z.object({
     })
     .max(255, {
       message: "billing:contactSales.companyNameTooLong",
-    }),
+    })
+    .default(""),
   firstName: z
     .string()
     .trim()
@@ -22,7 +23,8 @@ export const contactSalesFormSchema = z.object({
     })
     .max(255, {
       message: "billing:contactSales.firstNameTooLong",
-    }),
+    })
+    .default(""),
   intent: z.literal(CONTACT_SALES_INTENT),
   lastName: z
     .string()
@@ -32,7 +34,8 @@ export const contactSalesFormSchema = z.object({
     })
     .max(255, {
       message: "billing:contactSales.lastNameTooLong",
-    }),
+    })
+    .default(""),
   message: z
     .string()
     .trim()
@@ -41,10 +44,15 @@ export const contactSalesFormSchema = z.object({
     })
     .max(5000, {
       message: "billing:contactSales.messageTooLong",
-    }),
-  phoneNumber: z.string().trim().min(1, {
-    message: "billing:contactSales.phoneNumberRequired",
-  }),
+    })
+    .default(""),
+  phoneNumber: z
+    .string()
+    .trim()
+    .min(1, {
+      message: "billing:contactSales.phoneNumberRequired",
+    })
+    .default(""),
   workEmail: z
     .email({
       message: "billing:contactSales.workEmailInvalid",
@@ -52,7 +60,8 @@ export const contactSalesFormSchema = z.object({
     .trim()
     .min(1, {
       message: "billing:contactSales.workEmailRequired",
-    }),
+    })
+    .default(""),
 });
 
 export type ContactSalesFormSchema = z.infer<typeof contactSalesFormSchema>;

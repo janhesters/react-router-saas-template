@@ -16,7 +16,7 @@ export async function contactSalesAction({ request }: Route.ActionArgs) {
   await checkHoneypot(Object.fromEntries(formData));
 
   // Validate using the same formData (following the validateFormData helper pattern)
-  const submission = parseSubmission(formData);
+  const submission = parseSubmission(formData, { stripEmptyValues: false });
   const result = await contactSalesFormSchema.safeParseAsync(
     submission.payload,
   );
