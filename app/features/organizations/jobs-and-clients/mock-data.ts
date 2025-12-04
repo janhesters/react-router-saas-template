@@ -10,10 +10,28 @@ export const mockUpcomingInterview = {
   ],
   company: "React Squad",
   date: "10:30am - 11:00am",
+  email: "ugbahisioma@gmail.com",
   extraAttendees: 2,
   image: "/images/monarch-image.png",
+  meetingLink: "https://meet.google.com/xxx-xxxx-xxx",
   name: "Ugbah Isioma",
+  phone: "+234 808 229 2082",
+  resumeHighlights: [
+    "5+ years of experience in React and TypeScript",
+    "Led frontend architecture for 3 major product launches",
+    "Expert in state management (Redux, Zustand, Jotai)",
+    "Strong background in performance optimization",
+  ],
   role: "Senior frontend engineer",
+  skills: [
+    "React",
+    "TypeScript",
+    "Next.js",
+    "Tanstack Ecosystem",
+    "TailwindCSS",
+    "React Testing Library",
+    "GraphQL",
+  ],
 };
 
 export const mockTasks = [
