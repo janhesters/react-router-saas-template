@@ -82,7 +82,7 @@ export const CalendarEventComponent = ({
 
       <PopoverContent
         align="start"
-        className="w-80 p-0 overflow-hidden rounded-2xl!"
+        className="w-80 p-0 overflow-hidden rounded-3xl"
       >
         <div className={cn("p-4", getEventStyle(event.type).split(" ")[0])}>
           <div className="flex items-start justify-between gap-4">
