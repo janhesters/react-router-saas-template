@@ -50,7 +50,7 @@ export function CandidateProfileSheet({
 
   return (
     <Sheet onOpenChange={onOpenChange} open={open}>
-      <SheetContent className="overflow-y-auto sm:max-w-lg">
+      <SheetContent className="overflow-y-auto sm:max-w-lg pb-5">
         <SheetHeader className="">
           <SheetTitle>{t("candidateProfile")}</SheetTitle>
           <SheetDescription>{t("candidateDetails")}</SheetDescription>
@@ -159,7 +159,7 @@ export function CandidateProfileSheet({
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col lg:flex-row gap-2 pt-2">
               <Button
                 className="flex-1 gap-2"
                 onClick={handleCopyLink}
