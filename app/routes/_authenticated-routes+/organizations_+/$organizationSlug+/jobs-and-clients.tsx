@@ -3,6 +3,7 @@ import { href } from "react-router";
 import type { Route } from "./+types/jobs-and-clients";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { Agenda } from "~/features/organizations/jobs-and-clients/agenda";
+import { AiAssistantSheet } from "~/features/organizations/jobs-and-clients/ai-assistant-sheet";
 import { CandidateSources } from "~/features/organizations/jobs-and-clients/candidate-sources";
 import { ClientSnapshot } from "~/features/organizations/jobs-and-clients/client-snapshot";
 import { CurrentVacancies } from "~/features/organizations/jobs-and-clients/current-vacancies";
@@ -59,27 +60,31 @@ export default function JobsAndClientsRoute({
   } = loaderData;
 
   return (
-    <div className="flex flex-1 flex-col gap-5 px-4 py-4 md:py-6 lg:px-6">
-      <div className="grid h-fit grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[175px_1fr]">
-        <UpcomingInterview
-          className="col-span-1 row-span-1 h-auto min-h-[175px] lg:h-[175px]"
-          interview={upcomingInterview}
-        />
+    <>
+      <div className="flex flex-1 flex-col gap-5 px-4 py-4 md:py-6 lg:px-6">
+        <div className="grid h-fit grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[175px_1fr]">
+          <UpcomingInterview
+            className="col-span-1 row-span-1 h-auto min-h-[175px] lg:h-[175px]"
+            interview={upcomingInterview}
+          />
 
-        <Agenda
-          className="col-span-1 row-span-1 lg:row-span-2"
-          suggestions={suggestions}
-          tasks={tasks}
-        />
+          <Agenda
+            className="col-span-1 row-span-1 lg:row-span-2"
+            suggestions={suggestions}
+            tasks={tasks}
+          />
 
-        <div className="col-span-1 row-span-1 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <ClientSnapshot clients={clients} />
-          <CurrentVacancies vacancies={vacancies} />
-          <CandidateSources data={candidateSources} />
+          <div className="col-span-1 row-span-1 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <ClientSnapshot clients={clients} />
+            <CurrentVacancies vacancies={vacancies} />
+            <CandidateSources data={candidateSources} />
+          </div>
         </div>
+
+        <LiveCalendar events={events} />
       </div>
 
-      <LiveCalendar events={events} />
-    </div>
+      <AiAssistantSheet />
+    </>
   );
 }
