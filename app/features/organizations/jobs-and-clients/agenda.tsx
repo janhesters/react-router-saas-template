@@ -61,7 +61,7 @@ export const Agenda = ({
   return (
     <div
       className={cn(
-        "bg-surface squircle-rounded-3xl h-full p-6 text-black dark:text-white",
+        "bg-surface rounded-3xl h-full p-6 text-black dark:text-white",
         className,
       )}
     >

@@ -66,7 +66,7 @@ export const CandidateSources = ({
   });
 
   return (
-    <div className="bg-surface h-full squircle-rounded-3xl p-6 flex flex-col">
+    <div className="bg-surface h-full rounded-3xl p-6 flex flex-col">
       <p className="font-medium text-lg mb-2">{t("title")}</p>
       <div className="flex-1 min-h-0">
         <ClientOnly fallback={<Fallback />}>

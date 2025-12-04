@@ -194,7 +194,7 @@ function SheetContent({
               className={cn(
                 "bg-background fixed z-50 flex flex-col gap-4 shadow-lg",
                 side === "right" &&
-                  "inset-y-0 right-4 h-[calc(100dvh-2rem)] my-auto w-3/4 sm:max-w-sm squircle-rounded-3xl",
+                  "inset-y-0 right-4 h-[calc(100dvh-2rem)] my-auto w-3/4 sm:max-w-sm rounded-3xl",
                 side === "left" &&
                   "inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
                 side === "top" && "inset-x-0 top-0 h-auto border-b",

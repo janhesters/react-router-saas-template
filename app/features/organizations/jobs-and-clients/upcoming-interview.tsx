@@ -35,7 +35,7 @@ export function UpcomingInterview({
     <>
       <div
         className={cn(
-          "bg-surface squircle-rounded-3xl p-6 flex flex-col justify-between gap-6 transition-transform",
+          "bg-surface rounded-3xl p-6 flex flex-col justify-between gap-6 transition-transform",
           className,
         )}
       >

@@ -41,7 +41,7 @@ export const LiveCalendar = ({ events }: { events: CalendarEvent[] }) => {
   };
 
   return (
-    <div className="h-[1000px] bg-surface squircle-rounded-2xl py-6 px-4 flex flex-col">
+    <div className="h-[1000px] bg-surface rounded-2xl py-6 px-4 flex flex-col">
       <Calendar
         className="rbc-custom-dark"
         components={{

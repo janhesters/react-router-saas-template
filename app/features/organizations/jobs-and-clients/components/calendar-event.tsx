@@ -59,7 +59,7 @@ export const CalendarEventComponent = ({
       <PopoverTrigger asChild>
         <div
           className={cn(
-            "size-full p-1 flex flex-col gap-1 squircle-rounded-2xl px-3 py-2 cursor-pointer transition-colors hover:brightness-110",
+            "size-full p-1 flex flex-col gap-1 rounded-2xl px-3 py-2 cursor-pointer transition-colors hover:brightness-110",
             getEventStyle(event.type),
           )}
         >
@@ -82,7 +82,7 @@ export const CalendarEventComponent = ({
 
       <PopoverContent
         align="start"
-        className="w-80 p-0 overflow-hidden squircle-rounded-2xl!"
+        className="w-80 p-0 overflow-hidden rounded-2xl!"
       >
         <div className={cn("p-4", getEventStyle(event.type).split(" ")[0])}>
           <div className="flex items-start justify-between gap-4">
@@ -170,7 +170,7 @@ export const CalendarEventComponent = ({
         {event.meetingLink && (
           <div className="p-4 bg-muted/50 flex justify-end">
             <Button
-              className="gap-2 squircle-rounded-2xl!"
+              className="gap-2 rounded-2xl!"
               onClick={() => window.open(event.meetingLink, "_blank")}
               size="sm"
             >

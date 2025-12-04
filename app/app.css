@@ -1,4 +1,7 @@
 /* @import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"); */
+/** biome-ignore-all lint/complexity/noImportantStyles: ignore */
+/** biome-ignore-all lint/correctness/noUnknownProperty: new css property corner-shape */
+/** biome-ignore-all lint/correctness/noUnknownFunction: new css property corner-shape */
 @import url("https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -152,6 +155,7 @@
   --sidebar-ring: var(--sidebar-ring-light);
 
   --radius: 0.625rem;
+  --radius-scale: 1.6;
   --header-height: calc(var(--spacing) * 12 + 1px);
 
   --surface: oklch(98.81% 0 0);
@@ -315,29 +319,215 @@
   }
 }
 
-@utility squircle-rounded-lg {
-  @apply rounded-lg squircle;
-  @apply supports-squircle:rounded-[calc(var(--radius-lg)*2)];
+/* All corners */
+@utility rounded-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
 }
 
-@utility squircle-rounded-xl {
-  @apply rounded-xl squircle;
-  @apply supports-squircle:rounded-[calc(var(--radius-xl)*2)];
+/* Side variants - Top */
+@utility rounded-t {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+    border-top-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
 }
 
-@utility squircle-rounded-2xl {
-  @apply rounded-2xl squircle;
-  @apply supports-squircle:rounded-[calc(var(--radius-2xl)*2)];
+@utility rounded-t-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+    border-top-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
 }
 
-@utility squircle-rounded-3xl {
-  @apply rounded-3xl squircle;
-  @apply supports-squircle:rounded-[calc(var(--radius-3xl)*2)];
+/* Side variants - Bottom */
+@utility rounded-b {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
 }
 
-@utility squircle-rounded-4xl {
-  @apply rounded-4xl squircle;
-  @apply supports-squircle:rounded-[calc(var(--radius-4xl)*2)];
+@utility rounded-b-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Side variants - Left */
+@utility rounded-l {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-l-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Side variants - Right */
+@utility rounded-r {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-r-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+    border-bottom-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Corner variants - Top Left */
+@utility rounded-tl {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-tl-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Corner variants - Top Right */
+@utility rounded-tr {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-tr-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-top-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Corner variants - Bottom Left */
+@utility rounded-bl {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-left-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-bl-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-left-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+/* Corner variants - Bottom Right */
+@utility rounded-br {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-right-radius: calc(
+      var(--radius) *
+      var(--radius-scale)
+    ) !important;
+  }
+}
+
+@utility rounded-br-* {
+  @supports (corner-shape: superellipse(1)) {
+    corner-shape: superellipse(var(--radius-scale));
+    border-bottom-right-radius: calc(
+      --value(--radius-*, [length]) *
+      var(--radius-scale)
+    ) !important;
+  }
 }
 
 @layer base {
@@ -346,17 +536,6 @@
   }
   body {
     @apply bg-background text-foreground antialiased tracking-wide;
-  }
-}
-
-@utility squircle {
-  @apply supports-squircle:[corner-shape:squircle];
-}
-
-@custom-variant supports-squircle {
-  /* biome-ignore lint/correctness/noUnknownProperty: very new property, lsp not yet supports it */
-  @supports (corner-shape: squircle) {
-    @slot;
   }
 }
 

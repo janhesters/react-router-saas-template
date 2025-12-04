@@ -15,7 +15,7 @@ export const ClientSnapshot = ({
   });
 
   return (
-    <div className="bg-surface h-full squircle-rounded-3xl p-6 flex flex-col">
+    <div className="bg-surface h-full rounded-3xl p-6 flex flex-col">
       <p className="font-medium text-lg mb-6">{t("title")}</p>
 
       <div className="flex flex-col gap-6">

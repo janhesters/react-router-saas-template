@@ -59,7 +59,7 @@ export default function JobsAndClientsRoute({
   } = loaderData;
 
   return (
-    <div className="flex flex-1 flex-col gap-6 px-4 py-4 md:py-6 lg:px-6">
+    <div className="flex flex-1 flex-col gap-5 px-4 py-4 md:py-6 lg:px-6">
       <div className="grid h-fit grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:grid-rows-[175px_1fr]">
         <UpcomingInterview
           className="col-span-1 row-span-1 h-auto min-h-[175px] lg:h-[175px]"
