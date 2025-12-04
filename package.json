@@ -99,7 +99,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": [
-      "biome check --write --unsafe"
+      "biome check --write --unsafe --no-errors-on-unmatched"
     ]
   },
   "name": "reactsquad-react-router-saas-template",
