@@ -9,6 +9,7 @@ import {
   SheetTitle,
 } from "~/components/ui/sheet";
 import { Textarea } from "~/components/ui/textarea";
+import { cn } from "~/lib/utils";
 
 type ChatMessage = {
   id: string;
@@ -106,19 +107,22 @@ export function AiAssistantSheet() {
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
-                  className={`flex ${
-                    message.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+                  className={cn(
+                    "flex justify-start data-[role=user]:justify-end",
+                  )}
+                  data-role={message.role}
                   key={message.id}
                 >
                   <div
-                    className={`max-w-xs rounded-lg px-4 py-2 ${
-                      message.role === "user"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
+                    className={cn(
+                      "max-w-xs rounded-xl px-4 py-2 bg-muted text-muted-foreground",
+                      "data-[role=user]:bg-primary data-[role=user]:text-primary-foreground",
+                    )}
+                    data-role={message.role}
                   >
-                    <p className="text-sm">{message.content}</p>
+                    <p className="text-sm whitespace-pre-wrap">
+                      {message.content}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -152,7 +156,7 @@ export function AiAssistantSheet() {
           <div className="border-t px-6 pt-5 pb-5">
             <div className="flex gap-2">
               <Textarea
-                className="min-h-12 resize-none"
+                className="min-h-12 max-h-32 resize-none"
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Shift+Enter for new line)"
