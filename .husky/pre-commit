@@ -1,1 +1,1 @@
-bunx biome check --staged . && bun typecheck
+npx biome check --staged . && npm run typecheck

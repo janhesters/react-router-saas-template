@@ -4,6 +4,7 @@ import {
   FolderIcon,
   LayoutDashboardIcon,
   SettingsIcon,
+  UsersIcon,
 } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
@@ -57,6 +58,13 @@ export function AppSidebar({
               icon: LayoutDashboardIcon,
               title: t("app.dashboard"),
               url: href("/organizations/:organizationSlug/dashboard", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: UsersIcon,
+              title: "Recruitment",
+              url: href("/organizations/:organizationSlug/recruitment", {
                 organizationSlug,
               }),
             },
