@@ -46,6 +46,13 @@ export function loader({ params, context }: Route.LoaderArgs) {
 
   const calendarEvents = [
     {
+      endTime: "2024-10-26T02:00:00Z",
+      id: "1",
+      startTime: "2024-10-26T01:00:00Z",
+      title: "Technical Interview: Alice Johnson",
+      type: "interview" as const,
+    },
+    {
       endTime: "2024-10-26T10:00:00Z",
       id: "1",
       startTime: "2024-10-26T09:00:00Z",
