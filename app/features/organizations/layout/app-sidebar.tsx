@@ -1,10 +1,10 @@
 import {
-  ChartNoAxesColumnIncreasingIcon,
-  CircleHelpIcon,
-  FolderIcon,
-  LayoutDashboardIcon,
-  SettingsIcon,
-} from "lucide-react";
+  IconChartBar,
+  IconFolder,
+  IconHelp,
+  IconLayoutDashboard,
+  IconSettings,
+} from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { href } from "react-router";
@@ -54,14 +54,14 @@ export function AppSidebar({
         <NavGroup
           items={[
             {
-              icon: LayoutDashboardIcon,
+              icon: IconLayoutDashboard,
               title: t("app.dashboard"),
               url: href("/organizations/:organizationSlug/dashboard", {
                 organizationSlug,
               }),
             },
             {
-              icon: FolderIcon,
+              icon: IconFolder,
               items: [
                 {
                   title: t("app.projects.all"),
@@ -82,7 +82,7 @@ export function AppSidebar({
               title: t("app.projects.title"),
             },
             {
-              icon: ChartNoAxesColumnIncreasingIcon,
+              icon: IconChartBar,
               title: t("app.analytics"),
               url: href("/organizations/:organizationSlug/analytics", {
                 organizationSlug,
@@ -97,7 +97,7 @@ export function AppSidebar({
             className={cn(
               "mt-auto overflow-hidden transition-[opacity,transform,max-height] ease-in-out",
               "max-h-[500px] scale-100 opacity-100 delay-200 duration-500",
-              "group-data-[state=collapsed]:max-h-0 group-data-[state=collapsed]:scale-95 group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:delay-0 group-data-[state=collapsed]:duration-200 group-data-[variant=sidebar]:mx-2",
+              "group-data-[variant=sidebar]:mx-2 group-data-[state=collapsed]:max-h-0 group-data-[state=collapsed]:scale-95 group-data-[state=collapsed]:opacity-0 group-data-[state=collapsed]:delay-0 group-data-[state=collapsed]:duration-200",
             )}
             {...billingSidebarCardProps}
           />
@@ -107,14 +107,14 @@ export function AppSidebar({
           className={cn(!billingSidebarCardProps && "mt-auto")}
           items={[
             {
-              icon: SettingsIcon,
+              icon: IconSettings,
               title: t("settings.organizationSettings"),
               url: href("/organizations/:organizationSlug/settings", {
                 organizationSlug,
               }),
             },
             {
-              icon: CircleHelpIcon,
+              icon: IconHelp,
               title: t("settings.getHelp"),
               url: href("/organizations/:organizationSlug/get-help", {
                 organizationSlug,

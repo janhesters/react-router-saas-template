@@ -1,6 +1,6 @@
 import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { BuildingIcon } from "lucide-react";
+import { IconBuilding } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { data, Form, useNavigation } from "react-router";
 
@@ -104,9 +104,9 @@ export default function OrganizationOnboardingRoute({
       <FieldSet disabled={isSubmitting}>
         <FieldGroup>
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold">{t("heading")}</h1>
+            <h1 className="font-bold text-2xl">{t("heading")}</h1>
             <p
-              className="text-muted-foreground text-sm text-pretty"
+              className="text-pretty text-muted-foreground text-sm"
               id={form.descriptionId}
             >
               {t("subtitle")}
@@ -154,14 +154,14 @@ export default function OrganizationOnboardingRoute({
                     {t("logoDescription")}
                   </FieldDescription>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
-                    <Avatar className="size-16 md:size-24 rounded-lg">
+                    <Avatar className="size-16 rounded-lg md:size-24">
                       <AvatarUploadPreviewImage
                         alt={t("logoPreviewAlt")}
-                        className="size-16 md:size-24 rounded-lg"
+                        className="size-16 rounded-lg md:size-24"
                         src=""
                       />
-                      <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
-                        <BuildingIcon className="size-8 md:size-12" />
+                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                        <IconBuilding className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-2">
@@ -267,26 +267,31 @@ export default function OrganizationOnboardingRoute({
                 {t("companyTypesDescription")}
               </FieldDescription>
               <FieldGroup data-slot="checkbox-group">
-                {COMPANY_TYPE_OPTIONS.map((option) => (
-                  <Field
-                    data-invalid={fields.companyTypes.ariaInvalid}
-                    key={option}
-                    orientation="horizontal"
-                  >
-                    <Checkbox
-                      aria-invalid={fields.companyTypes.ariaInvalid}
-                      id={`company-type-${option}`}
-                      name={fields.companyTypes.name}
-                      value={option}
-                    />
-                    <FieldLabel
-                      className="font-normal"
-                      htmlFor={`company-type-${option}`}
+                {COMPANY_TYPE_OPTIONS.map((option) => {
+                  const labelId = `company-type-label-${option}`;
+                  return (
+                    <Field
+                      data-invalid={fields.companyTypes.ariaInvalid}
+                      key={option}
+                      orientation="horizontal"
                     >
-                      {t(`companyType.${option}`)}
-                    </FieldLabel>
-                  </Field>
-                ))}
+                      <Checkbox
+                        aria-invalid={fields.companyTypes.ariaInvalid}
+                        aria-labelledby={labelId}
+                        id={`company-type-${option}`}
+                        name={fields.companyTypes.name}
+                        value={option}
+                      />
+                      <FieldLabel
+                        className="font-normal"
+                        htmlFor={`company-type-${option}`}
+                        id={labelId}
+                      >
+                        {t(`companyType.${option}`)}
+                      </FieldLabel>
+                    </Field>
+                  );
+                })}
               </FieldGroup>
               <FieldError
                 errors={fields.companyTypes.errors}
@@ -354,18 +359,21 @@ export default function OrganizationOnboardingRoute({
             >
               <FieldLegend variant="label">{t("earlyAccessLabel")}</FieldLegend>
               <FieldLabel
-                className="hover:bg-accent/50 flex items-start gap-3 rounded-lg border p-3 has-aria-checked:border-primary has-aria-checked:bg-primary/5 dark:has-aria-checked:border-primary dark:has-aria-checked:bg-primary/10"
+                className="flex items-start gap-3 rounded-lg border p-3 hover:bg-accent/50 has-aria-checked:border-primary has-aria-checked:bg-primary/5 dark:has-aria-checked:border-primary dark:has-aria-checked:bg-primary/10"
                 htmlFor={fields.earlyAccessOptIn.id}
               >
                 <Checkbox
                   aria-describedby={fields.earlyAccessOptIn.ariaDescribedBy}
                   aria-invalid={fields.earlyAccessOptIn.ariaInvalid}
+                  aria-labelledby={`${fields.earlyAccessOptIn.id}-title`}
                   className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary"
                   id={fields.earlyAccessOptIn.id}
                   name={fields.earlyAccessOptIn.name}
                 />
                 <div className="grid gap-1.5 font-normal">
-                  <FieldTitle>{t("earlyAccessTitle")}</FieldTitle>
+                  <FieldTitle id={`${fields.earlyAccessOptIn.id}-title`}>
+                    {t("earlyAccessTitle")}
+                  </FieldTitle>
                   <FieldDescription id={fields.earlyAccessOptIn.descriptionId}>
                     {t("earlyAccessDescription")}
                   </FieldDescription>

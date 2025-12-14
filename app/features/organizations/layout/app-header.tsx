@@ -70,8 +70,8 @@ export function AppHeader({
                   {firstItem && (
                     <>
                       <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                          <Link to={firstItem.to}>{firstItem.title}</Link>
+                        <BreadcrumbLink render={<Link to={firstItem.to} />}>
+                          {firstItem.title}
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                       <BreadcrumbSeparator />
@@ -92,8 +92,11 @@ export function AppHeader({
 
                           <DropdownMenuContent align="start">
                             {middleItems.map((item) => (
-                              <DropdownMenuItem asChild key={item.to}>
-                                <Link to={item.to}>{item.title}</Link>
+                              <DropdownMenuItem
+                                key={item.to}
+                                render={<Link to={item.to} />}
+                              >
+                                {item.title}
                               </DropdownMenuItem>
                             ))}
                           </DropdownMenuContent>
@@ -128,8 +131,10 @@ export function AppHeader({
                               </BreadcrumbPage>
                             </h1>
                           ) : (
-                            <BreadcrumbLink asChild>
-                              <Link to={breadcrumb.to}>{breadcrumb.title}</Link>
+                            <BreadcrumbLink
+                              render={<Link to={breadcrumb.to} />}
+                            >
+                              {breadcrumb.title}
                             </BreadcrumbLink>
                           )}
                         </BreadcrumbItem>

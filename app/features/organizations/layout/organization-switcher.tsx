@@ -1,4 +1,4 @@
-import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
+import { IconPlus, IconSelector } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, Link, useLocation } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -58,58 +59,65 @@ export function OrganizationSwitcher({
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-              // Playwright shouldn't try to click the button before it's hydrated
-              disabled={!hydrated}
-              size="lg"
-            >
-              <Avatar className="aspect-square size-8 rounded-lg">
-                <AvatarImage
-                  alt={currentOrganization.name}
-                  className="object-cover"
-                  src={currentOrganization.logo}
-                />
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                // Playwright shouldn't try to click the button before it's hydrated
+                disabled={!hydrated}
+                size="lg"
+              />
+            }
+          >
+            <Avatar className="aspect-square size-8 rounded-lg after:rounded-lg">
+              <AvatarImage
+                alt={currentOrganization.name}
+                className="rounded-lg object-cover"
+                src={currentOrganization.logo}
+              />
 
-                <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground rounded-lg">
-                  {currentOrganization.name.slice(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                {currentOrganization.name.slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">
-                  {currentOrganization.name}
-                </span>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">
+                {currentOrganization.name}
+              </span>
 
-                <span className="truncate text-xs">
-                  {tTier(`${currentOrganization.tier}.title`, {
-                    defaultValue: "Enterprise",
-                  })}
-                </span>
-              </div>
+              <span className="truncate text-xs">
+                {tTier(`${currentOrganization.tier}.title`, {
+                  defaultValue: "Enterprise",
+                })}
+              </span>
+            </div>
 
-              <ChevronsUpDownIcon className="ml-auto" />
-            </SidebarMenuButton>
+            <IconSelector className="ml-auto" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
             align="start"
-            className="max-w-(--radix-dropdown-menu-trigger-width) min-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:max-w-80 md:min-w-56"
+            className="min-w-(--radix-dropdown-menu-trigger-width) max-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:min-w-56 md:max-w-80"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
-            <DropdownMenuLabel className="text-muted-foreground text-xs">
-              {t("organizations")}
-            </DropdownMenuLabel>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-muted-foreground text-xs">
+                {t("organizations")}
+              </DropdownMenuLabel>
 
-            {organizations.map((organization) => (
-              <Form key={organization.id} method="POST" replace>
-                <DropdownMenuItem asChild className="w-full gap-2 p-2">
-                  <button
-                    name="intent"
-                    type="submit"
-                    value={SWITCH_ORGANIZATION_INTENT}
+              {organizations.map((organization) => (
+                <Form key={organization.id} method="POST" replace>
+                  <DropdownMenuItem
+                    className="w-full gap-2 p-2"
+                    render={
+                      <button
+                        name="intent"
+                        type="submit"
+                        value={SWITCH_ORGANIZATION_INTENT}
+                      />
+                    }
                   >
                     <input
                       name="organizationId"
@@ -122,10 +130,10 @@ export function OrganizationSwitcher({
                       value={currentPath}
                     />
 
-                    <Avatar className="aspect-square size-6 rounded-sm border">
+                    <Avatar className="aspect-square size-6 rounded-sm border after:rounded-sm">
                       <AvatarImage
                         alt={organization.name}
-                        className="object-cover"
+                        className="rounded-sm object-cover"
                         src={organization.logo}
                       />
 
@@ -134,19 +142,20 @@ export function OrganizationSwitcher({
                       </AvatarFallback>
                     </Avatar>
                     {organization.name}
-                  </button>
-                </DropdownMenuItem>
-              </Form>
-            ))}
+                  </DropdownMenuItem>
+                </Form>
+              ))}
+            </DropdownMenuGroup>
+
             <DropdownMenuSeparator />
 
             <Link to="/organizations/new">
               <DropdownMenuItem className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <PlusIcon className="size-4" />
+                  <IconPlus className="size-4" />
                 </div>
 
-                <div className="text-muted-foreground font-medium">
+                <div className="font-medium text-muted-foreground">
                   {t("newOrganization")}
                 </div>
               </DropdownMenuItem>

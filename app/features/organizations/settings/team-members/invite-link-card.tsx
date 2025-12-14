@@ -1,5 +1,9 @@
+import {
+  IconAlertTriangle,
+  IconClipboardCheck,
+  IconCopy,
+} from "@tabler/icons-react";
 import copyToClipboard from "copy-to-clipboard";
-import { AlertTriangleIcon, ClipboardCheckIcon, CopyIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
@@ -102,7 +106,7 @@ export function InviteLinkCard({
 
               <Button
                 className={cn(
-                  "hover:border-input absolute top-0 right-0 rounded-l-none border border-l border-transparent",
+                  "absolute top-0 right-0 rounded-l-none border border-transparent border-l hover:border-input",
                   "border-l-input dark:hover:border-transparent",
                   "dark:hover:border-l-input",
                 )}
@@ -115,13 +119,13 @@ export function InviteLinkCard({
               >
                 {linkCopied ? (
                   <>
-                    <ClipboardCheckIcon />
+                    <IconClipboardCheck />
 
                     <span className="sr-only">{t("inviteLinkCopied")}</span>
                   </>
                 ) : (
                   <>
-                    <CopyIcon />
+                    <IconCopy />
 
                     <span className="sr-only">{t("copyInviteLink")}</span>
                   </>
@@ -129,7 +133,7 @@ export function InviteLinkCard({
               </Button>
 
               <p
-                className="text-muted-foreground mt-1 flex text-xs"
+                className="mt-1 flex text-muted-foreground text-xs"
                 id="link-expiration-warning"
               >
                 <span className="grow">
@@ -142,7 +146,7 @@ export function InviteLinkCard({
                   aria-hidden={linkCopied ? "false" : "true"}
                   aria-live="polite"
                   className={cn(
-                    "text-primary transform transition duration-300 ease-in-out",
+                    "transform text-primary transition duration-300 ease-in-out",
                     linkCopied
                       ? "translate-x-0 scale-100 opacity-100"
                       : "translate-x-10 scale-75 opacity-0",
@@ -197,12 +201,12 @@ export function InviteLinkCard({
             </div>
 
             <p
-              className="text-muted-foreground mt-2 flex items-center text-xs"
+              className="mt-2 flex items-center text-muted-foreground text-xs"
               id="link-regenerate-warning"
             >
-              <AlertTriangleIcon
+              <IconAlertTriangle
                 aria-hidden="true"
-                className="text-primary mr-1.5 size-4"
+                className="mr-1.5 size-4 text-primary"
               />
 
               <span>{t("newLinkDeactivatesOld")}</span>

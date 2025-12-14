@@ -1,4 +1,4 @@
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { IconLayoutList } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useMatch } from "react-router";
 
@@ -31,7 +31,7 @@ export default function OnboardingLayout({ loaderData }: Route.ComponentProps) {
       {/* Left side */}
       <div className="relative hidden h-full flex-col overflow-hidden border-r bg-muted/60 p-10 lg:flex">
         <div className="absolute inset-0 z-10 bg-linear-to-t from-background to-transparent" />
-        <GalleryVerticalEndIcon className="mr-auto h-5" />
+        <IconLayoutList className="mr-auto h-5" />
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-xl">&ldquo;{t("quote")}&rdquo;</p>
@@ -65,7 +65,7 @@ export default function OnboardingLayout({ loaderData }: Route.ComponentProps) {
             isUserRoute ? "justify-center" : "justify-start",
           )}
         >
-          <div className="w-full max-w-md mx-auto">
+          <div className="mx-auto w-full max-w-md">
             <Outlet />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { Building2Icon, CreditCardIcon, UsersIcon } from "lucide-react";
+import { IconBuilding, IconCreditCard, IconUsers } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { href, useMatch } from "react-router";
 
@@ -29,7 +29,7 @@ export function SettingsSidebar({
   return (
     <aside
       className={cn(
-        "bg-background text-sidebar-foreground flex flex-col border-r md:peer-data-[variant=inset]:rounded-bl-xl",
+        "flex flex-col border-r bg-background text-sidebar-foreground md:peer-data-[variant=inset]:rounded-bl-xl",
         // Full width on mobile when on settings index, normal sidebar width
         // on desktop
         isOnSettingsIndex
@@ -44,14 +44,14 @@ export function SettingsSidebar({
         <NavGroup
           items={[
             {
-              icon: Building2Icon,
+              icon: IconBuilding,
               title: t("general"),
               url: href("/organizations/:organizationSlug/settings/general", {
                 organizationSlug,
               }),
             },
             {
-              icon: UsersIcon,
+              icon: IconUsers,
               title: t("teamMembers"),
               url: href("/organizations/:organizationSlug/settings/members", {
                 organizationSlug,
@@ -60,7 +60,7 @@ export function SettingsSidebar({
             ...(role !== "member"
               ? [
                   {
-                    icon: CreditCardIcon,
+                    icon: IconCreditCard,
                     title: t("billing"),
                     url: href(
                       "/organizations/:organizationSlug/settings/billing",

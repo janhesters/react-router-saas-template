@@ -47,9 +47,9 @@ export function Features() {
 
   return (
     <section className="px-4 py-24">
-      <h2 className="text-primary text-base font-semibold">{t("eyebrow")}</h2>
+      <h2 className="font-semibold text-base text-primary">{t("eyebrow")}</h2>
 
-      <p className="text-foreground mt-2 max-w-lg text-4xl font-semibold text-pretty sm:text-5xl">
+      <p className="mt-2 max-w-lg text-pretty font-semibold text-4xl text-foreground sm:text-5xl">
         {t("title")}
       </p>
 

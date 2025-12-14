@@ -14,7 +14,7 @@ export function BentoGrid({ className, ...props }: ComponentProps<"div">) {
 export function BentoCard({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
-      className={cn("border-border rounded-lg border shadow-sm", className)}
+      className={cn("rounded-lg border border-border shadow-sm", className)}
       {...props}
     />
   );
@@ -35,7 +35,7 @@ export function BentoCardEyeBrow({
 }: ComponentProps<"span">) {
   return (
     <span
-      className={cn("text-primary text-sm font-semibold", className)}
+      className={cn("font-semibold text-primary text-sm", className)}
       {...props}
     />
   );
@@ -44,7 +44,7 @@ export function BentoCardEyeBrow({
 export function BentoCardTitle({ className, ...props }: ComponentProps<"h3">) {
   return (
     <h3
-      className={cn("text-foreground text-lg font-medium", className)}
+      className={cn("font-medium text-foreground text-lg", className)}
       {...props}
     />
   );
@@ -56,7 +56,7 @@ export function BentoCardDescription({
 }: ComponentProps<"p">) {
   return (
     <p
-      className={cn("text-muted-foreground max-w-lg text-sm", className)}
+      className={cn("max-w-lg text-muted-foreground text-sm", className)}
       {...props}
     />
   );

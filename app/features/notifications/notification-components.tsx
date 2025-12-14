@@ -1,4 +1,4 @@
-import { MoreVerticalIcon } from "lucide-react";
+import { IconDotsVertical } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,7 +33,7 @@ export function NotificationsDot({
   return (
     <div
       className={cn(
-        "text-primary flex items-center justify-center rounded-full",
+        "flex items-center justify-center rounded-full text-primary",
         // Position + styling depending on blinking.
         !blinking && "bg-primary/10 p-1",
         // Only apply these reduced-motion tweaks when blinking is enabled.
@@ -45,7 +45,7 @@ export function NotificationsDot({
       {blinking && (
         <span
           className={cn(
-            "bg-primary absolute size-2 animate-ping rounded-full opacity-75",
+            "absolute size-2 animate-ping rounded-full bg-primary opacity-75",
             "motion-reduce:animate-none",
           )}
         />
@@ -68,18 +68,24 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
 
   return (
     <DropdownMenu onOpenChange={setIsOpen} open={isOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          aria-label={t("triggerButton")}
-          className={cn(
-            "opacity-0 group-hover:opacity-100 group-focus:opacity-100 hover:bg-transparent focus:opacity-100 dark:hover:bg-transparent",
-            isOpen && "opacity-100",
-          )}
-          size="icon"
-          variant="outline"
-        >
-          <MoreVerticalIcon className="size-4" />
-        </Button>
+      <DropdownMenuTrigger
+        onClick={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+        }}
+        render={
+          <Button
+            aria-label={t("triggerButton")}
+            className={cn(
+              "opacity-0 hover:bg-transparent focus:opacity-100 group-hover:opacity-100 group-focus:opacity-100 dark:hover:bg-transparent",
+              isOpen && "opacity-100",
+            )}
+            size="icon"
+            variant="outline"
+          />
+        }
+      >
+        <IconDotsVertical className="size-4" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="center" side="left">
@@ -122,25 +128,23 @@ export function LinkNotification({
 }: LinkNotificationProps) {
   return (
     <Button
-      asChild
-      className="text-muted-foreground group h-auto w-full justify-between py-2 wrap-break-word whitespace-normal"
+      className="group wrap-break-word h-auto w-full justify-between whitespace-normal py-2 text-muted-foreground"
+      render={<Link to={href} />}
       size="sm"
       variant="ghost"
     >
-      <Link to={href}>
-        {text}
+      {text}
 
-        {isRead ? (
-          <div className="flex h-9 min-w-15">
-            {/* Fake offset to prevent layout shift when the notification is read */}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <NotificationMenu recipientId={recipientId} />
-            <NotificationsDot blinking={false} />
-          </div>
-        )}
-      </Link>
+      {isRead ? (
+        <div className="flex h-9 min-w-15">
+          {/* Fake offset to prevent layout shift when the notification is read */}
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <NotificationMenu recipientId={recipientId} />
+          <NotificationsDot blinking={false} />
+        </div>
+      )}
     </Button>
   );
 }

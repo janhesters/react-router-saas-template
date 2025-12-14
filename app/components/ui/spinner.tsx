@@ -1,11 +1,17 @@
-import { Loader2Icon } from "lucide-react";
+import { IconLoader } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
 
-function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
+function Spinner({
+  className,
+  ...props
+}: React.ComponentProps<typeof IconLoader>) {
+  const { t } = useTranslation("translation");
+
   return (
-    <Loader2Icon
-      aria-label="Loading"
+    <IconLoader
+      aria-label={t("loading")}
       className={cn("size-4 animate-spin", className)}
       role="status"
       {...props}

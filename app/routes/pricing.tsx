@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react";
+import { IconCheck } from "@tabler/icons-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { href, Link } from "react-router";
@@ -50,11 +50,11 @@ export default function PricingRoute() {
         <div className="mx-auto mb-8 max-w-2xl text-center">
           <h1 className="text-primary">{tPage("pageTitle")}</h1>
 
-          <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
+          <h2 className="mt-2 font-bold text-4xl sm:text-5xl">
             {tPage("pricingHeading")}
           </h2>
 
-          <p className="text-muted-foreground mt-6 text-lg text-pretty">
+          <p className="mt-6 text-pretty text-lg text-muted-foreground">
             {tPage("pageDescription")}
           </p>
         </div>
@@ -85,8 +85,11 @@ export default function PricingRoute() {
                       {t("plans.low.description")}
                     </TierCardDescription>
 
-                    <Button asChild className="w-full">
-                      <Link to={href("/register")}>{t("plans.low.cta")}</Link>
+                    <Button
+                      className="w-full"
+                      render={<Link to={href("/register")} />}
+                    >
+                      {t("plans.low.cta")}
                     </Button>
                   </TierCardHeader>
 
@@ -100,7 +103,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -116,7 +119,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -142,7 +145,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -150,7 +153,7 @@ export default function PricingRoute() {
                   </TierCardContent>
                 </TierCard>
 
-                <TierCard className="ring-primary ring-2">
+                <TierCard className="ring-2 ring-primary">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
@@ -161,7 +164,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -187,7 +190,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -211,8 +214,11 @@ export default function PricingRoute() {
                       {t("plans.low.description")}
                     </TierCardDescription>
 
-                    <Button asChild className="w-full">
-                      <Link to={href("/register")}>{t("plans.low.cta")}</Link>
+                    <Button
+                      className="w-full"
+                      render={<Link to={href("/register")} />}
+                    >
+                      {t("plans.low.cta")}
                     </Button>
                   </TierCardHeader>
 
@@ -226,7 +232,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -242,7 +248,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -270,7 +276,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -278,7 +284,7 @@ export default function PricingRoute() {
                   </TierCardContent>
                 </TierCard>
 
-                <TierCard className="ring-primary -mt-1.5 ring-2">
+                <TierCard className="-mt-1.5 ring-2 ring-primary">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
@@ -289,7 +295,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -317,7 +323,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -335,10 +341,11 @@ export default function PricingRoute() {
                       {t("plans.enterprise.description")}
                     </TierCardDescription>
 
-                    <Button asChild className="w-full">
-                      <Link to={href("/contact-sales")}>
-                        {t("plans.enterprise.cta")}
-                      </Link>
+                    <Button
+                      className="w-full"
+                      render={<Link to={href("/contact-sales")} />}
+                    >
+                      {t("plans.enterprise.cta")}
                     </Button>
                   </TierCardHeader>
 
@@ -352,7 +359,7 @@ export default function PricingRoute() {
                     <FeaturesList>
                       {getFeatures("enterprise").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}

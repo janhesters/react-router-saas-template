@@ -19,20 +19,20 @@ export function NotFound({ className }: NotFoundProps) {
       )}
     >
       <div className="text-center">
-        <p className="text-primary text-base font-semibold">
+        <p className="font-semibold text-base text-primary">
           {t("notFound.status")}
         </p>
 
-        <h1 className="text-foreground mt-4 text-3xl font-bold tracking-tighter sm:text-5xl">
+        <h1 className="mt-4 font-bold text-3xl text-foreground tracking-tighter sm:text-5xl">
           {t("notFound.title")}
         </h1>
 
-        <p className="text-muted-foreground mt-6 text-base">
+        <p className="mt-6 text-base text-muted-foreground">
           {t("notFound.description")}
         </p>
 
-        <Button asChild className="mt-10">
-          <Link to="/">{t("notFound.homeLink")}</Link>
+        <Button className="mt-10" render={<Link to="/" />}>
+          {t("notFound.homeLink")}
         </Button>
       </div>
     </main>

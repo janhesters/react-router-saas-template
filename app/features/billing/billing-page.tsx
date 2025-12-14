@@ -1,6 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
-import { CircleXIcon } from "lucide-react";
-import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
+import * as VisuallyHiddenPrimitive from "@radix-ui/react-visually-hidden";
+import { IconCircleX } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form, href, Link, useNavigation } from "react-router";
@@ -76,7 +76,7 @@ function PendingDowngradeBanner({
 
   return (
     <Form className="@container/alert" method="POST" replace>
-      <Alert className="flex flex-col gap-2 @4xl/alert:block">
+      <Alert className="@4xl/alert:block flex flex-col gap-2">
         <AlertTitle>{t("title")}</AlertTitle>
 
         <AlertDescription>
@@ -88,7 +88,7 @@ function PendingDowngradeBanner({
         </AlertDescription>
 
         <Button
-          className="shadow-none @4xl/alert:absolute @4xl/alert:top-1/2 @4xl/alert:right-3 @4xl/alert:-translate-y-1/2"
+          className="@4xl/alert:-translate-y-1/2 @4xl/alert:absolute @4xl/alert:top-1/2 @4xl/alert:right-3 shadow-none"
           disabled={isSubmitting}
           name="intent"
           size="sm"
@@ -217,7 +217,7 @@ export function BillingPage({
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="mx-auto w-full max-w-5xl space-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
+          <h2 className="font-semibold leading-none">{t("pageTitle")}</h2>
 
           <p className="text-muted-foreground text-sm">
             {t("pageDescription")}
@@ -230,7 +230,7 @@ export function BillingPage({
           <Dialog>
             <div className="@container/alert">
               <Alert
-                className="flex flex-col gap-2 @xl/alert:block"
+                className="@xl/alert:block flex flex-col gap-2"
                 variant="destructive"
               >
                 <AlertTitle>
@@ -241,15 +241,17 @@ export function BillingPage({
                   {t("subscriptionCancelledBanner.description")}
                 </AlertDescription>
 
-                <DialogTrigger asChild>
-                  <Button
-                    className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
-                    // Playwright shouldn't try to click the button before it's hydrated
-                    disabled={!hydrated}
-                    size="sm"
-                  >
-                    {t("subscriptionCancelledBanner.button")}
-                  </Button>
+                <DialogTrigger
+                  render={
+                    <Button
+                      className="@xl/alert:-translate-y-1/2 @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 shadow-none"
+                      // Playwright shouldn't try to click the button before it's hydrated
+                      disabled={!hydrated}
+                      size="sm"
+                    />
+                  }
+                >
+                  {t("subscriptionCancelledBanner.button")}
                 </DialogTrigger>
               </Alert>
             </div>
@@ -275,7 +277,7 @@ export function BillingPage({
         ) : cancelAtPeriodEnd ? (
           <Form className="@container/alert" method="POST" replace>
             <Alert
-              className="flex flex-col gap-2 @xl/alert:block"
+              className="@xl/alert:block flex flex-col gap-2"
               variant="destructive"
             >
               <AlertTitle>{t("cancelAtPeriodEndBanner.title")}</AlertTitle>
@@ -287,7 +289,7 @@ export function BillingPage({
               </AlertDescription>
 
               <Button
-                className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
+                className="@xl/alert:-translate-y-1/2 @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 shadow-none"
                 disabled={isSubmitting}
                 name="intent"
                 size="sm"
@@ -315,7 +317,7 @@ export function BillingPage({
           isOnFreeTrial && (
             <Dialog>
               <div className="@container/alert">
-                <Alert className="flex flex-col gap-2 @xl/alert:block">
+                <Alert className="@xl/alert:block flex flex-col gap-2">
                   <AlertTitle>{t("freeTrialBanner.title")}</AlertTitle>
 
                   <AlertDescription>
@@ -324,15 +326,17 @@ export function BillingPage({
                     })}
                   </AlertDescription>
 
-                  <DialogTrigger asChild>
-                    <Button
-                      className="shadow-none @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 @xl/alert:-translate-y-1/2"
-                      // Playwright shouldn't try to click the button before it's hydrated
-                      disabled={!hydrated}
-                      size="sm"
-                    >
-                      {t("freeTrialBanner.button")}
-                    </Button>
+                  <DialogTrigger
+                    render={
+                      <Button
+                        className="@xl/alert:-translate-y-1/2 @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 shadow-none"
+                        // Playwright shouldn't try to click the button before it's hydrated
+                        disabled={!hydrated}
+                        size="sm"
+                      />
+                    }
+                  >
+                    {t("freeTrialBanner.button")}
                   </DialogTrigger>
                 </Alert>
               </div>
@@ -357,7 +361,7 @@ export function BillingPage({
         )}
 
         <div>
-          <h3 className="text-base font-medium">
+          <h3 className="font-medium text-base">
             {t("planInformation.heading")}
           </h3>
 
@@ -366,7 +370,7 @@ export function BillingPage({
               <Card className="mt-2 py-4 shadow-xs md:py-3">
                 <DescriptionList>
                   {/* Current Plan */}
-                  <DescriptionListRow className="flex-col @xl/form:grid @xl/form:grid-cols-[auto_1fr]">
+                  <DescriptionListRow className="@xl/form:grid @xl/form:grid-cols-[auto_1fr] flex-col">
                     <div className="flex items-center justify-between">
                       <DescriptionTerm className="@xl/form:w-36">
                         {t("planInformation.currentPlan")}
@@ -384,7 +388,7 @@ export function BillingPage({
                     </div>
 
                     <div className="@xl/form:flex @xl/form:items-center @xl/form:justify-between">
-                      <div className="flex items-center justify-between @xl/form:block">
+                      <div className="@xl/form:block flex items-center justify-between">
                         <DescriptionDetail>
                           {tTier(`${currentTier}.title`)}
                         </DescriptionDetail>
@@ -406,7 +410,7 @@ export function BillingPage({
                       </div>
 
                       <Button
-                        className="hidden @xl/form:block"
+                        className="@xl/form:block hidden"
                         onClick={() => setIsPlanManagementModalOpen(true)}
                         size="sm"
                         type="button"
@@ -420,8 +424,8 @@ export function BillingPage({
                   <Separator />
 
                   {/* Users */}
-                  <DescriptionListRow className="items-center justify-between @xl/form:h-10">
-                    <div className="flex flex-col gap-2 @xl/form:flex-row">
+                  <DescriptionListRow className="@xl/form:h-10 items-center justify-between">
+                    <div className="flex @xl/form:flex-row flex-col gap-2">
                       <DescriptionTerm className="@xl/form:w-36">
                         {t("planInformation.users")}
                       </DescriptionTerm>
@@ -438,22 +442,26 @@ export function BillingPage({
                       </DescriptionDetail>
                     </div>
 
-                    <Button asChild size="sm" variant="outline">
-                      <Link
-                        to={href(
-                          "/organizations/:organizationSlug/settings/members",
-                          { organizationSlug },
-                        )}
-                      >
-                        {t("planInformation.manageUsers")}
-                      </Link>
+                    <Button
+                      render={
+                        <Link
+                          to={href(
+                            "/organizations/:organizationSlug/settings/members",
+                            { organizationSlug },
+                          )}
+                        />
+                      }
+                      size="sm"
+                      variant="outline"
+                    >
+                      {t("planInformation.manageUsers")}
                     </Button>
                   </DescriptionListRow>
 
                   <Separator />
 
                   {/* Projected Total */}
-                  <DescriptionListRow className="items-center justify-between @xl/form:h-10 @xl/form:justify-start">
+                  <DescriptionListRow className="@xl/form:h-10 items-center @xl/form:justify-start justify-between">
                     <DescriptionTerm className="@xl/form:w-36">
                       {t("planInformation.projectedTotal")}
                     </DescriptionTerm>
@@ -468,8 +476,8 @@ export function BillingPage({
                   <Separator />
 
                   {/* Next Billing Date */}
-                  <DescriptionListRow className="items-center justify-between @xl/form:h-10">
-                    <div className="flex flex-col gap-2 @xl/form:flex-row">
+                  <DescriptionListRow className="@xl/form:h-10 items-center justify-between">
+                    <div className="flex @xl/form:flex-row flex-col gap-2">
                       <DescriptionTerm className="@xl/form:w-36">
                         {t("planInformation.nextBillingDate")}
                       </DescriptionTerm>
@@ -503,7 +511,7 @@ export function BillingPage({
 
         {billingEmail && (
           <div>
-            <h3 className="text-base font-medium">
+            <h3 className="font-medium text-base">
               {t("paymentInformation.heading")}
             </h3>
 
@@ -511,8 +519,8 @@ export function BillingPage({
               <Card className="mt-2 py-4 shadow-xs md:py-3">
                 <DescriptionList>
                   {/* Billing Email */}
-                  <DescriptionListRow className="items-center justify-between @xl/form:h-10">
-                    <div className="flex flex-col gap-2 @xl/form:flex-row">
+                  <DescriptionListRow className="@xl/form:h-10 items-center justify-between">
+                    <div className="flex @xl/form:flex-row flex-col gap-2">
                       <DescriptionTerm className="@xl/form:w-36">
                         {t("paymentInformation.billingEmail")}
                       </DescriptionTerm>
@@ -521,15 +529,17 @@ export function BillingPage({
                     </div>
 
                     <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          // Playwright shouldn't try to click the button before it's hydrated
-                          disabled={!hydrated}
-                          size="sm"
-                          variant="outline"
-                        >
-                          {t("paymentInformation.editButton")}
-                        </Button>
+                      <DialogTrigger
+                        render={
+                          <Button
+                            // Playwright shouldn't try to click the button before it's hydrated
+                            disabled={!hydrated}
+                            size="sm"
+                            variant="outline"
+                          />
+                        }
+                      >
+                        {t("paymentInformation.editButton")}
                       </DialogTrigger>
 
                       <EditBillingEmailModalContent
@@ -598,7 +608,7 @@ export function BillingPage({
                   }) as string[]
                 ).map((feature) => (
                   <li className="flex items-center gap-2" key={feature}>
-                    <CircleXIcon className="text-destructive size-4" />
+                    <IconCircleX className="size-4 text-destructive" />
                     {feature}
                   </li>
                 ))}

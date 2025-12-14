@@ -1,4 +1,4 @@
-import { BellIcon, CheckCheckIcon } from "lucide-react";
+import { IconBell, IconChecks } from "@tabler/icons-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useFetcher } from "react-router";
@@ -74,27 +74,29 @@ export function NotificationsButton({
 
   return (
     <Popover onOpenChange={handlePopoverOpenChange} open={popoverOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          aria-label={
-            optimisticShowBadge
-              ? t("openUnreadNotifications")
-              : t("openNotifications")
-          }
-          className="relative size-8"
-          // Playwright shouldn't try to click the button before it's hydrated
-          disabled={!hydrated}
-          size="icon"
-          variant="outline"
-        >
-          <BellIcon />
-          {optimisticShowBadge && (
-            <NotificationsDot
-              blinking={true}
-              className="absolute -top-0.5 -right-0.5 motion-reduce:-top-1.5 motion-reduce:-right-1.5"
-            />
-          )}
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            aria-label={
+              optimisticShowBadge
+                ? t("openUnreadNotifications")
+                : t("openNotifications")
+            }
+            className="relative size-8"
+            // Playwright shouldn't try to click the button before it's hydrated
+            disabled={!hydrated}
+            size="icon"
+            variant="outline"
+          />
+        }
+      >
+        <IconBell />
+        {optimisticShowBadge && (
+          <NotificationsDot
+            blinking={true}
+            className="-top-0.5 -right-0.5 motion-reduce:-top-1.5 motion-reduce:-right-1.5 absolute"
+          />
+        )}
       </PopoverTrigger>
 
       <PopoverContent
@@ -103,23 +105,25 @@ export function NotificationsButton({
         className="min-w-svw p-2 sm:w-md sm:min-w-[unset]"
       >
         <div className="flex items-center justify-between">
-          <p className="text-base font-semibold" id="notifications-header">
+          <p className="font-semibold text-base" id="notifications-header">
             {t("notifications")}
           </p>
 
           <Tooltip>
             <markAllAsReadFetcher.Form method="post">
-              <TooltipTrigger asChild>
-                <Button
-                  aria-label={t("markAllAsRead")}
-                  name="intent"
-                  size="sm"
-                  type="submit"
-                  value={MARK_ALL_NOTIFICATIONS_AS_READ_INTENT}
-                  variant="ghost"
-                >
-                  <CheckCheckIcon />
-                </Button>
+              <TooltipTrigger
+                render={
+                  <Button
+                    aria-label={t("markAllAsRead")}
+                    name="intent"
+                    size="sm"
+                    type="submit"
+                    value={MARK_ALL_NOTIFICATIONS_AS_READ_INTENT}
+                    variant="ghost"
+                  />
+                }
+              >
+                <IconChecks />
               </TooltipTrigger>
             </markAllAsReadFetcher.Form>
 

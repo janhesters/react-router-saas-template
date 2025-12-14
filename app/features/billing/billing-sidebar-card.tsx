@@ -1,5 +1,5 @@
+import * as VisuallyHiddenPrimitive from "@radix-ui/react-visually-hidden";
 import { formatDate } from "date-fns";
-import { VisuallyHidden as VisuallyHiddenPrimitive } from "radix-ui";
 import { useTranslation } from "react-i18next";
 import { useHydrated } from "remix-utils/use-hydrated";
 
@@ -48,7 +48,7 @@ export function BillingSidebarCard({
       <Card
         className={cn(
           "gap-4 py-4 shadow-none",
-          "from-primary/5 to-card bg-linear-to-t",
+          "bg-linear-to-t from-primary/5 to-card",
           className,
         )}
       >
@@ -82,21 +82,23 @@ export function BillingSidebarCard({
 
         {showButton && (
           <CardContent className="px-4">
-            <DialogTrigger asChild>
-              <Button
-                className="w-full shadow-none"
-                // Playwright shouldn't try to click the button before it's hydrated
-                disabled={!hydrated}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                {state === "trialing"
-                  ? t("activeTrial.button")
-                  : state === "cancelled"
-                    ? t("subscriptionInactive.button")
-                    : t("trialEnded.button")}
-              </Button>
+            <DialogTrigger
+              render={
+                <Button
+                  className="w-full shadow-none"
+                  // Playwright shouldn't try to click the button before it's hydrated
+                  disabled={!hydrated}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                />
+              }
+            >
+              {state === "trialing"
+                ? t("activeTrial.button")
+                : state === "cancelled"
+                  ? t("subscriptionInactive.button")
+                  : t("trialEnded.button")}
             </DialogTrigger>
           </CardContent>
         )}

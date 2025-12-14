@@ -1,5 +1,5 @@
+import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import confetti from "canvas-confetti";
-import { BadgeCheckIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { data, href, Link } from "react-router";
@@ -78,29 +78,31 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 md:py-6 lg:px-6">
       <div className="flex max-w-xl flex-col items-center px-4 text-center">
-        <BadgeCheckIcon className="mx-auto size-16 text-green-400 dark:text-green-500" />
+        <IconRosetteDiscountCheck className="mx-auto size-16 text-green-400 dark:text-green-500" />
 
-        <h3 className="text-foreground mt-2 text-lg font-semibold">
+        <h3 className="mt-2 font-semibold text-foreground text-lg">
           {t("paymentSuccessful")}
         </h3>
 
-        <p className="text-muted-foreground mt-2 text-base text-balance">
+        <p className="mt-2 text-balance text-base text-muted-foreground">
           {t("productReady")}
         </p>
 
-        <p className="text-muted-foreground mt-2 text-base text-balance">
+        <p className="mt-2 text-balance text-base text-muted-foreground">
           {t("thankYou")}
         </p>
 
-        <Button asChild>
-          <Link
-            className="mt-6"
-            to={href("/organizations/:organizationSlug/dashboard", {
-              organizationSlug,
-            })}
-          >
-            {t("goToDashboard")}
-          </Link>
+        <Button
+          render={
+            <Link
+              className="mt-6"
+              to={href("/organizations/:organizationSlug/dashboard", {
+                organizationSlug,
+              })}
+            />
+          }
+        >
+          {t("goToDashboard")}
         </Button>
       </div>
     </div>

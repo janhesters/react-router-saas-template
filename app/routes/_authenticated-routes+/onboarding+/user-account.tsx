@@ -1,6 +1,6 @@
 import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { UserIcon } from "lucide-react";
+import { IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { data, Form, useNavigation } from "react-router";
 
@@ -79,8 +79,8 @@ export default function UserAccountOnboardingRoute({
       <FieldSet disabled={isSubmitting}>
         <FieldGroup>
           <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold">{t("heading")}</h1>
-            <p className="text-muted-foreground text-sm text-pretty">
+            <h1 className="font-bold text-2xl">{t("heading")}</h1>
+            <p className="text-pretty text-muted-foreground text-sm">
               {t("subtitle")}
             </p>
           </div>
@@ -113,14 +113,14 @@ export default function UserAccountOnboardingRoute({
                     {t("profilePhotoDescription")}
                   </FieldDescription>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
-                    <Avatar className="size-16 md:size-24 rounded-lg">
+                    <Avatar className="size-16 rounded-lg md:size-24">
                       <AvatarUploadPreviewImage
                         alt={t("profilePhotoPreviewAlt")}
-                        className="size-16 md:size-24 rounded-lg"
+                        className="size-16 rounded-lg md:size-24"
                         src={loaderData.user.imageUrl}
                       />
-                      <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
-                        <UserIcon className="size-8 md:size-12" />
+                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                        <IconUser className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-2">

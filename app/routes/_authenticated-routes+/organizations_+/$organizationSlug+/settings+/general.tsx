@@ -72,7 +72,7 @@ export default function GeneralOrganizationSettingsRoute({
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
+              <h2 className="font-semibold leading-none">{t("pageTitle")}</h2>
 
               <p className="text-muted-foreground text-sm">
                 {t("description")}

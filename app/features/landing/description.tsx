@@ -1,9 +1,14 @@
-import { BookOpenIcon, SlidersIcon, TestTubeIcon, ZapIcon } from "lucide-react";
+import {
+  IconAdjustments,
+  IconBolt,
+  IconBook,
+  IconTestPipe,
+} from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
 
-const featureIcons = [ZapIcon, TestTubeIcon, BookOpenIcon, SlidersIcon];
+const featureIcons = [IconBolt, IconTestPipe, IconBook, IconAdjustments];
 
 const imageClassNames =
   "border-border w-3xl max-w-none rounded-xl border sm:w-228 md:-ml-4 lg:-ml-0";
@@ -21,19 +26,19 @@ export function Description() {
         <div className="mx-auto grid max-w-2xl grid-cols-1 items-center gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <div className="lg:pr-8">
             <div className="lg:max-w-xl">
-              <h2 className="text-primary text-base font-semibold">
+              <h2 className="font-semibold text-base text-primary">
                 {t("eyebrow")}
               </h2>
 
-              <p className="text-foreground mt-2 text-4xl font-semibold tracking-tight text-pretty sm:text-5xl">
+              <p className="mt-2 text-pretty font-semibold text-4xl text-foreground tracking-tight sm:text-5xl">
                 {t("title")}
               </p>
 
-              <p className="text-muted-foreground mt-6 text-lg/8">
+              <p className="mt-6 text-lg/8 text-muted-foreground">
                 {t("subtitle")}
               </p>
 
-              <dl className="text-muted-foreground mt-10 max-w-xl space-y-8 text-base/7 lg:max-w-none">
+              <dl className="mt-10 max-w-xl space-y-8 text-base/7 text-muted-foreground lg:max-w-none">
                 {features.map((feature, index) => {
                   const Icon = featureIcons[index];
 
@@ -43,10 +48,10 @@ export function Description() {
 
                   return (
                     <div className="relative pl-9" key={feature.title}>
-                      <dt className="text-foreground inline font-semibold">
+                      <dt className="inline font-semibold text-foreground">
                         <Icon
                           aria-hidden="true"
-                          className="text-primary absolute top-1 left-1 size-5"
+                          className="absolute top-1 left-1 size-5 text-primary"
                         />
                         {feature.title}
                       </dt>{" "}

@@ -1,4 +1,4 @@
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { IconLayoutList } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -23,8 +23,8 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
           className="flex items-center gap-2 self-center font-medium"
           to="/"
         >
-          <div className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-md sm:size-6">
-            <GalleryVerticalEndIcon className="size-6 sm:size-4" />
+          <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground sm:size-6">
+            <IconLayoutList className="size-6 sm:size-4" />
           </div>
 
           <span className="hidden font-mono sm:block">
@@ -32,19 +32,19 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
           </span>
         </Link>
 
-        <nav className="flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2">
-          <Button asChild size="sm" variant="ghost">
-            <Link to="/pricing">{t("navLinks.pricing")}</Link>
+        <nav className="sm:-translate-x-1/2 sm:-translate-y-1/2 flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2">
+          <Button render={<Link to="/pricing" />} size="sm" variant="ghost">
+            {t("navLinks.pricing")}
           </Button>
         </nav>
 
         <div className="flex gap-2">
-          <Button asChild size="sm" variant="outline">
-            <Link to="/login">{t("login")}</Link>
+          <Button render={<Link to="/login" />} size="sm" variant="outline">
+            {t("login")}
           </Button>
 
-          <Button asChild size="sm">
-            <Link to="/login">{t("register")}</Link>
+          <Button render={<Link to="/login" />} size="sm">
+            {t("register")}
           </Button>
         </div>
       </div>

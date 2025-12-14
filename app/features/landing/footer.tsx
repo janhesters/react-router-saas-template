@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/useAnchorContent: anchor receives props */
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
@@ -13,45 +14,41 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
 
   return (
     <footer
-      className={cn("border-t md:h-[var(--header-height)]", className)}
+      className={cn("border-t md:h-(--header-height)", className)}
       {...props}
     >
       <div className="container mx-auto flex h-full flex-col items-center justify-between gap-4 px-4 py-4 sm:flex-row md:py-0">
         <div className="flex items-center gap-2">
           <Button
             aria-label={t("social.github")}
-            asChild
             className="size-8"
+            render={
+              <a href="https://github.com/janhesters/react-router-saas-template" />
+            }
             size="icon"
             variant="outline"
           >
-            <a href="https://github.com/janhesters/react-router-saas-template">
-              <FaGithub />
-            </a>
+            <FaGithub />
           </Button>
 
           <Button
             aria-label={t("social.twitter")}
-            asChild
             className="size-8"
+            render={<a href="https://x.com/janhesters" />}
             size="icon"
             variant="outline"
           >
-            <a href="https://x.com/janhesters">
-              <FaXTwitter />
-            </a>
+            <FaXTwitter />
           </Button>
 
           <Button
             aria-label={t("social.linkedin")}
-            asChild
             className="size-8"
+            render={<a href="https://www.linkedin.com/in/jan-hesters/" />}
             size="icon"
             variant="outline"
           >
-            <a href="https://www.linkedin.com/in/jan-hesters/">
-              <FaLinkedin />
-            </a>
+            <FaLinkedin />
           </Button>
 
           <div className="h-6">
@@ -66,7 +63,7 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
             {t("madeWithLove")}
             <a
               aria-label={t("reactsquad")}
-              className="text-foreground h-6 w-auto"
+              className="h-6 w-auto text-foreground"
               href="https://reactsquad.io"
             >
               <ReactsquadLogoIcon />

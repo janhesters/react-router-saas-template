@@ -1,5 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: Checks ensure for null values */
-import { CheckIcon } from "lucide-react";
+import { IconCheck } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -161,7 +161,7 @@ export function CreateSubscriptionModalContent({
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -190,7 +190,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -207,7 +207,7 @@ export function CreateSubscriptionModalContent({
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -237,7 +237,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -246,7 +246,7 @@ export function CreateSubscriptionModalContent({
                 </TierCard>
 
                 {/* High Tier */}
-                <TierCard className="ring-primary -mt-1.5 ring-2">
+                <TierCard className="-mt-1.5 ring-2 ring-primary">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
@@ -257,7 +257,7 @@ export function CreateSubscriptionModalContent({
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -287,7 +287,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -311,7 +311,7 @@ export function CreateSubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -344,7 +344,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("low").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -361,7 +361,7 @@ export function CreateSubscriptionModalContent({
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -393,7 +393,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("mid").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -402,7 +402,7 @@ export function CreateSubscriptionModalContent({
                 </TierCard>
 
                 {/* High Tier */}
-                <TierCard className="ring-primary -mt-1.5 ring-2">
+                <TierCard className="-mt-1.5 ring-2 ring-primary">
                   <TierCardHeader>
                     <TierCardTitle className="text-primary">
                       {t("plans.high.title")}
@@ -413,7 +413,7 @@ export function CreateSubscriptionModalContent({
                       <Trans
                         components={{
                           1: (
-                            <span className="text-muted-foreground text-sm font-normal" />
+                            <span className="font-normal text-muted-foreground text-sm" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -445,7 +445,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("high").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
@@ -464,10 +464,11 @@ export function CreateSubscriptionModalContent({
                       {t("plans.enterprise.description")}
                     </TierCardDescription>
 
-                    <Button asChild className="w-full">
-                      <Link to={href("/contact-sales")}>
-                        {t("plans.enterprise.cta")}
-                      </Link>
+                    <Button
+                      className="w-full"
+                      render={<Link to={href("/contact-sales")} />}
+                    >
+                      {t("plans.enterprise.cta")}
                     </Button>
                   </TierCardHeader>
 
@@ -481,7 +482,7 @@ export function CreateSubscriptionModalContent({
                     <FeaturesList>
                       {getFeatures("enterprise").map((feature) => (
                         <FeatureListItem key={feature}>
-                          <CheckIcon />
+                          <IconCheck />
                           {feature}
                         </FeatureListItem>
                       ))}
