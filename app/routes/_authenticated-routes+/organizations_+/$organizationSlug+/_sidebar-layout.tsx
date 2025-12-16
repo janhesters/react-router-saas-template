@@ -9,6 +9,7 @@ import { getCreateSubscriptionModalProps } from "~/features/billing/billing-help
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
 import { mapInitialNotificationsDataToNotificationButtonProps } from "~/features/notifications/notifications-helpers.server";
 import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from "~/features/notifications/notifications-model.server";
+import { AiAssistantSidebar } from "~/features/organizations/layout/ai-assistant-sidebar";
 import { AppHeader } from "~/features/organizations/layout/app-header";
 import { AppSidebar } from "~/features/organizations/layout/app-sidebar";
 import { findBreadcrumbs } from "~/features/organizations/layout/layout-helpers";
@@ -67,6 +68,27 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   });
   const defaultSidebarOpen = getSidebarState(request);
 
+  // Dummy AI assistant chat data - in production, this would come from database
+  const aiAssistantChatMessages = [
+    {
+      id: 1,
+      type: "ai" as const,
+      message: "Hello! I'm your AI Assistant. How can I help you today?",
+    },
+    {
+      id: 2,
+      type: "user" as const,
+      message:
+        "Show me candidates for the Senior Software Engineer role.",
+    },
+    {
+      id: 3,
+      type: "ai" as const,
+      message:
+        "I've filtered the pipeline for Senior Software Engineer candidates. Alice Johnson is currently in the 'Applied' stage. Would you like me to summarize her profile?",
+    },
+  ];
+
   return data(
     {
       defaultSidebarOpen,
@@ -81,6 +103,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
         user,
       }),
       ...getCreateSubscriptionModalProps(organization, products),
+      aiAssistantChatMessages,
     },
     { headers },
   );
@@ -96,6 +119,7 @@ export default function OrganizationLayoutRoute({
   matches,
 }: Route.ComponentProps) {
   const {
+    aiAssistantChatMessages,
     billingSidebarCardProps,
     createSubscriptionModalProps,
     defaultSidebarOpen,
@@ -128,7 +152,12 @@ export default function OrganizationLayoutRoute({
           notificationsButtonProps={notificationButtonProps}
         />
 
-        <Outlet />
+        <div className="flex flex-1 min-h-0 h-full">
+          <div className="flex-1 min-w-0 overflow-auto">
+            <Outlet />
+          </div>
+          <AiAssistantSidebar chatMessages={aiAssistantChatMessages} />
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
