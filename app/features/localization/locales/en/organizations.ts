@@ -67,6 +67,7 @@ export default {
         app: {
           analytics: "Analytics",
           dashboard: "Dashboard",
+          jobsAndClients: "Jobs and Clients",
           projects: {
             active: "Active",
             all: "All",

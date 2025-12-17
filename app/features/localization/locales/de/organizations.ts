@@ -71,6 +71,7 @@ export default {
         app: {
           analytics: "Analytik",
           dashboard: "Dashboard",
+          jobsAndClients: "Jobs und Kunden",
           projects: {
             active: "Aktiv",
             all: "Alle",
