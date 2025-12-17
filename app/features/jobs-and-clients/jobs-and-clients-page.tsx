@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CalendarView } from "./components/calendar-view";
 import { DailyAgenda } from "./components/daily-agenda";
 import { HiringGoalsCard } from "./components/hiring-goals-card";
+import { QuickStatsCard } from "./components/quick-stats-card";
 import { UrgentFunnelUpdates } from "./components/urgent-funnel-updates";
 import {
   mockAgendaItems,
@@ -12,9 +13,9 @@ import {
   mockContextualActions,
   mockFunnelUpdates,
   mockHiringGoals,
+  mockPipelineStats,
 } from "./mock-data";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
@@ -27,16 +28,6 @@ import { cn } from "~/lib/utils";
 /**
  * Placeholder components - will be replaced with actual implementations
  */
-function QuickStatsPlaceholder() {
-  return (
-    <Card className="flex h-[200px] flex-col items-center justify-center">
-      <CardContent>
-        <p className="text-muted-foreground text-sm">Quick Stats</p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function AIAssistantPanelPlaceholder() {
   return (
     <div className="flex h-full flex-col">
@@ -82,7 +73,7 @@ export function JobsAndClientsPage() {
         {/* Bottom Row: Hiring Goals + Quick Stats */}
         <div className="grid gap-4 md:grid-cols-2">
           <HiringGoalsCard goals={mockHiringGoals} />
-          <QuickStatsPlaceholder />
+          <QuickStatsCard stats={mockPipelineStats} />
         </div>
       </div>
 
