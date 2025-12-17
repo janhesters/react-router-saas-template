@@ -9,7 +9,7 @@ import { getCreateSubscriptionModalProps } from "~/features/billing/billing-help
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
 import { mapInitialNotificationsDataToNotificationButtonProps } from "~/features/notifications/notifications-helpers.server";
 import { retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById } from "~/features/notifications/notifications-model.server";
-import { AiAssistantSidebar } from "~/features/organizations/layout/ai-assistant-sidebar";
+import { AiSidebar } from "~/features/ai-sidebar/ai-sidebar";
 import { AppHeader } from "~/features/organizations/layout/app-header";
 import { AppSidebar } from "~/features/organizations/layout/app-sidebar";
 import { findBreadcrumbs } from "~/features/organizations/layout/layout-helpers";
@@ -156,7 +156,7 @@ export default function OrganizationLayoutRoute({
           <div className="flex-1 min-w-0 overflow-auto">
             <Outlet />
           </div>
-          <AiAssistantSidebar chatMessages={aiAssistantChatMessages} />
+          <AiSidebar chatMessages={aiAssistantChatMessages} />
         </div>
       </SidebarInset>
     </SidebarProvider>
