@@ -1,6 +1,7 @@
 import { MessageSquare } from "lucide-react";
 import { useState } from "react";
 
+import { AIAssistantPanel } from "./components/ai-assistant-panel";
 import { CalendarView } from "./components/calendar-view";
 import { DailyAgenda } from "./components/daily-agenda";
 import { HiringGoalsCard } from "./components/hiring-goals-card";
@@ -16,7 +17,6 @@ import {
   mockPipelineStats,
 } from "./mock-data";
 import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -25,40 +25,15 @@ import {
 } from "~/components/ui/sheet";
 import { cn } from "~/lib/utils";
 
-/**
- * Placeholder components - will be replaced with actual implementations
- */
-function AIAssistantPanelPlaceholder() {
-  return (
-    <div className="flex h-full flex-col">
-      <div className="p-4">
-        <h2 className="font-mono text-lg font-semibold">AI Assistant</h2>
-      </div>
-      <Separator />
-      <div className="flex-1 p-4">
-        <p className="text-muted-foreground text-sm">
-          {mockAIMessages.length} messages
-        </p>
-      </div>
-      <Separator />
-      <div className="p-4">
-        <p className="text-muted-foreground text-sm">
-          {mockContextualActions.length} actions
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export function JobsAndClientsPage() {
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
 
   return (
     <div className="flex flex-1">
-      {/* Main Content Area */}
-      <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
+      {/* Main Content Area - flexible width, with right padding for AI panel on lg screens */}
+      <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6 lg:mr-72">
         {/* Top Row: Urgent Funnel Updates + Daily Agenda */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
           <UrgentFunnelUpdates
             onActionClick={(update) => console.log("Action clicked:", update)}
             onUpdateClick={(update) => console.log("Update clicked:", update)}
@@ -67,7 +42,7 @@ export function JobsAndClientsPage() {
           <DailyAgenda items={mockAgendaItems} />
         </div>
 
-        {/* Calendar View */}
+        {/* Calendar View - full width */}
         <CalendarView events={mockCalendarEvents} />
 
         {/* Bottom Row: Hiring Goals + Quick Stats */}
@@ -77,15 +52,18 @@ export function JobsAndClientsPage() {
         </div>
       </div>
 
-      {/* AI Assistant Panel - Desktop (always visible) */}
-      <aside className="hidden w-80 shrink-0 border-l bg-background xl:block">
-        <AIAssistantPanelPlaceholder />
+      {/* AI Assistant Panel - Desktop: fixed position on the right, full height minus header */}
+      <aside className="fixed top-[var(--header-height)] right-0 bottom-0 hidden w-72 border-l bg-background lg:flex lg:flex-col">
+        <AIAssistantPanel
+          contextualActions={mockContextualActions}
+          messages={mockAIMessages}
+        />
       </aside>
 
       {/* AI Assistant Panel - Mobile FAB */}
       <Button
         className={cn(
-          "fixed right-4 bottom-4 z-40 size-14 rounded-full shadow-lg xl:hidden",
+          "fixed right-4 bottom-4 z-40 size-14 rounded-full shadow-lg lg:hidden",
         )}
         onClick={() => setIsAIPanelOpen(true)}
         size="icon-lg"
@@ -100,7 +78,10 @@ export function JobsAndClientsPage() {
           <SheetHeader className="sr-only">
             <SheetTitle>AI Assistant</SheetTitle>
           </SheetHeader>
-          <AIAssistantPanelPlaceholder />
+          <AIAssistantPanel
+            contextualActions={mockContextualActions}
+            messages={mockAIMessages}
+          />
         </SheetContent>
       </Sheet>
     </div>
