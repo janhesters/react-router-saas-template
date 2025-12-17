@@ -61,6 +61,10 @@ export default {
     breadcrumb: "Hilfe erhalten",
     pageTitle: "Hilfe erhalten",
   },
+  jobsAndClients: {
+    breadcrumb: "Jobs und Kunden",
+    pageTitle: "Jobs und Kunden",
+  },
   layout: {
     appSidebar: {
       nav: {
