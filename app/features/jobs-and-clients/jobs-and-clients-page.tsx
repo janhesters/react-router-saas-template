@@ -1,8 +1,153 @@
-export function JobsAndClientsPage() {
+import { MessageSquare } from "lucide-react";
+import { useState } from "react";
+
+import { UrgentFunnelUpdates } from "./components/urgent-funnel-updates";
+import {
+  mockAgendaItems,
+  mockAIMessages,
+  mockCalendarEvents,
+  mockContextualActions,
+  mockFunnelUpdates,
+} from "./mock-data";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Separator } from "~/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "~/components/ui/sheet";
+import { cn } from "~/lib/utils";
+
+/**
+ * Placeholder components - will be replaced with actual implementations
+ */
+function DailyAgendaPlaceholder() {
   return (
-    <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
-      <div className="text-2xl font-bold">Jobs and Clients</div>
-      <p className="text-muted-foreground">Coming soon...</p>
+    <Card className="h-full">
+      <CardHeader>
+        <CardTitle className="font-mono text-lg">Daily Agenda</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground text-sm">
+          Placeholder - {mockAgendaItems.length} items
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function CalendarViewPlaceholder() {
+  return (
+    <Card className="h-[400px]">
+      <CardHeader>
+        <CardTitle className="font-mono text-lg">Calendar</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-muted-foreground text-sm">
+          Placeholder - {mockCalendarEvents.length} events
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HiringGoalsPlaceholder() {
+  return (
+    <Card className="flex h-[200px] flex-col items-center justify-center">
+      <CardContent>
+        <p className="text-muted-foreground text-sm">Hiring Goals</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function QuickStatsPlaceholder() {
+  return (
+    <Card className="flex h-[200px] flex-col items-center justify-center">
+      <CardContent>
+        <p className="text-muted-foreground text-sm">Quick Stats</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function AIAssistantPanelPlaceholder() {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="p-4">
+        <h2 className="font-mono text-lg font-semibold">AI Assistant</h2>
+      </div>
+      <Separator />
+      <div className="flex-1 p-4">
+        <p className="text-muted-foreground text-sm">
+          {mockAIMessages.length} messages
+        </p>
+      </div>
+      <Separator />
+      <div className="p-4">
+        <p className="text-muted-foreground text-sm">
+          {mockContextualActions.length} actions
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export function JobsAndClientsPage() {
+  const [isAIPanelOpen, setIsAIPanelOpen] = useState(false);
+
+  return (
+    <div className="flex flex-1">
+      {/* Main Content Area */}
+      <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
+        {/* Top Row: Urgent Funnel Updates + Daily Agenda */}
+        <div className="grid gap-4 lg:grid-cols-2">
+          <UrgentFunnelUpdates
+            onActionClick={(update) => console.log("Action clicked:", update)}
+            onUpdateClick={(update) => console.log("Update clicked:", update)}
+            updates={mockFunnelUpdates}
+          />
+          <DailyAgendaPlaceholder />
+        </div>
+
+        {/* Calendar View */}
+        <CalendarViewPlaceholder />
+
+        {/* Bottom Row: Hiring Goals + Quick Stats */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <HiringGoalsPlaceholder />
+          <QuickStatsPlaceholder />
+        </div>
+      </div>
+
+      {/* AI Assistant Panel - Desktop (always visible) */}
+      <aside className="hidden w-80 shrink-0 border-l bg-background xl:block">
+        <AIAssistantPanelPlaceholder />
+      </aside>
+
+      {/* AI Assistant Panel - Mobile FAB */}
+      <Button
+        className={cn(
+          "fixed right-4 bottom-4 z-40 size-14 rounded-full shadow-lg xl:hidden",
+        )}
+        onClick={() => setIsAIPanelOpen(true)}
+        size="icon-lg"
+      >
+        <MessageSquare className="size-6" />
+        <span className="sr-only">Open AI Assistant</span>
+      </Button>
+
+      {/* AI Assistant Panel - Mobile Sheet */}
+      <Sheet onOpenChange={setIsAIPanelOpen} open={isAIPanelOpen}>
+        <SheetContent className="w-full p-0 sm:max-w-md" side="right">
+          <SheetHeader className="sr-only">
+            <SheetTitle>AI Assistant</SheetTitle>
+          </SheetHeader>
+          <AIAssistantPanelPlaceholder />
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
