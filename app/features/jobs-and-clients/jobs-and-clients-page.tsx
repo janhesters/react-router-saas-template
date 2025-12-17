@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { CalendarView } from "./components/calendar-view";
 import { DailyAgenda } from "./components/daily-agenda";
+import { HiringGoalsCard } from "./components/hiring-goals-card";
 import { UrgentFunnelUpdates } from "./components/urgent-funnel-updates";
 import {
   mockAgendaItems,
@@ -10,6 +11,7 @@ import {
   mockCalendarEvents,
   mockContextualActions,
   mockFunnelUpdates,
+  mockHiringGoals,
 } from "./mock-data";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
@@ -25,16 +27,6 @@ import { cn } from "~/lib/utils";
 /**
  * Placeholder components - will be replaced with actual implementations
  */
-function HiringGoalsPlaceholder() {
-  return (
-    <Card className="flex h-[200px] flex-col items-center justify-center">
-      <CardContent>
-        <p className="text-muted-foreground text-sm">Hiring Goals</p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function QuickStatsPlaceholder() {
   return (
     <Card className="flex h-[200px] flex-col items-center justify-center">
@@ -89,7 +81,7 @@ export function JobsAndClientsPage() {
 
         {/* Bottom Row: Hiring Goals + Quick Stats */}
         <div className="grid gap-4 md:grid-cols-2">
-          <HiringGoalsPlaceholder />
+          <HiringGoalsCard goals={mockHiringGoals} />
           <QuickStatsPlaceholder />
         </div>
       </div>
