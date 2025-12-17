@@ -1,4 +1,5 @@
-import { Bell } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 import type { FunnelUpdate } from "../types";
 import { Badge } from "~/components/ui/badge";
@@ -23,55 +24,126 @@ export function UrgentFunnelUpdates({
   onUpdateClick,
   onActionClick,
 }: UrgentFunnelUpdatesProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const handlePrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? updates.length - 1 : prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev === updates.length - 1 ? 0 : prev + 1));
+  };
+
+  const currentUpdate = updates[currentIndex];
+
+  if (!currentUpdate) {
+    return (
+      <Card className="flex h-64 flex-col">
+        <CardHeader className="pb-3">
+          <CardTitle className="font-mono text-lg tracking-tight">
+            Urgent Funnel Updates
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-1 items-center justify-center">
+          <p className="text-muted-foreground text-sm">No updates available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="flex h-64 flex-col">
+      <CardHeader className="pb-3">
         <CardTitle className="font-mono text-lg tracking-tight">
           Urgent Funnel Updates
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {updates.map((update) => (
+      <CardContent className="flex flex-1 flex-col">
+        {/* Update Card */}
+        <Button
+          className={cn(
+            "flex h-auto flex-1 flex-col items-stretch gap-2 rounded-lg border border-border bg-transparent p-3 text-left transition-colors hover:bg-muted/50",
+          )}
+          onClick={() => onUpdateClick?.(currentUpdate)}
+          variant="ghost"
+        >
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+              <Bell className="size-4 text-muted-foreground" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <div className="font-medium text-sm leading-tight">
+                {currentUpdate.title}
+              </div>
+              <div className="font-mono text-muted-foreground text-xs leading-relaxed whitespace-normal">
+                {currentUpdate.description}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pl-11">
+            <Badge
+              className={cn(
+                "capitalize",
+                priorityStyles[currentUpdate.priority],
+              )}
+            >
+              {currentUpdate.priority}
+            </Badge>
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                onActionClick?.(currentUpdate);
+              }}
+              size="sm"
+              variant="outline"
+            >
+              {currentUpdate.actionLabel}
+            </Button>
+          </div>
+        </Button>
+
+        {/* Carousel Navigation */}
+        <div className="mt-3 flex items-center justify-between">
           <Button
-            className={cn(
-              "flex h-auto flex-col items-stretch gap-2 rounded-lg border border-border bg-transparent p-3 text-left transition-colors hover:bg-muted/50",
-            )}
-            key={update.id}
-            onClick={() => onUpdateClick?.(update)}
+            className="size-8"
+            disabled={updates.length <= 1}
+            onClick={handlePrevious}
+            size="icon"
             variant="ghost"
           >
-            <div className="flex items-start gap-3">
-              <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                <Bell className="size-4 text-muted-foreground" />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <div className="font-medium text-sm leading-tight">
-                  {update.title}
-                </div>
-                <div className="font-mono text-muted-foreground text-xs leading-relaxed whitespace-normal">
-                  {update.description}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 pl-11">
-              <Badge
-                className={cn("capitalize", priorityStyles[update.priority])}
-              >
-                {update.priority}
-              </Badge>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onActionClick?.(update);
-                }}
-                size="sm"
-                variant="outline"
-              >
-                {update.actionLabel}
-              </Button>
-            </div>
+            <ChevronLeft className="size-4" />
+            <span className="sr-only">Previous update</span>
           </Button>
-        ))}
+
+          {/* Dot Indicators */}
+          <div className="flex items-center gap-1.5">
+            {updates.map((update, index) => (
+              <button
+                aria-label={`Go to update ${index + 1}`}
+                className={cn(
+                  "size-2 rounded-full transition-colors",
+                  index === currentIndex
+                    ? "bg-primary"
+                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50",
+                )}
+                key={update.id}
+                onClick={() => setCurrentIndex(index)}
+                type="button"
+              />
+            ))}
+          </div>
+
+          <Button
+            className="size-8"
+            disabled={updates.length <= 1}
+            onClick={handleNext}
+            size="icon"
+            variant="ghost"
+          >
+            <ChevronRight className="size-4" />
+            <span className="sr-only">Next update</span>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
