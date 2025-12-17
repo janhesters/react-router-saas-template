@@ -1,6 +1,8 @@
 import { MessageSquare } from "lucide-react";
 import { useState } from "react";
 
+import { CalendarView } from "./components/calendar-view";
+import { DailyAgenda } from "./components/daily-agenda";
 import { UrgentFunnelUpdates } from "./components/urgent-funnel-updates";
 import {
   mockAgendaItems,
@@ -10,7 +12,7 @@ import {
   mockFunnelUpdates,
 } from "./mock-data";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Card, CardContent } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
@@ -23,36 +25,6 @@ import { cn } from "~/lib/utils";
 /**
  * Placeholder components - will be replaced with actual implementations
  */
-function DailyAgendaPlaceholder() {
-  return (
-    <Card className="h-full">
-      <CardHeader>
-        <CardTitle className="font-mono text-lg">Daily Agenda</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground text-sm">
-          Placeholder - {mockAgendaItems.length} items
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
-function CalendarViewPlaceholder() {
-  return (
-    <Card className="h-[400px]">
-      <CardHeader>
-        <CardTitle className="font-mono text-lg">Calendar</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground text-sm">
-          Placeholder - {mockCalendarEvents.length} events
-        </p>
-      </CardContent>
-    </Card>
-  );
-}
-
 function HiringGoalsPlaceholder() {
   return (
     <Card className="flex h-[200px] flex-col items-center justify-center">
@@ -109,11 +81,11 @@ export function JobsAndClientsPage() {
             onUpdateClick={(update) => console.log("Update clicked:", update)}
             updates={mockFunnelUpdates}
           />
-          <DailyAgendaPlaceholder />
+          <DailyAgenda items={mockAgendaItems} />
         </div>
 
         {/* Calendar View */}
-        <CalendarViewPlaceholder />
+        <CalendarView events={mockCalendarEvents} />
 
         {/* Bottom Row: Hiring Goals + Quick Stats */}
         <div className="grid gap-4 md:grid-cols-2">
