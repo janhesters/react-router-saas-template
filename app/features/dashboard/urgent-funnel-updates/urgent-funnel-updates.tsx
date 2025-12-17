@@ -28,7 +28,7 @@ export function UrgentFunnelUpdates({ updates }: UrgentFunnelUpdatesProps) {
             <div className="flex flex-col gap-2 relative">
               <BellRing className="size-6 absolute top-0 left-0" />
               <h3 className="text-lg font-bold pl-8">{update.title}</h3>
-              <p className="text-sm text-muted">{update.description}</p>
+              <p className="text-sm text-foreground">{update.description}</p>
             </div>
             <div className="flex flex-wrap gap-2 mt-4">
               <Badge className="bg-foreground/80 text-background rounded-full px-4 py-1">
