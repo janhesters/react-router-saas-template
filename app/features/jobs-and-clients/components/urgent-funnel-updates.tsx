@@ -4,8 +4,14 @@ import { useState } from "react";
 import type { FunnelUpdate } from "../types";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { cn } from "~/lib/utils";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { cn, truncateText } from "~/lib/utils";
 
 interface UrgentFunnelUpdatesProps {
   updates: FunnelUpdate[];
@@ -38,9 +44,9 @@ export function UrgentFunnelUpdates({
 
   if (!currentUpdate) {
     return (
-      <Card className="flex h-64 flex-col">
-        <CardHeader className="pb-3">
-          <CardTitle className="font-mono text-lg tracking-tight">
+      <Card className="h-64" size="sm">
+        <CardHeader>
+          <CardTitle className="font-mono tracking-tight">
             Urgent Funnel Updates
           </CardTitle>
         </CardHeader>
@@ -52,35 +58,35 @@ export function UrgentFunnelUpdates({
   }
 
   return (
-    <Card className="flex h-64 flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="font-mono text-lg tracking-tight">
+    <Card className="h-64" size="sm">
+      <CardHeader>
+        <CardTitle className="font-mono tracking-tight">
           Urgent Funnel Updates
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col">
-        {/* Update Card */}
+
+      <CardContent className="flex-1">
         <Button
           className={cn(
-            "flex h-auto flex-1 flex-col items-stretch gap-2 rounded-lg border border-border bg-transparent p-3 text-left transition-colors hover:bg-muted/50",
+            "flex h-full w-full flex-col items-stretch justify-start gap-3 rounded-lg border border-border bg-transparent p-3 text-left transition-colors hover:bg-muted/50",
           )}
           onClick={() => onUpdateClick?.(currentUpdate)}
           variant="ghost"
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
               <Bell className="size-4 text-muted-foreground" />
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <div className="font-medium text-sm leading-tight">
+              <div className="font-medium text-sm leading-snug">
                 {currentUpdate.title}
               </div>
-              <div className="font-mono text-muted-foreground text-xs leading-relaxed whitespace-normal">
-                {currentUpdate.description}
+              <div className="text-wrap font-mono text-muted-foreground text-xs leading-relaxed">
+                {truncateText(currentUpdate.description, 70)}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 pl-11">
+          <div className="flex items-center gap-2">
             <Badge
               className={cn(
                 "capitalize",
@@ -90,6 +96,7 @@ export function UrgentFunnelUpdates({
               {currentUpdate.priority}
             </Badge>
             <Button
+              className="h-7 text-xs"
               onClick={(e) => {
                 e.stopPropagation();
                 onActionClick?.(currentUpdate);
@@ -101,50 +108,46 @@ export function UrgentFunnelUpdates({
             </Button>
           </div>
         </Button>
-
-        {/* Carousel Navigation */}
-        <div className="mt-3 flex items-center justify-between">
-          <Button
-            className="size-8"
-            disabled={updates.length <= 1}
-            onClick={handlePrevious}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronLeft className="size-4" />
-            <span className="sr-only">Previous update</span>
-          </Button>
-
-          {/* Dot Indicators */}
-          <div className="flex items-center gap-1.5">
-            {updates.map((update, index) => (
-              <button
-                aria-label={`Go to update ${index + 1}`}
-                className={cn(
-                  "size-2 rounded-full transition-colors",
-                  index === currentIndex
-                    ? "bg-primary"
-                    : "bg-muted-foreground/30 hover:bg-muted-foreground/50",
-                )}
-                key={update.id}
-                onClick={() => setCurrentIndex(index)}
-                type="button"
-              />
-            ))}
-          </div>
-
-          <Button
-            className="size-8"
-            disabled={updates.length <= 1}
-            onClick={handleNext}
-            size="icon"
-            variant="ghost"
-          >
-            <ChevronRight className="size-4" />
-            <span className="sr-only">Next update</span>
-          </Button>
-        </div>
       </CardContent>
+
+      <CardFooter className="justify-between">
+        <Button
+          className="size-8"
+          onClick={handlePrevious}
+          size="icon"
+          variant="ghost"
+        >
+          <ChevronLeft className="size-4" />
+          <span className="sr-only">Previous update</span>
+        </Button>
+
+        <div className="flex items-center gap-2">
+          {updates.map((update, index) => (
+            <button
+              aria-label={`Go to update ${index + 1}`}
+              className={cn(
+                "size-2 rounded-full transition-colors",
+                index === currentIndex
+                  ? "bg-primary"
+                  : "bg-muted-foreground/30 hover:bg-muted-foreground/50",
+              )}
+              key={update.id}
+              onClick={() => setCurrentIndex(index)}
+              type="button"
+            />
+          ))}
+        </div>
+
+        <Button
+          className="size-8"
+          onClick={handleNext}
+          size="icon"
+          variant="ghost"
+        >
+          <ChevronRight className="size-4" />
+          <span className="sr-only">Next update</span>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }

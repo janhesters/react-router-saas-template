@@ -2,7 +2,13 @@ import { Clock } from "lucide-react";
 import { useState } from "react";
 
 import type { AgendaItem } from "../types";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 import { Checkbox } from "~/components/ui/checkbox";
 import { cn } from "~/lib/utils";
 
@@ -30,29 +36,28 @@ export function DailyAgenda({ items: initialItems }: DailyAgendaProps) {
   };
 
   return (
-    <Card className="flex h-64 flex-col">
-      <CardHeader className="pb-2">
-        <div className="flex items-center gap-2">
+    <Card className="h-64" size="sm">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 font-mono tracking-tight">
           <Clock className="size-4 text-muted-foreground" />
-          <CardTitle className="font-mono text-lg tracking-tight">
-            Daily Agenda
-          </CardTitle>
-        </div>
-        <p className="text-muted-foreground text-xs">{formatTodayDate()}</p>
+          Daily Agenda
+        </CardTitle>
+        <CardDescription>{formatTodayDate()}</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 overflow-y-auto py-0">
-        <div className="flex flex-col gap-1.5">
+
+      <CardContent className="flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-3">
           {items.map((item) => (
-            <div className="flex items-center gap-2 py-1" key={item.id}>
+            <div className="flex items-center gap-3" key={item.id}>
               <Checkbox
                 checked={item.completed}
-                className="size-3.5"
+                className="size-4"
                 id={item.id}
                 onCheckedChange={() => handleToggle(item.id)}
               />
               <label
                 className={cn(
-                  "cursor-pointer text-xs leading-tight",
+                  "cursor-pointer text-sm leading-snug",
                   item.completed && "text-muted-foreground line-through",
                 )}
                 htmlFor={item.id}
