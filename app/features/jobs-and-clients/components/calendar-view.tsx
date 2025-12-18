@@ -51,15 +51,15 @@ export function CalendarView({ events }: CalendarViewProps) {
   const today = new Date();
 
   return (
-    <Card className="h-[450px]">
-      <CardHeader className="pb-2">
-        <CardTitle className="font-mono text-lg tracking-tight">
+    <Card className="h-[400px]" size="sm">
+      <CardHeader>
+        <CardTitle className="font-mono tracking-tight">
           Today&apos;s Schedule
         </CardTitle>
       </CardHeader>
-      <CardContent className="h-[380px]">
+      <CardContent className="flex-1 overflow-hidden">
         <Calendar
-          className="rbc-calendar-custom"
+          className="rbc-calendar-custom h-full"
           components={{
             event: EventComponent,
           }}

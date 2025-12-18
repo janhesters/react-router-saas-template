@@ -10,14 +10,12 @@ interface HiringGoalsCardProps {
 
 export function HiringGoalsCard({ goals }: HiringGoalsCardProps) {
   return (
-    <Card className="h-full">
+    <Card className="h-full" size="sm">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Target className="size-5 text-muted-foreground" />
-          <CardTitle className="font-mono text-lg tracking-tight">
-            Hiring Goals
-          </CardTitle>
-        </div>
+        <CardTitle className="flex items-center gap-2 font-mono tracking-tight">
+          <Target className="size-4 text-muted-foreground" />
+          Hiring Goals
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {goals.map((goal) => {

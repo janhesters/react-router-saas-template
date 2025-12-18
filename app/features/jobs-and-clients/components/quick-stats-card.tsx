@@ -10,14 +10,12 @@ interface QuickStatsCardProps {
 
 export function QuickStatsCard({ stats }: QuickStatsCardProps) {
   return (
-    <Card className="h-full">
+    <Card className="h-full" size="sm">
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <BarChart3 className="size-5 text-muted-foreground" />
-          <CardTitle className="font-mono text-lg tracking-tight">
-            Pipeline Overview
-          </CardTitle>
-        </div>
+        <CardTitle className="flex items-center gap-2 font-mono tracking-tight">
+          <BarChart3 className="size-4 text-muted-foreground" />
+          Pipeline Overview
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {stats.map((stat) => (
