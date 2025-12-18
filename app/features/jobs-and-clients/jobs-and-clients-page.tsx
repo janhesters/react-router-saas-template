@@ -1,4 +1,4 @@
-import { MessageSquare } from "lucide-react";
+import { Github, Linkedin, MessageSquare, Twitter } from "lucide-react";
 import { useState } from "react";
 
 import { AIAssistantPanel } from "./components/ai-assistant-panel";
@@ -50,6 +50,40 @@ export function JobsAndClientsPage() {
           <HiringGoalsCard goals={mockHiringGoals} />
           <QuickStatsCard stats={mockPipelineStats} />
         </div>
+
+        {/* Footer with Social Links */}
+        <footer className="mt-4 flex items-center justify-between border-t pt-4">
+          <div />
+          <div className="flex items-center gap-4">
+            <a
+              aria-label="LinkedIn"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              href="https://linkedin.com"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Linkedin className="size-5" />
+            </a>
+            <a
+              aria-label="Twitter"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              href="https://twitter.com"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Twitter className="size-5" />
+            </a>
+            <a
+              aria-label="GitHub"
+              className="text-muted-foreground transition-colors hover:text-foreground"
+              href="https://github.com"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              <Github className="size-5" />
+            </a>
+          </div>
+        </footer>
       </div>
 
       {/* AI Assistant Panel - Desktop: fixed position on the right, full height minus header */}
