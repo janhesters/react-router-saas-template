@@ -51,9 +51,8 @@ const eventTypeStyles: Record<string, { bg: string; border: string }> = {
 function EventComponent({ event }: EventProps<CalendarEvent>) {
   const startTime = event.start ? format(event.start, "hh:mm a") : "";
   const endTime = event.end ? format(event.end, "hh:mm a") : "";
-  const styles =
-    (eventTypeStyles[event.type || "meeting"] as any) ||
-    (eventTypeStyles.meeting as any);
+  const eventType = event.type || "meeting";
+  const styles = eventTypeStyles[eventType] || eventTypeStyles.meeting!;
 
   return (
     <div

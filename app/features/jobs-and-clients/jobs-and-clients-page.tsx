@@ -32,8 +32,8 @@ export function JobsAndClientsPage() {
     <div className="flex flex-1">
       {/* Main Content Area - flexible width, with right padding for AI panel on lg screens */}
       <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 md:p-6 lg:mr-72">
-        {/* Top Row: Urgent Funnel Updates + Daily Agenda */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Top Row: Urgent Funnel Updates + Daily Agenda - horizontal on tablet+, vertical on mobile */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <UrgentFunnelUpdates
             onActionClick={(update) => console.log("Action clicked:", update)}
             onUpdateClick={(update) => console.log("Update clicked:", update)}
@@ -45,8 +45,8 @@ export function JobsAndClientsPage() {
         {/* Calendar View - full width */}
         <CalendarView events={mockCalendarEvents} />
 
-        {/* Bottom Row: Hiring Goals + Quick Stats */}
-        <div className="grid gap-4 md:grid-cols-2">
+        {/* Bottom Row: Hiring Goals + Quick Stats - horizontal on tablet+, vertical on mobile */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <HiringGoalsCard goals={mockHiringGoals} />
           <QuickStatsCard stats={mockPipelineStats} />
         </div>
