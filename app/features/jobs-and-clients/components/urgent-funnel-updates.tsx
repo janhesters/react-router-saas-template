@@ -11,7 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 import { cn, truncateText } from "~/lib/utils";
+
+const DESCRIPTION_MAX_LENGTH = 70;
 
 interface UrgentFunnelUpdatesProps {
   updates: FunnelUpdate[];
@@ -81,9 +88,26 @@ export function UrgentFunnelUpdates({
               <div className="font-medium text-sm leading-snug">
                 {currentUpdate.title}
               </div>
-              <div className="text-wrap font-mono text-muted-foreground text-xs leading-relaxed">
-                {truncateText(currentUpdate.description, 70)}
-              </div>
+              {currentUpdate.description.length > DESCRIPTION_MAX_LENGTH ? (
+                <Tooltip>
+                  <TooltipTrigger
+                    className="cursor-help text-left text-wrap font-mono text-muted-foreground text-xs leading-relaxed"
+                    render={<span />}
+                  >
+                    {truncateText(
+                      currentUpdate.description,
+                      DESCRIPTION_MAX_LENGTH,
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">{currentUpdate.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <div className="text-wrap font-mono text-muted-foreground text-xs leading-relaxed">
+                  {currentUpdate.description}
+                </div>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-2">
