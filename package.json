@@ -109,7 +109,7 @@
   "scripts": {
     "build": "react-router build",
     "check": "biome check --write .",
-    "dev": "react-router dev",
+    "dev": "react-router dev --host",
     "dev:mocks": "cross-env MOCKS=true npm run dev",
     "lint": "biome ci --css-parse-tailwind-directives=true .",
     "prepare": "husky",
