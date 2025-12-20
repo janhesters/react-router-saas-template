@@ -1,3 +1,4 @@
+import { IconChevronDown } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
@@ -6,7 +7,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
-import { ChevronDownIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -91,25 +91,27 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
 
   return (
     <Popover onOpenChange={setOpen} open={open}>
-      <PopoverTrigger asChild>
-        <Button
-          className="w-36 justify-between"
-          // Playwright shouldn't try to click the button before it's hydrated
-          disabled={!hydrated}
-          size="sm"
-          variant="outline"
-        >
-          {/* @ts-expect-error - role is a dynamic string (member/admin/owner/deactivated) */}
-          {t(role)}
-
-          <ChevronDownIcon
-            aria-hidden="true"
-            className="text-muted-foreground size-4"
+      <PopoverTrigger
+        render={
+          <Button
+            className="w-36 justify-between"
+            // Playwright shouldn't try to click the button before it's hydrated
+            disabled={!hydrated}
+            size="sm"
+            variant="outline"
           />
-        </Button>
+        }
+      >
+        {/* @ts-expect-error - role is a dynamic string (member/admin/owner/deactivated) */}
+        {t(role)}
+
+        <IconChevronDown
+          aria-hidden="true"
+          className="size-4 text-muted-foreground"
+        />
       </PopoverTrigger>
 
-      <PopoverContent align="end" asChild className="p-0">
+      <PopoverContent align="end" className="p-0">
         <fetcher.Form
           method="POST"
           onSubmit={() => {
@@ -126,9 +128,9 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
               <CommandEmpty>{t("noRolesFound")}</CommandEmpty>
 
               <CommandGroup>
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
+                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
                   <button
-                    className="text-start"
+                    className="px-4 py-2 text-start"
                     name="role"
                     type="submit"
                     value={OrganizationMembershipRole.member}
@@ -141,9 +143,9 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   </button>
                 </CommandItem>
 
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
+                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
                   <button
-                    className="text-start"
+                    className="px-4 py-2 text-start"
                     name="role"
                     type="submit"
                     value={OrganizationMembershipRole.admin}
@@ -157,9 +159,9 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                 </CommandItem>
 
                 {currentUserIsOwner && (
-                  <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
+                  <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
                     <button
-                      className="text-start"
+                      className="px-4 py-2 text-start"
                       name="role"
                       type="submit"
                       value={OrganizationMembershipRole.owner}
@@ -175,9 +177,9 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
 
                 <CommandSeparator />
 
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start px-4 py-2">
+                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
                   <button
-                    className="text-start"
+                    className="px-4 py-2 text-start"
                     name="role"
                     type="submit"
                     value="deactivated"
@@ -222,7 +224,7 @@ const createColumns = ({
   {
     accessorKey: "name",
     cell: ({ row }) => {
-      return <div className="text-sm font-medium">{row.original.name}</div>;
+      return <div className="font-medium text-sm">{row.original.name}</div>;
     },
     header: t("nameHeader"),
   },
@@ -235,7 +237,7 @@ const createColumns = ({
     cell: ({ row }) => {
       return (
         <Badge
-          className="text-muted-foreground px-1.5 font-normal"
+          className="px-1.5 font-normal text-muted-foreground"
           variant="outline"
         >
           {row.original.status === "emailInvitePending" ? (
@@ -310,7 +312,7 @@ export function TeamMembersTable({
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader className="bg-muted sticky top-0 z-10 rounded-lg">
+          <TableHeader className="sticky top-0 z-10 rounded-lg bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -329,7 +331,7 @@ export function TeamMembersTable({
             ))}
           </TableHeader>
 
-          <TableBody className="**:data-[slot=table-cell]:font-light **:data-[slot=table-cell]:first:w-12 **:data-[slot=table-cell]:last:w-40">
+          <TableBody className="**:data-[slot=table-cell]:font-light **:data-[slot=table-cell]:last:w-40 **:data-[slot=table-cell]:first:w-12">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -362,7 +364,7 @@ export function TeamMembersTable({
 
       <div className="flex items-center justify-between px-4">
         <div className="hidden items-center gap-2 lg:flex">
-          <Label className="text-sm font-medium" htmlFor="rows-per-page">
+          <Label className="font-medium text-sm" htmlFor="rows-per-page">
             {t("pagination.rowsPerPage")}
           </Label>
 
@@ -379,7 +381,9 @@ export function TeamMembersTable({
               id="rows-per-page"
               size="sm"
             >
-              <SelectValue placeholder={table.getState().pagination.pageSize} />
+              <SelectValue
+                placeholder={String(table.getState().pagination.pageSize)}
+              />
             </SelectTrigger>
 
             <SelectContent side="top">
@@ -393,7 +397,7 @@ export function TeamMembersTable({
         </div>
 
         <div className="flex w-full items-center gap-8 lg:w-fit">
-          <div className="flex w-fit items-center justify-center text-sm font-medium">
+          <div className="flex w-fit items-center justify-center font-medium text-sm">
             {t("pagination.pageInfo", {
               current: table.getState().pagination.pageIndex + 1,
               total: table.getPageCount(),

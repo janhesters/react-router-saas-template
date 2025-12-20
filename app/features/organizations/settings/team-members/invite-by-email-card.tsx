@@ -75,7 +75,7 @@ export function EmailInviteCard({
             <div className="space-y-2">
               <div className="flex gap-4">
                 <Field
-                  className="min-w-0 flex-1 *:w-auto w-auto!"
+                  className="w-auto! min-w-0 flex-1 *:w-auto"
                   data-invalid={fields.email.ariaInvalid}
                 >
                   <FieldLabel htmlFor={fields.email.id}>
@@ -93,7 +93,7 @@ export function EmailInviteCard({
                 </Field>
 
                 <Field
-                  className="shrink-0 *:w-auto w-auto!"
+                  className="w-auto! shrink-0 *:w-auto"
                   data-invalid={fields.role.ariaInvalid}
                 >
                   <FieldLabel htmlFor={fields.role.id}>
@@ -112,7 +112,17 @@ export function EmailInviteCard({
                       disabled={!hydrated || disabled}
                       id={fields.role.id}
                     >
-                      <SelectValue placeholder={t("form.rolePlaceholder")} />
+                      <SelectValue placeholder={t("form.rolePlaceholder")}>
+                        {(value) => {
+                          if (value === OrganizationMembershipRole.member)
+                            return t("form.roleMember");
+                          if (value === OrganizationMembershipRole.admin)
+                            return t("form.roleAdmin");
+                          if (value === OrganizationMembershipRole.owner)
+                            return t("form.roleOwner");
+                          return null;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
 
                     <SelectContent align="end">

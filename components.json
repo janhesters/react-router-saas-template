@@ -7,10 +7,12 @@
     "ui": "~/components/ui",
     "utils": "~/lib/utils"
   },
-  "iconLibrary": "lucide",
+  "iconLibrary": "tabler",
+  "menuAccent": "subtle",
+  "menuColor": "default",
   "registries": {},
   "rsc": false,
-  "style": "new-york",
+  "style": "base-vega",
   "tailwind": {
     "baseColor": "neutral",
     "config": "",

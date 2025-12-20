@@ -49,10 +49,10 @@ function WarningHoverCard({
 }) {
   return (
     <HoverCard>
-      <HoverCardTrigger asChild>
-        <Button className="p-0 h-auto" type="button" variant="link">
-          {children}
-        </Button>
+      <HoverCardTrigger
+        render={<Button className="h-auto p-0" type="button" variant="link" />}
+      >
+        {children}
       </HoverCardTrigger>
       <HoverCardContent align="start" className="w-80">
         <p className="text-sm">{content}</p>
@@ -161,14 +161,14 @@ export function GeneralOrganizationSettings({
                 </FieldContent>
                 <div>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
-                    <Avatar className="size-16 md:size-24 rounded-lg">
+                    <Avatar className="size-16 rounded-lg after:rounded-lg md:size-24">
                       <AvatarUploadPreviewImage
                         alt={t("form.logoPreviewAlt")}
-                        className="size-16 md:size-24 rounded-lg object-cover"
+                        className="size-16 rounded-lg object-cover md:size-24"
                         src={organization.imageUrl ?? ""}
                       />
 
-                      <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border text-lg md:text-2xl">
+                      <AvatarFallback className="size-16 rounded-lg border border-border text-lg md:size-24 md:text-2xl dark:bg-input/30">
                         {organization.name.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

@@ -56,7 +56,7 @@ export default function OrganizationsRoute({
     <>
       <header className="flex h-(--header-height) items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
-          <h1 className="text-base font-medium">{t("pageTitle")}</h1>
+          <h1 className="font-medium text-base">{t("pageTitle")}</h1>
 
           <ThemeToggle />
         </div>

@@ -23,7 +23,7 @@ export function Logos() {
   const { t } = useTranslation("landing", { keyPrefix: "logos" });
   return (
     <section className="py-12 text-center sm:px-4">
-      <h2 className="text-muted-foreground text-center text-sm font-semibold">
+      <h2 className="text-center font-semibold text-muted-foreground text-sm">
         {t("title")}
       </h2>
 
@@ -113,8 +113,8 @@ export function Logos() {
         </Marquee>
 
         {/* Fading edges */}
-        <div className="from-background pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r to-transparent" />
-        <div className="from-background pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-linear-to-r from-background to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-linear-to-l from-background to-transparent" />
       </div>
     </section>
   );

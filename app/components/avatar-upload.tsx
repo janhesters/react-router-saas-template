@@ -1,4 +1,4 @@
-import type { Avatar as AvatarPrimitive } from "radix-ui";
+import type { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
 import type {
   ChangeEvent,
   ChangeEventHandler,

@@ -74,7 +74,7 @@ const Ray = ({
               rotate: [rotate - swing, rotate + swing, rotate - swing],
             }
       }
-      className="pointer-events-none absolute -top-[12%] left-(--ray-left) h-(--light-rays-length) w-(--ray-width) origin-top -translate-x-1/2 rounded-full bg-linear-to-b from-[color-mix(in_srgb,var(--light-rays-color)_70%,transparent)] to-transparent opacity-0 mix-blend-screen blur-(--light-rays-blur)"
+      className="-top-[12%] -translate-x-1/2 pointer-events-none absolute left-(--ray-left) h-(--light-rays-length) w-(--ray-width) origin-top rounded-full bg-linear-to-b from-[color-mix(in_srgb,var(--light-rays-color)_70%,transparent)] to-transparent opacity-0 mix-blend-screen blur-(--light-rays-blur)"
       initial={
         prefersReducedMotion
           ? { opacity: intensity * 0.3, rotate: rotate }

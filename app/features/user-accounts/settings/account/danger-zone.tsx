@@ -39,7 +39,7 @@ function Strong({
   className?: string;
 }) {
   return (
-    <span className={cn("text-foreground font-semibold", className)}>
+    <span className={cn("font-semibold text-foreground", className)}>
       {children}
     </span>
   );
@@ -62,10 +62,10 @@ function DeleteAccountDialogComponent({
 
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        <Button disabled={isDeleteBlocked} variant="destructive">
-          {t("deleteButton")}
-        </Button>
+      <DialogTrigger
+        render={<Button disabled={isDeleteBlocked} variant="destructive" />}
+      >
+        {t("deleteButton")}
       </DialogTrigger>
 
       <DialogContent>
@@ -92,15 +92,17 @@ function DeleteAccountDialogComponent({
         </DialogHeader>
 
         <DialogFooter className="sm:justify-end">
-          <DialogClose asChild>
-            <Button
-              className="mt-2 sm:mt-0"
-              disabled={isDeletingAccount}
-              type="button"
-              variant="secondary"
-            >
-              {t("cancel")}
-            </Button>
+          <DialogClose
+            render={
+              <Button
+                className="mt-2 sm:mt-0"
+                disabled={isDeletingAccount}
+                type="button"
+                variant="secondary"
+              />
+            }
+          >
+            {t("cancel")}
           </DialogClose>
 
           <Form method="POST" replace>

@@ -1,7 +1,7 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { UserIcon } from "lucide-react";
+import { IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
 
@@ -141,15 +141,15 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                 </FieldContent>
                 <div>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
-                    <Avatar className="size-16 md:size-24 rounded-lg">
+                    <Avatar className="size-16 rounded-lg after:rounded-lg md:size-24">
                       <AvatarUploadPreviewImage
                         alt={t("form.avatarPreviewAlt")}
-                        className="size-16 md:size-24 rounded-lg object-cover"
+                        className="size-16 rounded-lg object-cover md:size-24"
                         src={user.imageUrl ?? ""}
                       />
 
-                      <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
-                        <UserIcon className="size-8 md:size-12" />
+                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                        <IconUser className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>
 

@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react";
+import { IconCheck } from "@tabler/icons-react";
 import type { ComponentProps, MouseEventHandler } from "react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
@@ -151,7 +151,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -182,7 +182,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("low").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -199,7 +199,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -231,7 +231,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("mid").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -240,7 +240,7 @@ export function CancelOrModifySubscriptionModalContent({
                   </TierCard>
 
                   {/* High Tier */}
-                  <TierCard className="ring-primary -mt-1.5 ring-2">
+                  <TierCard className="-mt-1.5 ring-2 ring-primary">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
                         {t("plans.high.title")}
@@ -251,7 +251,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -283,7 +283,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("high").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -306,7 +306,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -340,7 +340,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("low").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -357,7 +357,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -391,7 +391,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("mid").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -400,7 +400,7 @@ export function CancelOrModifySubscriptionModalContent({
                   </TierCard>
 
                   {/* High Tier */}
-                  <TierCard className="ring-primary -mt-1.5 ring-2">
+                  <TierCard className="-mt-1.5 ring-2 ring-primary">
                     <TierCardHeader>
                       <TierCardTitle className="text-primary">
                         {t("plans.high.title")}
@@ -411,7 +411,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="text-muted-foreground text-sm font-normal" />
+                              <span className="font-normal text-muted-foreground text-sm" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -445,7 +445,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("high").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -466,10 +466,11 @@ export function CancelOrModifySubscriptionModalContent({
                         {t("plans.enterprise.description")}
                       </TierCardDescription>
 
-                      <Button asChild className="w-full">
-                        <Link to={href("/contact-sales")}>
-                          {t("plans.enterprise.cta")}
-                        </Link>
+                      <Button
+                        className="w-full"
+                        render={<Link to={href("/contact-sales")} />}
+                      >
+                        {t("plans.enterprise.cta")}
                       </Button>
                     </TierCardHeader>
 
@@ -483,7 +484,7 @@ export function CancelOrModifySubscriptionModalContent({
                       <FeaturesList>
                         {getFeatures("enterprise").map((feature) => (
                           <FeatureListItem key={feature}>
-                            <CheckIcon />
+                            <IconCheck />
                             {feature}
                           </FeatureListItem>
                         ))}
@@ -502,7 +503,7 @@ export function CancelOrModifySubscriptionModalContent({
           <Separator />
 
           <div className="@container/alert">
-            <Alert className="flex flex-col gap-2 @5xl/alert:block">
+            <Alert className="@5xl/alert:block flex flex-col gap-2">
               <AlertTitle>
                 {tModal("cancelSubscriptionBanner.title")}
               </AlertTitle>
@@ -512,7 +513,7 @@ export function CancelOrModifySubscriptionModalContent({
               </AlertDescription>
 
               <Button
-                className="shadow-none @5xl/alert:absolute @5xl/alert:top-1/2 @5xl/alert:right-3 @5xl/alert:-translate-y-1/2"
+                className="@5xl/alert:-translate-y-1/2 @5xl/alert:absolute @5xl/alert:top-1/2 @5xl/alert:right-3 shadow-none"
                 disabled={isSubmitting}
                 onClick={onCancelSubscriptionClick}
                 type="button"

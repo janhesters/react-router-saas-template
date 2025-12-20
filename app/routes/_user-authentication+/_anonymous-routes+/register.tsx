@@ -1,5 +1,5 @@
 import { useForm } from "@conform-to/react/future";
-import { MailIcon } from "lucide-react";
+import { IconMail } from "@tabler/icons-react";
 import { Trans, useTranslation } from "react-i18next";
 import { data, Form, href, Link, useNavigation } from "react-router";
 import * as z from "zod";
@@ -99,14 +99,14 @@ export default function RegisterRoute({
     <FieldSet disabled={isSubmitting}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">
+          <h1 className="font-bold text-2xl">
             {inviteLinkInfo
               ? t("form.joinOrganization", {
                   organizationName: inviteLinkInfo.organizationName,
                 })
               : t("title")}
           </h1>
-          <p className="text-muted-foreground text-balance text-sm">
+          <p className="text-balance text-muted-foreground text-sm">
             {inviteLinkInfo
               ? t("form.joinOrganizationDescription", {
                   creatorName: inviteLinkInfo.creatorName,
@@ -131,7 +131,7 @@ export default function RegisterRoute({
                   type="email"
                 />
                 <InputGroupAddon>
-                  <MailIcon />
+                  <IconMail />
                 </InputGroupAddon>
               </InputGroup>
               <FieldError
@@ -183,14 +183,14 @@ export default function RegisterRoute({
         </Form>
 
         <Field>
-          <FieldDescription className="text-muted-foreground text-center text-sm">
+          <FieldDescription className="text-center text-muted-foreground text-sm">
             <Trans
               components={{
                 pp: (
                   <Link
                     className={cn(
                       buttonVariants({ variant: "link" }),
-                      "text-muted-foreground max-h-min p-0 underline underline-offset-4 hover:text-primary",
+                      "max-h-min p-0 text-muted-foreground underline underline-offset-4 hover:text-primary",
                     )}
                     to={href("/privacy-policy")}
                   />
@@ -199,7 +199,7 @@ export default function RegisterRoute({
                   <Link
                     className={cn(
                       buttonVariants({ variant: "link" }),
-                      "text-muted-foreground max-h-min p-0 underline underline-offset-4 hover:text-primary",
+                      "max-h-min p-0 text-muted-foreground underline underline-offset-4 hover:text-primary",
                     )}
                     to={href("/terms-of-service")}
                   />
@@ -221,7 +221,7 @@ export default function RegisterRoute({
                   <Link
                     className={cn(
                       buttonVariants({ variant: "link" }),
-                      "text-muted-foreground max-h-min p-0 hover:text-primary",
+                      "max-h-min p-0 text-muted-foreground hover:text-primary",
                     )}
                     to={href("/login")}
                   />

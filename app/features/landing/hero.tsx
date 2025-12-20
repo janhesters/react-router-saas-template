@@ -1,4 +1,4 @@
-import { BookTextIcon } from "lucide-react";
+import { IconBook2 } from "@tabler/icons-react";
 import type { CSSProperties } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -23,10 +23,10 @@ export function Hero() {
     <section className="relative z-0 py-24 text-center sm:pt-32">
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
+        className="-top-40 -z-10 sm:-top-80 absolute inset-x-0 transform-gpu overflow-hidden blur-3xl"
       >
         <div
-          className="from-primary to-secondary relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr opacity-30 sm:left-[calc(50%-30rem)] sm:w-288.75"
+          className="-translate-x-1/2 relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 rotate-30 bg-linear-to-tr from-primary to-secondary opacity-30 sm:left-[calc(50%-30rem)] sm:w-288.75"
           style={{
             clipPath:
               "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
@@ -53,7 +53,7 @@ export function Hero() {
 
           <span
             aria-hidden="true"
-            className="font-mono text-4xl font-semibold sm:text-7xl"
+            className="font-mono font-semibold text-4xl sm:text-7xl"
           >
             {t("title")}
           </span>
@@ -61,12 +61,12 @@ export function Hero() {
           <span className="sr-only">{tCommon("appName")}</span>
         </h1>
 
-        <p className="text-muted-foreground mt-8 text-lg sm:text-xl/8">
+        <p className="mt-8 text-lg text-muted-foreground sm:text-xl/8">
           <span className="relative">
             <Trans
               components={{
                 1: (
-                  <span className="text-primary decoration-primary underline decoration-wavy underline-offset-4">
+                  <span className="text-primary underline decoration-primary decoration-wavy underline-offset-4">
                     free
                   </span>
                 ),
@@ -78,15 +78,18 @@ export function Hero() {
         </p>
 
         <div className="mt-10 flex items-center justify-center gap-2">
-          <Button asChild>
-            <Link to="/register">{t("cta.primary")}</Link>
-          </Button>
+          <Button render={<Link to="/register" />}>{t("cta.primary")}</Button>
 
-          <Button asChild className="text-foreground" variant="link">
-            <a href="https://github.com/janhesters/react-router-saas-template">
-              {t("cta.secondary")}
-              <BookTextIcon />
-            </a>
+          <Button
+            className="text-foreground"
+            render={
+              // biome-ignore lint/a11y/useAnchorContent: anchor receives props
+              <a href="https://github.com/janhesters/react-router-saas-template" />
+            }
+            variant="link"
+          >
+            {t("cta.secondary")}
+            <IconBook2 />
           </Button>
         </div>
       </div>
@@ -109,10 +112,10 @@ export function Hero() {
 
       <div
         aria-hidden="true"
-        className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-80rem)]"
+        className="-z-10 absolute inset-x-0 top-[calc(100%-13rem)] transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-80rem)]"
       >
         <div
-          className="from-primary to-secondary relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr opacity-30 sm:left-[calc(50%+36rem)] sm:w-288.75"
+          className="-translate-x-1/2 relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 bg-linear-to-tr from-primary to-secondary opacity-30 sm:left-[calc(50%+36rem)] sm:w-288.75"
           style={{
             clipPath:
               "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",

@@ -1,7 +1,7 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { BuildingIcon } from "lucide-react";
+import { IconBuilding } from "@tabler/icons-react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form, href, Link } from "react-router";
 
@@ -101,17 +101,17 @@ export function CreateOrganizationFormCard({
                       {t("logoDescription")}
                     </FieldDescription>
                     <div className="flex items-center gap-x-4 md:gap-x-8">
-                      <Avatar className="size-16 md:size-24 rounded-lg">
+                      <Avatar className="size-16 rounded-lg md:size-24">
                         <AvatarUploadPreviewImage
                           alt={
                             // @ts-expect-error - TypeScript can't infer this key from keyPrefix
                             t("logoPreviewAlt")
                           }
-                          className="size-16 md:size-24 rounded-lg"
+                          className="size-16 rounded-lg md:size-24"
                           src=""
                         />
-                        <AvatarFallback className="border-border dark:bg-input/30 size-16 md:size-24 rounded-lg border">
-                          <BuildingIcon className="size-8 md:size-12" />
+                        <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                          <IconBuilding className="size-8 md:size-12" />
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex flex-col gap-2">
@@ -160,7 +160,7 @@ export function CreateOrganizationFormCard({
         </CardFooter>
       </Card>
 
-      <div className="text-muted-foreground [&_a]:hover:text-primary text-center text-xs text-balance [&_a]:underline [&_a]:underline-offset-4">
+      <div className="text-balance text-center text-muted-foreground text-xs [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
         <Trans
           components={{
             1: <Link to={href("/terms-of-service")} />,
