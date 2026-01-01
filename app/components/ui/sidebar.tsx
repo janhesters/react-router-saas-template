@@ -1,6 +1,6 @@
 import type { VariantProps } from "class-variance-authority";
 import { cva } from "class-variance-authority";
-import { PanelLeftIcon } from "lucide-react";
+import { PanelLeftIcon, PanelRightIcon } from "lucide-react";
 import { Slot as SlotPrimitive } from "radix-ui";
 import * as React from "react";
 import { useTranslation } from "react-i18next";
@@ -31,6 +31,9 @@ const SIDEBAR_WIDTH = "16rem";
 const SIDEBAR_WIDTH_MOBILE = "18rem";
 const SIDEBAR_WIDTH_ICON = "3rem";
 const SIDEBAR_KEYBOARD_SHORTCUT = "b";
+
+const RIGHT_SIDEBAR_COOKIE_NAME = "right_sidebar_state";
+const XL_BREAKPOINT = 1280;
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed";
@@ -721,8 +724,235 @@ function SidebarMenuSubButton({
   );
 }
 
+// Right Sidebar Components
+
+type RightSidebarContextProps = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  isXl: boolean;
+  toggleRightSidebar: () => void;
+};
+
+const RightSidebarContext =
+  React.createContext<RightSidebarContextProps | null>(null);
+
+// Context to allow header to detect if right sidebar exists
+const RightSidebarProviderContext = React.createContext<{
+  hasRightSidebar: boolean;
+  setHasRightSidebar: (has: boolean) => void;
+}>({ hasRightSidebar: false, setHasRightSidebar: () => {} });
+
+function useRightSidebar() {
+  const context = React.useContext(RightSidebarContext);
+  if (!context) {
+    throw new Error(
+      "useRightSidebar must be used within a RightSidebarProvider.",
+    );
+  }
+
+  return context;
+}
+
+function useIsXl() {
+  const [isXl, setIsXl] = React.useState<boolean | undefined>();
+
+  React.useEffect(() => {
+    const mql = globalThis.matchMedia(`(min-width: ${XL_BREAKPOINT}px)`);
+    const onChange = () => {
+      setIsXl(window.innerWidth >= XL_BREAKPOINT);
+    };
+    mql.addEventListener("change", onChange);
+    setIsXl(window.innerWidth >= XL_BREAKPOINT);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  return !!isXl;
+}
+
+function RightSidebarProvider({
+  defaultOpen = false,
+  open: openProp,
+  onOpenChange: setOpenProp,
+  className,
+  style,
+  children,
+  ...props
+}: React.ComponentProps<"div"> & {
+  defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  const isXl = useIsXl();
+  const [_open, _setOpen] = React.useState(defaultOpen);
+  const [hasRightSidebar, setHasRightSidebar] = React.useState(false);
+  const open = openProp ?? _open;
+  const setOpen = React.useCallback(
+    (value: boolean | ((value: boolean) => boolean)) => {
+      const openState = typeof value === "function" ? value(open) : value;
+      if (setOpenProp) {
+        setOpenProp(openState);
+      } else {
+        _setOpen(openState);
+      }
+
+      // Set cookie to keep the right sidebar state.
+      /**
+       * biome-ignore lint/suspicious/noDocumentCookie: If Shadcn does it, it's fine.
+       */
+      document.cookie = `${RIGHT_SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+    },
+    [open, setOpenProp],
+  );
+
+  const toggleRightSidebar = React.useCallback(() => {
+    setOpen((open) => !open);
+  }, [setOpen]);
+
+  const contextValue = React.useMemo<RightSidebarContextProps>(
+    () => ({
+      isXl,
+      open,
+      setOpen,
+      toggleRightSidebar,
+    }),
+    [isXl, open, setOpen, toggleRightSidebar],
+  );
+
+  const providerContextValue = React.useMemo(
+    () => ({
+      hasRightSidebar,
+      setHasRightSidebar,
+    }),
+    [hasRightSidebar],
+  );
+
+  return (
+    <RightSidebarContext.Provider value={contextValue}>
+      <RightSidebarProviderContext.Provider value={providerContextValue}>
+        <div
+          className={cn("flex min-h-svh w-full", className)}
+          data-slot="right-sidebar-wrapper"
+          style={
+            {
+              "--sidebar-width": SIDEBAR_WIDTH,
+              ...style,
+            } as React.CSSProperties
+          }
+          {...props}
+        >
+          {children}
+        </div>
+      </RightSidebarProviderContext.Provider>
+    </RightSidebarContext.Provider>
+  );
+}
+
+function useHasRightSidebar() {
+  const { hasRightSidebar } = React.useContext(RightSidebarProviderContext);
+  return hasRightSidebar;
+}
+
+function RightSidebar({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
+  const { open, setOpen, isXl } = useRightSidebar();
+  const { setHasRightSidebar } = React.useContext(RightSidebarProviderContext);
+  const { t } = useTranslation("organizations", {
+    keyPrefix: "layout.appSidebar.nav",
+  });
+
+  // Register that this sidebar exists
+  React.useEffect(() => {
+    setHasRightSidebar(true);
+    return () => {
+      setHasRightSidebar(false);
+    };
+  }, [setHasRightSidebar]);
+
+  // On xl screens and above, render as part of the layout (always visible, takes up space)
+  if (isXl) {
+    return (
+      <aside
+        aria-label={t("sidebar")}
+        className={cn(
+          "bg-sidebar text-sidebar-foreground hidden w-(--sidebar-width) flex-col xl:flex",
+          className,
+        )}
+        data-right-sidebar="true"
+        data-slot="right-sidebar"
+        {...props}
+      >
+        {children}
+      </aside>
+    );
+  }
+
+  // On lg screens and below, render as a drawer (Sheet)
+  return (
+    <Sheet onOpenChange={setOpen} open={open} {...props}>
+      <SheetContent
+        className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+        data-mobile="true"
+        data-right-sidebar="true"
+        data-slot="right-sidebar"
+        side="right"
+        style={
+          {
+            "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
+          } as React.CSSProperties
+        }
+      >
+        <SheetHeader className="sr-only">
+          <SheetTitle>Right Sidebar</SheetTitle>
+          <SheetDescription>Displays the right sidebar.</SheetDescription>
+        </SheetHeader>
+        <nav aria-label={t("sidebar")} className="flex h-full w-full flex-col">
+          {children}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+function RightSidebarTrigger({
+  className,
+  onClick,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  const { toggleRightSidebar, isXl } = useRightSidebar();
+
+  // Don't render on xl screens and above (sidebar is always visible)
+  if (isXl) {
+    return null;
+  }
+
+  return (
+    <Button
+      className={cn("size-7", className)}
+      data-right-sidebar="trigger"
+      data-slot="right-sidebar-trigger"
+      onClick={(event) => {
+        onClick?.(event);
+        toggleRightSidebar();
+      }}
+      size="icon"
+      variant="ghost"
+      {...props}
+    >
+      <PanelRightIcon />
+      <span className="sr-only">Toggle Right Sidebar</span>
+    </Button>
+  );
+}
+
 export {
+  RightSidebar,
+  RightSidebarProvider,
+  RightSidebarTrigger,
   Sidebar,
+  useHasRightSidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
@@ -745,5 +975,6 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
+  useRightSidebar,
   useSidebar,
 };

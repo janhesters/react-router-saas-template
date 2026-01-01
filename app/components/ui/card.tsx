@@ -1,4 +1,6 @@
+import type { LucideIcon } from "lucide-react";
 import type * as React from "react";
+import type { ReactNode } from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -81,6 +83,50 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+type SectionWrapProps = {
+  heading: ReactNode;
+  icon?: LucideIcon;
+  subtitle?: string;
+  headingExtra?: ReactNode;
+  stackHeadingChildren?: boolean;
+  children: ReactNode;
+  className?: string;
+  contentClassName?: string;
+};
+
+function SectionWrap({
+  heading,
+  icon: Icon,
+  subtitle,
+  headingExtra,
+  stackHeadingChildren = false,
+  children,
+  className,
+  contentClassName,
+}: SectionWrapProps) {
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <div
+          className={`${stackHeadingChildren ? "grid gap-5 md:flex md:gap-3" : "flex gap-3"} items-center justify-between`}
+        >
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            {Icon && <Icon className="size-4" />}
+            {typeof heading === "string" ? (
+              <CardTitle>{heading}</CardTitle>
+            ) : (
+              heading
+            )}
+          </div>
+          {headingExtra && <div>{headingExtra}</div>}
+        </div>
+        {subtitle && <CardDescription>{subtitle}</CardDescription>}
+      </CardHeader>
+      <CardContent className={cn(contentClassName)}>{children}</CardContent>
+    </Card>
+  );
+}
+
 export {
   Card,
   CardAction,
@@ -89,4 +135,5 @@ export {
   CardFooter,
   CardHeader,
   CardTitle,
+  SectionWrap,
 };

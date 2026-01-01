@@ -29,6 +29,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       await getValidEmailInviteInfo(request);
 
     const code = getSearchParameterFromRequest("code")(request);
+    console.log("code", code);
 
     if (!code) {
       throw new Error("Missing code");
@@ -38,11 +39,11 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       error,
       data: { user },
     } = await supabase.auth.exchangeCodeForSession(code);
-
+    console.log("error", error);
     if (error) {
       throw error;
     }
-
+    console.log("user", user);
     if (!user) {
       throw new Error("User not found");
     }

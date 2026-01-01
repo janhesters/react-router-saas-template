@@ -3,7 +3,11 @@ import { data, href, Outlet, redirect } from "react-router";
 import { promiseHash } from "remix-utils/promise";
 
 import type { Route } from "./+types/_sidebar-layout";
-import { SidebarInset, SidebarProvider } from "~/components/ui/sidebar";
+import {
+  RightSidebarProvider,
+  SidebarInset,
+  SidebarProvider,
+} from "~/components/ui/sidebar";
 import { allLookupKeys } from "~/features/billing/billing-constants";
 import { getCreateSubscriptionModalProps } from "~/features/billing/billing-helpers.server";
 import { retrieveProductsFromDatabaseByPriceLookupKeys } from "~/features/billing/stripe-product-model.server";
@@ -45,7 +49,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     request.url.endsWith(`/organizations/${params.organizationSlug}`)
   ) {
     return redirect(
-      href("/organizations/:organizationSlug/dashboard", {
+      href("/organizations/:organizationSlug/home", {
         organizationSlug: params.organizationSlug,
       }),
     );
@@ -122,14 +126,16 @@ export default function OrganizationLayoutRoute({
         variant="inset"
       />
 
-      <SidebarInset>
-        <AppHeader
-          breadcrumbs={breadcrumbs}
-          notificationsButtonProps={notificationButtonProps}
-        />
+      <RightSidebarProvider>
+        <SidebarInset>
+          <AppHeader
+            breadcrumbs={breadcrumbs}
+            notificationsButtonProps={notificationButtonProps}
+          />
 
-        <Outlet />
-      </SidebarInset>
+          <Outlet />
+        </SidebarInset>
+      </RightSidebarProvider>
     </SidebarProvider>
   );
 }

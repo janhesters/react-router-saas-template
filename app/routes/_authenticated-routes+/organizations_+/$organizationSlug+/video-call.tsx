@@ -1,6 +1,6 @@
 import { href } from "react-router";
 
-import type { Route } from "./+types/dashboard";
+import type { Route } from "./+types/video-call";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
@@ -10,12 +10,12 @@ export function loader({ params, context }: Route.LoaderArgs) {
 
   return {
     breadcrumb: {
-      title: t("organizations:dashboard.breadcrumb"),
-      to: href("/organizations/:organizationSlug/dashboard", {
+      title: t("organizations:videoCall.breadcrumb"),
+      to: href("/organizations/:organizationSlug/video-call", {
         organizationSlug: params.organizationSlug,
       }),
     },
-    pageTitle: getPageTitle(t, "organizations:dashboard.pageTitle"),
+    pageTitle: getPageTitle(t, "organizations:videoCall.pageTitle"),
   };
 }
 
@@ -23,15 +23,9 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   { title: loaderData?.pageTitle },
 ];
 
-export default function OrganizationDashboardRoute() {
+export default function VideoCallRoute() {
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
-      <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-        <div className="bg-muted/50 aspect-video rounded-xl" />
-      </div>
-
       <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
     </div>
   );

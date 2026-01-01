@@ -28,3 +28,6 @@ stripe-events.txt
 
 # Prisma
 /app/generated/
+
+# Docs
+/docs/

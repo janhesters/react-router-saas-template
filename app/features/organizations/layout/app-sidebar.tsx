@@ -1,9 +1,16 @@
 import {
-  ChartNoAxesColumnIncreasingIcon,
+  BotIcon,
+  BriefcaseIcon,
+  CalendarIcon,
   CircleHelpIcon,
-  FolderIcon,
+  FileTextIcon,
   LayoutDashboardIcon,
+  ListChecksIcon,
+  MessageSquareIcon,
   SettingsIcon,
+  UserIcon,
+  VideoIcon,
+  WalletIcon,
 } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
@@ -55,39 +62,119 @@ export function AppSidebar({
           items={[
             {
               icon: LayoutDashboardIcon,
-              title: t("app.dashboard"),
-              url: href("/organizations/:organizationSlug/dashboard", {
+              title: t("app.home"),
+              url: href("/organizations/:organizationSlug/home", {
                 organizationSlug,
               }),
             },
             {
-              icon: FolderIcon,
-              items: [
-                {
-                  title: t("app.projects.all"),
-                  url: href("/organizations/:organizationSlug/projects", {
-                    organizationSlug,
-                  }),
-                },
-                {
-                  title: t("app.projects.active"),
-                  url: href(
-                    "/organizations/:organizationSlug/projects/active",
-                    {
-                      organizationSlug,
-                    },
-                  ),
-                },
-              ],
-              title: t("app.projects.title"),
-            },
-            {
-              icon: ChartNoAxesColumnIncreasingIcon,
-              title: t("app.analytics"),
-              url: href("/organizations/:organizationSlug/analytics", {
+              icon: UserIcon,
+              title: t("app.myCandidates"),
+              url: href("/organizations/:organizationSlug/my-candidates", {
                 organizationSlug,
               }),
             },
+            {
+              icon: BriefcaseIcon,
+              title: t("app.ourCandidates"),
+              url: href("/organizations/:organizationSlug/our-candidates", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: MessageSquareIcon,
+              title: t("app.messagingHub"),
+              url: href("/organizations/:organizationSlug/messaging-hub", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: ListChecksIcon,
+              title: t("app.pipelineAndMetrics"),
+              url: href(
+                "/organizations/:organizationSlug/pipeline-and-metrics",
+                {
+                  organizationSlug,
+                },
+              ),
+            },
+            {
+              icon: CalendarIcon,
+              title: t("app.calendar"),
+              url: href("/organizations/:organizationSlug/calendar", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: BriefcaseIcon,
+              title: t("app.jobsAndClients"),
+              url: href("/organizations/:organizationSlug/jobs-and-clients", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: FileTextIcon,
+              title: t("app.jobSpecGenerator"),
+              url: href("/organizations/:organizationSlug/job-spec-generator", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: WalletIcon,
+              title: t("app.commission"),
+              url: href("/organizations/:organizationSlug/commission", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: VideoIcon,
+              title: t("app.videoCall"),
+              url: href("/organizations/:organizationSlug/video-call", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: FileTextIcon,
+              title: t("app.cvFormatting"),
+              url: href("/organizations/:organizationSlug/cv-formatting", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: BotIcon,
+              title: t("app.aiAssistant"),
+              url: href("/organizations/:organizationSlug/ai-assistant", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: SettingsIcon,
+              title: t("app.settings"),
+              url: href("/organizations/:organizationSlug/settings", {
+                organizationSlug,
+              }),
+            },
+            // {
+            //   icon: FolderIcon,
+            //   items: [
+            //     {
+            //       title: t("app.projects.all"),
+            //       url: href("/organizations/:organizationSlug/projects", {
+            //         organizationSlug,
+            //       }),
+            //     },
+            //     {
+            //       title: t("app.projects.active"),
+            //       url: href(
+            //         "/organizations/:organizationSlug/projects/active",
+            //         {
+            //           organizationSlug,
+            //         },
+            //       ),
+            //     },
+            //   ],
+            //   title: t("app.projects.title"),
+            // },
           ]}
           title={t("app.title")}
         />
