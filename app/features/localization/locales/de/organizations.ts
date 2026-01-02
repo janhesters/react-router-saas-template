@@ -49,9 +49,25 @@ export default {
     pageTitle: "Einladung",
     welcomeToAppName: "Willkommen bei {{appName}}",
   },
+  aiAssistant: {
+    breadcrumb: "KI-Assistent",
+    pageTitle: "KI-Assistent",
+  },
   analytics: {
     breadcrumb: "Analytik",
     pageTitle: "Analytik",
+  },
+  calendar: {
+    breadcrumb: "Kalender",
+    pageTitle: "Kalender",
+  },
+  commission: {
+    breadcrumb: "Provision",
+    pageTitle: "Provision",
+  },
+  cvFormatting: {
+    breadcrumb: "Lebenslauf-Formatierung",
+    pageTitle: "Lebenslauf-Formatierung",
   },
   dashboard: {
     breadcrumb: "Dashboard",
@@ -61,18 +77,32 @@ export default {
     breadcrumb: "Hilfe erhalten",
     pageTitle: "Hilfe erhalten",
   },
+  jobSpecGenerator: {
+    breadcrumb: "Stellenbeschreibung-Generator",
+    pageTitle: "Stellenbeschreibung-Generator",
+  },
+  jobsAndClients: {
+    breadcrumb: "Jobs und Kunden",
+    pageTitle: "Jobs und Kunden",
+  },
   layout: {
     appSidebar: {
       nav: {
         app: {
-          analytics: "Analytik",
-          dashboard: "Dashboard",
-          projects: {
-            active: "Aktiv",
-            all: "Alle",
-            title: "Projekte",
-          },
+          aiAssistant: "KI-Assistent",
+          calendar: "Kalender",
+          commission: "Provision",
+          cvFormatting: "Lebenslauf-Formatierung",
+          home: "Startseite",
+          jobSpecGenerator: "Stellenbeschreibung-Generator",
+          jobsAndClients: "Jobs und Kunden",
+          messagingHub: "Messaging-Hub",
+          myCandidates: "Meine Kandidaten",
+          ourCandidates: "Unsere Kandidaten",
+          pipelineAndMetrics: "Pipeline und Metriken",
+          settings: "Einstellungen",
           title: "App",
+          videoCall: "Videoanruf",
         },
         settings: {
           getHelp: "Hilfe erhalten",
@@ -91,6 +121,14 @@ export default {
       newOrganization: "Neue Organisation",
       organizations: "Organisationen",
     },
+  },
+  messagingHub: {
+    breadcrumb: "Messaging-Hub",
+    pageTitle: "Messaging-Hub",
+  },
+  myCandidates: {
+    breadcrumb: "Meine Kandidaten",
+    pageTitle: "Meine Kandidaten",
   },
   new: {
     backButtonLabel: "Zurück",
@@ -127,6 +165,14 @@ export default {
       owner: "Eigentümer",
     },
     title: "Organisationsliste",
+  },
+  ourCandidates: {
+    breadcrumb: "Unsere Kandidaten",
+    pageTitle: "Unsere Kandidaten",
+  },
+  pipelineAndMetrics: {
+    breadcrumb: "Pipeline und Metriken",
+    pageTitle: "Pipeline und Metriken",
   },
   projects: {
     breadcrumb: "Alle Projekte",
@@ -309,5 +355,9 @@ export default {
         statusHeader: "Status",
       },
     },
+  },
+  videoCall: {
+    breadcrumb: "Videoanruf",
+    pageTitle: "Videoanruf",
   },
 } satisfies typeof import("../en/organizations").default;

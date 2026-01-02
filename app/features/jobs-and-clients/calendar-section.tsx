@@ -7,7 +7,7 @@
 import { format, isValid, parseISO } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { href, useNavigate, useSearchParams } from "react-router";
+import { useSearchParams } from "react-router";
 
 import { AddEditEventModal, ViewEventModal } from "./event-modals";
 import { CalendarEventItem } from "./jobs-and-clients-components";
@@ -27,40 +27,15 @@ import { SectionWrap } from "~/components/ui/card";
 export type CalendarSectionProps = {
   events: CalendarEvent[];
   currentDate: Date;
-  organizationSlug: string;
   actionData?: Route.ComponentProps["actionData"] | null;
 };
-
-/**
- * Loads events for a specific date by navigating with calendar_date query parameter.
- * If the date is today, clears the query parameter.
- */
-export function loadEventsForDate(
-  date: Date,
-  organizationSlug: string,
-  navigate: (to: string) => void,
-) {
-  const url = href("/organizations/:organizationSlug/jobs-and-clients", {
-    organizationSlug,
-  });
-
-  // If the date is today, navigate without the query parameter
-  if (isToday(date)) {
-    navigate(url);
-  } else {
-    const dateString = format(date, "yyyy-MM-dd"); // Format as YYYY-MM-DD
-    navigate(`${url}?calendar_date=${dateString}`);
-  }
-}
 
 export function CalendarSection({
   events,
   currentDate,
-  organizationSlug,
   actionData,
 }: CalendarSectionProps) {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Modal state
   const [viewEventModalOpen, setViewEventModalOpen] = useState(false);
@@ -83,16 +58,36 @@ export function CalendarSection({
   // Navigation handlers
   const goToPreviousDay = () => {
     const previousDate = subtractDays(validDate, 1);
-    loadEventsForDate(previousDate, organizationSlug, navigate);
+    const params = new URLSearchParams(searchParams);
+
+    if (isToday(previousDate)) {
+      params.delete("calendar_date");
+    } else {
+      const dateString = format(previousDate, "yyyy-MM-dd");
+      params.set("calendar_date", dateString);
+    }
+
+    setSearchParams(params, { preventScrollReset: true });
   };
 
   const goToNextDay = () => {
     const nextDate = addDays(validDate, 1);
-    loadEventsForDate(nextDate, organizationSlug, navigate);
+    const params = new URLSearchParams(searchParams);
+
+    if (isToday(nextDate)) {
+      params.delete("calendar_date");
+    } else {
+      const dateString = format(nextDate, "yyyy-MM-dd");
+      params.set("calendar_date", dateString);
+    }
+
+    setSearchParams(params, { preventScrollReset: true });
   };
 
   const goToToday = () => {
-    loadEventsForDate(new Date(), organizationSlug, navigate);
+    const params = new URLSearchParams(searchParams);
+    params.delete("calendar_date");
+    setSearchParams(params, { preventScrollReset: true });
   };
 
   const isCurrentDateToday = isToday(validDate);

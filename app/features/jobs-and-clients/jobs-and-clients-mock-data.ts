@@ -2,7 +2,13 @@
  * Mock data generators for Jobs and Clients feature
  */
 
-import { addDays, format, subMonths } from "date-fns";
+import {
+  addDays,
+  format,
+  getDaysInMonth,
+  isSameMonth,
+  subMonths,
+} from "date-fns";
 
 import type {
   AgendaItem,
@@ -238,33 +244,74 @@ export function createMockCalendarEvents(
 }
 
 /**
- * Creates mock performance metrics
+ * Creates mock performance metrics for a specific month
+ * @param monthDate - The month to generate metrics for. If current month, values are prorated.
  */
-export function createMockPerformanceMetrics(): PerformanceMetric[] {
+export function createMockPerformanceMetrics(
+  monthDate: Date = new Date(),
+): PerformanceMetric[] {
+  const today = new Date();
+  const isCurrentMonth = isSameMonth(monthDate, today);
+  const daysInMonth = getDaysInMonth(monthDate);
+
+  // Base values for different months (using month index for variation)
+  const monthIndex = monthDate.getMonth();
+  const yearOffset = monthDate.getFullYear() - 2024;
+
+  // Generate base values with some variation based on month
+  const basePlacements = 12 + monthIndex * 0.5 + yearOffset * 2;
+  const baseInterviews = 45 + monthIndex * 1.5 + yearOffset * 5;
+  const baseCandidates = 100 + monthIndex * 2 + yearOffset * 10;
+
+  // Targets remain constant
+  const targetPlacements = 15;
+  const targetInterviews = 50;
+  const targetCandidates = 100;
+
+  let valuePlacements = basePlacements;
+  let valueInterviews = baseInterviews;
+  let valueCandidates = baseCandidates;
+
+  // If current month, prorate based on day of month
+  if (isCurrentMonth) {
+    const currentDay = today.getDate();
+    const progressRatio = currentDay / daysInMonth;
+
+    // Prorate values based on how much of the month has passed
+    valuePlacements = Math.round(basePlacements * progressRatio);
+    valueInterviews = Math.round(baseInterviews * progressRatio);
+    valueCandidates = Math.round(baseCandidates * progressRatio);
+  } else {
+    // For past months, use full values (rounded)
+    valuePlacements = Math.round(basePlacements);
+    valueInterviews = Math.round(baseInterviews);
+    valueCandidates = Math.round(baseCandidates);
+  }
+
   return [
     {
       id: "metric-1",
-      label: "Placements This Month",
+      label: "Job Placements",
       period: PERFORMANCE_METRIC_PERIODS[2], // "monthly"
-      target: 15,
+      target: targetPlacements,
       unit: "placements",
-      value: 12,
+      value: valuePlacements,
     },
     {
       id: "metric-2",
       label: "Interviews Scheduled",
       period: PERFORMANCE_METRIC_PERIODS[2], // "monthly"
-      target: 50,
+      target: targetInterviews,
       unit: "interviews",
-      value: 45,
+      value: valueInterviews,
     },
     {
       id: "metric-3",
       label: "Active Candidates",
       period: PERFORMANCE_METRIC_PERIODS[2], // "monthly"
-      target: 100,
+      target: targetCandidates,
       unit: "candidates",
-      value: 120,
+      value: valueCandidates,
     },
   ];
 }
@@ -276,41 +323,78 @@ export function createMockGrowthTrends(): GrowthTrend[] {
   const now = new Date();
   const currentYear = now.getFullYear();
 
-  // Generate 12 months ending with the current month
-  const dataPoints: GrowthTrendDataPoint[] = [];
+  // Helper function to generate data points for a trend
+  const generateDataPoints = (baseValue: number, growthRate: number) => {
+    const dataPoints: GrowthTrendDataPoint[] = [];
 
-  for (let i = 11; i >= 0; i--) {
-    const monthDate = subMonths(now, i);
-    const monthAbbr = format(monthDate, "MMM"); // e.g., "Jan", "Feb"
-    const monthYear = monthDate.getFullYear();
+    for (let i = 11; i >= 0; i--) {
+      const monthDate = subMonths(now, i);
+      const monthAbbr = format(monthDate, "MMM"); // e.g., "Jan", "Feb"
+      const monthYear = monthDate.getFullYear();
 
-    // Add year suffix for months from previous year
-    const period =
-      monthYear < currentYear
-        ? `${monthAbbr} '${String(monthYear).slice(-2)}'`
-        : monthAbbr;
+      // Add year suffix for months from previous year
+      const period =
+        monthYear < currentYear
+          ? `${monthAbbr} '${String(monthYear).slice(-2)}`
+          : monthAbbr;
 
-    const label =
-      monthYear < currentYear
-        ? `${monthAbbr} '${String(monthYear).slice(-2)}'`
-        : monthAbbr;
+      const label =
+        monthYear < currentYear
+          ? `${monthAbbr} '${String(monthYear).slice(-2)}`
+          : monthAbbr;
 
-    dataPoints.push({
-      label,
-      period,
-      value: 20 + (11 - i) * 3 + Math.random() * 5,
-    });
-  }
+      dataPoints.push({
+        label,
+        period,
+        value: baseValue + (11 - i) * growthRate + Math.random() * 5,
+      });
+    }
+
+    return dataPoints;
+  };
+
+  // Generate roles trend (number of roles interviewed for)
+  const rolesDataPoints = generateDataPoints(15, 2.5);
+  const rolesPreviousPeriod =
+    rolesDataPoints[rolesDataPoints.length - 2]?.value ?? 0;
+  const rolesCurrentPeriod =
+    rolesDataPoints[rolesDataPoints.length - 1]?.value ?? 0;
+  const rolesChangePercentage =
+    rolesPreviousPeriod > 0
+      ? ((rolesCurrentPeriod - rolesPreviousPeriod) / rolesPreviousPeriod) * 100
+      : 0;
+
+  // Generate interviews trend (number of interviews)
+  const interviewsDataPoints = generateDataPoints(45, 4);
+  const interviewsPreviousPeriod =
+    interviewsDataPoints[interviewsDataPoints.length - 2]?.value ?? 0;
+  const interviewsCurrentPeriod =
+    interviewsDataPoints[interviewsDataPoints.length - 1]?.value ?? 0;
+  const interviewsChangePercentage =
+    interviewsPreviousPeriod > 0
+      ? ((interviewsCurrentPeriod - interviewsPreviousPeriod) /
+          interviewsPreviousPeriod) *
+        100
+      : 0;
 
   return [
     {
       comparison: {
-        changePercentage: 12.5,
-        previousPeriod: 35,
+        changePercentage: rolesChangePercentage,
+        previousPeriod: rolesPreviousPeriod,
       },
-      dataPoints,
-      id: "trend-1",
-      metric: "Monthly Placements",
+      dataPoints: rolesDataPoints,
+      id: "trend-roles",
+      metric: "Number of Roles Interviewed For",
+    },
+    {
+      comparison: {
+        changePercentage: interviewsChangePercentage,
+        previousPeriod: interviewsPreviousPeriod,
+      },
+      dataPoints: interviewsDataPoints,
+      id: "trend-interviews",
+      metric: "Number of Interviews",
     },
   ];
 }
@@ -393,8 +477,12 @@ export function createMockContextualActions(): ContextualAction[] {
  * Creates complete mock data for the Jobs and Clients page
  *
  * @param calendarDate - Date to use for calendar events. Daily agenda always uses today's date.
+ * @param metricsMonth - Date representing the month for performance metrics. Defaults to current month.
  */
-export function createMockJobsAndClientsData(calendarDate: Date = new Date()) {
+export function createMockJobsAndClientsData(
+  calendarDate: Date = new Date(),
+  metricsMonth: Date = new Date(),
+) {
   const today = new Date();
 
   return {
@@ -403,7 +491,7 @@ export function createMockJobsAndClientsData(calendarDate: Date = new Date()) {
     contextualActions: createMockContextualActions(),
     dailyAgenda: createMockDailyAgenda(today),
     growthTrends: createMockGrowthTrends(),
-    performanceMetrics: createMockPerformanceMetrics(),
+    performanceMetrics: createMockPerformanceMetrics(metricsMonth),
     urgentFunnelUpdates: createMockUrgentFunnelUpdates(),
   };
 }

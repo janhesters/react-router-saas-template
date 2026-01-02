@@ -18,7 +18,7 @@ export function useAiChat(initialMessages: ChatMessage[] = []) {
         content: content.trim(),
         id: `msg-${Date.now()}-user`,
         role: "user",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
       };
 
       setMessages((prev) => [...prev, userMessage]);
@@ -30,7 +30,7 @@ export function useAiChat(initialMessages: ChatMessage[] = []) {
           content: `I received your message: "${content.trim()}". This is a mock response.`,
           id: `msg-${Date.now()}-assistant`,
           role: "assistant",
-          timestamp: new Date(),
+          timestamp: new Date().toISOString(),
         };
 
         setMessages((prev) => [...prev, assistantMessage]);

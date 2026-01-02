@@ -40,9 +40,25 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
     }
   }
 
+  // Get metrics_month from query parameter, default to current month if not provided
+  const metricsMonthParam =
+    getSearchParameterFromRequest("metrics_month")(request);
+  let metricsMonth = today;
+
+  if (metricsMonthParam) {
+    const parsedMonth = parseISO(metricsMonthParam);
+    if (isValid(parsedMonth)) {
+      metricsMonth = parsedMonth;
+    }
+  }
+
   // Generate mock data
   // dailyAgenda always uses today's date, calendarEvents uses the calendarDate
-  const jobsAndClientsData = createMockJobsAndClientsData(calendarDate);
+  // performanceMetrics uses metricsMonth
+  const jobsAndClientsData = createMockJobsAndClientsData(
+    calendarDate,
+    metricsMonth,
+  );
 
   return data({
     breadcrumb: {
@@ -57,6 +73,7 @@ export async function loader({ params, context, request }: Route.LoaderArgs) {
     contextualActions: jobsAndClientsData.contextualActions,
     dailyAgenda: jobsAndClientsData.dailyAgenda,
     growthTrends: jobsAndClientsData.growthTrends,
+    metricsMonth: metricsMonth.toISOString(),
     pageTitle: getPageTitle(t, "organizations:jobsAndClients.pageTitle"),
     performanceMetrics: jobsAndClientsData.performanceMetrics,
     today,
@@ -75,7 +92,6 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
 
 export default function JobsAndClientsRoute({
   loaderData,
-  params,
   actionData,
 }: Route.ComponentProps) {
   // Get data from loader
@@ -88,6 +104,7 @@ export default function JobsAndClientsRoute({
     chatMessages,
     contextualActions,
     calendarDate,
+    metricsMonth,
     today,
   } = loaderData;
 
@@ -154,7 +171,6 @@ export default function JobsAndClientsRoute({
           actionData={actionData}
           currentDate={currentDate}
           events={calendarEvents}
-          organizationSlug={params.organizationSlug}
         />
 
         {/* Charts Section */}
@@ -162,11 +178,14 @@ export default function JobsAndClientsRoute({
           {/* Performance Metrics Chart */}
           <SectionWrap
             heading="Performance Metrics"
-            subtitle="Target achievement overview"
+            subtitle="Achievement vs Target"
           >
-            <div className="h-64 min-h-20 w-full">
+            <div className="h-80 min-h-20 w-full">
               {performanceMetrics.length > 0 ? (
-                <PerformanceMetricsChart metrics={performanceMetrics} />
+                <PerformanceMetricsChart
+                  metrics={performanceMetrics}
+                  metricsMonth={new Date(metricsMonth)}
+                />
               ) : (
                 <div className="flex h-full items-center justify-center">
                   <p className="text-sm text-muted-foreground">
@@ -182,7 +201,7 @@ export default function JobsAndClientsRoute({
             heading="Growth Trends"
             subtitle="Monthly performance comparison"
           >
-            <div className="h-64 min-h-20 w-full">
+            <div className="min-h-80 w-full">
               {growthTrends.length > 0 ? (
                 <GrowthTrendsChart trends={growthTrends} />
               ) : (
