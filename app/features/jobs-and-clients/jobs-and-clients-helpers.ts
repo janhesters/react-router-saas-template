@@ -16,9 +16,17 @@ import type {
 } from "./jobs-and-clients-constants";
 
 /**
+ * Validates if a date is valid
+ */
+function isValidDate(date: Date): boolean {
+  return date instanceof Date && !Number.isNaN(date.getTime());
+}
+
+/**
  * Formats a date to display as "Day, Month Day" (e.g., "Monday, October 26")
  */
 export function formatCalendarDate(date: Date): string {
+  if (!isValidDate(date)) return "";
   return format(date, "EEEE, MMMM d");
 }
 
@@ -26,6 +34,7 @@ export function formatCalendarDate(date: Date): string {
  * Formats a time to 12-hour format (e.g., "09:00 AM", "02:00 PM")
  */
 export function formatTime12Hour(date: Date): string {
+  if (!isValidDate(date)) return "";
   return format(date, "h:mm a");
 }
 
@@ -33,13 +42,17 @@ export function formatTime12Hour(date: Date): string {
  * Formats a time range (e.g., "09:00 AM - 10:00 AM")
  */
 export function formatTimeRange(start: Date, end: Date): string {
-  return `${formatTime12Hour(start)} - ${formatTime12Hour(end)}`;
+  const startFormatted = formatTime12Hour(start);
+  const endFormatted = formatTime12Hour(end);
+  if (!startFormatted || !endFormatted) return "";
+  return `${startFormatted} - ${endFormatted}`;
 }
 
 /**
  * Formats a date for the daily agenda header (e.g., "2025.04.23")
  */
 export function formatAgendaDate(date: Date): string {
+  if (!isValidDate(date)) return "";
   return format(date, "yyyy.MM.dd");
 }
 
@@ -245,6 +258,7 @@ export function getEndOfDay(date: Date): Date {
  * Adds days to a date
  */
 export function addDays(date: Date, days: number): Date {
+  if (!isValidDate(date)) return new Date(Number.NaN);
   return dateFnsAddDays(date, days);
 }
 
@@ -252,5 +266,6 @@ export function addDays(date: Date, days: number): Date {
  * Subtracts days from a date
  */
 export function subtractDays(date: Date, days: number): Date {
+  if (!isValidDate(date)) return new Date(Number.NaN);
   return dateFnsSubDays(date, days);
 }

@@ -9,19 +9,41 @@ export type UrgencyLevel = (typeof URGENCY_LEVELS)[number];
 // Funnel update statuses
 export const FUNNEL_UPDATE_STATUSES = [
   "pending",
-  "accepted",
-  "rejected",
+  "in_progress",
+  "resolved",
   "expired",
+  "cancelled",
 ] as const;
 export type FunnelUpdateStatus = (typeof FUNNEL_UPDATE_STATUSES)[number];
+
+// Funnel update types
+export const FUNNEL_UPDATE_TYPES = [
+  "offer_pending",
+  "interview_feedback",
+  "background_check",
+  "reference_check",
+  "document_review",
+  "other",
+] as const;
+export type FunnelUpdateType = (typeof FUNNEL_UPDATE_TYPES)[number];
 
 // Agenda item statuses
 export const AGENDA_ITEM_STATUSES = [
   "pending",
   "completed",
   "cancelled",
+  "deferred",
 ] as const;
 export type AgendaItemStatus = (typeof AGENDA_ITEM_STATUSES)[number];
+
+// Agenda item priorities
+export const AGENDA_ITEM_PRIORITIES = [
+  "low",
+  "medium",
+  "high",
+  "critical",
+] as const;
+export type AgendaItemPriority = (typeof AGENDA_ITEM_PRIORITIES)[number];
 
 // Related entity types for agenda items
 export const AGENDA_RELATED_ENTITY_TYPES = [
@@ -43,7 +65,11 @@ export const CALENDAR_EVENT_TYPES = [
 export type CalendarEventType = (typeof CALENDAR_EVENT_TYPES)[number];
 
 // Related entity types for calendar events
-export const CALENDAR_RELATED_ENTITY_TYPES = ["candidate", "job"] as const;
+export const CALENDAR_RELATED_ENTITY_TYPES = [
+  "candidate",
+  "job",
+  "interview",
+] as const;
 export type CalendarRelatedEntityType =
   (typeof CALENDAR_RELATED_ENTITY_TYPES)[number];
 
@@ -53,6 +79,7 @@ export const PERFORMANCE_METRIC_PERIODS = [
   "weekly",
   "monthly",
   "quarterly",
+  "yearly",
 ] as const;
 export type PerformanceMetricPeriod =
   (typeof PERFORMANCE_METRIC_PERIODS)[number];
@@ -74,11 +101,15 @@ export type UrgentFunnelUpdate = {
   candidateName: string;
   roleTitle: string;
   status: FunnelUpdateStatus;
+  type?: FunnelUpdateType;
   urgency: UrgencyLevel;
   deadline: string; // ISO string
   message: string;
   organizationId: string;
   reminderSentAt?: string | null; // ISO string
+  reminderCount?: number;
+  resolvedAt?: string | null; // ISO string
+  resolvedById?: string | null;
 };
 
 export type AgendaItem = {
@@ -86,9 +117,12 @@ export type AgendaItem = {
   title: string;
   scheduledTime: string; // ISO string
   status: AgendaItemStatus;
+  priority?: AgendaItemPriority;
   description?: string;
   relatedEntityId?: string;
   relatedEntityType?: AgendaRelatedEntityType;
+  assignedToId?: string | null;
+  createdById?: string;
 };
 
 export type CalendarEvent = {
@@ -101,6 +135,9 @@ export type CalendarEvent = {
   participants?: string[];
   relatedEntityId?: string;
   relatedEntityType?: CalendarRelatedEntityType;
+  isRecurring?: boolean;
+  recurrenceRule?: string | null;
+  interviewId?: string | null;
 };
 
 export type PerformanceMetric = {

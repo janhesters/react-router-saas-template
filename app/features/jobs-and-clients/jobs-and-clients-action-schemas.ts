@@ -10,7 +10,7 @@ export const sendReminderSchema = z.object({
 export const toggleAgendaItemSchema = z.object({
   intent: z.literal(jobsAndClientsIntents.toggleAgendaItem),
   itemId: z.string().min(1),
-  newStatus: z.enum(["pending", "completed"]),
+  newStatus: z.enum(["pending", "completed", "cancelled", "deferred"]),
 });
 
 export const addOrEditEventSchema = z.object({

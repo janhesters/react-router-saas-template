@@ -8,6 +8,7 @@ import { data } from "react-router";
 import { jobsAndClientsActionSchema } from "./jobs-and-clients-action-schemas";
 import type {
   AgendaItem,
+  AgendaItemStatus,
   CalendarEvent,
   UrgentFunnelUpdate,
 } from "./jobs-and-clients-constants";
@@ -40,7 +41,7 @@ function updateReminderSentAt(
 function updateAgendaItemStatus(
   items: AgendaItem[],
   itemId: string,
-  newStatus: "pending" | "completed",
+  newStatus: AgendaItemStatus,
 ): AgendaItem[] {
   return items.map((item) => {
     if (item.id === itemId) {
