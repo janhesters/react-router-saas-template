@@ -19,7 +19,7 @@ const ErrorMessage = ({
 }) => (
   <div className="flex h-full flex-col p-2">
     <Alert
-      className="bg-destructive/10 dark:bg-destructive/5 border-destructive/50 dark:border-destructive/80 flex h-full flex-col items-center justify-center"
+      className="flex h-full flex-col items-center justify-center border-destructive/50 bg-destructive/10 dark:border-destructive/80 dark:bg-destructive/5"
       variant="destructive"
     >
       <AlertTitle className="font-semibold">{title}</AlertTitle>

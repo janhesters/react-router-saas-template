@@ -4,7 +4,7 @@
  * Displays the daily agenda with top 2 priority items and a modal for all items
  */
 
-import { ClockIcon } from "lucide-react";
+import { IconClock } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useNavigation, useSubmit } from "react-router";
 
@@ -53,7 +53,7 @@ function DailyAgendaModal({
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <ClockIcon className="size-5" />
+            <IconClock className="size-5" />
             Daily Agenda
           </DialogTitle>
           <DialogDescription>
@@ -180,7 +180,7 @@ export function DailyAgendaSection({
             </Button>
           ) : undefined
         }
-        icon={ClockIcon}
+        icon={IconClock}
       >
         {topTwo.length > 0 ? (
           <DailyAgenda

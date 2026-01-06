@@ -4,8 +4,12 @@
  * Displays a day view calendar with hourly slots and events
  */
 
+import {
+  IconChevronLeft,
+  IconChevronRight,
+  IconPlus,
+} from "@tabler/icons-react";
 import { format, isValid, parseISO } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useSearchParams } from "react-router";
 
@@ -117,18 +121,18 @@ export function CalendarSection({
       heading={
         <div className="flex items-center gap-2">
           <Button onClick={goToPreviousDay} size="sm" variant="ghost">
-            <ChevronLeftIcon className="size-4" />
+            <IconChevronLeft className="size-4" />
           </Button>
           <span>{formatCalendarDate(validDate)}</span>
           <Button onClick={goToNextDay} size="sm" variant="ghost">
-            <ChevronRightIcon className="size-4" />
+            <IconChevronRight className="size-4" />
           </Button>
         </div>
       }
       headingExtra={
         <div className="flex items-center gap-2">
           <Button onClick={handleAddEvent} size="sm" variant="default">
-            <PlusIcon className="size-4" />
+            <IconPlus className="size-4" />
             Add Event
           </Button>
           <Button

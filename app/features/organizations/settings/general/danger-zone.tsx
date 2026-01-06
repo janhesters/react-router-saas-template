@@ -79,14 +79,16 @@ function DeleteOrganizationDialogComponent({
         }
       }}
     >
-      <DialogTrigger asChild>
-        <Button
-          // Playwright shouldn't try to click the button before it's hydrated
-          disabled={!hydrated}
-          variant="destructive"
-        >
-          {t("triggerButton")}
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            // Playwright shouldn't try to click the button before it's hydrated
+            disabled={!hydrated}
+            variant="destructive"
+          />
+        }
+      >
+        {t("triggerButton")}
       </DialogTrigger>
 
       <DialogContent>
@@ -114,15 +116,17 @@ function DeleteOrganizationDialogComponent({
         </Form>
 
         <DialogFooter className="sm:justify-end">
-          <DialogClose asChild>
-            <Button
-              className="mt-2 sm:mt-0"
-              disabled={isSubmitting}
-              type="button"
-              variant="secondary"
-            >
-              {t("cancelButton")}
-            </Button>
+          <DialogClose
+            render={
+              <Button
+                className="mt-2 sm:mt-0"
+                disabled={isSubmitting}
+                type="button"
+                variant="secondary"
+              />
+            }
+          >
+            {t("cancelButton")}
           </DialogClose>
 
           <Button

@@ -19,7 +19,7 @@ export function OrganizationInfo({
     <div className="flex flex-col gap-y-6 sm:gap-y-8">
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="text-sm font-medium">{t("nameTitle")}</h2>
+          <h2 className="font-medium text-sm">{t("nameTitle")}</h2>
           <p className="text-muted-foreground text-sm">
             {t("nameDescription")}
           </p>
@@ -32,7 +32,7 @@ export function OrganizationInfo({
 
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="text-sm font-medium">{t("logoTitle")}</h2>
+          <h2 className="font-medium text-sm">{t("logoTitle")}</h2>
           <p className="text-muted-foreground text-sm">
             {t("logoDescription")}
           </p>

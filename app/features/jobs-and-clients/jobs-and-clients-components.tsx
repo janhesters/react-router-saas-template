@@ -2,7 +2,7 @@
  * Display components for Jobs and Clients feature
  */
 
-import { BellIcon, ClockIcon } from "lucide-react";
+import { IconBell, IconClock } from "@tabler/icons-react";
 import { useSubmit } from "react-router";
 
 import type {
@@ -46,7 +46,7 @@ export function UrgentFunnelUpdateItem({
   return (
     <div className="rounded-lg border bg-muted/50 p-4">
       <div className="flex items-start gap-3">
-        <BellIcon className="mt-0.5 size-5 text-muted-foreground" />
+        <IconBell className="mt-0.5 size-5 text-muted-foreground" />
         <div className="flex-1 space-y-1">
           <p className="font-medium">
             Offer Pending for {update.candidateName}
@@ -118,7 +118,7 @@ export function DailyAgendaItem({
           {item.title}
         </p>
         <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-          <ClockIcon className="size-3" />
+          <IconClock className="size-3" />
           <span>{formatTime12Hour(new Date(item.scheduledTime))}</span>
           {isItemSubmitting && (
             <>

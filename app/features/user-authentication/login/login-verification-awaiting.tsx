@@ -1,4 +1,4 @@
-import { TriangleAlertIcon } from "lucide-react";
+import { IconAlertTriangle } from "@tabler/icons-react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form } from "react-router";
 
@@ -78,7 +78,7 @@ export function LoginVerificationAwaiting({
           </Form>
 
           <Alert>
-            <TriangleAlertIcon />
+            <IconAlertTriangle />
 
             <AlertDescription>{t("alertDescription")}</AlertDescription>
           </Alert>

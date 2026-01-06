@@ -35,11 +35,11 @@ export function NotificationsPanelContent({
   if (notifications.length === 0) {
     return (
       <div className="flex min-h-24 flex-col items-center justify-center gap-2 p-4">
-        <p className="text-foreground text-lg font-semibold">
+        <p className="font-semibold text-foreground text-lg">
           {t("noNotificationsTitle")}
         </p>
 
-        <p className="text-muted-foreground text-sm font-normal">
+        <p className="font-normal text-muted-foreground text-sm">
           {t("noNotificationsDescription")}
         </p>
       </div>

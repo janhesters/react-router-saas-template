@@ -46,13 +46,18 @@ export default function NewOrganizationRoute({
       <header className="flex h-(--header-height) items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
-            <Button asChild className="size-8" size="icon" variant="outline">
-              <Link aria-label={t("backButtonLabel")} to="/organizations">
-                <TbArrowLeft />
-              </Link>
+            <Button
+              className="size-8"
+              render={
+                <Link aria-label={t("backButtonLabel")} to="/organizations" />
+              }
+              size="icon"
+              variant="outline"
+            >
+              <TbArrowLeft />
             </Button>
 
-            <h1 className="text-base font-medium">{t("pageTitle")}</h1>
+            <h1 className="font-medium text-base">{t("pageTitle")}</h1>
           </div>
 
           <ThemeToggle />

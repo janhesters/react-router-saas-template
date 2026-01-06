@@ -340,9 +340,11 @@ test.describe("general organization settings", () => {
         .getByRole("button", { name: /delete this organization/i })
         .click();
 
-      // Verify loading state
+      // Verify toast
       await expect(
-        page.getByRole("button", { name: /deleting organization/i }),
+        page
+          .getByRole("region", { name: /notifications/i })
+          .getByText(/organization has been deleted/i),
       ).toBeVisible();
 
       // Since the user no longer has an organization, they should be redirected

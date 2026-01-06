@@ -82,7 +82,7 @@ export default function OrganizationMembersRoute({
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="@container/main mx-auto flex w-full max-w-5xl flex-col gap-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
+          <h2 className="font-semibold leading-none">{t("pageTitle")}</h2>
 
           <p className="text-muted-foreground text-sm">
             {teamMemberTable.currentUsersRole === "member"
@@ -96,7 +96,7 @@ export default function OrganizationMembersRoute({
         {organizationIsFull && (
           <div className="@container/alert">
             <Alert
-              className="flex flex-col gap-2 @2xl/alert:block"
+              className="@2xl/alert:block flex flex-col gap-2"
               variant="destructive"
             >
               <AlertTitle>{t("organizationIsFullAlert.title")}</AlertTitle>
@@ -106,25 +106,25 @@ export default function OrganizationMembersRoute({
               </AlertDescription>
 
               <Button
-                asChild
-                className="shadow-none @2xl/alert:absolute @2xl/alert:top-1/2 @2xl/alert:right-3 @2xl/alert:-translate-y-1/2"
+                className="@2xl/alert:-translate-y-1/2 @2xl/alert:absolute @2xl/alert:top-1/2 @2xl/alert:right-3 shadow-none"
+                render={
+                  <Link
+                    to={href(
+                      "/organizations/:organizationSlug/settings/billing",
+                      { organizationSlug: params.organizationSlug },
+                    )}
+                  />
+                }
                 size="sm"
               >
-                <Link
-                  to={href(
-                    "/organizations/:organizationSlug/settings/billing",
-                    { organizationSlug: params.organizationSlug },
-                  )}
-                >
-                  {t("organizationIsFullAlert.button")}
-                </Link>
+                {t("organizationIsFullAlert.button")}
               </Button>
             </Alert>
           </div>
         )}
 
         {teamMemberTable.currentUsersRole !== "member" && (
-          <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2">
+          <div className="grid @3xl/main:grid-cols-2 grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card">
             <EmailInviteCard
               {...emailInviteCard}
               isInvitingByEmail={isInvitingByEmail}

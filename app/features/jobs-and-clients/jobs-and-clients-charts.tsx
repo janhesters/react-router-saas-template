@@ -2,8 +2,9 @@
  * Chart components for Jobs and Clients feature
  */
 
+import type { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
+import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { format, isSameMonth, startOfMonth } from "date-fns";
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useSearchParams } from "react-router";
 import {
   Bar,
@@ -109,7 +110,7 @@ export function PerformanceMetricsChart({
           size="sm"
           variant="outline"
         >
-          <ChevronLeftIcon className="size-4" />
+          <IconChevronLeft className="size-4" />
         </Button>
         <div className="min-w-[100px] text-center font-medium">
           {monthDisplay}
@@ -120,7 +121,7 @@ export function PerformanceMetricsChart({
           size="sm"
           variant="outline"
         >
-          <ChevronRightIcon className="size-4" />
+          <IconChevronRight className="size-4" />
         </Button>
       </div>
 
@@ -215,7 +216,13 @@ export function GrowthTrendsChart({ trends }: GrowthTrendsChartProps) {
   if (!trend) return null;
 
   // Handle trend selection change
-  const handleTrendChange = (value: string) => {
+  const handleTrendChange = (
+    value: string,
+    eventDetails: BaseRadioGroup.ChangeEventDetails,
+  ) => {
+    eventDetails.allowPropagation();
+    eventDetails.cancel();
+
     // Get existing search params (like calendar_date, metrics_month) and preserve them
     const params = new URLSearchParams(searchParams);
 
@@ -241,7 +248,9 @@ export function GrowthTrendsChart({ trends }: GrowthTrendsChartProps) {
       {/* Radio buttons for trend selection */}
       <RadioGroup
         className="flex flex-row gap-4"
-        onValueChange={handleTrendChange}
+        onValueChange={(value, eventDetails) =>
+          handleTrendChange(value as string, eventDetails)
+        }
         value={currentValue}
       >
         <div className="flex items-center gap-2">

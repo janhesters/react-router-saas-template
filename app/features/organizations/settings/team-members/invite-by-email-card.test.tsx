@@ -3,7 +3,13 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import type { EmailInviteCardProps } from "./invite-by-email-card";
 import { EmailInviteCard } from "./invite-by-email-card";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
-import { createRoutesStub, render, screen } from "~/test/react-test-utils";
+import {
+  createRoutesStub,
+  render,
+  screen,
+  userEvent,
+  waitFor,
+} from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
 const createProps: Factory<EmailInviteCardProps> = ({
@@ -82,7 +88,7 @@ describe("EmailInviteCard Component", () => {
   // Note: Validation error display is tested in the integration tests (members.spec.ts)
   // as it requires a properly structured SubmissionResult from Conform which is complex to mock
 
-  test("given: current user is NOT an owner, should: not show owner role option", () => {
+  test("given: current user is NOT an owner, should: not show owner role option", async () => {
     const props = createProps({ currentUserIsOwner: false });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
@@ -92,17 +98,17 @@ describe("EmailInviteCard Component", () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
-    // Find the hidden select element
+    // Open the select dropdown
     const select = screen.getByRole("combobox", { name: /role/i });
-    const hiddenSelect = select.nextElementSibling as HTMLSelectElement;
+    await userEvent.click(select);
 
-    // Verify owner role option is not present in the hidden select
-    expect(
-      hiddenSelect.querySelector('option[value="owner"]'),
-    ).not.toBeInTheDocument();
+    // Wait for dropdown to open and verify owner option is not present
+    await waitFor(() => {
+      expect(screen.queryByRole("option", { name: /owner/i })).toBeNull();
+    });
   });
 
-  test("given: current user is an owner, should: show owner role option", () => {
+  test("given: current user is an owner, should: show owner role option", async () => {
     const props = createProps({ currentUserIsOwner: true });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;
@@ -112,14 +118,16 @@ describe("EmailInviteCard Component", () => {
 
     render(<RouterStub initialEntries={[path]} />);
 
-    // Find the hidden select element
+    // Open the select dropdown
     const select = screen.getByRole("combobox", { name: /role/i });
-    const hiddenSelect = select.nextElementSibling as HTMLSelectElement;
+    await userEvent.click(select);
 
-    // Verify owner role option is present in the hidden select
-    expect(
-      hiddenSelect.querySelector('option[value="owner"]'),
-    ).toBeInTheDocument();
+    // Wait for dropdown to open and verify owner option is present
+    await waitFor(() => {
+      expect(
+        screen.getByRole("option", { name: /owner/i }),
+      ).toBeInTheDocument();
+    });
   });
 
   test("given: organization is full, should: disable form", () => {

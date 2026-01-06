@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: Test code */
 import { faker } from "@faker-js/faker";
+import { IconHome, IconSettings } from "@tabler/icons-react";
 import userEvent from "@testing-library/user-event";
-import { HomeIcon, SettingsIcon } from "lucide-react";
 import { createRoutesStub } from "react-router";
 import { describe, expect, test } from "vitest";
 
@@ -15,7 +15,7 @@ const createNavGroupItemWithoutChildren: Factory<
   NavGroupItemWithoutChildren
 > = ({
   title = faker.lorem.words(2),
-  icon = faker.helpers.arrayElement([HomeIcon, SettingsIcon]),
+  icon = faker.helpers.arrayElement([IconHome, IconSettings]),
   url = faker.helpers.arrayElement([
     "/account",
     "/dashboard",
@@ -72,7 +72,7 @@ describe("NavGroup Component", () => {
     const props = createProps({
       items: [
         {
-          icon: SettingsIcon,
+          icon: IconSettings,
           items: [
             { title: "Profile", url: "/settings/profile" },
             { title: "Security", url: "/settings/security" },

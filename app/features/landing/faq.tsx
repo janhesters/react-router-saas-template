@@ -22,11 +22,11 @@ export function FAQ() {
   return (
     <section className="px-4 py-24">
       <div className="mx-auto max-w-4xl">
-        <h2 className="text-primary mb-10 text-3xl font-semibold">
+        <h2 className="mb-10 font-semibold text-3xl text-primary">
           {t("title")}
         </h2>
 
-        <Accordion collapsible type="single">
+        <Accordion>
           {items.map((item, index) => (
             <AccordionItem key={item.question} value={`item-${index}`}>
               <AccordionTrigger>{item.question}</AccordionTrigger>

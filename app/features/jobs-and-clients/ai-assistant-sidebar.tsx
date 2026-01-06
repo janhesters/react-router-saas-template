@@ -5,11 +5,11 @@
  */
 
 import {
-  BellIcon,
-  CalendarIcon,
-  CheckIcon,
-  TrendingUpIcon,
-} from "lucide-react";
+  IconBell,
+  IconCalendar,
+  IconCheck,
+  IconTrendingUp,
+} from "@tabler/icons-react";
 
 import type {
   ChatMessage,
@@ -115,14 +115,14 @@ export function AiAssistantSidebar({
               // Map icon string to actual icon component
               const IconComponent =
                 action.icon === "CalendarIcon"
-                  ? CalendarIcon
+                  ? IconCalendar
                   : action.icon === "CheckIcon"
-                    ? CheckIcon
+                    ? IconCheck
                     : action.icon === "BellIcon"
-                      ? BellIcon
+                      ? IconBell
                       : action.icon === "TrendingUpIcon"
-                        ? TrendingUpIcon
-                        : CheckIcon;
+                        ? IconTrendingUp
+                        : IconCheck;
 
               return (
                 <Button

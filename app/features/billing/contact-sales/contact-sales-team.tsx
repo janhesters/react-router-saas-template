@@ -38,7 +38,7 @@ export function ContactSalesTeam({
   return (
     <Card>
       <CardHeader className="space-y-6">
-        <CardTitle className="text-primary text-5xl">
+        <CardTitle className="text-5xl text-primary">
           {t("contactSalesTitle")}
         </CardTitle>
 

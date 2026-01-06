@@ -4,8 +4,8 @@
  * Provides modals for viewing and adding/editing calendar events
  */
 
+import { IconPencil } from "@tabler/icons-react";
 import { format } from "date-fns";
-import { PencilIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigation, useSubmit } from "react-router";
 
@@ -68,7 +68,7 @@ export function ViewEventModal({
         {/* Edit button row - positioned next to close button */}
         <div className="absolute top-4 right-16 flex items-center">
           <Button onClick={onEdit} size="sm" variant="ghost">
-            <PencilIcon className="size-4" />
+            <IconPencil className="size-4" />
           </Button>
         </div>
 
@@ -286,13 +286,16 @@ export function AddEditEventModal({
     // Don't close modal here - wait for actionData
   };
 
-  const handleChange = (field: string, value: string | number | boolean) => {
+  const handleChange = (
+    field: string,
+    value: string | number | boolean | null,
+  ) => {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value };
 
       // Validate time range when startTime or endTime changes
       if (field === "startTime" || field === "endTime") {
-        validateTimeRange(updated.startTime, updated.endTime);
+        validateTimeRange(updated.startTime ?? "", updated.endTime ?? "");
       }
 
       return updated;
@@ -329,7 +332,7 @@ export function AddEditEventModal({
               <div className="grid gap-1">
                 <Label htmlFor="type">Type</Label>
                 <Select
-                  onValueChange={(value) => handleChange("type", value)}
+                  onValueChange={(value) => handleChange("type", value ?? "")}
                   value={formData.type}
                 >
                   <SelectTrigger id="type">
