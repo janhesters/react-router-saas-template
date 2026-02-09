@@ -55,11 +55,16 @@ const testConfig = defineVitestConfig({
     projects: [
       {
         ...rootConfig,
-        test: { include: ["app/**/*.test.ts"], name: "unit-tests" },
+        test: {
+          env: { TZ: "UTC" },
+          include: ["app/**/*.test.ts"],
+          name: "unit-tests",
+        },
       },
       {
         ...rootConfig,
         test: {
+          env: { TZ: "UTC" },
           globalSetup: "app/test/vitest.global-setup.ts",
           include: ["app/**/*.spec.ts"],
           name: "integration-tests",
@@ -69,6 +74,7 @@ const testConfig = defineVitestConfig({
       {
         ...rootConfig,
         test: {
+          env: { TZ: "UTC" },
           environment: "happy-dom",
           include: ["app/**/*.test.tsx"],
           name: "react-happy-dom-tests",
