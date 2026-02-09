@@ -1,3 +1,4 @@
+import { createId } from "@paralleldrive/cuid2";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./general";
@@ -20,6 +21,7 @@ import {
   teardownOrganizationAndMember,
 } from "~/test/test-utils";
 import { badRequest, forbidden, notFound } from "~/utils/http-responses.server";
+import { slugify } from "~/utils/slugify.server";
 import { toFormData } from "~/utils/to-form-data";
 import { getToast } from "~/utils/toast.server";
 
@@ -145,7 +147,8 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
-      const { name, slug } = createPopulatedOrganization();
+      const name = `${createPopulatedOrganization().name} ${createId()}`;
+      const slug = slugify(name);
       const formData = toFormData({ intent, name });
 
       const response = (await sendAuthenticatedRequest({

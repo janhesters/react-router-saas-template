@@ -26,7 +26,7 @@ import type { Factory } from "~/utils/types";
 export const createPopulatedOrganization: Factory<Organization> = ({
   id = createId(),
   name = faker.company.name(),
-  slug = slugify(name),
+  slug = slugify(`${name}-${createId()}`),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 1 }),
   imageUrl = faker.image.url(),

@@ -1,5 +1,6 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import { parseSubmission, report } from "@conform-to/react/future";
+import { createId } from "@paralleldrive/cuid2";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./new";
@@ -101,10 +102,10 @@ describe("/organizations/new route action", () => {
 
     test("given: a valid name for an organization, should: create organization and redirect to organization page", async () => {
       const { userAccount } = await setup();
-      const organization = createPopulatedOrganization();
+      const name = `${createPopulatedOrganization().name} ${createId()}`;
       const formData = toFormData({
         intent,
-        name: organization.name,
+        name,
       });
 
       const response = (await sendAuthenticatedRequest({
@@ -113,7 +114,7 @@ describe("/organizations/new route action", () => {
       })) as Response;
 
       expect(response.status).toEqual(302);
-      const slug = slugify(organization.name);
+      const slug = slugify(name);
       expect(response.headers.get("Location")).toEqual(
         `/organizations/${slug}`,
       );
@@ -122,7 +123,7 @@ describe("/organizations/new route action", () => {
       const createdOrganization =
         await retrieveOrganizationWithMembershipsFromDatabaseBySlug(slug);
       expect(createdOrganization).toMatchObject({
-        name: organization.name,
+        name,
       });
       expect(createdOrganization?.memberships[0]?.member.id).toEqual(
         userAccount.id,
@@ -135,8 +136,13 @@ describe("/organizations/new route action", () => {
     test("given: an organization name that already exists, should: create organization with unique slug", async () => {
       const { userAccount } = await setup();
 
-      // Create first organization
-      const firstOrg = createPopulatedOrganization();
+      // Create first organization with a slug matching what the route would
+      // produce from the name, so the second org triggers the slug extension.
+      const { name } = createPopulatedOrganization();
+      const firstOrg = createPopulatedOrganization({
+        name,
+        slug: slugify(name),
+      });
       await saveOrganizationToDatabase(firstOrg);
       onTestFinished(async () => {
         await deleteOrganizationFromDatabaseById(firstOrg.id);
@@ -206,7 +212,7 @@ describe("/organizations/new route action", () => {
 
     test("given: a valid name and a logo file, should: create organization with logo", async () => {
       const { userAccount } = await setup();
-      const organization = createPopulatedOrganization();
+      const name = `${createPopulatedOrganization().name} ${createId()}`;
 
       // Create a mock File object for the logo
       const logoFile = new File(["logo content"], "logo.png", {
@@ -216,7 +222,7 @@ describe("/organizations/new route action", () => {
       const formData = toFormData({
         intent,
         logo: logoFile,
-        name: organization.name,
+        name,
       });
 
       const response = (await sendAuthenticatedRequest({
@@ -226,7 +232,7 @@ describe("/organizations/new route action", () => {
 
       // Assert redirect
       expect(response.status).toEqual(302);
-      const slug = slugify(organization.name);
+      const slug = slugify(name);
       expect(response.headers.get("Location")).toEqual(
         `/organizations/${slug}`,
       );
@@ -237,7 +243,7 @@ describe("/organizations/new route action", () => {
 
       expect(createdOrganization).toBeTruthy();
       expect(createdOrganization).toMatchObject({
-        name: organization.name,
+        name,
         slug: slug,
       });
       // Logo URL should be set (uploaded to storage)
