@@ -1,5 +1,6 @@
 import type { Icon } from "@tabler/icons-react";
 import { IconChevronRight } from "@tabler/icons-react";
+import type { LucideIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { NavLink, useLocation } from "react-router";
 
@@ -21,7 +22,7 @@ import {
 
 type NavGroupItem = {
   title: string;
-  icon?: Icon;
+  icon?: Icon | LucideIcon;
   isActive?: boolean;
 };
 

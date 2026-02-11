@@ -28,3 +28,9 @@ stripe-events.txt
 
 # Prisma
 /app/generated/
+
+# Personal Implementation Docs (to track my thoughts)
+docs/
+
+# Removed for I changed to my local postgres password
+.env.example

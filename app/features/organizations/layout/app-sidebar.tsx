@@ -5,6 +5,7 @@ import {
   IconLayoutDashboard,
   IconSettings,
 } from "@tabler/icons-react";
+import { Briefcase } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { href } from "react-router";
@@ -85,6 +86,13 @@ export function AppSidebar({
               icon: IconChartBar,
               title: t("app.analytics"),
               url: href("/organizations/:organizationSlug/analytics", {
+                organizationSlug,
+              }),
+            },
+            {
+              icon: Briefcase,
+              title: t("app.jobsAndClients"),
+              url: href("/organizations/:organizationSlug/jobs-and-clients", {
                 organizationSlug,
               }),
             },
