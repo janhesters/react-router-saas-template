@@ -1,4 +1,4 @@
-import { IconBook2 } from "@tabler/icons-react";
+import { IconBook } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -34,7 +34,7 @@ export function CTA() {
             variant="link"
           >
             {t("buttons.secondary")}
-            <IconBook2 />
+            <IconBook />
           </Button>
         </div>
 

@@ -1,4 +1,4 @@
-import { IconChevronLeft, IconLayoutList } from "@tabler/icons-react";
+import { IconChevronLeft, IconMenu2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { href, Link, Outlet, useMatch } from "react-router";
 
@@ -37,7 +37,7 @@ export default function UserAuthenticationLayout({
           to={href("/")}
         >
           <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <IconLayoutList className="size-4" />
+            <IconMenu2 className="size-4" />
           </div>
           {tCommon("appName")}
         </Link>

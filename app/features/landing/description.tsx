@@ -1,14 +1,14 @@
 import {
-  IconAdjustments,
   IconBolt,
   IconBook,
-  IconTestPipe,
+  IconFlask,
+  IconSettings,
 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
 
-const featureIcons = [IconBolt, IconTestPipe, IconBook, IconAdjustments];
+const featureIcons = [IconBolt, IconFlask, IconBook, IconSettings];
 
 const imageClassNames =
   "border-border w-3xl max-w-none rounded-xl border sm:w-228 md:-ml-4 lg:-ml-0";

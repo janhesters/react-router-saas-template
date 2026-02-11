@@ -1,4 +1,4 @@
-import { IconPlus, IconSelector } from "@tabler/icons-react";
+import { IconChevronDown, IconPlus } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, Link, useLocation } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
@@ -93,7 +93,7 @@ export function OrganizationSwitcher({
               </span>
             </div>
 
-            <IconSelector className="ml-auto" />
+            <IconChevronDown className="ml-auto" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent

@@ -1,8 +1,4 @@
-import {
-  IconLogout,
-  IconRosetteDiscountCheck,
-  IconSelector,
-} from "@tabler/icons-react";
+import { IconChevronDown, IconLogout, IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, href, Link } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
@@ -70,7 +66,7 @@ export function NavUser({ user }: NavUserProps) {
               <span className="truncate font-semibold">{user.name}</span>
               <span className="truncate text-xs">{user.email}</span>
             </div>
-            <IconSelector className="ml-auto size-4" />
+            <IconChevronDown className="ml-auto size-4" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent
@@ -107,7 +103,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuGroup>
               <Link to={href("/settings/account")}>
                 <DropdownMenuItem>
-                  <IconRosetteDiscountCheck />
+                  <IconUser />
                   {t("account")}
                 </DropdownMenuItem>
               </Link>

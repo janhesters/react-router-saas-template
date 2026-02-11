@@ -45,9 +45,25 @@ export default {
     pageTitle: "Invitation",
     welcomeToAppName: "Welcome to {{appName}}",
   },
+  aiAssistant: {
+    breadcrumb: "AI Assistant",
+    pageTitle: "AI Assistant",
+  },
   analytics: {
     breadcrumb: "Analytics",
     pageTitle: "Analytics",
+  },
+  calendar: {
+    breadcrumb: "Calendar",
+    pageTitle: "Calendar",
+  },
+  commission: {
+    breadcrumb: "Commission",
+    pageTitle: "Commission",
+  },
+  cvFormatting: {
+    breadcrumb: "CV Formatting",
+    pageTitle: "CV Formatting",
   },
   dashboard: {
     breadcrumb: "Dashboard",
@@ -57,18 +73,32 @@ export default {
     breadcrumb: "Get Help",
     pageTitle: "Get Help",
   },
+  jobSpecGenerator: {
+    breadcrumb: "Job Spec Generator",
+    pageTitle: "Job Spec Generator",
+  },
+  jobsAndClients: {
+    breadcrumb: "Jobs and Clients",
+    pageTitle: "Jobs and Clients",
+  },
   layout: {
     appSidebar: {
       nav: {
         app: {
-          analytics: "Analytics",
-          dashboard: "Dashboard",
-          projects: {
-            active: "Active",
-            all: "All",
-            title: "Projects",
-          },
+          aiAssistant: "AI Assistant",
+          calendar: "Calendar",
+          commission: "Commission",
+          cvFormatting: "CV Formatting",
+          home: "Home",
+          jobSpecGenerator: "Job Spec Generator",
+          jobsAndClients: "Jobs and Clients",
+          messagingHub: "Messaging Hub",
+          myCandidates: "My Candidates",
+          ourCandidates: "Our Candidates",
+          pipelineAndMetrics: "Pipeline and Metrics",
+          settings: "Settings",
           title: "App",
+          videoCall: "Video Call",
         },
         settings: {
           getHelp: "Get Help",
@@ -87,6 +117,14 @@ export default {
       newOrganization: "New organization",
       organizations: "Organizations",
     },
+  },
+  messagingHub: {
+    breadcrumb: "Messaging Hub",
+    pageTitle: "Messaging Hub",
+  },
+  myCandidates: {
+    breadcrumb: "My Candidates",
+    pageTitle: "My Candidates",
   },
   new: {
     backButtonLabel: "Back",
@@ -121,6 +159,14 @@ export default {
       owner: "Owner",
     },
     title: "Organization List",
+  },
+  ourCandidates: {
+    breadcrumb: "Our Candidates",
+    pageTitle: "Our Candidates",
+  },
+  pipelineAndMetrics: {
+    breadcrumb: "Pipeline and Metrics",
+    pageTitle: "Pipeline and Metrics",
   },
   projects: {
     breadcrumb: "All Projects",
@@ -300,5 +346,9 @@ export default {
         statusHeader: "Status",
       },
     },
+  },
+  videoCall: {
+    breadcrumb: "Video Call",
+    pageTitle: "Video Call",
   },
 };

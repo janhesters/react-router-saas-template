@@ -3,7 +3,7 @@ import {
   IconAlertTriangle,
   IconCircleCheck,
   IconInfoCircle,
-  IconLoader,
+  IconLoader2,
 } from "@tabler/icons-react";
 import type { ToasterProps } from "sonner";
 import { Toaster as Sonner } from "sonner";
@@ -19,7 +19,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       icons={{
         error: <IconAlertOctagon className="size-4" />,
         info: <IconInfoCircle className="size-4" />,
-        loading: <IconLoader className="size-4 animate-spin" />,
+        loading: <IconLoader2 className="size-4 animate-spin" />,
         success: <IconCircleCheck className="size-4" />,
         warning: <IconAlertTriangle className="size-4" />,
       }}

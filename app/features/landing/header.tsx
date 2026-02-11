@@ -1,4 +1,4 @@
-import { IconLayoutList } from "@tabler/icons-react";
+import { IconMenu2 } from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -24,7 +24,7 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
           to="/"
         >
           <div className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground sm:size-6">
-            <IconLayoutList className="size-6 sm:size-4" />
+            <IconMenu2 className="size-6 sm:size-4" />
           </div>
 
           <span className="hidden font-mono sm:block">

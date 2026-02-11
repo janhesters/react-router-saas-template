@@ -17,7 +17,11 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Separator } from "~/components/ui/separator";
-import { SidebarTrigger } from "~/components/ui/sidebar";
+import {
+  RightSidebarTrigger,
+  SidebarTrigger,
+  useHasRightSidebar,
+} from "~/components/ui/sidebar";
 import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
 import type { NotificationsButtonProps } from "~/features/notifications/notifications-button";
 import { NotificationsButton } from "~/features/notifications/notifications-button";
@@ -39,6 +43,7 @@ export function AppHeader({
   notificationsButtonProps,
 }: AppHeaderProps) {
   const isMobile = useMediaQuery("(max-width: 767px)");
+  const hasRightSidebar = useHasRightSidebar();
 
   // Show ellipsis if:
   // - On mobile and more than 2 items, OR
@@ -152,6 +157,8 @@ export function AppHeader({
           <NotificationsButton {...notificationsButtonProps} />
 
           <ThemeToggle />
+
+          {hasRightSidebar && <RightSidebarTrigger />}
         </div>
       </div>
     </header>

@@ -92,6 +92,50 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+type SectionWrapProps = {
+  heading: React.ReactNode;
+  icon?: React.ComponentType<{ className?: string }>;
+  subtitle?: string;
+  headingExtra?: React.ReactNode;
+  stackHeadingChildren?: boolean;
+  children: React.ReactNode;
+  className?: string;
+  contentClassName?: string;
+};
+
+function SectionWrap({
+  heading,
+  icon: Icon,
+  subtitle,
+  headingExtra,
+  stackHeadingChildren = false,
+  children,
+  className,
+  contentClassName,
+}: SectionWrapProps) {
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <div
+          className={`${stackHeadingChildren ? "grid gap-5 md:flex md:gap-3" : "flex gap-3"} items-center justify-between`}
+        >
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            {Icon && <Icon className="size-4" />}
+            {typeof heading === "string" ? (
+              <CardTitle>{heading}</CardTitle>
+            ) : (
+              heading
+            )}
+          </div>
+          {headingExtra && <div>{headingExtra}</div>}
+        </div>
+        {subtitle && <CardDescription>{subtitle}</CardDescription>}
+      </CardHeader>
+      <CardContent className={cn(contentClassName)}>{children}</CardContent>
+    </Card>
+  );
+}
+
 export {
   Card,
   CardHeader,
@@ -100,4 +144,5 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  SectionWrap,
 };

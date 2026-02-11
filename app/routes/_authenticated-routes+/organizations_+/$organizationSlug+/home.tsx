@@ -11,7 +11,7 @@ export function loader({ params, context }: Route.LoaderArgs) {
   return {
     breadcrumb: {
       title: t("organizations:dashboard.breadcrumb"),
-      to: href("/organizations/:organizationSlug/dashboard", {
+      to: href("/organizations/:organizationSlug/home", {
         organizationSlug: params.organizationSlug,
       }),
     },
@@ -23,16 +23,16 @@ export const meta: Route.MetaFunction = ({ loaderData }) => [
   { title: loaderData?.pageTitle },
 ];
 
-export default function DashboardRoute() {
+export default function OrganizationDashboardRoute() {
   return (
     <div className="flex flex-1 flex-col gap-4 px-4 py-4 md:py-6 lg:px-6">
       <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
-        <div className="aspect-video rounded-xl bg-muted/50" />
+        <div className="bg-muted/50 aspect-video rounded-xl" />
+        <div className="bg-muted/50 aspect-video rounded-xl" />
+        <div className="bg-muted/50 aspect-video rounded-xl" />
       </div>
 
-      <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+      <div className="bg-muted/50 min-h-screen flex-1 rounded-xl md:min-h-min" />
     </div>
   );
 }

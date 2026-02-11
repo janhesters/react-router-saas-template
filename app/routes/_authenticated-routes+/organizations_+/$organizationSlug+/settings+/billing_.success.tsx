@@ -1,4 +1,4 @@
-import { IconRosetteDiscountCheck } from "@tabler/icons-react";
+import { IconUser } from "@tabler/icons-react";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
@@ -78,7 +78,7 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 md:py-6 lg:px-6">
       <div className="flex max-w-xl flex-col items-center px-4 text-center">
-        <IconRosetteDiscountCheck className="mx-auto size-16 text-green-400 dark:text-green-500" />
+        <IconUser className="mx-auto size-16 text-green-400 dark:text-green-500" />
 
         <h3 className="mt-2 font-semibold text-foreground text-lg">
           {t("paymentSuccessful")}

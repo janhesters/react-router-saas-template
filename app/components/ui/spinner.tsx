@@ -1,4 +1,4 @@
-import { IconLoader } from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 
 import { cn } from "~/lib/utils";
@@ -6,11 +6,11 @@ import { cn } from "~/lib/utils";
 function Spinner({
   className,
   ...props
-}: React.ComponentProps<typeof IconLoader>) {
+}: React.ComponentProps<typeof IconLoader2>) {
   const { t } = useTranslation("translation");
 
   return (
-    <IconLoader
+    <IconLoader2
       aria-label={t("loading")}
       className={cn("size-4 animate-spin", className)}
       role="status"

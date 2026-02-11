@@ -1,6 +1,5 @@
-import type { Icon } from "@tabler/icons-react";
 import { IconChevronRight } from "@tabler/icons-react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ElementType } from "react";
 import { NavLink, useLocation } from "react-router";
 
 import {
@@ -21,7 +20,7 @@ import {
 
 type NavGroupItem = {
   title: string;
-  icon?: Icon;
+  icon?: ElementType;
   isActive?: boolean;
 };
 

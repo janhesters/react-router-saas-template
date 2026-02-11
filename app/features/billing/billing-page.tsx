@@ -1,6 +1,6 @@
 import type { SubmissionResult } from "@conform-to/react/future";
 import * as VisuallyHiddenPrimitive from "@radix-ui/react-visually-hidden";
-import { IconCircleX } from "@tabler/icons-react";
+import { IconX } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Form, href, Link, useNavigation } from "react-router";
@@ -608,7 +608,7 @@ export function BillingPage({
                   }) as string[]
                 ).map((feature) => (
                   <li className="flex items-center gap-2" key={feature}>
-                    <IconCircleX className="size-4 text-destructive" />
+                    <IconX className="size-4 text-destructive" />
                     {feature}
                   </li>
                 ))}

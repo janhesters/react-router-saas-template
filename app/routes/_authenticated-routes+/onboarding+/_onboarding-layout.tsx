@@ -1,4 +1,4 @@
-import { IconLayoutList } from "@tabler/icons-react";
+import { IconMenu2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Outlet, useMatch } from "react-router";
 
@@ -31,7 +31,7 @@ export default function OnboardingLayout({ loaderData }: Route.ComponentProps) {
       {/* Left side */}
       <div className="relative hidden h-full flex-col overflow-hidden border-r bg-muted/60 p-10 lg:flex">
         <div className="absolute inset-0 z-10 bg-linear-to-t from-background to-transparent" />
-        <IconLayoutList className="mr-auto h-5" />
+        <IconMenu2 className="mr-auto h-5" />
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-xl">&ldquo;{t("quote")}&rdquo;</p>
