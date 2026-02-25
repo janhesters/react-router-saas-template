@@ -214,10 +214,7 @@ test.describe("organization settings layout", () => {
     await teardownOrganizationAndMember({ organization, user });
   });
 
-  test.fixme(
-    "given: the user is a member, should: hide the billing link",
-    async () => {
-      //
-    },
-  );
+  test.fixme("given: the user is a member, should: hide the billing link", async () => {
+    //
+  });
 });
