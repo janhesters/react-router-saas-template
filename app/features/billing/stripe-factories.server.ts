@@ -120,6 +120,7 @@ export const createStripeCustomerPortalSessionFactory: Factory<
   // realistic created timestamp within last 10 days
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
   customer = createStripeCustomerFactory().id,
+  customer_account = null,
   flow = null,
   livemode = false,
   locale = null,
@@ -132,6 +133,7 @@ export const createStripeCustomerPortalSessionFactory: Factory<
   configuration,
   created,
   customer,
+  customer_account,
   flow,
   id,
   livemode,
@@ -263,6 +265,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   collection_method = "charge_automatically",
   currency = "usd",
   customer = createStripeCustomerFactory().id,
+  customer_account = null,
   days_until_due = null,
   default_payment_method = null,
   default_source = null,
@@ -335,6 +338,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     created,
     currency,
     customer,
+    customer_account,
     days_until_due,
     default_payment_method,
     default_source,
@@ -426,6 +430,7 @@ export const createStripeCheckoutSessionFactory: Factory<
     tax_exempt: "none" as Stripe.Checkout.Session.CustomerDetails.TaxExempt,
     tax_ids: [],
   },
+  customer_account = null,
   customer_email = null,
   discounts = [],
   expires_at = created + 86_400, // 24 hours from creation
@@ -503,6 +508,7 @@ export const createStripeCheckoutSessionFactory: Factory<
   custom_fields,
   custom_text,
   customer,
+  customer_account,
   customer_creation,
   customer_details,
   customer_email,
@@ -626,6 +632,7 @@ export const createStripeSubscriptionScheduleFactory: Factory<
     start_date: Math.floor(faker.date.recent().getTime() / 1000),
   },
   customer = createStripeCustomerFactory().id,
+  customer_account = null,
   default_settings = {
     application_fee_percent: null,
     automatic_tax: {
@@ -668,6 +675,7 @@ export const createStripeSubscriptionScheduleFactory: Factory<
   created,
   current_phase,
   customer,
+  customer_account,
   default_settings,
   end_behavior,
   id,

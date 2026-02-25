@@ -82,6 +82,7 @@ export const createStripeCustomerSubscriptionCreatedEventFactory: Factory<
           },
           customer_balance: null,
           konbini: null,
+          payto: null,
           sepa_debit: null,
           us_bank_account: null,
         },
