@@ -6,7 +6,7 @@ import { Link, useFetcher } from "react-router";
 
 import { MARK_ONE_NOTIFICATION_AS_READ_INTENT } from "./notification-constants";
 import type { LinkNotificationData } from "./notifications-schemas";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -127,11 +127,14 @@ export function LinkNotification({
   text,
 }: LinkNotificationProps) {
   return (
-    <Button
-      className="group wrap-break-word h-auto w-full justify-between whitespace-normal py-2 text-muted-foreground"
-      render={<Link to={href} />}
-      size="sm"
-      variant="ghost"
+    <Link
+      className={buttonVariants({
+        className:
+          "group wrap-break-word h-auto w-full justify-between whitespace-normal py-2 text-muted-foreground",
+        size: "sm",
+        variant: "ghost",
+      })}
+      to={href}
     >
       {text}
 
@@ -145,6 +148,6 @@ export function LinkNotification({
           <NotificationsDot blinking={false} />
         </div>
       )}
-    </Button>
+    </Link>
   );
 }

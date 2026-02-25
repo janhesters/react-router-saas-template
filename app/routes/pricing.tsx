@@ -5,7 +5,7 @@ import { href, Link } from "react-router";
 
 import type { Route } from "./+types/pricing";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import {
@@ -85,12 +85,12 @@ export default function PricingRoute() {
                       {t("plans.low.description")}
                     </TierCardDescription>
 
-                    <Button
-                      className="w-full"
-                      render={<Link to={href("/register")} />}
+                    <Link
+                      className={buttonVariants({ className: "w-full" })}
+                      to={href("/register")}
                     >
                       {t("plans.low.cta")}
-                    </Button>
+                    </Link>
                   </TierCardHeader>
 
                   <Separator />
@@ -214,12 +214,12 @@ export default function PricingRoute() {
                       {t("plans.low.description")}
                     </TierCardDescription>
 
-                    <Button
-                      className="w-full"
-                      render={<Link to={href("/register")} />}
+                    <Link
+                      className={buttonVariants({ className: "w-full" })}
+                      to={href("/register")}
                     >
                       {t("plans.low.cta")}
-                    </Button>
+                    </Link>
                   </TierCardHeader>
 
                   <Separator />
@@ -341,12 +341,12 @@ export default function PricingRoute() {
                       {t("plans.enterprise.description")}
                     </TierCardDescription>
 
-                    <Button
-                      className="w-full"
-                      render={<Link to={href("/contact-sales")} />}
+                    <Link
+                      className={buttonVariants({ className: "w-full" })}
+                      to={href("/contact-sales")}
                     >
                       {t("plans.enterprise.cta")}
-                    </Button>
+                    </Link>
                   </TierCardHeader>
 
                   <Separator />

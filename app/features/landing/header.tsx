@@ -3,7 +3,7 @@ import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 export function Header({ className, ...props }: ComponentProps<"header">) {
@@ -33,19 +33,25 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
         </Link>
 
         <nav className="sm:-translate-x-1/2 sm:-translate-y-1/2 flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2">
-          <Button render={<Link to="/pricing" />} size="sm" variant="ghost">
+          <Link
+            className={buttonVariants({ size: "sm", variant: "ghost" })}
+            to="/pricing"
+          >
             {t("navLinks.pricing")}
-          </Button>
+          </Link>
         </nav>
 
         <div className="flex gap-2">
-          <Button render={<Link to="/login" />} size="sm" variant="outline">
+          <Link
+            className={buttonVariants({ size: "sm", variant: "outline" })}
+            to="/login"
+          >
             {t("login")}
-          </Button>
+          </Link>
 
-          <Button render={<Link to="/login" />} size="sm">
+          <Link className={buttonVariants({ size: "sm" })} to="/register">
             {t("register")}
-          </Button>
+          </Link>
         </div>
       </div>
     </header>

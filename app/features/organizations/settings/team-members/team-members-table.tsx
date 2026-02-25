@@ -1,4 +1,12 @@
-import { IconChevronDown } from "@tabler/icons-react";
+import {
+  IconChevronDown,
+  IconChevronLeft,
+  IconChevronRight,
+  IconChevronsLeft,
+  IconChevronsRight,
+  IconCircleCheckFilled,
+  IconLoader,
+} from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
@@ -9,14 +17,6 @@ import {
 import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  TbChevronLeft,
-  TbChevronRight,
-  TbChevronsLeft,
-  TbChevronsRight,
-  TbCircleCheckFilled,
-  TbLoader,
-} from "react-icons/tb";
 import { useFetcher } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
 
@@ -241,9 +241,9 @@ const createColumns = ({
           variant="outline"
         >
           {row.original.status === "emailInvitePending" ? (
-            <TbLoader />
+            <IconLoader />
           ) : (
-            <TbCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
           )}
           {t(`status.${row.original.status}`)}
         </Badge>
@@ -412,7 +412,7 @@ export function TeamMembersTable({
               variant="outline"
             >
               <span className="sr-only">{t("pagination.goToFirst")}</span>
-              <TbChevronsLeft />
+              <IconChevronsLeft />
             </Button>
 
             <Button
@@ -423,7 +423,7 @@ export function TeamMembersTable({
               variant="outline"
             >
               <span className="sr-only">{t("pagination.goToPrevious")}</span>
-              <TbChevronLeft />
+              <IconChevronLeft />
             </Button>
 
             <Button
@@ -434,7 +434,7 @@ export function TeamMembersTable({
               variant="outline"
             >
               <span className="sr-only">{t("pagination.goToNext")}</span>
-              <TbChevronRight />
+              <IconChevronRight />
             </Button>
 
             <Button
@@ -445,7 +445,7 @@ export function TeamMembersTable({
               variant="outline"
             >
               <span className="sr-only">{t("pagination.goToLast")}</span>
-              <TbChevronsRight />
+              <IconChevronsRight />
             </Button>
           </div>
         </div>

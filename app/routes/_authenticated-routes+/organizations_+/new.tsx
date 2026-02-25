@@ -1,15 +1,16 @@
+import { IconArrowLeft } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { TbArrowLeft } from "react-icons/tb";
 import { Link, useNavigation } from "react-router";
 
 import type { Route } from "./+types/new";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { ThemeToggle } from "~/features/color-scheme/theme-toggle";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { createOrganizationAction } from "~/features/organizations/create-organization/create-organization-action.server";
 import { CREATE_ORGANIZATION_INTENT } from "~/features/organizations/create-organization/create-organization-constants";
 import { CreateOrganizationFormCard } from "~/features/organizations/create-organization/create-organization-form-card";
 import { requireAuthenticatedUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
+import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
@@ -46,16 +47,16 @@ export default function NewOrganizationRoute({
       <header className="flex h-(--header-height) items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
           <div className="flex items-center gap-2">
-            <Button
-              className="size-8"
-              render={
-                <Link aria-label={t("backButtonLabel")} to="/organizations" />
-              }
-              size="icon"
-              variant="outline"
+            <Link
+              aria-label={t("backButtonLabel")}
+              className={cn(
+                buttonVariants({ size: "icon", variant: "outline" }),
+                "size-8",
+              )}
+              to="/organizations"
             >
-              <TbArrowLeft />
-            </Button>
+              <IconArrowLeft />
+            </Link>
 
             <h1 className="font-medium text-base">{t("pageTitle")}</h1>
           </div>

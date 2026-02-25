@@ -18,6 +18,9 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Claude Code
+.claude/settings.local.json
+
 # Random
 count-lines.sh
 stripe-events.txt

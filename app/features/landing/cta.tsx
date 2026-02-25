@@ -2,7 +2,8 @@ import { IconBook2 } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
+import { cn } from "~/lib/utils";
 
 export function CTA() {
   const { t } = useTranslation("landing", { keyPrefix: "cta" });
@@ -21,21 +22,20 @@ export function CTA() {
         </div>
 
         <div className="mt-8 flex items-center justify-center gap-4">
-          <Button render={<Link to="/register" />}>
+          <Link className={buttonVariants()} to="/register">
             {t("buttons.primary")}
-          </Button>
+          </Link>
 
-          <Button
-            className="text-background dark:text-foreground"
-            render={
-              // biome-ignore lint/a11y/useAnchorContent: anchor receives props
-              <a href="https://github.com/janhesters/react-router-saas-template" />
-            }
-            variant="link"
+          <a
+            className={cn(
+              buttonVariants({ variant: "link" }),
+              "text-background dark:text-foreground",
+            )}
+            href="https://github.com/janhesters/react-router-saas-template"
           >
             {t("buttons.secondary")}
             <IconBook2 />
-          </Button>
+          </a>
         </div>
 
         <div
