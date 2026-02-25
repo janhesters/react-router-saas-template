@@ -4,7 +4,7 @@ import { data, href, Link, useNavigation } from "react-router";
 import type { Route } from "./+types/members";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
@@ -105,20 +105,18 @@ export default function OrganizationMembersRoute({
                 {t("organizationIsFullAlert.description")}
               </AlertDescription>
 
-              <Button
-                className="@2xl/alert:-translate-y-1/2 @2xl/alert:absolute @2xl/alert:top-1/2 @2xl/alert:right-3 shadow-none"
-                render={
-                  <Link
-                    to={href(
-                      "/organizations/:organizationSlug/settings/billing",
-                      { organizationSlug: params.organizationSlug },
-                    )}
-                  />
-                }
-                size="sm"
+              <Link
+                className={buttonVariants({
+                  className:
+                    "@2xl/alert:-translate-y-1/2 @2xl/alert:absolute @2xl/alert:top-1/2 @2xl/alert:right-3 shadow-none",
+                  size: "sm",
+                })}
+                to={href("/organizations/:organizationSlug/settings/billing", {
+                  organizationSlug: params.organizationSlug,
+                })}
               >
                 {t("organizationIsFullAlert.button")}
-              </Button>
+              </Link>
             </Alert>
           </div>
         )}

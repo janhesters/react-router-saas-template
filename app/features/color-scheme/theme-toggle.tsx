@@ -1,7 +1,11 @@
-import { IconDeviceDesktop, IconMoon, IconSun } from "@tabler/icons-react";
+import {
+  IconBrightness,
+  IconDeviceDesktop,
+  IconMoon,
+  IconSun,
+} from "@tabler/icons-react";
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
-import { TbBrightness } from "react-icons/tb";
 import { Form } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
 
@@ -66,7 +70,7 @@ export function ThemeToggle() {
           />
         }
       >
-        <TbBrightness />
+        <IconBrightness />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" sideOffset={4}>

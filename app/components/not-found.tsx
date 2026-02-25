@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 export type NotFoundProps = {
@@ -31,9 +31,9 @@ export function NotFound({ className }: NotFoundProps) {
           {t("notFound.description")}
         </p>
 
-        <Button className="mt-10" render={<Link to="/" />}>
+        <Link className={cn(buttonVariants(), "mt-10")} to="/">
           {t("notFound.homeLink")}
-        </Button>
+        </Link>
       </div>
     </main>
   );

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { href, Link, Outlet, useMatch } from "react-router";
 
 import type { Route } from "./+types/_user-authentication-layout";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { FloatingPaths } from "~/features/user-authentication/floating-paths";
 
 /**
@@ -70,14 +70,16 @@ export default function UserAuthenticationLayout({
           <div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-primary/.04)_0,--theme(--color-primary/.01)_80%,transparent_100%)]" />
         </div>
         {(loginMatch || registerMatch) && (
-          <Button
-            className="absolute top-7 left-5 z-10"
-            render={<Link to={href("/")} />}
-            variant="ghost"
+          <Link
+            className={buttonVariants({
+              className: "absolute top-7 left-5 z-10",
+              variant: "ghost",
+            })}
+            to={href("/")}
           >
             <IconChevronLeft />
             {t("home")}
-          </Button>
+          </Link>
         )}
         <div className="relative flex min-h-screen flex-col justify-center p-4">
           <div className="mx-auto w-full max-w-sm">

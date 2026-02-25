@@ -113,10 +113,10 @@ export default function UserAccountOnboardingRoute({
                     {t("profilePhotoDescription")}
                   </FieldDescription>
                   <div className="flex items-center gap-x-4 md:gap-x-8">
-                    <Avatar className="size-16 rounded-lg md:size-24">
+                    <Avatar className="size-16 rounded-lg after:rounded-lg md:size-24">
                       <AvatarUploadPreviewImage
                         alt={t("profilePhotoPreviewAlt")}
-                        className="size-16 rounded-lg md:size-24"
+                        className="size-16 rounded-lg object-cover md:size-24"
                         src={loaderData.user.imageUrl}
                       />
                       <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">

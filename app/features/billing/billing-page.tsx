@@ -28,7 +28,7 @@ import {
 } from "./description-list";
 import { EditBillingEmailModalContent } from "./edit-billing-email-modal-content";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Card } from "~/components/ui/card";
 import {
   Dialog,
@@ -442,20 +442,18 @@ export function BillingPage({
                       </DescriptionDetail>
                     </div>
 
-                    <Button
-                      render={
-                        <Link
-                          to={href(
-                            "/organizations/:organizationSlug/settings/members",
-                            { organizationSlug },
-                          )}
-                        />
-                      }
-                      size="sm"
-                      variant="outline"
+                    <Link
+                      className={buttonVariants({
+                        size: "sm",
+                        variant: "outline",
+                      })}
+                      to={href(
+                        "/organizations/:organizationSlug/settings/members",
+                        { organizationSlug },
+                      )}
                     >
                       {t("planInformation.manageUsers")}
-                    </Button>
+                    </Link>
                   </DescriptionListRow>
 
                   <Separator />

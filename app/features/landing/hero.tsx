@@ -6,7 +6,7 @@ import { Link } from "react-router";
 import { RRLockupDarkIcon } from "./svgs/rr-lockup-dark-icon";
 import { RRLockupLightIcon } from "./svgs/rr-lockup-light-icon";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 const imageClassNames = "border-border rounded-xl border object-contain";
@@ -78,19 +78,20 @@ export function Hero() {
         </p>
 
         <div className="mt-10 flex items-center justify-center gap-2">
-          <Button render={<Link to="/register" />}>{t("cta.primary")}</Button>
+          <Link className={buttonVariants()} to="/register">
+            {t("cta.primary")}
+          </Link>
 
-          <Button
-            className="text-foreground"
-            render={
-              // biome-ignore lint/a11y/useAnchorContent: anchor receives props
-              <a href="https://github.com/janhesters/react-router-saas-template" />
-            }
-            variant="link"
+          <a
+            className={cn(
+              buttonVariants({ variant: "link" }),
+              "text-foreground",
+            )}
+            href="https://github.com/janhesters/react-router-saas-template"
           >
             {t("cta.secondary")}
             <IconBook2 />
-          </Button>
+          </a>
         </div>
       </div>
 

@@ -1,11 +1,10 @@
-/** biome-ignore-all lint/a11y/useAnchorContent: anchor receives props */
 import type { ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 
 import { ThemeToggle } from "../color-scheme/theme-toggle";
 import { ReactsquadLogoIcon } from "./svgs/reactsquad-logo-icon";
-import { Button } from "~/components/ui/button";
+import { buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { cn } from "~/lib/utils";
 
@@ -19,37 +18,38 @@ export function Footer({ className, ...props }: ComponentProps<"footer">) {
     >
       <div className="container mx-auto flex h-full flex-col items-center justify-between gap-4 px-4 py-4 sm:flex-row md:py-0">
         <div className="flex items-center gap-2">
-          <Button
+          <a
             aria-label={t("social.github")}
-            className="size-8"
-            render={
-              <a href="https://github.com/janhesters/react-router-saas-template" />
-            }
-            size="icon"
-            variant="outline"
+            className={cn(
+              buttonVariants({ size: "icon", variant: "outline" }),
+              "size-8",
+            )}
+            href="https://github.com/janhesters/react-router-saas-template"
           >
             <FaGithub />
-          </Button>
+          </a>
 
-          <Button
+          <a
             aria-label={t("social.twitter")}
-            className="size-8"
-            render={<a href="https://x.com/janhesters" />}
-            size="icon"
-            variant="outline"
+            className={cn(
+              buttonVariants({ size: "icon", variant: "outline" }),
+              "size-8",
+            )}
+            href="https://x.com/janhesters"
           >
             <FaXTwitter />
-          </Button>
+          </a>
 
-          <Button
+          <a
             aria-label={t("social.linkedin")}
-            className="size-8"
-            render={<a href="https://www.linkedin.com/in/jan-hesters/" />}
-            size="icon"
-            variant="outline"
+            className={cn(
+              buttonVariants({ size: "icon", variant: "outline" }),
+              "size-8",
+            )}
+            href="https://www.linkedin.com/in/jan-hesters/"
           >
             <FaLinkedin />
-          </Button>
+          </a>
 
           <div className="h-6">
             <Separator orientation="vertical" />

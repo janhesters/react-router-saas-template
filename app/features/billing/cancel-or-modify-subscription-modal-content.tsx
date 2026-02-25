@@ -25,7 +25,7 @@ import {
 } from "./pricing";
 import { Alert, AlertDescription, AlertTitle } from "~/components/ui/alert";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { Separator } from "~/components/ui/separator";
 import { Spinner } from "~/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -466,12 +466,12 @@ export function CancelOrModifySubscriptionModalContent({
                         {t("plans.enterprise.description")}
                       </TierCardDescription>
 
-                      <Button
-                        className="w-full"
-                        render={<Link to={href("/contact-sales")} />}
+                      <Link
+                        className={buttonVariants({ className: "w-full" })}
+                        to={href("/contact-sales")}
                       >
                         {t("plans.enterprise.cta")}
-                      </Button>
+                      </Link>
                     </TierCardHeader>
 
                     <Separator />
