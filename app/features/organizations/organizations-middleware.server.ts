@@ -6,7 +6,6 @@ import { requireUserIsMemberOfOrganization } from "./organizations-helpers.serve
 import type { OrganizationMembershipRole } from "~/generated/client";
 
 export const organizationMembershipContext = createContext<{
-  headers: Headers;
   organization: OnboardingUser["memberships"][number]["organization"];
   role: OrganizationMembershipRole;
   user: OnboardingUser;
@@ -25,15 +24,13 @@ export const organizationMembershipMiddleware: MiddlewareFunction = async (
     );
   }
 
-  const { user, organization, role, headers } =
-    await requireUserIsMemberOfOrganization({
-      context,
-      organizationSlug,
-      request,
-    });
+  const { user, organization, role } = await requireUserIsMemberOfOrganization({
+    context,
+    organizationSlug,
+    request,
+  });
 
   context.set(organizationMembershipContext, {
-    headers,
     organization,
     role,
     user,

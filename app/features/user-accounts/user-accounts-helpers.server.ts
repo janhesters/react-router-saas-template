@@ -44,10 +44,9 @@ export const requireAuthenticatedUserExists = async ({
 }) => {
   const {
     user: { id },
-    headers,
   } = context.get(authContext);
   const user = await retrieveUserAccountFromDatabaseBySupabaseUserId(id);
-  return { headers, user: await throwIfUserAccountIsMissing(request, user) };
+  return { user: await throwIfUserAccountIsMissing(request, user) };
 };
 
 /**
@@ -72,7 +71,6 @@ export const requireAuthenticatedUserWithMembershipsExists = async ({
 }) => {
   const {
     user: { id },
-    headers,
     supabase,
   } = context.get(authContext);
   const user =
@@ -80,7 +78,6 @@ export const requireAuthenticatedUserWithMembershipsExists = async ({
       id,
     );
   return {
-    headers,
     supabase,
     user: await throwIfUserAccountIsMissing(request, user),
   };
@@ -109,7 +106,6 @@ export const requireAuthenticatedUserWithMembershipsAndSubscriptionsExists =
   }) => {
     const {
       user: { id },
-      headers,
       supabase,
     } = context.get(authContext);
     const user =
@@ -117,7 +113,6 @@ export const requireAuthenticatedUserWithMembershipsAndSubscriptionsExists =
         id,
       );
     return {
-      headers,
       supabase,
       user: await throwIfUserAccountIsMissing(request, user),
     };

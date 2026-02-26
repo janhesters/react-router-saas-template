@@ -20,7 +20,7 @@ export async function onboardingUserAccountAction({
   request,
   context,
 }: Route.ActionArgs) {
-  const { headers, user } = await requireUserNeedsOnboarding({
+  const { user } = await requireUserNeedsOnboarding({
     context,
     request,
   });
@@ -79,7 +79,6 @@ export async function onboardingUserAccountAction({
       },
       {
         headers: combineHeaders(
-          headers,
           await destroyEmailInviteInfoSession(request),
           await destroyInviteLinkInfoSession(request),
         ),
@@ -88,6 +87,6 @@ export async function onboardingUserAccountAction({
   }
 
   return redirect(href("/onboarding/organization"), {
-    headers: combineHeaders(headers, inviteLinkHeaders),
+    headers: inviteLinkHeaders,
   });
 }

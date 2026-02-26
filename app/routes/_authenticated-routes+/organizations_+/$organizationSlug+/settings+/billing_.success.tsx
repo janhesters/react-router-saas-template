@@ -2,7 +2,7 @@ import { IconRosetteDiscountCheck } from "@tabler/icons-react";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { data, href, Link } from "react-router";
+import { href, Link } from "react-router";
 
 import type { Route } from "./+types/billing_.success";
 import { buttonVariants } from "~/components/ui/button";
@@ -14,22 +14,19 @@ import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
 
 export function loader({ context }: Route.LoaderArgs) {
-  const { headers, role } = context.get(organizationMembershipContext);
+  const { role } = context.get(organizationMembershipContext);
   const i18n = getInstance(context);
 
   if (role === OrganizationMembershipRole.member) {
     throw notFound();
   }
 
-  return data(
-    {
-      pageTitle: getPageTitle(
-        i18n.t.bind(i18n),
-        "billing:billingSuccessPage.pageTitle",
-      ),
-    },
-    { headers },
-  );
+  return {
+    pageTitle: getPageTitle(
+      i18n.t.bind(i18n),
+      "billing:billingSuccessPage.pageTitle",
+    ),
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

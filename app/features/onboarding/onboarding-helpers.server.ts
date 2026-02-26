@@ -24,11 +24,10 @@ async function requireOnboardingUserExists({
 }) {
   const {
     user: { id },
-    headers,
   } = context.get(authContext);
   const user =
     await retrieveUserAccountWithMembershipsFromDatabaseBySupabaseUserId(id);
-  return { headers, user: await throwIfUserAccountIsMissing(request, user) };
+  return { user: await throwIfUserAccountIsMissing(request, user) };
 }
 
 /**
@@ -65,10 +64,7 @@ export const getUserIsOnboarded = (user: OnboardingUser) =>
  * @throws Response with 302 status redirecting to the user's first organization
  * if the user is onboarded.
  */
-export const throwIfUserIsOnboarded = (
-  user: OnboardingUser,
-  headers: Headers,
-) => {
+export const throwIfUserIsOnboarded = (user: OnboardingUser) => {
   if (getUserIsOnboarded(user)) {
     if (user.memberships.length === 1) {
       // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a membership
@@ -77,11 +73,10 @@ export const throwIfUserIsOnboarded = (
         href("/organizations/:organizationSlug", {
           organizationSlug: slug,
         }),
-        { headers },
       );
     }
 
-    throw redirect(href("/organizations"), { headers });
+    throw redirect(href("/organizations"));
   }
 
   return user;
@@ -100,12 +95,11 @@ export const throwIfUserIsOnboarded = (
 export const redirectUserToOnboardingStep = (
   request: Request,
   user: OnboardingUser,
-  headers: Headers,
 ) => {
   const { pathname } = new URL(request.url);
 
   if (user.name.length === 0 && pathname !== "/onboarding/user-account") {
-    throw redirect(href("/onboarding/user-account"), { headers });
+    throw redirect(href("/onboarding/user-account"));
   }
 
   if (
@@ -113,10 +107,10 @@ export const redirectUserToOnboardingStep = (
     user.memberships.length === 0 &&
     pathname !== "/onboarding/organization"
   ) {
-    throw redirect(href("/onboarding/organization"), { headers });
+    throw redirect(href("/onboarding/organization"));
   }
 
-  return { headers, user };
+  return { user };
 };
 
 /**
@@ -137,15 +131,11 @@ export async function requireUserNeedsOnboarding({
   context: Readonly<RouterContextProvider>;
   request: Request;
 }) {
-  const { user, headers } = await requireOnboardingUserExists({
+  const { user } = await requireOnboardingUserExists({
     context,
     request,
   });
-  return redirectUserToOnboardingStep(
-    request,
-    throwIfUserIsOnboarded(user, headers),
-    headers,
-  );
+  return redirectUserToOnboardingStep(request, throwIfUserIsOnboarded(user));
 }
 
 /**
@@ -157,16 +147,14 @@ export async function requireUserNeedsOnboarding({
  */
 export const throwIfUserNeedsOnboarding = ({
   user,
-  headers,
 }: {
   user: OnboardingUser;
-  headers: Headers;
 }) => {
   if (getUserIsOnboarded(user)) {
-    return { headers, user };
+    return { user };
   }
 
-  throw redirect(href("/onboarding"), { headers });
+  throw redirect(href("/onboarding"));
 };
 
 /**

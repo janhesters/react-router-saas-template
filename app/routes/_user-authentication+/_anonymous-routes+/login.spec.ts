@@ -1,6 +1,8 @@
+import { RouterContextProvider } from "react-router";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./login";
+import { i18nextMiddleware } from "~/features/localization/i18next-middleware.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
@@ -222,8 +224,27 @@ describe("/login route action", () => {
 
     test("given: a login request with Google, should: return a redirect response to Supabase OAuth URL with code_verifier cookie", async () => {
       const formData = toFormData({ intent });
+      const request = new Request(createUrl(), {
+        body: formData,
+        method: "POST",
+      });
+      const params = {};
 
-      const response = (await sendRequest({ formData })) as Response;
+      const context = new RouterContextProvider();
+      await i18nextMiddleware(
+        { context, params, request, unstable_pattern: pattern },
+        () => Promise.resolve(new Response(null, { status: 200 })),
+      );
+      const response = (await anonymousMiddleware(
+        { context, params, request, unstable_pattern: pattern },
+        () =>
+          action({
+            context,
+            params,
+            request,
+            unstable_pattern: pattern,
+          }) as Promise<Response>,
+      )) as Response;
 
       expect(response.status).toEqual(302);
       expect(response.headers.get("Location")).toMatch(

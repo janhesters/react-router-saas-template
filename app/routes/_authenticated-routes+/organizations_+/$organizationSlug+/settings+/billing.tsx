@@ -1,4 +1,4 @@
-import { data, href, useNavigation } from "react-router";
+import { href, useNavigation } from "react-router";
 
 import type { Route } from "./+types/billing";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -23,9 +23,7 @@ import { getPageTitle } from "~/utils/get-page-title.server";
 import { notFound } from "~/utils/http-responses.server";
 
 export async function loader({ context, params }: Route.LoaderArgs) {
-  const { organization, headers, role } = context.get(
-    organizationMembershipContext,
-  );
+  const { organization, role } = context.get(organizationMembershipContext);
   const products = await retrieveProductsFromDatabaseByPriceLookupKeys(
     allLookupKeys as unknown as string[],
   );
@@ -36,25 +34,22 @@ export async function loader({ context, params }: Route.LoaderArgs) {
     throw notFound();
   }
 
-  return data(
-    {
-      billingPageProps: {
-        ...mapStripeSubscriptionDataToBillingPageProps({
-          now: new Date(),
-          organization,
-        }),
-        ...getCreateSubscriptionModalProps(organization, products),
-      },
-      breadcrumb: {
-        title: t("billing:billingPage.breadcrumb"),
-        to: href("/organizations/:organizationSlug/settings/billing", {
-          organizationSlug: params.organizationSlug,
-        }),
-      },
-      pageTitle: getPageTitle(t, "billing:billingPage.pageTitle"),
+  return {
+    billingPageProps: {
+      ...mapStripeSubscriptionDataToBillingPageProps({
+        now: new Date(),
+        organization,
+      }),
+      ...getCreateSubscriptionModalProps(organization, products),
     },
-    { headers },
-  );
+    breadcrumb: {
+      title: t("billing:billingPage.breadcrumb"),
+      to: href("/organizations/:organizationSlug/settings/billing", {
+        organizationSlug: params.organizationSlug,
+      }),
+    },
+    pageTitle: getPageTitle(t, "billing:billingPage.pageTitle"),
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

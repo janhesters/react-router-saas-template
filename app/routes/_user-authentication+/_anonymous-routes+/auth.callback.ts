@@ -21,7 +21,7 @@ import { redirectWithToast } from "~/utils/toast.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   try {
-    const { supabase, headers } = context.get(anonymousContext);
+    const { supabase } = context.get(anonymousContext);
     const i18n = getInstance(context);
     const { inviteLinkInfo, headers: inviteLinkHeaders } =
       await getValidInviteLinkInfo(request);
@@ -91,7 +91,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             },
             {
               headers: combineHeaders(
-                headers,
                 await destroyEmailInviteInfoSession(request),
                 await destroyInviteLinkInfoSession(request),
               ),
@@ -128,7 +127,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             },
             {
               headers: combineHeaders(
-                headers,
                 inviteLinkHeaders,
                 await destroyEmailInviteInfoSession(request),
               ),
@@ -164,7 +162,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             },
             {
               headers: combineHeaders(
-                headers,
                 emailInviteHeaders,
                 await destroyInviteLinkInfoSession(request),
               ),
@@ -174,7 +171,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       }
 
       return redirect(href("/organizations"), {
-        headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
+        headers: combineHeaders(inviteLinkHeaders, emailInviteHeaders),
       });
     }
 
@@ -206,7 +203,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     }
 
     return redirect(href("/onboarding"), {
-      headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
+      headers: combineHeaders(inviteLinkHeaders, emailInviteHeaders),
     });
   } catch (error) {
     console.log(error);

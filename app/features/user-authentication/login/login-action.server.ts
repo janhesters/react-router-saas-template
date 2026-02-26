@@ -17,7 +17,7 @@ const loginSchema = z.discriminatedUnion("intent", [
 ]);
 
 export async function loginAction({ request, context }: Route.ActionArgs) {
-  const { supabase, headers } = context.get(anonymousContext);
+  const { supabase } = context.get(anonymousContext);
   const i18n = getInstance(context);
   const result = await validateFormData(request, loginSchema);
 
@@ -86,7 +86,7 @@ export async function loginAction({ request, context }: Route.ActionArgs) {
         throw error;
       }
 
-      return redirect(data.url, { headers });
+      return redirect(data.url);
     }
   }
 }

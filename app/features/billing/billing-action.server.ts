@@ -40,7 +40,6 @@ import { deleteStripeSubscriptionScheduleFromDatabaseById } from "./stripe-subsc
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/billing";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { OrganizationMembershipRole } from "~/generated/client";
-import { combineHeaders } from "~/utils/combine-headers.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
 import { badRequest, conflict, forbidden } from "~/utils/http-responses.server";
@@ -63,7 +62,7 @@ export async function billingAction({
   request,
 }: Route.ActionArgs) {
   try {
-    const { organization, headers, role, user } = context.get(
+    const { organization, role, user } = context.get(
       organizationMembershipContext,
     );
     const i18n = getInstance(context);
@@ -124,10 +123,7 @@ export async function billingAction({
           type: "success",
         });
 
-        return data(
-          { result: undefined },
-          { headers: combineHeaders(toast, headers) },
-        );
+        return data({ result: undefined }, { headers: toast });
       }
 
       case OPEN_CHECKOUT_SESSION_INTENT: {
@@ -195,10 +191,7 @@ export async function billingAction({
           type: "success",
         });
 
-        return data(
-          { result: undefined },
-          { headers: combineHeaders(toast, headers) },
-        );
+        return data({ result: undefined }, { headers: toast });
       }
 
       case SWITCH_SUBSCRIPTION_INTENT: {
@@ -261,10 +254,7 @@ export async function billingAction({
           type: "success",
         });
 
-        return data(
-          { result: undefined },
-          { headers: combineHeaders(toast, headers) },
-        );
+        return data({ result: undefined }, { headers: toast });
       }
 
       case VIEW_INVOICES_INTENT: {

@@ -21,7 +21,6 @@ import { updateStripeCustomer } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { OrganizationMembershipRole } from "~/generated/client";
-import { combineHeaders } from "~/utils/combine-headers.server";
 import { forbidden } from "~/utils/http-responses.server";
 import { slugify } from "~/utils/slugify.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
@@ -40,9 +39,7 @@ export async function generalOrganizationSettingsAction({
   params,
   context,
 }: Route.ActionArgs) {
-  const { headers, organization, role } = context.get(
-    organizationMembershipContext,
-  );
+  const { organization, role } = context.get(organizationMembershipContext);
   const i18n = getInstance(context);
 
   if (role !== OrganizationMembershipRole.owner) {
@@ -110,7 +107,6 @@ export async function generalOrganizationSettingsAction({
               ),
               type: "success",
             },
-            { headers },
           );
         }
       }
@@ -121,24 +117,17 @@ export async function generalOrganizationSettingsAction({
         ),
         type: "success",
       });
-      return data(
-        { result: undefined },
-        { headers: combineHeaders(headers, toastHeaders) },
-      );
+      return data({ result: undefined }, { headers: toastHeaders });
     }
 
     case DELETE_ORGANIZATION_INTENT: {
       await deleteOrganization(organization.id);
-      return redirectWithToast(
-        href("/organizations"),
-        {
-          title: i18n.t(
-            "organizations:settings.general.toast.organizationDeleted",
-          ),
-          type: "success",
-        },
-        { headers },
-      );
+      return redirectWithToast(href("/organizations"), {
+        title: i18n.t(
+          "organizations:settings.general.toast.organizationDeleted",
+        ),
+        type: "success",
+      });
     }
   }
 }

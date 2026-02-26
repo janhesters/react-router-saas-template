@@ -15,7 +15,7 @@ export async function createOrganizationAction({
   context,
   request,
 }: Route.ActionArgs) {
-  const { user, headers } = await requireAuthenticatedUserExists({
+  const { user } = await requireAuthenticatedUserExists({
     context,
     request,
   });
@@ -51,5 +51,5 @@ export async function createOrganizationAction({
     userId: user.id,
   });
 
-  return redirect(`/organizations/${organization.slug}`, { headers });
+  return redirect(`/organizations/${organization.slug}`);
 }

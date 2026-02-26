@@ -2,7 +2,7 @@ import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconBuilding } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { data, Form, useNavigation } from "react-router";
+import { Form, useNavigation } from "react-router";
 
 import type { Route } from "./+types/organization";
 import {
@@ -49,21 +49,15 @@ import {
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const auth = await requireUserNeedsOnboarding({
+  await requireUserNeedsOnboarding({
     context,
     request,
   });
   const i18n = getInstance(context);
 
-  return data(
-    {
-      pageTitle: getPageTitle(
-        i18n.t.bind(i18n),
-        "onboarding:organization.title",
-      ),
-    },
-    { headers: auth.headers },
-  );
+  return {
+    pageTitle: getPageTitle(i18n.t.bind(i18n), "onboarding:organization.title"),
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

@@ -1,4 +1,4 @@
-import { data, redirect } from "react-router";
+import { redirect } from "react-router";
 import { safeRedirect } from "remix-utils/safe-redirect";
 import { z } from "zod";
 
@@ -30,7 +30,6 @@ import {
   notificationPanelOpenedSchema,
 } from "~/features/notifications/notifications-schemas";
 import { OrganizationMembershipRole } from "~/generated/client";
-import { combineHeaders } from "~/utils/combine-headers.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { requestToUrl } from "~/utils/get-search-parameter-from-request.server";
 import { conflict, forbidden, notFound } from "~/utils/http-responses.server";
@@ -49,7 +48,7 @@ export async function sidebarLayoutAction({
   request,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, headers, role } = context.get(
+    const { user, organization, role } = context.get(
       organizationMembershipContext,
     );
     const result = await validateFormData(request, schema);
@@ -69,7 +68,7 @@ export async function sidebarLayoutAction({
         );
         return redirect(
           safeRedirect(switchSlugInRoute(body.currentPath, organization.slug)),
-          { headers: combineHeaders(headers, { "Set-Cookie": cookie }) },
+          { headers: { "Set-Cookie": cookie } },
         );
       }
 
@@ -77,7 +76,7 @@ export async function sidebarLayoutAction({
         await markAllUnreadNotificationsAsReadForUserAndOrganizationInDatabaseById(
           { organizationId: organization.id, userId: user.id },
         );
-        return data({}, { headers });
+        return {};
       }
 
       case MARK_ONE_NOTIFICATION_AS_READ_INTENT: {
@@ -89,17 +88,17 @@ export async function sidebarLayoutAction({
           });
 
         if (result === null) {
-          return notFound({}, { headers });
+          return notFound({});
         }
 
-        return data({}, { headers });
+        return {};
       }
 
       case NOTIFICATION_PANEL_OPENED_INTENT: {
         await updateNotificationPanelLastOpenedAtForUserAndOrganizationInDatabaseById(
           { organizationId: organization.id, userId: user.id },
         );
-        return data({}, { headers });
+        return {};
       }
 
       case OPEN_CHECKOUT_SESSION_INTENT: {

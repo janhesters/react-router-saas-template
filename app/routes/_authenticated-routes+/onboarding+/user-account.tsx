@@ -2,7 +2,7 @@ import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
-import { data, Form, useNavigation } from "react-router";
+import { Form, useNavigation } from "react-router";
 
 import type { Route } from "./+types/user-account";
 import {
@@ -38,16 +38,10 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
   const i18n = getInstance(context);
 
-  return data(
-    {
-      pageTitle: getPageTitle(
-        i18n.t.bind(i18n),
-        "onboarding:userAccount.title",
-      ),
-      user: auth.user,
-    },
-    { headers: auth.headers },
-  );
+  return {
+    pageTitle: getPageTitle(i18n.t.bind(i18n), "onboarding:userAccount.title"),
+    user: auth.user,
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

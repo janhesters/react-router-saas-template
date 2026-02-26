@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, href } from "react-router";
+import { href } from "react-router";
 
 import type { Route } from "./+types/general";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -14,28 +14,23 @@ import { OrganizationMembershipRole } from "~/generated/browser";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export function loader({ context, params }: Route.LoaderArgs) {
-  const { headers, organization, role } = context.get(
-    organizationMembershipContext,
-  );
+  const { organization, role } = context.get(organizationMembershipContext);
   const i18n = getInstance(context);
   const t = i18n.t.bind(i18n);
 
   const userIsOwner = role === OrganizationMembershipRole.owner;
 
-  return data(
-    {
-      breadcrumb: {
-        title: t("organizations:settings.general.breadcrumb"),
-        to: href("/organizations/:organizationSlug/settings/general", {
-          organizationSlug: params.organizationSlug,
-        }),
-      },
-      organization,
-      pageTitle: getPageTitle(t, "organizations:settings.general.pageTitle"),
-      userIsOwner,
+  return {
+    breadcrumb: {
+      title: t("organizations:settings.general.breadcrumb"),
+      to: href("/organizations/:organizationSlug/settings/general", {
+        organizationSlug: params.organizationSlug,
+      }),
     },
-    { headers },
-  );
+    organization,
+    pageTitle: getPageTitle(t, "organizations:settings.general.pageTitle"),
+    userIsOwner,
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
