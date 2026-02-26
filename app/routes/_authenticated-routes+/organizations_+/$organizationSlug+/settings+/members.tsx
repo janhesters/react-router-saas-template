@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { data, href, Link, useNavigation } from "react-router";
+import { href, Link, useNavigation } from "react-router";
 
 import type { Route } from "./+types/members";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -20,7 +20,7 @@ import { TeamMembersTable } from "~/features/organizations/settings/team-members
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, params, context }: Route.LoaderArgs) {
-  const { user, role, headers } = context.get(organizationMembershipContext);
+  const { user, role } = context.get(organizationMembershipContext);
   const organization =
     await requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug(
       params.organizationSlug,
@@ -28,27 +28,21 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
   const t = i18n.t.bind(i18n);
 
-  return data(
-    {
-      breadcrumb: {
-        title: t("organizations:settings.teamMembers.breadcrumb"),
-        to: href("/organizations/:organizationSlug/settings/members", {
-          organizationSlug: params.organizationSlug,
-        }),
-      },
-      pageTitle: getPageTitle(
-        t,
-        "organizations:settings.teamMembers.pageTitle",
-      ),
-      ...mapOrganizationDataToTeamMemberSettingsProps({
-        currentUsersId: user.id,
-        currentUsersRole: role,
-        organization,
-        request,
+  return {
+    breadcrumb: {
+      title: t("organizations:settings.teamMembers.breadcrumb"),
+      to: href("/organizations/:organizationSlug/settings/members", {
+        organizationSlug: params.organizationSlug,
       }),
     },
-    { headers },
-  );
+    pageTitle: getPageTitle(t, "organizations:settings.teamMembers.pageTitle"),
+    ...mapOrganizationDataToTeamMemberSettingsProps({
+      currentUsersId: user.id,
+      currentUsersRole: role,
+      organization,
+      request,
+    }),
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

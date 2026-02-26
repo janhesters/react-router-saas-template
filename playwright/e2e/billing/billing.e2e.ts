@@ -227,18 +227,16 @@ test.describe("billing page", () => {
       modal.getByText(/pick a plan that fits your needs\./i),
     ).toBeVisible();
 
-    // helper: current tab panel
-    const activePanel = () =>
-      modal.locator('div[role="tabpanel"]:not([hidden])');
-
     // --- 1. ANNUAL (default) ---
     await expect(page.getByRole("tab", { name: /annual/i })).toHaveAttribute(
       "aria-selected",
       "true",
     );
 
+    const annualPanel = modal.getByRole("tabpanel", { name: /annual/i });
+
     // Hobby card
-    const hobbyAnnual = activePanel().locator(
+    const hobbyAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
     );
     await expect(
@@ -250,7 +248,7 @@ test.describe("billing page", () => {
     ).toHaveAttribute("value", "annual_hobby_planv2");
 
     // Startup card
-    const startupAnnual = activePanel().locator(
+    const startupAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Startup"))',
     );
     await expect(
@@ -262,7 +260,7 @@ test.describe("billing page", () => {
     ).toHaveAttribute("value", "annual_startup_planv2");
 
     // Business card
-    const businessAnnual = activePanel().locator(
+    const businessAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Business"))',
     );
     await expect(
@@ -274,7 +272,7 @@ test.describe("billing page", () => {
     ).toHaveAttribute("value", "annual_business_planv2");
 
     // Enterprise card
-    const enterpriseAnnual = activePanel().locator(
+    const enterpriseAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Enterprise"))',
     );
     await expect(enterpriseAnnual.getByText(/^custom$/i)).toBeVisible();
@@ -289,7 +287,7 @@ test.describe("billing page", () => {
       "true",
     );
 
-    const monthly = activePanel();
+    const monthly = modal.getByRole("tabpanel", { name: /monthly/i });
 
     // Hobby @ $17
     const hobbyMonthly = monthly.locator(
@@ -416,13 +414,11 @@ test.describe("billing page", () => {
     const modal = page.getByRole("dialog", { name: /choose your plan/i });
     await expect(modal).toBeVisible();
 
-    // helper: current tab panel
-    const activePanel = () =>
-      modal.locator('div[role="tabpanel"]:not([hidden])');
-
     // --- ANNUAL (default) ---
+    const annualPanel = modal.getByRole("tabpanel", { name: /annual/i });
+
     // Hobby (1 seat) should be disabled when you have 2 users
-    const hobbyAnnual = activePanel().locator(
+    const hobbyAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Hobby"))',
     );
     await expect(
@@ -443,14 +439,14 @@ test.describe("billing page", () => {
     ).toBeVisible();
 
     // Startup (10 seats) and Business (25 seats) remain enabled
-    const startupAnnual = activePanel().locator(
+    const startupAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Startup"))',
     );
     await expect(
       startupAnnual.getByRole("button", { name: /subscribe now/i }),
     ).toBeEnabled();
 
-    const businessAnnual = activePanel().locator(
+    const businessAnnual = annualPanel.locator(
       '[data-slot=card]:has([data-slot=card-title]:has-text("Business"))',
     );
     await expect(
@@ -464,7 +460,7 @@ test.describe("billing page", () => {
       "aria-selected",
       "true",
     );
-    const monthlyPanel = activePanel();
+    const monthlyPanel = modal.getByRole("tabpanel", { name: /monthly/i });
 
     // Hobby monthly still disabled
     const hobbyMonthly = monthlyPanel.locator(
@@ -651,16 +647,17 @@ test.describe("billing page", () => {
     ).toBeVisible();
 
     // Monthly panel:
-    const monthlyPanel = () =>
-      planModal.locator('div[role="tabpanel"]:not([hidden])');
+    const monthlyPanel = planModal.getByRole("tabpanel", {
+      name: /monthly/i,
+    });
     await expect(
-      monthlyPanel().getByRole("button", { name: /downgrade/i }),
+      monthlyPanel.getByRole("button", { name: /downgrade/i }),
     ).toHaveAttribute("value", "monthly_hobby_planv2");
     await expect(
-      monthlyPanel().getByRole("button", { name: /switch to monthly/i }),
+      monthlyPanel.getByRole("button", { name: /switch to monthly/i }),
     ).toHaveAttribute("value", "monthly_startup_planv2");
     await expect(
-      monthlyPanel().getByRole("button", { name: /upgrade/i }),
+      monthlyPanel.getByRole("button", { name: /upgrade/i }),
     ).toHaveAttribute("value", "monthly_business_planv2");
 
     // ——— OPEN AND ASSERT THE “CANCEL SUBSCRIPTION” MODAL ——————————

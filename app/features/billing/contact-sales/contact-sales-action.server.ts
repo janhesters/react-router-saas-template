@@ -1,6 +1,5 @@
 import { parseSubmission, report } from "@conform-to/react/future";
 import { parseFormData } from "@remix-run/form-data-parser";
-import { data } from "react-router";
 
 import { CONTACT_SALES_INTENT } from "./contact-sales-constants";
 import { saveContactSalesFormSubmissionToDatabase } from "./contact-sales-form-submission-model.server";
@@ -33,7 +32,7 @@ export async function contactSalesAction({ request }: Route.ActionArgs) {
     case CONTACT_SALES_INTENT: {
       const { intent: _, ...submissionData } = result.data;
       await saveContactSalesFormSubmissionToDatabase(submissionData);
-      return data({ result: undefined, success: true });
+      return { result: undefined, success: true };
     }
   }
 }

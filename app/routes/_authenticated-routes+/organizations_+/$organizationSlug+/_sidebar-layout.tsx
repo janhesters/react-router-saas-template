@@ -1,5 +1,5 @@
 import type { ShouldRevalidateFunctionArgs, UIMatch } from "react-router";
-import { data, href, Outlet, redirect } from "react-router";
+import { href, Outlet, redirect } from "react-router";
 import { promiseHash } from "remix-utils/promise";
 
 import type { Route } from "./+types/_sidebar-layout";
@@ -51,9 +51,7 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
     );
   }
 
-  const { user, organization, headers } = context.get(
-    organizationMembershipContext,
-  );
+  const { user, organization } = context.get(organizationMembershipContext);
 
   const { notificationData, products } = await promiseHash({
     notificationData:
@@ -67,23 +65,20 @@ export async function loader({ request, params, context }: Route.LoaderArgs) {
   });
   const defaultSidebarOpen = getSidebarState(request);
 
-  return data(
-    {
-      defaultSidebarOpen,
-      ...mapOnboardingUserToOrganizationLayoutProps({
-        organizationSlug: params.organizationSlug,
-        user,
-      }),
-      ...mapInitialNotificationsDataToNotificationButtonProps(notificationData),
-      ...mapOnboardingUserToBillingSidebarCardProps({
-        now: new Date(),
-        organizationSlug: params.organizationSlug,
-        user,
-      }),
-      ...getCreateSubscriptionModalProps(organization, products),
-    },
-    { headers },
-  );
+  return {
+    defaultSidebarOpen,
+    ...mapOnboardingUserToOrganizationLayoutProps({
+      organizationSlug: params.organizationSlug,
+      user,
+    }),
+    ...mapInitialNotificationsDataToNotificationButtonProps(notificationData),
+    ...mapOnboardingUserToBillingSidebarCardProps({
+      now: new Date(),
+      organizationSlug: params.organizationSlug,
+      user,
+    }),
+    ...getCreateSubscriptionModalProps(organization, products),
+  };
 }
 
 export async function action(args: Route.ActionArgs) {

@@ -215,10 +215,8 @@ describe("/contact-sales route action", () => {
       const actual = await sendRequest({ formData });
 
       expect(actual).toMatchObject({
-        data: {
-          result: undefined,
-          success: true,
-        },
+        result: undefined,
+        success: true,
       });
 
       // Verify the submission was saved to the database

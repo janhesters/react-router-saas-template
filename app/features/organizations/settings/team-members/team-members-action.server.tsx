@@ -33,7 +33,6 @@ import { adjustSeats } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import type { Prisma } from "~/generated/client";
 import { OrganizationMembershipRole } from "~/generated/client";
-import { combineHeaders } from "~/utils/combine-headers.server";
 import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest, created, forbidden } from "~/utils/http-responses.server";
@@ -52,7 +51,7 @@ export async function teamMembersAction({
   context,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, role, headers } = context.get(
+    const { user, organization, role } = context.get(
       organizationMembershipContext,
     );
     const i18n = getInstance(context);
@@ -109,7 +108,7 @@ export async function teamMembersAction({
           token,
         });
 
-        return created({}, { headers });
+        return created({});
       }
 
       case DEACTIVATE_INVITE_LINK_INTENT: {
@@ -125,7 +124,7 @@ export async function teamMembersAction({
           });
         }
 
-        return created({}, { headers });
+        return created({});
       }
 
       case CHANGE_ROLE_INTENT: {
@@ -226,7 +225,7 @@ export async function teamMembersAction({
                     },
                   }),
                 },
-                { headers: combineHeaders(headers, toastHeaders) },
+                { headers: toastHeaders },
               );
             }
 
@@ -248,7 +247,7 @@ export async function teamMembersAction({
         });
 
         // Return success
-        return data({}, { headers });
+        return data({});
       }
 
       case INVITE_BY_EMAIL_INTENT: {
@@ -369,10 +368,7 @@ export async function teamMembersAction({
           type: "success",
         });
 
-        return data(
-          { success: body.email },
-          { headers: combineHeaders(headers, toastHeaders) },
-        );
+        return data({ success: body.email }, { headers: toastHeaders });
       }
     }
   } catch (error) {

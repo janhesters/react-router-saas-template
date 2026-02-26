@@ -1,4 +1,4 @@
-import { data, useNavigation } from "react-router";
+import { useNavigation } from "react-router";
 
 import type { Route } from "./+types/account";
 import { GeneralErrorBoundary } from "~/components/general-error-boundary";
@@ -19,17 +19,14 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   });
   const i18n = getInstance(context);
 
-  return data(
-    {
-      dangerZone: mapUserAccountWithMembershipsToDangerZoneProps(auth.user),
-      pageTitle: getPageTitle(
-        i18n.t.bind(i18n),
-        "settings:userAccount.pageTitle",
-      ),
-      user: auth.user,
-    },
-    { headers: auth.headers },
-  );
+  return {
+    dangerZone: mapUserAccountWithMembershipsToDangerZoneProps(auth.user),
+    pageTitle: getPageTitle(
+      i18n.t.bind(i18n),
+      "settings:userAccount.pageTitle",
+    ),
+    user: auth.user,
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [

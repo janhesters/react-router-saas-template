@@ -8,7 +8,6 @@ import { createSupabaseServerClient } from "./supabase.server";
 export const authContext = createContext<{
   supabase: SupabaseClient;
   user: User;
-  headers: Headers;
 }>();
 
 const EXP_BUFFER_SEC = 60;
@@ -35,8 +34,15 @@ export const authMiddleware: MiddlewareFunction = async (
     } = await supabase.auth.getSession();
 
     if (isSessionFresh(session)) {
-      context.set(authContext, { headers, supabase, user: session.user });
-      return await next();
+      context.set(authContext, { supabase, user: session.user });
+
+      const response = (await next()) as Response;
+
+      for (const [key, value] of headers.entries()) {
+        response.headers.append(key, value);
+      }
+
+      return response;
     }
   }
 
@@ -53,14 +59,19 @@ export const authMiddleware: MiddlewareFunction = async (
     });
   }
 
-  context.set(authContext, { headers, supabase, user });
+  context.set(authContext, { supabase, user });
 
-  return await next();
+  const response = (await next()) as Response;
+
+  for (const [key, value] of headers.entries()) {
+    response.headers.append(key, value);
+  }
+
+  return response;
 };
 
 export const anonymousContext = createContext<{
   supabase: SupabaseClient;
-  headers: Headers;
 }>();
 
 export const anonymousMiddleware: MiddlewareFunction = async (
@@ -77,7 +88,13 @@ export const anonymousMiddleware: MiddlewareFunction = async (
     throw redirect(href("/organizations"), { headers });
   }
 
-  context.set(anonymousContext, { headers, supabase });
+  context.set(anonymousContext, { supabase });
 
-  return await next();
+  const response = (await next()) as Response;
+
+  for (const [key, value] of headers.entries()) {
+    response.headers.append(key, value);
+  }
+
+  return response;
 };

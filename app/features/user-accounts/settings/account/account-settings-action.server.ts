@@ -22,7 +22,6 @@ import {
   updateUserAccountInDatabaseById,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
-import { combineHeaders } from "~/utils/combine-headers.server";
 import { badRequest } from "~/utils/http-responses.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
@@ -39,7 +38,7 @@ export async function accountSettingsAction({
   context,
   request,
 }: Route.ActionArgs) {
-  const { user, headers, supabase } =
+  const { user, supabase } =
     await requireAuthenticatedUserWithMembershipsAndSubscriptionsExists({
       context,
       request,
@@ -84,10 +83,7 @@ export async function accountSettingsAction({
         title: i18n.t("settings:userAccount.toast.userAccountUpdated"),
         type: "success",
       });
-      return data(
-        { result: undefined },
-        { headers: combineHeaders(headers, toastHeaders) },
-      );
+      return data({ result: undefined }, { headers: toastHeaders });
     }
 
     case DELETE_USER_ACCOUNT_INTENT: {
@@ -160,14 +156,10 @@ export async function accountSettingsAction({
       await deleteUserAccountFromDatabaseById(user.id);
       await supabaseAdminClient.auth.admin.deleteUser(user.supabaseUserId);
 
-      return redirectWithToast(
-        "/",
-        {
-          title: i18n.t("settings:userAccount.toast.userAccountDeleted"),
-          type: "success",
-        },
-        { headers },
-      );
+      return redirectWithToast("/", {
+        title: i18n.t("settings:userAccount.toast.userAccountDeleted"),
+        type: "success",
+      });
     }
   }
 }

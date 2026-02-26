@@ -15,7 +15,7 @@ export async function onboardingOrganizationAction({
   request,
   context,
 }: Route.ActionArgs) {
-  const { user, headers } = await requireUserNeedsOnboarding({
+  const { user } = await requireUserNeedsOnboarding({
     context,
     request,
   });
@@ -51,5 +51,5 @@ export async function onboardingOrganizationAction({
     userId: user.id,
   });
 
-  return redirect(`/organizations/${organization.slug}`, { headers });
+  return redirect(`/organizations/${organization.slug}`);
 }

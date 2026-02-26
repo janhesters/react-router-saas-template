@@ -20,7 +20,7 @@ import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from
 import { redirectWithToast } from "~/utils/toast.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { supabase, headers } = context.get(anonymousContext);
+  const { supabase } = context.get(anonymousContext);
   const i18n = getInstance(context);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
@@ -96,7 +96,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         },
         {
           headers: combineHeaders(
-            headers,
             await destroyEmailInviteInfoSession(request),
             await destroyInviteLinkInfoSession(request),
           ),
@@ -139,7 +138,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             },
             {
               headers: combineHeaders(
-                headers,
                 inviteLinkHeaders,
                 await destroyEmailInviteInfoSession(request),
               ),
@@ -147,7 +145,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
           )
         : // Otherwise, they're new and we need to send them to the onboarding
           // flow.
-          redirect(href("/onboarding/user-account"), { headers });
+          redirect(href("/onboarding/user-account"));
     } else if (inviteLinkInfo) {
       await acceptInviteLink({
         i18n,
@@ -179,7 +177,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
             },
             {
               headers: combineHeaders(
-                headers,
                 emailInviteHeaders,
                 await destroyInviteLinkInfoSession(request),
               ),
@@ -187,11 +184,11 @@ export async function loader({ request, context }: Route.LoaderArgs) {
           )
         : // Otherwise, they're new and we need to send them to the onboarding
           // flow.
-          redirect(href("/onboarding/user-account"), { headers });
+          redirect(href("/onboarding/user-account"));
     }
   }
 
   return redirect(href("/organizations"), {
-    headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
+    headers: combineHeaders(inviteLinkHeaders, emailInviteHeaders),
   });
 }

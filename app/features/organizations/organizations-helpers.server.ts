@@ -113,7 +113,7 @@ export async function requireUserIsMemberOfOrganization({
   request: Request;
   organizationSlug: Organization["slug"];
 }) {
-  const { user, headers } = await requireOnboardedUserAccountExists({
+  const { user } = await requireOnboardedUserAccountExists({
     context,
     request,
   });
@@ -121,7 +121,7 @@ export async function requireUserIsMemberOfOrganization({
     user,
     organizationSlug,
   );
-  return { headers, organization, role, user };
+  return { organization, role, user };
 }
 
 /**

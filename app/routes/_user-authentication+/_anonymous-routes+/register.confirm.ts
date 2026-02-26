@@ -15,7 +15,7 @@ import { getErrorMessage } from "~/utils/get-error-message";
 import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
-  const { supabase, headers } = context.get(anonymousContext);
+  const { supabase } = context.get(anonymousContext);
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getValidInviteLinkInfo(request);
   const { emailInviteInfo, headers: emailInviteHeaders } =
@@ -83,7 +83,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   return redirect(
     emailInviteInfo ? href("/onboarding/user-account") : href("/onboarding"),
     {
-      headers: combineHeaders(headers, inviteLinkHeaders, emailInviteHeaders),
+      headers: combineHeaders(inviteLinkHeaders, emailInviteHeaders),
     },
   );
 }

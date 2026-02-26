@@ -1,4 +1,4 @@
-import { data, href, Outlet } from "react-router";
+import { href, Outlet } from "react-router";
 
 import type { Route } from "./+types/_organization-settings-layout";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
@@ -6,23 +6,20 @@ import { organizationMembershipContext } from "~/features/organizations/organiza
 import { SettingsSidebar } from "~/features/organizations/settings/settings-sidebar";
 
 export async function loader({ params, context }: Route.LoaderArgs) {
-  const { role, headers } = context.get(organizationMembershipContext);
+  const { role } = context.get(organizationMembershipContext);
   const i18next = getInstance(context);
   const t = i18next.getFixedT(null, "organizations", "settings");
 
-  return data(
-    {
-      breadcrumb: {
-        title: t("breadcrumb"),
-        to: href("/organizations/:organizationSlug/settings", {
-          organizationSlug: params.organizationSlug,
-        }),
-      },
-      pageTitle: t("meta.title"),
-      role,
+  return {
+    breadcrumb: {
+      title: t("breadcrumb"),
+      to: href("/organizations/:organizationSlug/settings", {
+        organizationSlug: params.organizationSlug,
+      }),
     },
-    { headers },
-  );
+    pageTitle: t("meta.title"),
+    role,
+  };
 }
 
 export const meta: Route.MetaFunction = ({ loaderData }) => [
