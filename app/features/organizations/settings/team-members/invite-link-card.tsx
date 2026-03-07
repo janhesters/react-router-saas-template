@@ -92,7 +92,7 @@ export function InviteLinkCard({
                 aria-label={t("goToLink")}
                 className={cn(
                   inputClassName,
-                  "items-center pr-12 read-only:cursor-pointer read-only:opacity-100",
+                  "flex items-center pr-12 read-only:cursor-pointer read-only:opacity-100",
                 )}
                 href={inviteLink.href}
                 ref={inviteLinkReference}
