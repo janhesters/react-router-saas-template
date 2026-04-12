@@ -130,7 +130,7 @@ export function OrganizationSwitcher({
                       value={currentPath}
                     />
 
-                    <Avatar className="aspect-square size-6 rounded-sm border after:rounded-sm">
+                    <Avatar className="aspect-square size-6 shrink-0 rounded-sm border after:rounded-sm">
                       <AvatarImage
                         alt={organization.name}
                         className="rounded-sm object-cover"
@@ -141,7 +141,9 @@ export function OrganizationSwitcher({
                         {organization.name.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    {organization.name}
+                    <span className="min-w-0 flex-1 truncate">
+                      {organization.name}
+                    </span>
                   </DropdownMenuItem>
                 </Form>
               ))}
