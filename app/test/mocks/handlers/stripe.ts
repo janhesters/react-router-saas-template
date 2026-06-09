@@ -53,7 +53,7 @@ const createCheckoutSessionMock = http.post(
     // Top-level params
     const customer = params.get("customer") ?? undefined;
     const mode =
-      (params.get("mode") as Stripe.Checkout.Session.Mode) ?? undefined;
+      (params.get("mode") as Stripe.Checkout.Session["mode"]) ?? undefined;
     const success_url = params.get("success_url") ?? undefined;
     const cancel_url = params.get("cancel_url") ?? undefined;
 

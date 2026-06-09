@@ -1,6 +1,5 @@
 import "./app.css";
 
-import { FormOptionsProvider } from "@conform-to/react/future";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
@@ -35,7 +34,6 @@ import { useToast } from "./hooks/use-toast";
 import { cn } from "./lib/utils";
 import { ClientHintCheck, getHints } from "./utils/client-hints";
 import { combineHeaders } from "./utils/combine-headers.server";
-import { defineCustomMetadata } from "./utils/define-custom-metadata";
 import { getEnv } from "./utils/env.server";
 import { getDomainUrl } from "./utils/get-domain-url.server";
 import { honeypot } from "./utils/honeypot.server";
@@ -145,15 +143,9 @@ export function Layout({
       </head>
 
       <body className="min-h-svh">
-        <FormOptionsProvider
-          defineCustomMetadata={defineCustomMetadata}
-          shouldRevalidate="onBlur"
-          shouldValidate="onSubmit"
-        >
-          <HoneypotProvider {...data?.honeypotInputProps}>
-            {children}
-          </HoneypotProvider>
-        </FormOptionsProvider>
+        <HoneypotProvider {...data?.honeypotInputProps}>
+          {children}
+        </HoneypotProvider>
 
         {/* Add nonce to inline scripts */}
         <script

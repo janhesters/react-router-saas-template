@@ -40,8 +40,9 @@ async function sendRequest({ formData }: { formData: FormData }) {
       request,
     }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -73,8 +74,9 @@ describe("/register route action", () => {
           request,
         }),
         params,
+        pattern,
         request,
-        unstable_pattern: pattern,
+        url: new URL(request.url),
       });
     } catch (error) {
       if (error instanceof Response) {
@@ -94,7 +96,9 @@ describe("/register route action", () => {
         result: {
           error: {
             fieldErrors: {
-              intent: expect.arrayContaining(["Invalid input"]),
+              intent: expect.arrayContaining([
+                "Invalid discriminator value. Expected 'registerWithEmail' | 'registerWithGoogle'",
+              ]),
             },
           },
         },
@@ -113,7 +117,9 @@ describe("/register route action", () => {
         result: {
           error: {
             fieldErrors: {
-              intent: expect.arrayContaining(["Invalid input"]),
+              intent: expect.arrayContaining([
+                "Invalid discriminator value. Expected 'registerWithEmail' | 'registerWithGoogle'",
+              ]),
             },
           },
         },
@@ -228,17 +234,18 @@ describe("/register route action", () => {
 
       const context = new RouterContextProvider();
       await i18nextMiddleware(
-        { context, params, request, unstable_pattern: pattern },
+        { context, params, pattern, request, url: new URL(request.url) },
         () => Promise.resolve(new Response(null, { status: 200 })),
       );
       const response = (await anonymousMiddleware(
-        { context, params, request, unstable_pattern: pattern },
+        { context, params, pattern, request, url: new URL(request.url) },
         () =>
           action({
             context,
             params,
+            pattern,
             request,
-            unstable_pattern: pattern,
+            url: new URL(request.url),
           }) as Promise<Response>,
       )) as Response;
 

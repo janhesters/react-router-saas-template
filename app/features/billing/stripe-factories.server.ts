@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
-import type { Stripe } from "stripe";
+import Stripe from "stripe";
 
 import { createPopulatedOrganization } from "../organizations/organizations-factories.server";
 import { createPopulatedUserAccount } from "../user-accounts/user-accounts-factories.server";
@@ -176,7 +176,7 @@ export const createStripePriceFactory: Factory<Stripe.Price> = ({
   transform_quantity = null,
   type = "recurring",
   unit_amount = faker.number.int({ max: 5000, min: 500, multipleOf: 100 }),
-  unit_amount_decimal = String(
+  unit_amount_decimal = Stripe.Decimal.from(
     faker.number.int({ max: 5000, min: 500, multipleOf: 100 }),
   ),
 } = {}) => ({
@@ -258,6 +258,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   },
   billing_cycle_anchor = created,
   billing_cycle_anchor_config = null,
+  billing_schedules = [],
   cancel_at = null,
   cancel_at_period_end = false,
   canceled_at = null,
@@ -280,6 +281,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   items: itemsParameter,
   latest_invoice = `in_${createId()}`,
   livemode = false,
+  managed_payments = null,
   metadata = {},
   next_pending_invoice_item_invoice = null,
   on_behalf_of = null,
@@ -329,6 +331,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     billing_cycle_anchor,
     billing_cycle_anchor_config,
     billing_mode,
+    billing_schedules,
     billing_thresholds,
     cancel_at,
     cancel_at_period_end,
@@ -351,6 +354,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
     items,
     latest_invoice,
     livemode,
+    managed_payments,
     metadata,
     next_pending_invoice_item_invoice,
     object,
@@ -427,17 +431,21 @@ export const createStripeCheckoutSessionFactory: Factory<
     individual_name: null,
     name: faker.person.fullName(),
     phone: null,
-    tax_exempt: "none" as Stripe.Checkout.Session.CustomerDetails.TaxExempt,
+    tax_exempt: "none" as NonNullable<
+      Stripe.Checkout.Session["customer_details"]
+    >["tax_exempt"],
     tax_ids: [],
   },
   customer_account = null,
   customer_email = null,
   discounts = [],
   expires_at = created + 86_400, // 24 hours from creation
+  integration_identifier = null,
   invoice = `in_${createId()}`,
   invoice_creation = null,
   livemode = false,
   locale = null,
+  managed_payments = null,
   metadata = {
     customerEmail: createPopulatedOrganization().billingEmail,
     organizationId: createPopulatedOrganization().id,
@@ -466,9 +474,11 @@ export const createStripeCheckoutSessionFactory: Factory<
   },
   recovered_from = null,
   saved_payment_method_options = {
-    allow_redisplay_filters: [
-      "always",
-    ] as Stripe.Checkout.Session.SavedPaymentMethodOptions.AllowRedisplayFilter[],
+    allow_redisplay_filters: ["always"] as NonNullable<
+      NonNullable<
+        Stripe.Checkout.Session["saved_payment_method_options"]
+      >["allow_redisplay_filters"]
+    >,
     payment_method_remove: null,
     payment_method_save: "enabled" as const,
   },
@@ -485,7 +495,7 @@ export const createStripeCheckoutSessionFactory: Factory<
     amount_shipping: 0,
     amount_tax: 0,
   },
-  ui_mode = "hosted",
+  ui_mode = "hosted_page" as Stripe.Checkout.Session["ui_mode"],
   url = `https://checkout.stripe.com/pay/${id}`,
   wallet_options = null,
 } = {}) => ({
@@ -515,10 +525,12 @@ export const createStripeCheckoutSessionFactory: Factory<
   discounts,
   expires_at,
   id,
+  integration_identifier,
   invoice,
   invoice_creation,
   livemode,
   locale,
+  managed_payments,
   metadata,
   mode,
   object,

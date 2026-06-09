@@ -130,7 +130,7 @@ describe("validateFormData()", () => {
       // Form-level errors appear in formErrors array
       if (result.response.data.result.error) {
         expect(result.response.data.result.error.formErrors).toBeDefined();
-        expect(result.response.data.result.error.formErrors[0]).toContain(
+        expect(result.response.data.result.error.formErrors?.[0]).toContain(
           'Username "admin" is reserved',
         );
       }
@@ -215,7 +215,7 @@ describe("validateFormData()", () => {
         expect(
           result.response.data.result.error.fieldErrors?.email,
         ).toBeDefined();
-        expect(result.response.data.result.error.formErrors[0]).toContain(
+        expect(result.response.data.result.error.formErrors?.[0]).toContain(
           'Username "admin" is reserved',
         );
       }

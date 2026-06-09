@@ -46,8 +46,9 @@ async function sendRequest({
   return await action({
     context: await createTestContextProvider({ params, pattern, request }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -72,8 +73,9 @@ async function sendAuthenticatedRequest({
   return await action({
     context: await createAuthTestContextProvider({ params, pattern, request }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 

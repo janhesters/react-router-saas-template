@@ -1,4 +1,3 @@
-import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconBuilding } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -46,6 +45,7 @@ import {
   onboardingOrganizationSchema,
   REFERRAL_SOURCE_OPTIONS,
 } from "~/features/onboarding/organization/onboarding-organization-schemas";
+import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {

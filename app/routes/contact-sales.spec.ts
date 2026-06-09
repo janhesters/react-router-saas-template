@@ -27,8 +27,9 @@ async function sendRequest({ formData }: { formData: FormData }) {
   return await action({
     context: await createTestContextProvider({ params, pattern, request }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 

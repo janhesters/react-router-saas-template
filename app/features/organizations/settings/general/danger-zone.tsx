@@ -1,4 +1,3 @@
-import { useForm } from "@conform-to/react/future";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
@@ -28,6 +27,7 @@ import {
   ItemTitle,
 } from "~/components/ui/item";
 import { Spinner } from "~/components/ui/spinner";
+import { useForm } from "~/utils/conform";
 
 export type DangerZoneProps = {
   organizationName: string;

@@ -84,8 +84,9 @@ async function sendAuthenticatedRequest({
       request,
     }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -140,8 +141,9 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           request,
         }),
         params,
+        pattern,
         request,
-        unstable_pattern: pattern,
+        url: new URL(request.url),
       });
     } catch (error) {
       if (error instanceof Response) {
@@ -188,9 +190,11 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       result: {
         error: {
           fieldErrors: {
-            intent: ["Invalid input"],
+            intent: [
+              "Invalid discriminator value. Expected 'inviteByEmail' | 'createNewInviteLink' | 'deactivateInviteLink' | 'changeRole'",
+            ],
           },
-          formErrors: [],
+          formErrors: null,
         },
       },
     });
@@ -314,7 +318,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -344,7 +348,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -446,7 +450,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
               fieldErrors: {
                 userId: ["Invalid input: expected string, received undefined"],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -460,7 +464,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
               fieldErrors: {
                 role: ["Invalid input"],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -478,7 +482,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
               fieldErrors: {
                 role: ["Invalid input"],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -873,7 +877,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -942,7 +946,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -992,7 +996,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                   "organizations:settings.teamMembers.inviteByEmail.form.emailInvalid",
                 ],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -1012,7 +1016,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                   "organizations:settings.teamMembers.inviteByEmail.form.emailInvalid",
                 ],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -1028,7 +1032,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                   'Invalid option: expected one of "owner"|"admin"|"member"',
                 ],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -1048,7 +1052,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                   'Invalid option: expected one of "owner"|"admin"|"member"',
                 ],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -1068,7 +1072,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                   'Invalid option: expected one of "owner"|"admin"|"member"',
                 ],
               },
-              formErrors: [],
+              formErrors: null,
             },
           },
         }),
@@ -1152,7 +1156,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
             fieldErrors: {
               email: [`${targeEmail} is already a member`],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -1262,7 +1266,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });
@@ -1296,7 +1300,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
                 "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
               ],
             },
-            formErrors: [],
+            formErrors: null,
           },
         },
       });

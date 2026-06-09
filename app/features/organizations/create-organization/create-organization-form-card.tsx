@@ -1,5 +1,4 @@
 import type { SubmissionResult } from "@conform-to/react/future";
-import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconBuilding } from "@tabler/icons-react";
 import { Trans, useTranslation } from "react-i18next";
@@ -32,6 +31,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { useForm } from "~/utils/conform";
 
 const ONE_MB = 1_000_000;
 

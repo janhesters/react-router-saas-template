@@ -1,5 +1,4 @@
 import type { SubmissionResult } from "@conform-to/react/future";
-import { useForm } from "@conform-to/react/future";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
@@ -27,6 +26,7 @@ import {
 } from "~/components/ui/select";
 import { Spinner } from "~/components/ui/spinner";
 import { OrganizationMembershipRole } from "~/generated/browser";
+import { useForm } from "~/utils/conform";
 
 export type EmailInviteCardProps = {
   currentUserIsOwner: boolean;

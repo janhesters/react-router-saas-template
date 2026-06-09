@@ -52,8 +52,9 @@ async function sendAuthenticatedRequest({
       request,
     }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -78,8 +79,9 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
           request,
         }),
         params,
+        pattern,
         request,
-        unstable_pattern: pattern,
+        url: new URL(request.url),
       });
     } catch (error) {
       if (error instanceof Response) {

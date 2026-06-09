@@ -1,4 +1,3 @@
-import { useForm } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
@@ -29,6 +28,7 @@ import { requireUserNeedsOnboarding } from "~/features/onboarding/onboarding-hel
 import { onboardingUserAccountAction } from "~/features/onboarding/user-account/onboarding-user-account-action.server";
 import { ONBOARDING_USER_ACCOUNT_INTENT } from "~/features/onboarding/user-account/onboarding-user-account-constants";
 import { onboardingUserAccountSchema } from "~/features/onboarding/user-account/onboarding-user-account-schemas";
+import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
