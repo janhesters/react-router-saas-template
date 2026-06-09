@@ -2,7 +2,6 @@ import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig as defineVitestConfig } from "vitest/config";
 
 // Custom plugin to handle .sudo files
@@ -43,10 +42,10 @@ const rootConfig = defineConfig({
   plugins: [
     tailwindcss(),
     !process.env.VITEST && reactRouter(),
-    tsconfigPaths(),
     staticCacheHeaders(),
     sudoFilesPlugin,
   ],
+  resolve: { tsconfigPaths: true },
   server: { port: 3000 },
 });
 

@@ -1,5 +1,4 @@
 import type { SubmissionResult } from "@conform-to/react/future";
-import { useForm } from "@conform-to/react/future";
 import { useTranslation } from "react-i18next";
 import { Form } from "react-router";
 
@@ -16,6 +15,7 @@ import {
 import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Spinner } from "~/components/ui/spinner";
+import { useForm } from "~/utils/conform";
 
 type EditBillingEmailModalContentProps = {
   billingEmail: string;

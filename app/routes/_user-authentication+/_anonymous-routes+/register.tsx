@@ -1,4 +1,3 @@
-import { useForm } from "@conform-to/react/future";
 import { IconMail } from "@tabler/icons-react";
 import { Trans, useTranslation } from "react-i18next";
 import { data, Form, href, Link, useNavigation } from "react-router";
@@ -31,6 +30,7 @@ import { RegistrationVerificationAwaiting } from "~/features/user-authentication
 import { registerIntents } from "~/features/user-authentication/user-authentication-constants";
 import { getIsAwaitingEmailConfirmation } from "~/features/user-authentication/user-authentication-helpers";
 import { cn } from "~/lib/utils";
+import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
 z.config({ jitless: true });

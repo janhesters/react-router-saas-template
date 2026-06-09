@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.4.16/schema.json",
   "assist": {
     "actions": {
       "source": {
@@ -45,6 +45,23 @@
       },
       "recommended": true,
       "style": {
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "@conform-to/react/future": {
+                "importNames": [
+                  "FormProvider",
+                  "useField",
+                  "useForm",
+                  "useFormMetadata",
+                  "useIntent"
+                ],
+                "message": "Import the configured Conform hooks from ~/utils/conform instead. The package hooks lack the app-wide validation defaults and custom field metadata (inputProps, otpInputProps)."
+              }
+            }
+          }
+        },
         "useForOf": "error",
         "useImportType": {
           "level": "error",

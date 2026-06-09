@@ -32,6 +32,10 @@ const path = "/auth/callback";
 /**
  * Sets up the code verifier cookie required for PKCE flow.
  * This simulates what happens when a user initiates OAuth login.
+ *
+ * The value mirrors how `@supabase/ssr` persists storage items: auth-js
+ * JSON-stringifies storage values (and treats non-JSON values as absent),
+ * and the cookie layer base64url-encodes them with a `base64-` prefix.
  */
 async function setupCodeVerifierCookie({ page }: { page: Page }) {
   const regex = /https:\/\/([^.]+)/;
@@ -43,7 +47,7 @@ async function setupCodeVerifierCookie({ page }: { page: Page }) {
       domain: "localhost",
       name: `sb-${projectReference}-auth-token-code-verifier`,
       path: "/",
-      value: "test-code-verifier",
+      value: `base64-${Buffer.from(JSON.stringify("test-code-verifier")).toString("base64url")}`,
     },
   ]);
 }

@@ -57,8 +57,9 @@ async function sendAuthenticatedRequest({
   return await action({
     context: await createAuthTestContextProvider({ params, pattern, request }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -91,8 +92,9 @@ describe("/onboarding/user-account route action", () => {
           request,
         }),
         params,
+        pattern,
         request,
-        unstable_pattern: pattern,
+        url: new URL(request.url),
       });
     } catch (error) {
       if (error instanceof Response) {

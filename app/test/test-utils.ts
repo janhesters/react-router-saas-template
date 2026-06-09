@@ -456,8 +456,8 @@ export async function ensureStripeProductsAndPricesExist() {
  * on React Router's context and middleware side effects.
  *
  * Each middleware receives an execution context object containing the router
- * context, request, route params, and the route's `unstable_pattern`. The
- * `unstable_pattern` simulates the route path pattern normally provided by
+ * context, request, route params, and the route's `pattern`. The
+ * `pattern` simulates the route path pattern normally provided by
  * React Router during runtime.
  *
  * If a middleware throws a {@link Response} (for example, to simulate a redirect
@@ -468,7 +468,7 @@ export async function ensureStripeProductsAndPricesExist() {
  * the i18next middleware.
  * @param params - Route parameters passed to each middleware.
  * @param request - The {@link Request} object passed to each middleware.
- * @param pattern - The route's `unstable_pattern` value (e.g. `/users/:id`),
+ * @param pattern - The route's `pattern` value (e.g. `/users/:id`),
  * used to simulate the matched route path.
  * @returns A {@link RouterContextProvider} instance populated with any state or
  * mutations applied by the executed middlewares.
@@ -489,14 +489,14 @@ export async function createTestContextProvider({
   // i18next middleware runs in root loader, so all routes have access to the
   // i18next context.
   await i18nextMiddleware(
-    { context, params, request, unstable_pattern: pattern },
+    { context, params, pattern, request, url: new URL(request.url) },
     () => Promise.resolve(new Response(null, { status: 200 })),
   );
 
   for (const middleware of middlewares) {
     try {
       await middleware(
-        { context, params, request, unstable_pattern: pattern },
+        { context, params, pattern, request, url: new URL(request.url) },
         () => Promise.resolve(new Response(null, { status: 200 })),
       );
     } catch (error) {
@@ -522,7 +522,7 @@ export async function createTestContextProvider({
  *
  * @param params - Route parameters to pass to middlewares.
  * @param request - Request object to pass to middlewares.
- * @param pattern - The route's `unstable_pattern` value (e.g. `/users/:id`),
+ * @param pattern - The route's `pattern` value (e.g. `/users/:id`),
  * used to simulate the matched route path.
  * @returns A RouterContextProvider instance with auth context.
  */

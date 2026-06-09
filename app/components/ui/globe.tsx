@@ -32,7 +32,6 @@ const GLOBE_CONFIG: COBEOptions = {
     { location: [34.6937, 135.5022], size: 0.05 },
     { location: [41.0082, 28.9784], size: 0.06 },
   ],
-  onRender: () => {},
   phi: 0,
   theta: 0.3,
   width: 800,
@@ -96,19 +95,26 @@ export function Globe({
     const globe = createGlobe(canvasRef.current!, {
       ...mergedConfig,
       height: width.current * devicePixelRatio,
-      onRender: (state) => {
-        if (!pointerInteracting.current) phi.current += 0.005;
-        state.phi = phi.current + rs.get();
-        state.width = width.current * devicePixelRatio;
-        state.height = width.current * devicePixelRatio;
-      },
       width: width.current * devicePixelRatio,
+    });
+
+    // Cobe v2 no longer renders frames itself, so drive the animation with
+    // our own requestAnimationFrame loop via `globe.update`.
+    let frameId = requestAnimationFrame(function onFrame() {
+      if (!pointerInteracting.current) phi.current += 0.005;
+      globe.update({
+        height: width.current * devicePixelRatio,
+        phi: phi.current + rs.get(),
+        width: width.current * devicePixelRatio,
+      });
+      frameId = requestAnimationFrame(onFrame);
     });
 
     setTimeout(() => {
       if (canvasRef.current) canvasRef.current.style.opacity = "1";
     }, 0);
     return () => {
+      cancelAnimationFrame(frameId);
       globe.destroy();
       window.removeEventListener("resize", onResize);
     };

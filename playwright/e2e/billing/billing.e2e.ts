@@ -1,14 +1,14 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import { expect, test } from "playwright/test";
+import { expect, test } from "@playwright/test";
+
 import {
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
   setupTrialOrganizationAndLoginAsMember,
-} from "playwright/utils";
-
+} from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import {
   createPopulatedStripeSubscriptionScheduleWithPhasesAndPrice,

@@ -85,8 +85,9 @@ async function sendAuthenticatedRequest({
       request,
     }),
     params,
+    pattern,
     request,
-    unstable_pattern: pattern,
+    url: new URL(request.url),
   });
 }
 
@@ -151,8 +152,9 @@ describe("/organizations/:organizationSlug route action", () => {
           request,
         }),
         params,
+        pattern,
         request,
-        unstable_pattern: pattern,
+        url: new URL(request.url),
       });
     } catch (error) {
       if (error instanceof Response) {
@@ -294,7 +296,9 @@ describe("/organizations/:organizationSlug route action", () => {
         result: {
           error: {
             fieldErrors: {
-              intent: expect.arrayContaining(["Invalid input"]),
+              intent: expect.arrayContaining([
+                "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
+              ]),
             },
           },
         },
@@ -324,7 +328,9 @@ describe("/organizations/:organizationSlug route action", () => {
         result: {
           error: {
             fieldErrors: {
-              intent: expect.arrayContaining(["Invalid input"]),
+              intent: expect.arrayContaining([
+                "Invalid discriminator value. Expected 'markAllAsRead' | 'markOneAsRead' | 'notificationPanelOpened' | 'switchOrganization' | 'openCheckoutSession'",
+              ]),
             },
           },
         },

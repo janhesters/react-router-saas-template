@@ -1,4 +1,4 @@
-import type { BaseMetadata } from "@conform-to/react/future";
+import type { BaseFieldMetadata } from "@conform-to/react/future";
 import type { ComponentProps } from "react";
 
 import type { Input } from "~/components/ui/input";
@@ -25,10 +25,10 @@ import type { InputOTP } from "~/components/ui/input-otp";
  *
  * @example
  * ```tsx
- * // Used globally via FormOptionsProvider in root.tsx
- * <FormOptionsProvider defineCustomMetadata={defineCustomMetadata}>
- *   <App />
- * </FormOptionsProvider>
+ * // Used globally via configureForms in ~/utils/conform.ts
+ * const { useForm } = configureForms({
+ *   extendFieldMetadata: defineCustomMetadata,
+ * });
  *
  * // Then access in any form component
  * function LoginForm() {
@@ -37,10 +37,10 @@ import type { InputOTP } from "~/components/ui/input-otp";
  * }
  * ```
  *
- * @see {@link https://conform.guide/api/react/future/FormOptionsProvider | Conform FormOptionsProvider Documentation}
+ * @see {@link https://conform.guide/api/react/future/configureForms | Conform configureForms Documentation}
  */
 export function defineCustomMetadata<FieldShape, ErrorShape>(
-  metadata: BaseMetadata<FieldShape, ErrorShape>,
+  metadata: BaseFieldMetadata<FieldShape, ErrorShape>,
 ) {
   return {
     get inputProps() {

@@ -1,4 +1,4 @@
-import type { UnhandledRequestCallback } from "node_modules/msw/lib/core/utils/request/onUnhandledRequest";
+import type { UnhandledRequestCallback } from "msw";
 
 /**
  * Callback function to handle unhandled requests in MSW (Mock Service Worker).

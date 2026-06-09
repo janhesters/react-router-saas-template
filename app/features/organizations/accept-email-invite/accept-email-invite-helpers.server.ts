@@ -19,7 +19,7 @@ export const throwIfEmailInviteIsExpired = (
     Awaited<ReturnType<typeof retrieveActiveEmailInviteLinkFromDatabaseByToken>>
   >,
 ) => {
-  if (!invite || !invite.expiresAt || new Date() > invite.expiresAt) {
+  if (!invite?.expiresAt || new Date() > invite.expiresAt) {
     throw notFound();
   }
 
