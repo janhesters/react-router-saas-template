@@ -19,10 +19,12 @@ import { validateFormData } from "~/utils/validate-form-data.server";
 export async function onboardingUserAccountAction({
   request,
   context,
+  url,
 }: Route.ActionArgs) {
   const { user } = await requireUserNeedsOnboarding({
     context,
     request,
+    url,
   });
   const { supabase } = context.get(authContext);
   const result = await validateFormData(

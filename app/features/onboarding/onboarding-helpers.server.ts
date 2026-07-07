@@ -85,7 +85,7 @@ export const throwIfUserIsOnboarded = (user: OnboardingUser) => {
 /**
  * Redirects the user to the appropriate onboarding step based on their state.
  *
- * @param request - The Request object containing the user's request.
+ * @param url - The normalized URL of the user's request.
  * @param user - The user's account with their memberships.
  * @param headers - The Headers object containing the user's headers.
  * @returns A function that takes the user object and returns it if the user is
@@ -93,10 +93,10 @@ export const throwIfUserIsOnboarded = (user: OnboardingUser) => {
  * appropriate step.
  */
 export const redirectUserToOnboardingStep = (
-  request: Request,
+  url: URL,
   user: OnboardingUser,
 ) => {
-  const { pathname } = new URL(request.url);
+  const { pathname } = url;
 
   if (user.name.length === 0 && pathname !== "/onboarding/user-account") {
     throw redirect(href("/onboarding/user-account"));
@@ -119,6 +119,7 @@ export const redirectUserToOnboardingStep = (
  *
  * @param context - Router context provider containing authentication data.
  * @param request - Request object containing the user's request.
+ * @param url - The normalized URL of the user's request.
  * @returns The user object with headers if the user needs onboarding and is on the correct step.
  * @throws Response with redirect to the user's first organization if already onboarded.
  * @throws Response with redirect to the appropriate onboarding step if on the wrong step.
@@ -127,15 +128,17 @@ export const redirectUserToOnboardingStep = (
 export async function requireUserNeedsOnboarding({
   context,
   request,
+  url,
 }: {
   context: Readonly<RouterContextProvider>;
   request: Request;
+  url: URL;
 }) {
   const { user } = await requireOnboardingUserExists({
     context,
     request,
   });
-  return redirectUserToOnboardingStep(request, throwIfUserIsOnboarded(user));
+  return redirectUserToOnboardingStep(url, throwIfUserIsOnboarded(user));
 }
 
 /**

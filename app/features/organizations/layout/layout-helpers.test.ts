@@ -9,7 +9,6 @@ describe("findBreadcrumbs()", () => {
       { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
-        data: {},
         handle: {},
         id: "root",
         loaderData: {},
@@ -17,12 +16,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/",
       },
       {
-        data: {
-          breadcrumb: {
-            title: "Organization",
-            to: "/organizations/tromp---schinner",
-          },
-        },
         handle: {},
         id: "routes/organization_.$organizationSlug",
         loaderData: {
@@ -35,12 +28,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/organizations/tromp---schinner",
       },
       {
-        data: {
-          breadcrumb: {
-            title: "Dashboard",
-            to: "/organizations/tromp---schinner/dashboard",
-          },
-        },
         handle: {},
         id: "routes/organization_.$organizationSlug.dashboard",
         loaderData: {
@@ -74,7 +61,6 @@ describe("findBreadcrumbs()", () => {
       { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
-        data: {},
         handle: {},
         id: "root",
         loaderData: {},
@@ -82,7 +68,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/",
       },
       {
-        data: { someOtherData: "value" },
         handle: {},
         id: "routes/some-route",
         loaderData: { someOtherData: "value" },
@@ -102,7 +87,6 @@ describe("findBreadcrumbs()", () => {
       { breadcrumb?: { title: string; to: string } } & Record<string, unknown>
     >[] = [
       {
-        data: {},
         handle: {},
         id: "root",
         loaderData: {},
@@ -110,12 +94,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/",
       },
       {
-        data: {
-          breadcrumb: {
-            title: "First",
-            to: "/first",
-          },
-        },
         handle: {},
         id: "routes/first",
         loaderData: {
@@ -128,7 +106,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/first",
       },
       {
-        data: { someOtherData: "value" },
         handle: {},
         id: "routes/middle",
         loaderData: { someOtherData: "value" },
@@ -136,12 +113,6 @@ describe("findBreadcrumbs()", () => {
         pathname: "/first/middle",
       },
       {
-        data: {
-          breadcrumb: {
-            title: "Last",
-            to: "/first/middle/last",
-          },
-        },
         handle: {},
         id: "routes/last",
         loaderData: {

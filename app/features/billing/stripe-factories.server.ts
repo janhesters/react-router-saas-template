@@ -276,6 +276,9 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   ended_at = null,
   invoice_settings = {
     account_tax_ids: null,
+    custom_fields: null,
+    description: null,
+    footer: null,
     issuer: { type: "self" as Stripe.Invoice.Issuer.Type },
   },
   items: itemsParameter,

@@ -23,7 +23,7 @@ function isSessionFresh(
 }
 
 export const authMiddleware: MiddlewareFunction = async (
-  { request, context },
+  { request, context, url },
   next,
 ) => {
   const { supabase, headers } = createSupabaseServerClient({ request });
@@ -52,7 +52,7 @@ export const authMiddleware: MiddlewareFunction = async (
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    const redirectTo = new URL(request.url).pathname;
+    const redirectTo = url.pathname;
     const searchParameters = new URLSearchParams([["redirectTo", redirectTo]]);
     throw redirect(safeRedirect(`/login?${searchParameters.toString()}`), {
       headers,

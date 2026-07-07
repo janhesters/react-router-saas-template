@@ -39,10 +39,15 @@ export const shouldRevalidate = ({
 
 export const middleware = [organizationMembershipMiddleware];
 
-export async function loader({ request, params, context }: Route.LoaderArgs) {
+export async function loader({
+  request,
+  params,
+  context,
+  url,
+}: Route.LoaderArgs) {
   if (
     params.organizationSlug &&
-    request.url.endsWith(`/organizations/${params.organizationSlug}`)
+    url.pathname === `/organizations/${params.organizationSlug}`
   ) {
     return redirect(
       href("/organizations/:organizationSlug/dashboard", {

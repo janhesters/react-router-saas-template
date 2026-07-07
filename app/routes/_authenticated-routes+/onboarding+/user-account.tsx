@@ -31,10 +31,11 @@ import { onboardingUserAccountSchema } from "~/features/onboarding/user-account/
 import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context, url }: Route.LoaderArgs) {
   const auth = await requireUserNeedsOnboarding({
     context,
     request,
+    url,
   });
   const i18n = getInstance(context);
 

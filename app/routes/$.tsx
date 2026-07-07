@@ -10,8 +10,8 @@ export async function loader({ context }: Route.LoaderArgs) {
   return notFound({ title: t("title") });
 }
 
-export const meta: Route.MetaFunction = ({ data }) => {
-  return [{ title: data.title }];
+export const meta: Route.MetaFunction = ({ loaderData }) => {
+  return [{ title: loaderData?.title ?? "404" }];
 };
 
 export default function CatchAllRoute() {

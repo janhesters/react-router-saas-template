@@ -373,7 +373,7 @@ describe("BillingPage component", () => {
     ).toBeInTheDocument();
 
     // It shows the list of features
-    expect(screen.getByText(/sso/i)).toBeInTheDocument();
+    expect(screen.getByText("SSO")).toBeInTheDocument();
     expect(screen.getByText(/unlimited members/i)).toBeInTheDocument();
     expect(screen.getByText(/unlimited private projects/i)).toBeInTheDocument();
     expect(screen.getByText(/priority support/i)).toBeInTheDocument();
