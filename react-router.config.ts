@@ -6,7 +6,6 @@ export default {
     // unstable_splitRouteModules: "enforce",
     // unstable_subResourceIntegrity: true,
     // unstable_viteEnvironmentApi: true,
-    v8_middleware: true,
   },
   ssr: true,
 } satisfies Config;

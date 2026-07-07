@@ -63,7 +63,7 @@ export const shouldRevalidate = ({
 
 export const middleware = [securityMiddleware, i18nextMiddleware];
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ request, context, url }: Route.LoaderArgs) {
   const { colorScheme, honeypotInputProps, toastData } = await promiseHash({
     colorScheme: getColorScheme(request),
     honeypotInputProps: honeypot.getInputProps(),
@@ -82,7 +82,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       requestInfo: {
         hints: getHints(request),
         origin: getDomainUrl(request),
-        path: new URL(request.url).pathname,
+        path: url.pathname,
         userPrefs: { theme: colorScheme },
       },
       title,
@@ -136,7 +136,10 @@ export function Layout({
         )}
 
         <Meta />
-        <Links />
+        {/* Pass the nonce explicitly, because otherwise `<Links />` only
+        receives the `<ServerRouter nonce>` during SSR, which causes a
+        hydration mismatch. */}
+        <Links nonce={nonce} />
         {isErrorFromRoute && (
           <title>{`${error.status} ${error.statusText}`}</title>
         )}

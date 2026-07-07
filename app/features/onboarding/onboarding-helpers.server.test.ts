@@ -141,11 +141,9 @@ describe("redirectUserToOnboardingStep()", () => {
   describe("user account onboarding page", () => {
     test("given: a request to the user account onboarding page and a user has neither a name, nor organizations yet, should: return the user", () => {
       const url = "http://localhost:3000/onboarding/user-account";
-      const method = faker.internet.httpMethod();
-      const request = new Request(url, { method });
       const user = createOnboardingUser({ memberships: [], name: "" });
 
-      const actual = redirectUserToOnboardingStep(request, user);
+      const actual = redirectUserToOnboardingStep(new URL(url), user);
       const expected = { user };
 
       expect(actual).toEqual(expected);
@@ -158,11 +156,9 @@ describe("redirectUserToOnboardingStep()", () => {
       expect.assertions(2);
 
       const user = createOnboardingUser({ memberships: [], name: "" });
-      const method = faker.internet.httpMethod();
-      const request = new Request(url, { method });
 
       try {
-        redirectUserToOnboardingStep(request, user);
+        redirectUserToOnboardingStep(new URL(url), user);
       } catch (error) {
         if (error instanceof Response) {
           expect(error.status).toEqual(302);
@@ -178,10 +174,8 @@ describe("redirectUserToOnboardingStep()", () => {
     test("given: a request to the organization onboarding page and a user that is NOT a member of any organizations yet, should: return the user", () => {
       const user = createOnboardingUser({ memberships: [] });
       const url = "http://localhost:3000/onboarding/organization";
-      const method = faker.internet.httpMethod();
-      const request = new Request(url, { method });
 
-      const actual = redirectUserToOnboardingStep(request, user);
+      const actual = redirectUserToOnboardingStep(new URL(url), user);
       const expected = { user };
 
       expect(actual).toEqual(expected);
@@ -194,11 +188,9 @@ describe("redirectUserToOnboardingStep()", () => {
       expect.assertions(2);
 
       const user = createOnboardingUser({ memberships: [] });
-      const method = faker.internet.httpMethod();
-      const request = new Request(url, { method });
 
       try {
-        redirectUserToOnboardingStep(request, user);
+        redirectUserToOnboardingStep(new URL(url), user);
       } catch (error) {
         if (error instanceof Response) {
           expect(error.status).toEqual(302);
