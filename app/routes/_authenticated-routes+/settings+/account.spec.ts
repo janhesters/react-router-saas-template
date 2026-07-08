@@ -131,7 +131,7 @@ describe("/settings/account route action", () => {
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(newName);
 
-      const maybeToast = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeToast = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeToast ?? "" },
@@ -164,7 +164,7 @@ describe("/settings/account route action", () => {
       const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
       expect(updatedUser?.imageUrl).toEqual(expectedUrl);
 
-      const maybeToast = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeToast = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), { headers: { cookie: maybeToast ?? "" } }),
       );
@@ -194,7 +194,7 @@ describe("/settings/account route action", () => {
       const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
       expect(updatedUser?.imageUrl).toEqual(expectedUrl);
 
-      const maybeToast = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeToast = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeToast ?? "" },

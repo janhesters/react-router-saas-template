@@ -118,7 +118,7 @@ describe("/organizations/invite-link route action", () => {
       expect(actual.data).toEqual(expected.data);
       expect(actual.init?.status).toEqual(expected.init?.status);
 
-      const maybeHeaders = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeHeaders = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeHeaders ?? "" },
@@ -143,7 +143,7 @@ describe("/organizations/invite-link route action", () => {
       expect(actual.data).toEqual(expected.data);
       expect(actual.init?.status).toEqual(expected.init?.status);
 
-      const maybeHeaders = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeHeaders = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeHeaders ?? "" },
@@ -215,7 +215,7 @@ describe("/organizations/invite-link route action", () => {
       expect(actual.data).toEqual(expected.data);
       expect(actual.init?.status).toEqual(expected.init?.status);
 
-      const maybeHeaders = (actual.init?.headers as Headers).get("Set-Cookie");
+      const maybeHeaders = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
         new Request(createUrl(), {
           headers: { cookie: maybeHeaders ?? "" },
