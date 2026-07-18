@@ -8,11 +8,13 @@ config();
 
 let teardownHappened = false;
 
-export default function setupVitest() {
-  void ensureStripeProductsAndPricesExist().catch((error) => {
+export default async function setupVitest() {
+  try {
+    await ensureStripeProductsAndPricesExist();
+  } catch (error) {
     console.error("✨ Failed to seed Stripe pricing:", error);
     process.exit(1);
-  });
+  }
 
   // Clear mock sessions after all tests are run.
   return async function teardownVitest() {
