@@ -152,22 +152,25 @@ describe("redirectUserToOnboardingStep()", () => {
     test.each([
       faker.internet.url(),
       "http://localhost:3000/onboarding/organization",
-    ])("given: any other request (to %s) and the user has no name, and is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page", (url) => {
-      expect.assertions(2);
+    ])(
+      "given: any other request (to %s) and the user has no name, and is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page",
+      (url) => {
+        expect.assertions(2);
 
-      const user = createOnboardingUser({ memberships: [], name: "" });
+        const user = createOnboardingUser({ memberships: [], name: "" });
 
-      try {
-        redirectUserToOnboardingStep(new URL(url), user);
-      } catch (error) {
-        if (error instanceof Response) {
-          expect(error.status).toEqual(302);
-          expect(error.headers.get("Location")).toEqual(
-            "/onboarding/user-account",
-          );
+        try {
+          redirectUserToOnboardingStep(new URL(url), user);
+        } catch (error) {
+          if (error instanceof Response) {
+            expect(error.status).toEqual(302);
+            expect(error.headers.get("Location")).toEqual(
+              "/onboarding/user-account",
+            );
+          }
         }
-      }
-    });
+      },
+    );
   });
 
   describe("organization onboarding page", () => {
@@ -184,22 +187,25 @@ describe("redirectUserToOnboardingStep()", () => {
     test.each([
       faker.internet.url(),
       "http://localhost:3000/onboarding/future-step",
-    ])("given: any other request (to %s) and a user that is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page", (url) => {
-      expect.assertions(2);
+    ])(
+      "given: any other request (to %s) and a user that is NOT a member of any organizations yet, should: redirect the user to the organization onboarding page",
+      (url) => {
+        expect.assertions(2);
 
-      const user = createOnboardingUser({ memberships: [] });
+        const user = createOnboardingUser({ memberships: [] });
 
-      try {
-        redirectUserToOnboardingStep(new URL(url), user);
-      } catch (error) {
-        if (error instanceof Response) {
-          expect(error.status).toEqual(302);
-          expect(error.headers.get("Location")).toEqual(
-            "/onboarding/organization",
-          );
+        try {
+          redirectUserToOnboardingStep(new URL(url), user);
+        } catch (error) {
+          if (error instanceof Response) {
+            expect(error.status).toEqual(302);
+            expect(error.headers.get("Location")).toEqual(
+              "/onboarding/organization",
+            );
+          }
         }
-      }
-    });
+      },
+    );
   });
 });
 

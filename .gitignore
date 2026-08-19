@@ -6,7 +6,12 @@ todo.md
 /.react-router/
 /build/
 
+# Local environment files
+.env
+.env.*
 *.env
+*.env.*
+!.env.example
 
 # TypeScript
 *.tsbuildinfo

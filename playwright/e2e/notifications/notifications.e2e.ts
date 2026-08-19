@@ -87,13 +87,17 @@ test.describe("notifications", () => {
 
     // Check empty state of unread notifications
     await expect(
-      page.getByText(/your notifications will show up here/i),
+      page
+        .getByRole("tabpanel", { name: "Unread" })
+        .getByText(/your notifications will show up here/i),
     ).toBeVisible();
 
     // Check empty state of all notifications
     await page.getByRole("tab", { name: /all/i }).click();
     await expect(
-      page.getByText(/your notifications will show up here/i),
+      page
+        .getByRole("tabpanel", { exact: true, name: "All" })
+        .getByText(/your notifications will show up here/i),
     ).toBeVisible();
 
     await teardownOrganizationAndMember({ organization, user });
@@ -125,7 +129,9 @@ test.describe("notifications", () => {
     // Check that all notifications are visible in the unread tab
     for (const notification of notifications) {
       await expect(
-        page.getByText((notification.content as LinkNotificationProps).text),
+        page
+          .getByRole("tabpanel", { name: "Unread" })
+          .getByText((notification.content as LinkNotificationProps).text),
       ).toBeVisible();
     }
 
@@ -134,7 +140,9 @@ test.describe("notifications", () => {
 
     // Check that the unread notifications are now empty
     await expect(
-      page.getByText(/your notifications will show up here/i),
+      page
+        .getByRole("tabpanel", { name: "Unread" })
+        .getByText(/your notifications will show up here/i),
     ).toBeVisible();
 
     // Navigate to all notifications tab and check that all notifications are
@@ -142,7 +150,9 @@ test.describe("notifications", () => {
     await page.getByRole("tab", { name: /all/i }).click();
     for (const notification of notifications) {
       await expect(
-        page.getByText((notification.content as LinkNotificationProps).text),
+        page
+          .getByRole("tabpanel", { exact: true, name: "All" })
+          .getByText((notification.content as LinkNotificationProps).text),
       ).toBeVisible();
     }
 
@@ -174,14 +184,18 @@ test.describe("notifications", () => {
       // Check that all notifications are visible in the unread tab
       for (const notification of notifications) {
         await expect(
-          page.getByText((notification.content as LinkNotificationProps).text),
+          page
+            .getByRole("tabpanel", { name: "Unread" })
+            .getByText((notification.content as LinkNotificationProps).text),
         ).toBeVisible();
       }
 
       // Mark the last notification as read
-      const lastNotification = page.getByRole("link", {
-        name: (notifications[2]!.content as LinkNotificationProps).text,
-      });
+      const lastNotification = page
+        .getByRole("tabpanel", { name: "Unread" })
+        .getByRole("link", {
+          name: (notifications[2]!.content as LinkNotificationProps).text,
+        });
       await expect(lastNotification).toHaveAttribute(
         "href",
         href("/organizations/:organizationSlug/settings/billing", {
@@ -198,23 +212,27 @@ test.describe("notifications", () => {
 
       // Check that the notification is now read
       await expect(
-        page.getByText(
-          (notifications[2]!.content as LinkNotificationProps).text,
-        ),
+        page
+          .getByRole("tabpanel", { name: "Unread" })
+          .getByText((notifications[2]!.content as LinkNotificationProps).text),
       ).toBeHidden();
 
       // Check in the all notifications tab that all notifications are visible
       await page.getByRole("tab", { name: /all/i }).click();
       for (const notification of notifications) {
         await expect(
-          page.getByText((notification.content as LinkNotificationProps).text),
+          page
+            .getByRole("tabpanel", { exact: true, name: "All" })
+            .getByText((notification.content as LinkNotificationProps).text),
         ).toBeVisible();
       }
 
       // Mark the second notification as read
-      const secondNotification = page.getByRole("link", {
-        name: (notifications[1]!.content as LinkNotificationProps).text,
-      });
+      const secondNotification = page
+        .getByRole("tabpanel", { exact: true, name: "All" })
+        .getByRole("link", {
+          name: (notifications[1]!.content as LinkNotificationProps).text,
+        });
       await expect(secondNotification).toHaveAttribute(
         "href",
         href("/organizations/:organizationSlug/settings/billing", {
@@ -232,9 +250,9 @@ test.describe("notifications", () => {
       // Check that the notification is now read
       await page.getByRole("tab", { name: /unread/i }).click();
       await expect(
-        page.getByText(
-          (notifications[1]!.content as LinkNotificationProps).text,
-        ),
+        page
+          .getByRole("tabpanel", { name: "Unread" })
+          .getByText((notifications[1]!.content as LinkNotificationProps).text),
       ).toBeHidden();
 
       await teardownOrganizationAndMember({ organization, user });

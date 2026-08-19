@@ -2,6 +2,7 @@ import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { IconUser } from "@tabler/icons-react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import type { Route } from "./+types/user-account";
 import {
@@ -60,6 +61,7 @@ export default function UserAccountOnboardingRoute({
   loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("onboarding", { keyPrefix: "userAccount" });
+  const hydrated = useHydrated();
   const { form, fields } = useForm(
     coerceFormValue(onboardingUserAccountSchema),
     {
@@ -142,6 +144,7 @@ export default function UserAccountOnboardingRoute({
 
           <Field>
             <Button
+              disabled={!hydrated}
               name="intent"
               type="submit"
               value={ONBOARDING_USER_ACCOUNT_INTENT}

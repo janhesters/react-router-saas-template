@@ -117,6 +117,7 @@ export function NavUser({ user }: NavUserProps) {
 
             <Form action="/logout" method="post" replace>
               <DropdownMenuItem
+                nativeButton
                 render={
                   <button
                     className="w-full"

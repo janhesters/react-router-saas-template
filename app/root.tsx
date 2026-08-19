@@ -158,7 +158,7 @@ export function Layout({
            * side with React Router.
            */
           dangerouslySetInnerHTML={{
-            __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {})}`,
+            __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {}).replaceAll("<", "\\u003c")}`,
           }}
           nonce={nonce}
         />

@@ -53,6 +53,10 @@ export async function registerAction({ request, context }: Route.ActionArgs) {
         email: body.email,
         options: {
           data: { appName: i18n.t("translation:appName"), intent: body.intent },
+          emailRedirectTo: new URL(
+            "/register/confirm",
+            process.env.APP_URL,
+          ).toString(),
           shouldCreateUser: true,
         },
       });
@@ -82,7 +86,9 @@ export async function registerAction({ request, context }: Route.ActionArgs) {
     }
     case "registerWithGoogle": {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        options: { redirectTo: `${process.env.APP_URL}/auth/callback` },
+        options: {
+          redirectTo: new URL("/auth/callback", process.env.APP_URL).toString(),
+        },
         provider: "google",
       });
 

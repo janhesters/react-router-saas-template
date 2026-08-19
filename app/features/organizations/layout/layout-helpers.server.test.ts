@@ -303,37 +303,40 @@ describe("mapOnboardingUserToBillingSidebarCardProps()", () => {
     OrganizationMembershipRole.member,
     OrganizationMembershipRole.admin,
     OrganizationMembershipRole.owner,
-  ])("given: an onboarded %s user without a free trial, should: return an empty object", (role) => {
-    const now = new Date();
-    const subscription =
-      createPopulatedStripeSubscriptionItemWithPriceAndProduct({
-        price: {
-          lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
-        },
-      });
-    const organization = createPopulatedOrganization();
-    const user = createOnboardingUser({
-      memberships: [
-        {
-          deactivatedAt: null,
-          organization: {
-            ...organization,
-            stripeSubscriptions: [subscription],
+  ])(
+    "given: an onboarded %s user without a free trial, should: return an empty object",
+    (role) => {
+      const now = new Date();
+      const subscription =
+        createPopulatedStripeSubscriptionItemWithPriceAndProduct({
+          price: {
+            lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
           },
-          role,
-        },
-      ],
-    });
+        });
+      const organization = createPopulatedOrganization();
+      const user = createOnboardingUser({
+        memberships: [
+          {
+            deactivatedAt: null,
+            organization: {
+              ...organization,
+              stripeSubscriptions: [subscription],
+            },
+            role,
+          },
+        ],
+      });
 
-    const actual = mapOnboardingUserToBillingSidebarCardProps({
-      now,
-      organizationSlug: organization.slug,
-      user,
-    });
-    const expected = {};
+      const actual = mapOnboardingUserToBillingSidebarCardProps({
+        now,
+        organizationSlug: organization.slug,
+        user,
+      });
+      const expected = {};
 
-    expect(actual).toEqual(expected);
-  });
+      expect(actual).toEqual(expected);
+    },
+  );
 
   test("given: an onboarded member user with a free trial, should: show the billing sidebar card without the button", () => {
     const now = new Date();
@@ -370,38 +373,41 @@ describe("mapOnboardingUserToBillingSidebarCardProps()", () => {
   test.each([
     OrganizationMembershipRole.admin,
     OrganizationMembershipRole.owner,
-  ])("given: an onboarded %s user with a free trial, should: show the billing sidebar card with the button", (role) => {
-    const now = new Date();
-    const organization = createPopulatedOrganization({
-      // 1 day ago
-      createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
-    });
-    const user = createOnboardingUser({
-      memberships: [
-        {
-          deactivatedAt: null,
-          organization: { ...organization, stripeSubscriptions: [] },
-          role,
+  ])(
+    "given: an onboarded %s user with a free trial, should: show the billing sidebar card with the button",
+    (role) => {
+      const now = new Date();
+      const organization = createPopulatedOrganization({
+        // 1 day ago
+        createdAt: new Date(now.getTime() - 1000 * 60 * 60 * 24),
+      });
+      const user = createOnboardingUser({
+        memberships: [
+          {
+            deactivatedAt: null,
+            organization: { ...organization, stripeSubscriptions: [] },
+            role,
+          },
+        ],
+      });
+
+      const actual = mapOnboardingUserToBillingSidebarCardProps({
+        now,
+        organizationSlug: organization.slug,
+        user,
+      });
+
+      const expected = {
+        billingSidebarCardProps: {
+          showButton: true,
+          state: "trialing",
+          trialEndDate: organization.trialEnd,
         },
-      ],
-    });
+      };
 
-    const actual = mapOnboardingUserToBillingSidebarCardProps({
-      now,
-      organizationSlug: organization.slug,
-      user,
-    });
-
-    const expected = {
-      billingSidebarCardProps: {
-        showButton: true,
-        state: "trialing",
-        trialEndDate: organization.trialEnd,
-      },
-    };
-
-    expect(actual).toEqual(expected);
-  });
+      expect(actual).toEqual(expected);
+    },
+  );
 
   test("given: any onboarded user with a free trial that has run out, should: show the billing sidebar card with the correct content", () => {
     const now = new Date();
@@ -466,13 +472,12 @@ describe("switchSlugInRoute()", () => {
       }),
       slug: "org-1",
     },
-  ])("given: a route with a slug, should: return the route with the slug replaced", ({
-    route,
-    slug,
-    expected,
-  }) => {
-    const actual = switchSlugInRoute(route, slug);
+  ])(
+    "given: a route with a slug, should: return the route with the slug replaced",
+    ({ route, slug, expected }) => {
+      const actual = switchSlugInRoute(route, slug);
 
-    expect(actual).toEqual(expected);
-  });
+      expect(actual).toEqual(expected);
+    },
+  );
 });

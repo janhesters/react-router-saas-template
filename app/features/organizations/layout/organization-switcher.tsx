@@ -111,6 +111,7 @@ export function OrganizationSwitcher({
                 <Form key={organization.id} method="POST" replace>
                   <DropdownMenuItem
                     className="w-full gap-2 p-2"
+                    nativeButton
                     render={
                       <button
                         name="intent"

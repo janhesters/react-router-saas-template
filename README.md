@@ -1,15 +1,14 @@
-# Welcome to the React Router SaaS Template!
+# React Router SaaS Template
 
-A modern, production-ready template for building full-stack B2B & B2C SaaS
-applications using React Router.
+A full-stack starter for B2B and B2C SaaS applications built with React Router.
 
-[![YouTbe thumbnail](https://i.ytimg.com/vi/5p45AbpL4bo/maxresdefault.jpg)](https://www.youtube.com/watch?v=5p45AbpL4bo)
+[![YouTube thumbnail](https://i.ytimg.com/vi/5p45AbpL4bo/maxresdefault.jpg)](https://www.youtube.com/watch?v=5p45AbpL4bo)
 
 You can
 [click here to watch the video](https://www.youtube.com/watch?v=5p45AbpL4bo)
 explaining the template.
 
-## Tech Stack
+## Tech stack
 
 - 📖 [React Router](https://reactrouter.com/)
 - 🔒 [TypeScript](https://www.typescriptlang.org/) by default
@@ -53,66 +52,89 @@ such a big foreign project. Luckily this template has good test coverage.
 
 Why is good test coverage important for a template? For the same reason why it's
 good for your own code base. You want to avoid accidentally breaking something
-when you update the template and change or ammend its code.
+when you update the template and change or amend its code.
 
-## Getting Started
+## Getting started
+
+Install [Node.js 24 LTS](https://nodejs.org/en/download) and
+[Bun 1.3.14](https://bun.com/docs/installation). The repository pins both
+versions in `.node-version` and `.bun-version`.
 
 Get the code:
 
 ```bash
-npx create-react-router@latest --template janhesters/react-router-saas-template
+bunx create-react-router@latest my-app --template janhesters/react-router-saas-template --package-manager bun
+cd my-app
 ```
 
-### Installation
-
-Install the dependencies:
+The generator installs the dependencies. If you clone the repository directly,
+run:
 
 ```bash
-npm install
+bun install --frozen-lockfile
 ```
 
-#### Quick Start
+### Quick start with mocks
 
-For the fastest way to get started with local development using mocks (no external services required):
+The mock setup needs a disposable local Postgres database at
+`TEST_DATABASE_URL`. It does not need Supabase, Stripe, or Resend. The command
+resets this database, so never point `TEST_DATABASE_URL` at saved data.
 
 ```bash
-npm run quickstart
+bun run quickstart
 ```
 
-This command will:
-1. Copy `.env.example` to `.env`
-2. Set up Prisma (generate client, run migrations, push schema)
-3. Seed the database with demo data
-4. Start the development server with mocks enabled
+This command:
+
+1. Creates `.env` from `.env.example` when `.env` does not exist.
+2. Resets the test database and pushes the Prisma schema without creating a
+   migration.
+3. Seeds demo data.
+4. Starts the development server with mocks.
+
+The quick start is for exploring the template. Create a migration before you
+connect a real development database or deploy the application.
 
 You can then log in with any of the demo accounts:
+
 - `hobby@example.com` - Hobby Plan (1 seat, monthly)
-- `startup@example.com` - Startup Plan (5 seats, annual)  
+- `startup@example.com` - Startup Plan (5 seats, annual)
 - `business@example.com` - Business Plan (25 seats, monthly)
 
-For more details on working with mocks, see ["Local Development with Mocks"](#local-development-with-mocks).
+For more details, see [Local development with mocks](#local-development-with-mocks).
 
-#### Manual Setup
+### Connect real services
 
-For a quick start, see ["Local Development with Mocks"](#local-development-with-mocks). Just copy `.env.example` to `.env` and start developing.
+Create the local environment file:
 
-Create `.env` file. You can find the `.env.example` file in the root of the
-project to see all the variables you need to set.
+```bash
+bun run setup:env
+```
 
-Start by setting the environment variables that you can configure without
-setting up a service:
+Set every value in `.env`. Start with:
 
-- `DATABASE_URL` – The URL of your local Postgres database. You can just
-  download the [Postgres.app](https://postgresapp.com/) and use it to create a
-  local database.
-- `APP_URL` – The URL of your app, e.g. `http://localhost:3000`.
-- `COOKIE_SECRET` – A random string of characters. This is used for signing
-  cookies including sessions, toast notifications, and other cookie-based data.
-- `HONEYPOT_SECRET` – A random string of characters. This is used for the
-  honeypot field in the contact sales form.
+- `DATABASE_URL`: the Postgres connection string.
+- `APP_URL`: the full application URL, such as `http://localhost:3000`.
+- `COOKIE_SECRET`: a random value used to sign cookies.
+- `HONEYPOT_SECRET`: a separate random value for the contact form honeypot.
 
-To run the app, you'll need to obtain the remaining environment variables by
-setting up the required services.
+Complete the Supabase, Resend, and Stripe sections below before you start the
+application with real services.
+
+This template does not ship a Prisma migration. Create the first migration after
+you set `DATABASE_URL`:
+
+```bash
+bun run prisma:migrate:init
+git add prisma/migrations
+git commit -m "chore(database): add first migration"
+```
+
+`bun run dev` generates Prisma Client before it starts React Router:
+
+```bash
+bun run dev
+```
 
 ### Supabase
 
@@ -121,40 +143,49 @@ setting up the required services.
    - Generate a password and save it somewhere.
    - Choose the Region closest to your users.
    - Keep the defaults like Postgres.
-3. Go to your project's API settings, e.g.
-   `https://supabase.com/dashboard/project/<project-id>/settings/api`. From this
-   screen, you can grab:
+3. Create a separate database user for Prisma. Generate a password, save it in
+   your password manager, then run this once in the SQL Editor after replacing
+   `PASTE_PRISMA_PASSWORD`:
 
-- `SUPABASE_PROJECT_ID` - The ID of your Supabase project. You can grab it from
-  the URL of your project, e.g.
-  `https://supabase.com/dashboard/project/<project-id>`.
-- `SUPABASE_REGION` - The region of your Supabase project.
-- `VITE_SUPABASE_URL` - The URL of your Supabase project. NOTE: If you won't use
-  client side uploads, you can also call it `SUPABASE_URL` instead. The `VITE_`
-  prefix is used for client side variables.
+   ```sql
+   create user "prisma" with password 'PASTE_PRISMA_PASSWORD' bypassrls createdb;
+   grant "prisma" to "postgres";
+   grant usage on schema public to prisma;
+   grant create on schema public to prisma;
+   grant all on all tables in schema public to prisma;
+   grant all on all routines in schema public to prisma;
+   grant all on all sequences in schema public to prisma;
+   alter default privileges for role postgres in schema public grant all on tables to prisma;
+   alter default privileges for role postgres in schema public grant all on routines to prisma;
+   alter default privileges for role postgres in schema public grant all on sequences to prisma;
+   ```
 
-4. From `https://supabase.com/dashboard/project/<project-id>/settings/api-keys`, you can grab:
+4. Open the project's **Connect** dialog and copy the Session Pooler connection
+   string on port 5432. Change `postgres.PROJECT_REF` in its username to
+   `prisma.PROJECT_REF`, replace its password with the Prisma-user password, and
+   save the result as `DATABASE_URL`.
+5. Open **Settings > API Keys** and copy:
+   - The project URL into `VITE_SUPABASE_URL`.
+   - The publishable key (`sb_publishable_...`) into
+     `VITE_SUPABASE_PUBLISHABLE_KEY`.
+   - A secret key (`sb_secret_...`) into `SUPABASE_SECRET_KEY`.
+6. Open **Storage > S3** and create an access key. Copy the displayed endpoint,
+   region, access key ID, and secret access key into the matching `STORAGE_*`
+   variables.
 
-- `VITE_SUPABASE_ANON_KEY` - The anonymous key of your Supabase project. It's
-  marked as `anon` and `public` in your dashboard. NOTE: If you won't use client
-  side uploads, you can also call it `SUPABASE_URL` instead. The `VITE_` prefix
-  is used for client side variables.
-- `SUPABASE_SERVICE_ROLE_KEY` - The service role key of your Supabase project.
-  It's marked as `service_role` and `secret` in your dashboard. It must only be
-  used on the server side.
+The publishable key is sent to the browser. Row Level Security must protect any
+data you expose through Supabase APIs. `SUPABASE_SECRET_KEY` and the S3
+credentials bypass Row Level Security. Keep them on the server.
 
-5. Go to your project's storage settings, e.g.
-   `https://supabase.com/dashboard/project/<project-id>/storage/s3`.
-   You'll need to click on "New access key". Then you can grab from this screen:
-
-- `STORAGE_ACCESS_KEY_ID` - The access key ID of your Supabase project.
-- `STORAGE_SECRET_ACCESS_KEY` - The secret access key of your Supabase project.
+The application reads product data through Prisma, not the Supabase Data API.
+You can disable the Data API in **Settings > API** unless you add a feature that
+uses it.
 
 #### Configuring Site URL at the Correct Location
 
 Now you need to configure the emails for the magic link authentication flow.
 
-Here’s how to set the Site URL under **URL Configuration** for your Supabase
+Here's how to set the Site URL under **URL Configuration** for your Supabase
 project:
 
 1. **Access the Supabase Dashboard**:
@@ -167,9 +198,12 @@ project:
    - On the **URL Configuration** page, you'll see a field labeled **Site URL**.
    - Enter your application's base URL here (e.g., `https://yourapp.com` or
      `http://localhost:3000` for local development).
-   - This is the base URL that Supabase will use as the `{{ .SiteURL }}`
-     variable in your email templates (like the magic link template you
-     provided).
+   - This is the project's default URL. The application supplies an exact
+     redirect URL for each login and registration email.
+   - Add `<APP_URL>/auth/callback`, `<APP_URL>/login/confirm`, and
+     `<APP_URL>/register/confirm` under **Redirect URLs**. For local
+     development, `<APP_URL>` is `http://localhost:3000`. Add the three exact
+     HTTPS URLs for each deployed environment.
 4. **Save the Configuration**:
    - Click **Save** or the equivalent button to apply your changes.
 
@@ -184,7 +218,7 @@ the Supabase Dashboard.
 <p>Follow this link to register:</p>
 <p>
   <a
-    href="{{ .SiteURL }}/register/confirm?token_hash={{ .TokenHash }}&type=email"
+    href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
     >Sign Up</a
   >
 </p>
@@ -200,7 +234,7 @@ the Supabase Dashboard.
 
 <p>Follow this link to login:</p>
 <p>
-  <a href="{{ .SiteURL }}/login/confirm?token_hash={{ .TokenHash }}&type=email"
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
     >Log In</a
   >
 </p>
@@ -208,12 +242,14 @@ the Supabase Dashboard.
 
 Click **Save Changes** to apply your changes.
 
+Disable click and open tracking for authentication emails in your email
+provider. Tracking can rewrite single-use links and stop them from working.
+
 #### Google OAuth
 
 This section is based on the Supabase documentation for
 [**Login With Google**](https://supabase.com/docs/guides/auth/social-login/auth-google),
-but has been enhanced for clarity because the Supabase documentation does not
-work out of the box.
+but adds the template-specific steps needed for this project.
 
 1. Create a new Google Cloud project. Go to the
    [Google Cloud Platform](https://console.cloud.google.com/home/dashboard) and
@@ -249,7 +285,7 @@ work out of the box.
    - Click `Update`.
 5. In the Google Cloud console, Under **Branding** and then **Authorized
    Domains**, add your Supabase project's domain, which has the form
-   `<PROJECT_ID>.supabase.co`.
+   `<PROJECT_REF>.supabase.co`.
 6. In your `.env` file, set the `APP_URL` to your local development URL (by
    default it's `http://localhost:3000`) or your production site URL.
 
@@ -258,7 +294,7 @@ work out of the box.
 are more details on how to configure the Google consent screen to show your
 custom domain, and even your app's name and logo.
 
-#### Uploading Directly to Supabase From the Client
+#### Configure image storage
 
 Create a bucket in Supabase Storage.
 
@@ -266,12 +302,11 @@ Create a bucket in Supabase Storage.
    https://supabase.com/dashboard/project/[your-project-ref].
 2. Go to the Storage section.
 3. Click on the "New Bucket" button.
-4. Enter a name for the bucket, e.g. `"app-images"` if you want to use a special
-   bucket for images, which we recommend.
-5. Keep the bucket as "Private" to ensure that only authenticated users can
-   access the files.
-6. Click on "Additional configuration", set the maximum upload sizeto 1MB, and
-   set the allowed MIME types to `image/*` to only allow image files.
+4. Name the bucket `app-images`.
+5. Make the bucket public. The template stores public URLs for avatars and
+   organization logos.
+6. Under **Additional configuration**, set the maximum upload size to 1 MB and
+   allow `image/*` MIME types.
 7. Click on "Save".
 8. Set the bucket name to the correct variable in your code. (By default, this
    is NOT an environment variable in this template, but you can easily change it
@@ -288,10 +323,13 @@ Simply
 [follow the instructions in the documentation](https://supabase.com/docs/guides/storage/s3/authentication)
 and set the following environment variables in your `.env` file:
 
+- `STORAGE_ENDPOINT`
 - `STORAGE_ACCESS_KEY_ID`
 - `STORAGE_SECRET_ACCESS_KEY`
 - `STORAGE_REGION`
-- `SUPABASE_PROJECT_ID`
+
+These credentials bypass Row Level Security. Keep them out of client code,
+browser-prefixed variables, logs, and Docker build arguments.
 
 The upload to Supabase Storage is done using `parseFormData` from
 [`@remix-run/form-data-parser`](https://github.com/remix-run/form-data-parser).
@@ -300,11 +338,17 @@ This function is under the hood in `validateFormData` in
 
 ### Resend
 
-1. Create a new project at [Resend](https://resend.com/).
-2. Got your project's [API keys](https://resend.com/api-keys) and click on
-   "Create API key".
-3. Set the `RESEND_API_KEY` environment variable to the API key you just
-   created.
+1. Create a [Resend](https://resend.com/) account and verify a sending domain.
+2. Create a sending-only key under [API Keys](https://resend.com/api-keys).
+3. Set `RESEND_API_KEY` to the new key.
+4. Set `RESEND_FROM_EMAIL` to a sender on the verified domain, such as
+   `My App <hello@mail.example.com>`.
+
+`RESEND_API_KEY` sends organization invitation emails from the application.
+Supabase Auth sends login and registration emails through its own SMTP
+configuration. Connect Resend under **Supabase > Authentication > SMTP
+Settings**, or use Resend's Supabase integration. Supabase's default SMTP is
+only suitable for testing with project-team addresses.
 
 ### Stripe
 
@@ -317,7 +361,7 @@ brew install stripe/stripe-cli/stripe
 or
 
 ```bash
-npm install -g stripe/stripe-cli
+bun install --global @stripe/cli
 ```
 
 Confirm the installation:
@@ -356,9 +400,9 @@ trial. The free trial is 14 days and always for the highest plan.
 
 If you need different pricing structures (e.g. freemium, one-time payments,
 etc.) you'll have to write that code yourself. But this template's structure
-makes it easy to customize the pricing page, the web hook handlers, etc. (NOTE:
-the public `/pricing` page has a free tier, but that's just to show you how to
-do it in the UI. The actual app has no free tier.)
+makes it easy to customize the pricing page, the webhook handlers, etc. (NOTE:
+the public `/pricing` page has a free tier as a UI example. The app has no free
+tier.)
 
 For each price, set the "Product tax code" to "SaaS" and the "Unit label" to
 "seat".
@@ -372,17 +416,17 @@ the Stripe Dashboard, and have them automatically reflected in your app.
 By default, it uses three plans with seat limits of:
 
 - low (Hobby): 1 seat
-- mid (Startup): 10 seats
+- mid (Startup): 5 seats
 - high (Business): 25 seats
 
-You might need to tweak a bit of test code if you want to change these limits.
+Update the related tests if you change these limits.
 Do a fuzzy search for these limits.
 
-For local development, run your app with `npm run dev` and forward webhooks to
+For local development, run your app with `bun run dev` and forward webhooks to
 your local server with
 `stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks`.
 
-For production, follow the same instructions, but us the production URL of your
+For production, follow the same instructions, but use the production URL of your
 app and make sure your app is deployed so it will accept the webhooks of the
 product creation. If you messed this up, you can always retrigger the webhooks
 using the Stripe CLI.
@@ -398,7 +442,7 @@ using the Stripe CLI.
 - In the "Product Tax Code" dropdown, select "Software as a Service (SaaS) -
   business use".
 - Click on "More Options" and set the "Unit label" to "seat".
-- Enter a monhtly recurring price, e.g.: "$17". Make sure you set the currenty
+- Enter a monthly recurring price, e.g.: "$17". Make sure you set the currency
   to USD in case its NOT the default.
 - Click on "More pricing options" and enter a lookup key, e.g.:
   "monthly_hobby_planv2".
@@ -417,19 +461,19 @@ using the Stripe CLI.
 
 ##### For Local Development: Replay the Events
 
-After you’ve created your products and prices locally (with `npm run dev` and
-`stripe listen` forwarding to your webhook endpoint), you’ll see lines in your
+After you've created your products and prices locally (with `bun run dev` and
+`stripe listen` forwarding to your webhook endpoint), you'll see lines in your
 terminal like:
 
 ```
 2025-05-10 17:58:56   --> product.created \[evt\_XXXXXXXXXXXXXXXXXXXXXXXX]
 2025-05-10 17:58:58   --> price.created   \[evt\_YYYYYYYYYYYYYYYYYYYYYYYY]
 2025-05-10 17:59:00   --> price.created   \[evt\_ZZZZZZZZZZZZZZZZZZZZZZZZ]
-…etc.
+...etc.
 ```
 
 1. **Copy the event IDs**  
-   Whenever you see a line ending with `[evt_…]`, copy that ID (everything
+   Whenever you see a line ending with `[evt_...]`, copy that ID (everything
    inside the brackets, for example `evt_XXXXXXXXXXXXXXXXXXXXXXXX`).
 
 2. **Save them for later**  
@@ -441,49 +485,27 @@ terminal like:
    evt_XXXXXXXXXXXXXXXXXXXXXXXX
    evt_YYYYYYYYYYYYYYYYYYYYYYYY
    evt_ZZZZZZZZZZZZZZZZZZZZZZZZ
-   # …etc.
+   # ...etc.
    ```
 
-3. **Replay (resend) the events** When you need to wipe your local database and
-   re-seed via webhooks, you can replay all those events at once. For example,
-   if you saved them in `stripe-events.txt`:
+3. **Replay (resend) the events** When you need to reset your local database and
+   seed it through webhooks, save the IDs in `stripe-events.txt`, then run:
 
    ```bash
-   xargs -n1 stripe events resend < stripe-events.txt
+   bun run stripe:resend-events
    ```
 
-   This command is also available via `npm run stripe:resend-events`.
+> **Tip:** `stripe-events.txt` is ignored by Git. Keep a copy outside the
+> repository if you want to reuse the event IDs.
 
-> **Tip:** Keep `stripe-events.txt` checked into your repo (or in a safe place)
-> so you can easily replay your entire setup whenever you rebuild your local
-> database.
+#### 2. Seed Stripe data for tests
 
-#### 2. Seed Stripe Data for Tests (Local vs. CI)
-
-Your test suite relies on having Stripe products & prices in your database.
-Here’s how it works in each environment:
-
-##### Local
-
-1. **Replay your real events** (see “For Local Development: Replay the Events”
-   above) so your DB contains the exact products, prices, metadata, and lookup
-   keys you configured in Stripe.
-2. **Run Vitest**:
-   ```bash
-   npm test
-   ```
-
-The global setup (`app/test/vitest.global-setup.ts`) will detect your existing
-products/prices and simply verify they’re present.
-
-#### CI
-
-In CI you won’t have webhook events or a populated database, so we automatically
-seed dummy data:
+The test suite uses the disposable database configured by `TEST_DATABASE_URL`.
+Its global setup seeds fake products and prices when they are missing:
 
 - **Global setup file**: `app/test/vitest.global-setup.ts`
 - **Seeding helper**: `ensureStripeProductsAndPricesExist()` in
-  `app/test/server-test-utils.ts`
+  `app/test/test-utils.ts`
 
 What it does before your tests run:
 
@@ -492,12 +514,10 @@ What it does before your tests run:
    `saveStripeProductToDatabase()`.
 3. Creates both monthly & annual prices for that product with the right lookup
    keys & intervals.
-4. Logs success or exits on error, ensuring your tests always see exactly the
-   pricing rows they expect.
+4. Waits for seeding to finish before the tests start.
 
-You don’t need to replay webhooks or manage `stripe-events.txt` in CI—this
-script handles everything. Just push your code and let your CI pipeline run
-`npm test`.
+Do not replay development Stripe events into the test database. Run
+`bun run test:db:reset` before the suite when you want a clean test schema.
 
 #### Checkout Session
 
@@ -520,7 +540,7 @@ subscription via the portal.
   reasoning is simple: more active users typically means more revenue.
   Automatically removing members would work against that. If your plan has other
   limits, you should handle those restrictions yourself - but since
-  subscriptions are billed per user per month, it’s in your interest to avoid
+  subscriptions are billed per user per month, it's in your interest to avoid
   limiting user count unnecessarily.
 - Users can still be added even if the subscription is cancelled. This allows
   you to generate more revenue if the customer decides to subscribe again -
@@ -533,18 +553,18 @@ Here are a few miscellaneous things you might want to change:
 
 1. Give it your own name! Fuzzy search for `React Router SaaS Template` to find
    all the places you need to change the name.
-2. The current theme violates color contrast. It's best for you to pick a theme
-   that is accessible and configure it in your `app.css` file. Then you can
+2. The current theme violates color contrast. Pick an accessible theme and
+   configure it in your `app.css` file. Then you can
    enable contrast checks in your E2E tests again.
 
 ## Development
 
-With all the envorinment variables set, you can run the app.
+With all the environment variables set, you can run the app.
 
 Start the development server with HMR:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Your application will be available at `http://localhost:3000`.
@@ -553,12 +573,12 @@ If you haven't done it yet, with both your dev server and webhook forwarding
 terminal open, replay the Stripe events in a third terminal.
 
 ```bash
-npm run stripe:resend-events
+bun run stripe:resend-events
 ```
 
 ### Security Configuration
 
-This application implements Content Security Policy (CSP) with nonces for XSS
+This application uses Content Security Policy (CSP) with nonces for XSS
 protection and provides control over search engine indexing.
 
 #### ALLOW_INDEXING Environment Variable
@@ -610,72 +630,59 @@ by cryptographically random nonces that are generated on each request.
 
 ### Project helper scripts
 
-- `"build"` - Compiles the application using React Router's build process.
-- `"build-with-mocks"` - Builds the app and initializes MSW in the client build
-  directory without saving it to `package.json`.
-- `"check"` - Runs Biome checks and automatically applies safe fixes with
-  formatting across the codebase.
-- `"dev"` - Starts the development server using React Router's dev mode.
-- `"dev-with-mocks"` - Starts the dev server with both client and server mocks
-  enabled via `VITE_CLIENT_MOCKS=true` and `SERVER_MOCKS=true`.
-- `"dev-with-server-mocks"` - Starts the dev server with only server-side mocks
-  enabled.
-- `"lint"` - Runs Biome in CI mode to check for linting and formatting errors
-  across the codebase, including Tailwind directives in CSS.
-- `"prepare"` - Sets up Git hooks via Husky.
-- `"start"` - Serves the production build using `react-router-serve`.
-- `"start-with-server-mocks"` - Serves the production build with server mocks
-  enabled.
-- `"stripe:resend-events"` - Resends Stripe events listed in `stripe-events.txt`
-  using the Stripe CLI.
-- `"test"` - Runs unit, integration, and component tests using Vitest with a
-  verbose reporter in watch mode.
-- `"test:e2e"` - Executes end-to-end tests using Playwright.
-- `"test:e2e:ui"` - Launches Playwright Test Runner UI for interactive
-  debugging.
-- `"typecheck"` - Runs type generation for routes and performs TypeScript type
-  checking.
-- `"typegen"` - Generates type-safe route definitions for React Router.
+- `build`: generates React Router and Prisma types, then builds the application.
+- `check`: formats code and applies Biome's safe fixes.
+- `dev`: generates Prisma Client, then starts the development server.
+- `dev:mocks`: starts development with service mocks against
+  `TEST_DATABASE_URL`.
+- `lint`: checks formatting and lint rules without changing files.
+- `start`: serves the production build with `react-router-serve`.
+- `start:mocks`: serves the production build with service mocks against
+  `TEST_DATABASE_URL`.
+- `test`: runs the Vitest suite once against `TEST_DATABASE_URL`.
+- `test:watch`: watches the Vitest suite against `TEST_DATABASE_URL`.
+- `test:e2e`: runs Playwright against `TEST_DATABASE_URL`.
+- `test:db:reset`: resets and pushes the schema to `TEST_DATABASE_URL`.
+- `test:db:seed`: seeds demo data into `TEST_DATABASE_URL`.
+- `typecheck`: generates both route and Prisma types, then runs TypeScript.
 
-### Prisma Helper Scripts
+### Prisma helper scripts
 
-- `"prisma:deploy"` - Applies all pending migrations from the
-  `prisma/migrations` directory to the database, then regenerates the Prisma
-  Client. Typically used in production.
-- `"prisma:migrate"` - Run via `npm run prisma:migrate -- my_migration_name` to
-  create a new migration based on schema changes and apply it to the dev
-  database.
-- `"prisma:push"` - Pushes the current Prisma schema to the database without
-  generating a migration, then regenerates the Prisma Client. Useful for
-  prototyping.
-- `"prisma:reset-dev"` - Wipes the database, seeds it, and starts the
-  development server. Use this for a clean local dev environment.
-- `"prisma:seed"` - Executes the seed script defined in `./prisma/seed.ts` to
-  populate the database with initial data.
-- `"prisma:setup"` - Regenerates Prisma Client, applies pending migrations, and
-  pushes any remaining schema changes. Ideal for fresh environments.
-- `"prisma:studio"` - Opens Prisma Studio, a GUI for exploring and editing your
-  database.
-- `"prisma:wipe"` - Resets the database by applying all migrations from scratch
-  (`migrate reset`), then pushes the schema without requiring confirmation.
+- `prisma:migrate:init`: creates and applies the first migration, then generates
+  Prisma Client. Run it once for a new product.
+- `prisma:migrate`: creates development migrations. Pass the name with
+  `bun run prisma:migrate -- --name add_project_status`.
+- `prisma:deploy`: applies committed migrations without changing them. Use this
+  as the release or pre-deploy command.
+- `prisma:push`: pushes the schema without creating a migration. Use it only for
+  disposable prototypes and the mock quick start.
+- `prisma:seed`: seeds the connected database.
+- `prisma:studio`: opens Prisma Studio.
 
-### Running E2E Tests
+### Database-backed tests
 
-When you run the E2E tests locally, we recommend you do it in production mode
-and with mocks enabled. This resembles how your tests will run in CI. So your
-steps should be:
+Vitest integration tests and Playwright tests create and delete records. They
+run through `scripts/run-with-test-database.ts`, which rejects the command unless
+`TEST_DATABASE_URL` meets all three conditions:
 
-1. Run `npm run build-with-mocks`.
-2. Run `npm run start-with-server-mocks`.
-3. In another terminal, run `npm run test:e2e` UI.
-4. Visit `localhost:3000` in your browser once. You should see
-   `🔶 MSW mock server running ...` in the terminal running your app.
-5. (Optionally) In a new terminal, run `npm run prisma:wipe` and
-   `npm run stripe:resend-events` to reset the database and replay the Stripe
-   events. (Anohter terminal that forwards the webhooks must already be
-   running.)
+- It differs from `DATABASE_URL`.
+- It points to `localhost`, `127.0.0.1`, or `::1`.
+- Its database name contains `test`.
 
-### Local Development with Mocks
+Create the disposable database, reset its schema, and run the suites:
+
+```bash
+createdb react_router_saas_test
+bun run test:db:reset
+bun run test
+bun run test:e2e
+```
+
+The GitHub Actions workflow provisions this database automatically. Keep
+development, staging, and production connection strings out of
+`TEST_DATABASE_URL`.
+
+### Local development with mocks
 
 For local development without connecting to real external services (Stripe,
 Supabase, etc.), you can use the mock mode. This uses
@@ -683,9 +690,10 @@ Supabase, etc.), you can use the mock mode. This uses
 
 **Setup:**
 
-1. First, seed your database with demo data:
+1. Reset and seed the disposable test database with demo data:
    ```bash
-   npm run prisma:seed
+   bun run test:db:reset
+   bun run test:db:seed
    ```
    This creates three demo organizations with subscriptions:
    - `hobby@example.com` - Hobby Plan (1 seat, monthly)
@@ -696,7 +704,7 @@ Supabase, etc.), you can use the mock mode. This uses
 
 2. Start the development server with mocks enabled:
    ```bash
-   npm run dev:mocks
+   bun run dev:mocks
    ```
 
 **Logging In:**
@@ -708,22 +716,6 @@ endpoints. To log in as one of the seeded users:
 2. Enter one of the demo email addresses (e.g., `hobby@example.com`)
 3. Click the magic link button
 4. The mock will automatically "send" the email and you can access the app
-
-**Resetting Data:**
-
-To start fresh with a clean database:
-
-```bash
-npm run prisma:wipe  # Resets the database
-npm run prisma:seed  # Re-seeds demo data
-npm run dev:mocks    # Start dev server
-```
-
-Or use the combined command:
-
-```bash
-npm run prisma:reset-dev  # Wipes, seeds, and starts dev server
-```
 
 **Note:** The seed script creates demo users with subscriptions that include
 seats, Stripe customer IDs, and all necessary billing data. This allows you to
@@ -798,9 +790,6 @@ next request without persisting in the session.
 
 ### Playwright 🎭
 
-> **Note:** make sure you've run `npm run dev` at least one time before you run
-> the E2E tests!
-
 We use Playwright for our End-to-End tests in this project. You'll find those in
 the `playwright/` directory. As you make changes to your app, add to an existing
 file or create a new file in the `playwright/e2e` directory to test your
@@ -809,10 +798,10 @@ changes.
 [Playwright natively features testing library selectors](https://playwright.dev/docs/release-notes#locators)
 for selecting elements on the page semantically.
 
-To run these tests in development, run `npm run test:e2e` which will start the
+To run these tests in development, run `bun run test:e2e` which will start the
 dev server for the app as well as the Playwright client.
 
-> **Note:** You might need to run `npx playwright install` to install the
+> **Note:** You might need to run `bunx playwright install` to install the
 > Playwright browsers before running your tests for the first time.
 
 #### Problems with ShadcnUI
@@ -880,7 +869,7 @@ by the VSCode extension.
 
 ### Vitest ⚡️
 
-For lower level tests of utilities and individual components, we use `vitest`.
+For lower level tests of utilities and single components, we use `vitest`.
 We have DOM-specific assertion helpers via
 [`@testing-library/jest-dom`](https://testing-library.com/jest-dom).
 
@@ -891,16 +880,16 @@ environment.
 
 ### Test Scripts
 
-- `npm run test` - Runs all Vitest tests.
-- `npm run test:e2e` - Runs all E2E tests with Playwright.
-- `npm run test:e2e:ui` - Runs all E2E tests with Playwright in UI mode.
+- `bun run test` - Runs all Vitest tests.
+- `bun run test:e2e` - Runs all E2E tests with Playwright.
+- `bun run test:e2e:ui` - Runs all E2E tests with Playwright in UI mode.
 
 ### Type Checking
 
-This project uses TypeScript. It's recommended to get TypeScript set up for your
-editor to get a really great in-editor experience with type checking and
+This project uses TypeScript. Set up TypeScript in your editor for useful
+in-editor type checking and
 auto-complete. To run type checking across the whole project, run
-`npm run type-check`.
+`bun run typecheck`.
 
 ### Linting and Formatting
 
@@ -910,15 +899,15 @@ is configured in `biome.json`.
 It's recommended to install the
 [Biome VS Code extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
 to get auto-formatting on save and inline linting feedback. You can also run
-`npm run check` to format and fix linting issues across all files in the
-project, or `npm run lint` to check for errors without making changes (useful
+`bun run check` to format and fix linting issues across all files in the
+project, or `bun run lint` to check for errors without making changes (useful
 for CI).
 
 ### AI-Driven Development
 
-This template leverages and was written with **AI-Driven Development (AIDD)**,
+This template uses and was written with **AI-Driven Development (AIDD)**,
 where you steer high-level design and let AI generate the bulk of your
-implementation via
+code via
 [**SudoLang**](https://github.com/paralleldrive/sudolang-llm-support), a
 natural-language-style pseudocode that advanced LLMs already understand.
 
@@ -933,70 +922,89 @@ With AIDD you can:
 Under `.cursor/commands/`, you'll find ready-to-use commands that automate
 common workflows:
 
-- **better-writer** – Improves writing clarity and engagement using Scott Adams'
+- **better-writer** - Improves writing clarity and engagement using Scott Adams'
   rules.
-- **brainstorm** – Helps ideate solutions with clear trade-offs and
+- **brainstorm** - Helps ideate solutions with clear trade-offs and
   recommendations.
-- **commit** – Commits changes using conventional commit format.
-- **debug** – Provides systematic debugging with root cause analysis.
-- **documentation** – Creates clear, example-first documentation.
-- **log** – Logs changes to CHANGELOG.md with conventional commit format.
-- **plan** – Breaks down complex requests into manageable, sequential tasks.
-- **svg-to-react** – Converts SVG files into optimized React components.
-- **unit-tests** – Generates thorough, readable unit tests using Vitest.
-- **write** – Produces clear, concise business writing with specific style
+- **commit** - Commits changes using conventional commit format.
+- **debug** - Provides systematic debugging with root cause analysis.
+- **documentation** - Creates clear, example-first documentation.
+- **log** - Logs changes to CHANGELOG.md with conventional commit format.
+- **plan** - Breaks down complex requests into manageable, sequential tasks.
+- **svg-to-react** - Converts SVG files into optimized React components.
+- **unit-tests** - Generates thorough, readable unit tests using Vitest.
+- **write** - Produces clear, concise business writing with specific style
   guidelines.
 
 #### Cursor AI Rules
 
 Under `.cursor/rules/`, you'll find coding standards that AI follows:
 
-- **js-and-ts.mdc** – JavaScript and TypeScript best practices including
+- **js-and-ts.mdc**: JavaScript and TypeScript proven approaches including
   functional programming patterns, naming conventions, and code organization.
-- **jsx-and-tsx.mdc** – React best practices including component patterns, form
+- **jsx-and-tsx.mdc**: React proven approaches including component patterns, form
   handling, accessibility, and internationalization.
 
 Learn more about AIDD and SudoLang in
 [The Art of Effortless Programming](https://leanpub.com/effortless-programming)
 by [Eric Elliott](https://www.threads.com/@__ericelliott).
 
-## Building for Production
+## Building for production
 
 Create a production build:
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## Deployment
 
-### Docker Deployment
-
-This template includes three Dockerfiles optimized for different package
-managers:
-
-- `Dockerfile` - for npm
-- `Dockerfile.pnpm` - for pnpm
-- `Dockerfile.bun` - for bun
-
-To build and run using Docker:
+Commit a migration before the first deployment. The production database starts
+empty, and `prisma migrate deploy` can only apply migrations that exist in the
+repository.
 
 ```bash
-# For npm
-docker build -t my-app .
-
-# For pnpm
-docker build -f Dockerfile.pnpm -t my-app .
-
-# For bun
-docker build -f Dockerfile.bun -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+bun run prisma:migrate:init
+git add prisma/migrations
+git commit -m "chore(database): add first migration"
 ```
 
-The containerized application can be deployed to any platform that supports
-Docker, including:
+Run `bun run prisma:deploy` as a release or pre-deploy command for every
+environment. Keep migrations out of the image build step. This avoids two
+containers racing to change the database during a scaled deployment.
+
+### Docker deployment
+
+The Docker image uses Bun 1.3.14 for dependency installation and package
+scripts. It includes Node.js 24.19.0 for React's streaming server renderer.
+
+Build the image, apply migrations once, and start the server:
+
+```bash
+docker build --tag my-app .
+docker run --rm --env-file .env my-app bun run prisma:deploy
+docker run --env-file .env --publish 3000:3000 my-app
+```
+
+The final image includes the Prisma CLI, `prisma.config.ts`, the schema, and your
+committed migrations. Environment files stay outside the Docker build context.
+The public Supabase values are injected into the page at runtime, so Docker does
+not need build arguments for them.
+
+For Railway, import the GitHub repository and let Railway detect the Dockerfile.
+Add the runtime variables from `.env.example`, except `TEST_DATABASE_URL`. Set
+`ALLOW_INDEXING=false` for staging and `ALLOW_INDEXING=true` for production.
+Then set the pre-deploy command:
+
+```bash
+bun run prisma:deploy
+```
+
+After Railway creates the public domain, set `APP_URL` to that full HTTPS URL.
+Update the Supabase Site URL and the three allowed redirect URLs documented
+above, then redeploy.
+
+You can run the same image on any platform that supports Docker, including:
 
 - AWS ECS
 - Google Cloud Run
@@ -1005,33 +1013,43 @@ Docker, including:
 - Fly.io
 - Railway
 
-### DIY Deployment
+### Node deployment
 
 If you're familiar with deploying Node applications, the built-in app server is
 production-ready.
 
-Make sure to deploy the output of `npm run build`
+Run `bun install --frozen-lockfile`, `bun run build`, and
+`bun run prisma:deploy` during the release. Deploy these files:
 
 ```
 ├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
+├── bun.lock
 ├── build/
 │   ├── client/    # Static assets
 │   └── server/    # Server-side code
+├── public/
+├── prisma/
+└── prisma.config.ts
 ```
 
 ## Maintenance
 
-You can use
+Check for outdated dependencies:
 
+```bash
+bun outdated
 ```
-npx npm-check-updates -u
+
+Update explicit package versions in `package.json`, then refresh `bun.lock`.
+Keep `@types/node` on the same major version as `.node-version`:
+
+```bash
+bun install
+bun run lint
+bun run typecheck
+bun run test
+bun run build
 ```
-
-to check for updates and install the latest versions.
-
-It should be easy to upgrade all packages since your static analysis checks and
-your tests will tell you if anything is broken.
 
 ## Contributing
 

@@ -40,10 +40,10 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: process.env.CI ? "npm run start:mocks" : "npm run dev:mocks",
-    env: { NODE_ENV: "test", TZ: "UTC" },
-    port: 3000,
+    command: process.env.CI ? "bun run start" : "bun run dev",
+    env: { MOCKS: "true", NODE_ENV: "test", TZ: "UTC" },
     reuseExistingServer: !process.env.CI,
+    url: process.env.APP_URL ?? "http://localhost:3000",
   },
   /* Opt out of parallel tests. */
   workers: 1,

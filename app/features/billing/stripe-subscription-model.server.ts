@@ -5,7 +5,33 @@ import type {
   Prisma,
   StripeSubscription,
 } from "~/generated/client";
+import { StripeSubscriptionStatus } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
+
+function toStripeSubscriptionStatus(
+  status: Stripe.Subscription.Status,
+): StripeSubscriptionStatus {
+  switch (status) {
+    case "active":
+      return StripeSubscriptionStatus.active;
+    case "canceled":
+      return StripeSubscriptionStatus.canceled;
+    case "incomplete":
+      return StripeSubscriptionStatus.incomplete;
+    case "incomplete_expired":
+      return StripeSubscriptionStatus.incomplete_expired;
+    case "past_due":
+      return StripeSubscriptionStatus.past_due;
+    case "paused":
+      return StripeSubscriptionStatus.paused;
+    case "trialing":
+      return StripeSubscriptionStatus.trialing;
+    case "unpaid":
+      return StripeSubscriptionStatus.unpaid;
+    default:
+      throw new Error(`Unsupported Stripe subscription status: ${status}`);
+  }
+}
 
 /* CREATE */
 
@@ -49,7 +75,7 @@ export async function createStripeSubscriptionInDatabase(
       },
       organization: { connect: { id: organizationId } },
       purchasedBy: { connect: { id: purchasedById } },
-      status: stripeSubscription.status,
+      status: toStripeSubscriptionStatus(stripeSubscription.status),
       stripeId: stripeSubscription.id,
     },
   });
@@ -159,7 +185,7 @@ export async function updateStripeSubscriptionFromAPIInDatabase(
         deleteMany: {},
       },
       purchasedBy: { connect: { id: purchasedById } },
-      status: stripeSubscription.status,
+      status: toStripeSubscriptionStatus(stripeSubscription.status),
     },
     where: { stripeId: stripeSubscription.id },
   });

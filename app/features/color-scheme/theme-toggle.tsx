@@ -39,6 +39,7 @@ function ColorSchemeButton({
     <DropdownMenuItem
       className={cn("w-full", isActive && "text-primary [&_svg]:text-primary!")}
       disabled={isActive}
+      nativeButton
       render={
         <button
           {...props}

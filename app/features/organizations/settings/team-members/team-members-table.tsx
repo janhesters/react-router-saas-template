@@ -9,10 +9,13 @@ import {
 } from "@tabler/icons-react";
 import type { ColumnDef } from "@tanstack/react-table";
 import {
+  columnVisibilityFeature,
+  createPaginatedRowModel,
   flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
+  rowPaginationFeature,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
 } from "@tanstack/react-table";
 import type { TFunction } from "i18next";
 import { useMemo, useState } from "react";
@@ -56,6 +59,13 @@ import {
 } from "~/components/ui/table";
 import type { OrganizationMembership, UserAccount } from "~/generated/browser";
 import { OrganizationMembershipRole } from "~/generated/browser";
+
+const teamMembersTableFeatures = tableFeatures({
+  columnVisibilityFeature,
+  paginatedRowModel: createPaginatedRowModel(),
+  rowPaginationFeature,
+  rowSelectionFeature,
+});
 
 export type Member = {
   avatar: UserAccount["imageUrl"];
@@ -206,7 +216,7 @@ const createColumns = ({
 }: {
   currentUsersRole: OrganizationMembership["role"];
   t: TFunction<"organizations", "settings.teamMembers.table">;
-}): ColumnDef<Member>[] => [
+}): ColumnDef<typeof teamMembersTableFeatures, Member, unknown>[] => [
   {
     accessorKey: "avatar",
     cell: ({ row }) => {
@@ -299,11 +309,10 @@ export function TeamMembersTable({
     [currentUsersRole, t],
   );
 
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: members,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    features: teamMembersTableFeatures,
   });
 
   const hydrated = useHydrated();
@@ -372,7 +381,7 @@ export function TeamMembersTable({
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
-            value={`${table.getState().pagination.pageSize}`}
+            value={`${table.state.pagination.pageSize}`}
           >
             <SelectTrigger
               className="w-20"
@@ -382,7 +391,7 @@ export function TeamMembersTable({
               size="sm"
             >
               <SelectValue
-                placeholder={String(table.getState().pagination.pageSize)}
+                placeholder={String(table.state.pagination.pageSize)}
               />
             </SelectTrigger>
 
@@ -399,7 +408,7 @@ export function TeamMembersTable({
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="flex w-fit items-center justify-center font-medium text-sm">
             {t("pagination.pageInfo", {
-              current: table.getState().pagination.pageIndex + 1,
+              current: table.state.pagination.pageIndex + 1,
               total: table.getPageCount(),
             })}
           </div>

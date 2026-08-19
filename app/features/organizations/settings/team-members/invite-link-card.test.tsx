@@ -15,7 +15,9 @@ import {
 } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
-vi.mock("copy-to-clipboard", () => ({ default: vi.fn() }));
+vi.mock("copy-to-clipboard", () => ({
+  default: vi.fn().mockResolvedValue(true),
+}));
 
 const createProps: Factory<InviteLinkCardProps> = ({
   inviteLink = {
