@@ -1,7 +1,7 @@
 # Contributing to the React Router SaaS Template
 
 Thank you for your interest in contributing to the React Router SaaS Template!
-This guide outlines the process, standards, and best practices for contributing
+This guide outlines the process, standards, and proven approaches for contributing
 to the project.
 
 **Boy scout rule:** If you see something that can be improved, please improve
@@ -39,7 +39,7 @@ Follow the steps outlined in the main [README.md](./README.md#getting-started).
 2. **Get approval** from one of the maintainers (the ReactSquad team) before
    opening a pull request, so you don't waste time on a pull request that won't
    be merged.
-3. Once approved, proceed to implement the changes in a new branch.
+3. Once approved, make the changes in a new branch.
 
 ## Development Workflow
 
@@ -51,15 +51,18 @@ Follow the steps outlined in the main [README.md](./README.md#getting-started).
    git checkout -b fix/your-fix-name
    ```
 
-2. **Implement your changes**, adhering to the [Style Guide](#style-guide).
+2. **Make your changes**, following the [Style Guide](#style-guide).
 3. **Write tests** (see [Testing Guidelines](#testing-guidelines)).
 4. **Run checks**:
 
+   Configure the disposable database described in
+   [Database-backed tests](./README.md#database-backed-tests), then run:
+
    ```bash
-   npm run typecheck    # Type checking
-   npm run lint         # Linting
-   npm run test         # Unit & integration tests
-   npm run test:e2e:ui  # End-to-end tests
+   bun run typecheck    # Type checking
+   bun run lint         # Linting
+   bun run test         # Unit & integration tests
+   bun run test:e2e:ui  # End-to-end tests
    ```
 
 5. **Commit changes** following our [Commit Guidelines](#commit-guidelines).
@@ -90,7 +93,7 @@ type(scope): short description
 After staging, use Commitizen for consistent formatting:
 
 ```bash
-npx cz
+bunx cz
 ```
 
 ## Pull Request Process
@@ -118,7 +121,7 @@ npx cz
 
 ### Test Location
 
-- **Tests live adjacent to implementation files**, for example:
+- **Tests live adjacent to source files**, for example:
 
   ```text
   src/components/Button.tsx
@@ -130,11 +133,11 @@ npx cz
 - **New features** must include tests at the appropriate level: unit,
   integration, component, or E2E.
 - **Bug fixes** require a reproducible failing test first. Once the test fails,
-  implement the fix so the test passes.
+  make the change so the test passes.
 
 ### Test Style
 
-Follow the project’s testing conventions:
+Follow the project's testing conventions:
 
 - **Prose style**: `given: ... should: ...`
 - **Assertions**: `expect(actual).toEqual(expected)`
@@ -144,8 +147,8 @@ Follow the project’s testing conventions:
 Run tests with:
 
 ```bash
-npm run test        # Unit & integration
-npm run test:e2e:ui # End-to-end
+bun run test        # Unit & integration
+bun run test:e2e:ui # End-to-end
 ```
 
 ## Style Guide
@@ -161,7 +164,7 @@ npm run test:e2e:ui # End-to-end
 - Functional components with hooks
 - Follow React Router patterns
 - Use React Hook Form for forms
-- Implement error boundaries
+- Add error boundaries
 
 ### Styling
 

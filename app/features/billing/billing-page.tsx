@@ -59,6 +59,7 @@ function PendingDowngradeBanner({
   isKeepingCurrentSubscription,
   isSubmitting,
 }: PendingDowngradeBannerProps) {
+  const hydrated = useHydrated();
   const { t, i18n } = useTranslation("billing", {
     keyPrefix: "billingPage.pendingDowngradeBanner",
   });
@@ -89,7 +90,8 @@ function PendingDowngradeBanner({
 
         <Button
           className="@4xl/alert:-translate-y-1/2 @4xl/alert:absolute @4xl/alert:top-1/2 @4xl/alert:right-3 shadow-none"
-          disabled={isSubmitting}
+          // Keep native clicks from racing React hydration.
+          disabled={!hydrated || isSubmitting}
           name="intent"
           size="sm"
           type="submit"
@@ -290,7 +292,8 @@ export function BillingPage({
 
               <Button
                 className="@xl/alert:-translate-y-1/2 @xl/alert:absolute @xl/alert:top-1/2 @xl/alert:right-3 shadow-none"
-                disabled={isSubmitting}
+                // Keep native clicks from racing React hydration.
+                disabled={!hydrated || isSubmitting}
                 name="intent"
                 size="sm"
                 type="submit"

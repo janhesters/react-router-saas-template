@@ -107,13 +107,15 @@ export default async function handleRequest(
                   "connect-src": [
                     MODE === "development" ? "ws:" : undefined,
                     "'self'",
+                    process.env.VITE_SUPABASE_URL,
                   ],
                   "font-src": ["'self'"],
                   "frame-src": ["'self'"],
                   "img-src": [
                     "'self'",
                     "data:",
-                    MODE === "test" ? "blob:" : undefined,
+                    "blob:",
+                    process.env.VITE_SUPABASE_URL,
                   ],
                   // Script sources with nonce and strict-dynamic
                   "script-src": [

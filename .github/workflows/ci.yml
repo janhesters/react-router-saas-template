@@ -26,20 +26,21 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version-file: .node-version
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
 
       - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+        run: bun install --frozen-lockfile
 
       - name: 🛠️ Typegen
-        run: npm run typegen
+        run: bun run typegen
 
       - name: 🔬 Lint
-        run: npm run lint
+        run: bun run lint
 
   type-check:
     name: ʦ TypeScript
@@ -51,22 +52,23 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version-file: .node-version
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
 
       - name: 📥 Install dependencies
-        run: npm ci
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+        run: bun install --frozen-lockfile
 
       - name: 🔎 Type check
-        run: npm run typecheck
+        run: bun run typecheck
 
   commitlint:
     name: ⚙️ commitlint
     runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -82,11 +84,11 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_DB: react_router_saas_test
         ports:
           - 5432:5432
         options: >-
@@ -99,34 +101,38 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version-file: .node-version
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
       - name: 🛠 Setup Database
-        run: npm run prisma:wipe
+        run: bun run test:db:reset
 
       - name: 🛠️ Typegen
-        run: npm run typegen
+        run: bun run typegen
 
       - name: ⚡ Run vitest
-        run: npm run test -- --coverage
+        run: bun run test -- --coverage
 
   playwright-chrome:
     name: 🎭 Playwright Chrome
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:latest
+        image: postgres:18-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
+          POSTGRES_DB: react_router_saas_test
         ports:
           - 5432:5432
         options: >-
@@ -139,29 +145,33 @@ jobs:
       - name: ⎔ Setup node
         uses: actions/setup-node@v5
         with:
-          node-version: 22
-          cache: 'npm'
+          node-version-file: .node-version
+
+      - name: 🥟 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: .bun-version
 
       - name: 📥 Install dependencies
-        run: npm ci
+        run: bun install --frozen-lockfile
 
       - name: 🏄 Copy test env vars
         run: cp .env.example .env
 
       - name: 🌐 Install Playwright Browsers
-        run: npx playwright install --with-deps chromium
+        run: bunx playwright install --with-deps chromium
 
       - name: 🛠 Setup Database
-        run: npm run prisma:wipe
+        run: bun run test:db:reset
 
       - name: 🛠️ Typegen
-        run: npm run typegen
+        run: bun run typegen
 
-      - name: 🏗️ Build Application (with mocks)
-        run: npm run build
+      - name: 🏗️ Build application
+        run: bun run build
 
       - name: 🎭 Playwright Run Chrome
-        run: npx playwright test --project=chromium
+        run: bun run test:e2e -- --project=chromium
 
       - name: 📸 Playwright Screenshots
         uses: actions/upload-artifact@v4
@@ -170,3 +180,22 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  docker:
+    name: 🐳 Docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Build image
+        run: docker build --tag react-router-saas-template:ci .
+
+      - name: 🔎 Verify runtimes
+        run: |
+          test "$(docker run --rm --entrypoint node react-router-saas-template:ci --version)" = "v24.19.0"
+          test "$(docker run --rm --entrypoint bun react-router-saas-template:ci --version)" = "1.3.14"
+          docker run --rm \
+            --env DATABASE_URL=postgresql://prisma:prisma@localhost:5432/prisma \
+            --entrypoint ./node_modules/.bin/prisma \
+            react-router-saas-template:ci --version

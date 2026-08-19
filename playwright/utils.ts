@@ -47,7 +47,7 @@ export const getPath = (page: Page | APIResponse) => {
  * login flow.
  *
  * NOTE: You need to activate the MSW mocks for Supabase (`getUser`) for this
- * to work. You need to run the server mocks (`npm run dev-with-server-mocks`)
+ * to work. You need to run the server mocks (`bun run dev:mocks`)
  * and have the MSW interceptor for `getUser` enabled (see `startMockServer`).
  *
  * @param options - The options for logging in.

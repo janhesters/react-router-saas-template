@@ -9,7 +9,10 @@ import {
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
   updateOrganizationMembershipInDatabase,
 } from "../../organization-membership-model.server";
-import { saveOrganizationEmailInviteLinkToDatabase } from "../../organizations-email-invite-link-model.server";
+import {
+  saveOrganizationEmailInviteLinkToDatabase,
+  updateEmailInviteLinkInDatabaseById,
+} from "../../organizations-email-invite-link-model.server";
 import { getOrganizationIsFull } from "../../organizations-helpers.server";
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
@@ -309,48 +312,61 @@ export async function teamMembersAction({
           role: body.role,
         });
 
-        const joinUrl = `${process.env.APP_URL}/organizations/email-invite?token=${emailInvite.token}`;
+        const joinUrl = new URL(
+          "/organizations/email-invite",
+          process.env.APP_URL,
+        );
+        joinUrl.searchParams.set("token", emailInvite.token);
 
-        const result = await sendEmail({
-          react: (
-            <InviteEmail
-              buttonText={i18n.t(
-                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.buttonText",
-                {
-                  organizationName: organization.name,
-                },
-              )}
-              buttonUrl={joinUrl}
-              callToAction={i18n.t(
-                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.callToAction",
-              )}
-              description={i18n.t(
-                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.description",
-                {
-                  appName: i18n.t("translation:appName"),
-                  inviterName: user.name,
-                  organizationName: organization.name,
-                },
-              )}
-              title={i18n.t(
-                "organizations:settings.teamMembers.inviteByEmail.inviteEmail.title",
-                {
-                  appName: i18n.t("translation:appName"),
-                },
-              )}
-            />
-          ),
-          subject: i18n.t(
-            "organizations:settings.teamMembers.inviteByEmail.inviteEmail.subject",
-            {
-              appName: i18n.t("translation:appName"),
-              inviteName: user.name,
-            },
-          ),
-          to: body.email,
-        });
+        let result: Awaited<ReturnType<typeof sendEmail>>;
+
+        try {
+          result = await sendEmail({
+            react: (
+              <InviteEmail
+                buttonText={i18n.t(
+                  "organizations:settings.teamMembers.inviteByEmail.inviteEmail.buttonText",
+                  {
+                    organizationName: organization.name,
+                  },
+                )}
+                buttonUrl={joinUrl.toString()}
+                callToAction={i18n.t(
+                  "organizations:settings.teamMembers.inviteByEmail.inviteEmail.callToAction",
+                )}
+                description={i18n.t(
+                  "organizations:settings.teamMembers.inviteByEmail.inviteEmail.description",
+                  {
+                    appName: i18n.t("translation:appName"),
+                    inviterName: user.name,
+                    organizationName: organization.name,
+                  },
+                )}
+                title={i18n.t(
+                  "organizations:settings.teamMembers.inviteByEmail.inviteEmail.title",
+                  {
+                    appName: i18n.t("translation:appName"),
+                  },
+                )}
+              />
+            ),
+            subject: i18n.t(
+              "organizations:settings.teamMembers.inviteByEmail.inviteEmail.subject",
+              {
+                appName: i18n.t("translation:appName"),
+                inviteName: user.name,
+              },
+            ),
+            to: body.email,
+          });
+        } catch (error) {
+          await deactivateEmailInvite(emailInvite.id);
+          throw error;
+        }
 
         if (result.status === "error") {
+          await deactivateEmailInvite(emailInvite.id);
+
           return badRequest({
             result: report(submission, {
               error: {
@@ -378,4 +394,11 @@ export async function teamMembersAction({
 
     throw error;
   }
+}
+
+function deactivateEmailInvite(id: string) {
+  return updateEmailInviteLinkInDatabaseById({
+    emailInviteLink: { deactivatedAt: new Date() },
+    id,
+  });
 }

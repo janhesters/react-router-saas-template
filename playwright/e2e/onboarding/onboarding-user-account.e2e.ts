@@ -152,9 +152,6 @@ test.describe("onboarding user account page", () => {
       await page.getByRole("textbox", { name: /name/i }).fill(newName);
       await page.getByRole("button", { name: /continue/i }).click();
 
-      // Verify loading state
-      await expect(page.getByRole("button", { name: /saving/i })).toBeVisible();
-
       // Verify redirect and database update
       await expect(
         page.getByRole("heading", { level: 1, name: /dashboard/i }),

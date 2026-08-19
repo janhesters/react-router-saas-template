@@ -1,7 +1,27 @@
 import type { Stripe } from "stripe";
 
 import type { Prisma, StripePrice } from "~/generated/client";
+import { StripePriceInterval } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
+
+function toStripePriceInterval(
+  interval: Stripe.Price.Recurring.Interval | undefined,
+): StripePriceInterval | undefined {
+  switch (interval) {
+    case undefined:
+      return undefined;
+    case "day":
+      return StripePriceInterval.day;
+    case "week":
+      return StripePriceInterval.week;
+    case "month":
+      return StripePriceInterval.month;
+    case "year":
+      return StripePriceInterval.year;
+    default:
+      throw new Error(`Unsupported Stripe price interval: ${interval}`);
+  }
+}
 
 /* CREATE */
 
@@ -28,7 +48,9 @@ export async function saveStripePriceFromAPIToDatabase(price: Stripe.Price) {
     data: {
       active: price.active,
       currency: price.currency,
-      interval: price.recurring?.interval ?? "month",
+      interval:
+        toStripePriceInterval(price.recurring?.interval) ??
+        StripePriceInterval.month,
       lookupKey: price.lookup_key ?? "",
       product: { connect: { stripeId: price.product as string } },
       stripeId: price.id,
@@ -78,7 +100,7 @@ export async function updateStripePriceFromAPIInDatabase(price: Stripe.Price) {
     data: {
       active: price.active,
       currency: price.currency,
-      interval: price.recurring?.interval,
+      interval: toStripePriceInterval(price.recurring?.interval),
       lookupKey: price.lookup_key ?? "",
       product: { connect: { stripeId: price.product as string } },
       unitAmount: price.unit_amount ?? 0,

@@ -1,4 +1,16 @@
+.git
+.github
 .react-router
+.vscode
+app/generated
 build
 node_modules
+playwright-report
+test-results
+*.tsbuildinfo
+.env
+.env.*
+*.env
+*.env.*
+.DS_Store
 README.md

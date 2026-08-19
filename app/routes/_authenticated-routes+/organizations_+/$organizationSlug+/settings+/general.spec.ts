@@ -125,23 +125,24 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
         given: "an admin",
         role: OrganizationMembershipRole.admin,
       },
-    ])("given: a user who is NOT an owner (but is a $given), should: return a 403", async ({
-      role,
-    }) => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
-        role,
-      });
-      const newName = createPopulatedOrganization().name;
+    ])(
+      "given: a user who is NOT an owner (but is a $given), should: return a 403",
+      async ({ role }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+        });
+        const newName = createPopulatedOrganization().name;
 
-      const actual = await sendAuthenticatedRequest({
-        formData: toFormData({ intent, name: newName }),
-        organizationSlug: organization.slug,
-        user,
-      });
-      const expected = forbidden();
+        const actual = await sendAuthenticatedRequest({
+          formData: toFormData({ intent, name: newName }),
+          organizationSlug: organization.slug,
+          user,
+        });
+        const expected = forbidden();
 
-      expect(actual).toEqual(expected);
-    });
+        expect(actual).toEqual(expected);
+      },
+    );
 
     test("given: a user who is an owner and a valid name, should: update organization name, show a toast and redirect to new URL", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -247,23 +248,23 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
         }),
         given: "a too short name with whitespace",
       },
-    ])("given: $given, should: return a 400 status code with an error message", async ({
-      body,
-      expected,
-    }) => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
-        role: OrganizationMembershipRole.owner,
-      });
+    ])(
+      "given: $given, should: return a 400 status code with an error message",
+      async ({ body, expected }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.owner,
+        });
 
-      const formData = toFormData(body);
-      const response = await sendAuthenticatedRequest({
-        formData,
-        organizationSlug: organization.slug,
-        user,
-      });
+        const formData = toFormData(body);
+        const response = await sendAuthenticatedRequest({
+          formData,
+          organizationSlug: organization.slug,
+          user,
+        });
 
-      expect(response).toMatchObject(expected);
-    });
+        expect(response).toMatchObject(expected);
+      },
+    );
   });
 
   describe(`${DELETE_ORGANIZATION_INTENT} intent`, () => {
@@ -278,22 +279,23 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
         given: "an admin",
         role: OrganizationMembershipRole.admin,
       },
-    ])("given: a user who is NOT an owner (but is a$given), should: return a 403", async ({
-      role,
-    }) => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
-        role,
-      });
+    ])(
+      "given: a user who is NOT an owner (but is a$given), should: return a 403",
+      async ({ role }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role,
+        });
 
-      const actual = await sendAuthenticatedRequest({
-        formData: toFormData({ intent }),
-        organizationSlug: organization.slug,
-        user,
-      });
-      const expected = forbidden();
+        const actual = await sendAuthenticatedRequest({
+          formData: toFormData({ intent }),
+          organizationSlug: organization.slug,
+          user,
+        });
+        const expected = forbidden();
 
-      expect(actual).toEqual(expected);
-    });
+        expect(actual).toEqual(expected);
+      },
+    );
 
     test("given: a valid request from an owner, should: delete organization and redirect to organizations page", async () => {
       const { user, organization } = await createUserWithOrgAndAddAsMember({

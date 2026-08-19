@@ -10,7 +10,7 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
 
   const supabase = createServerClient(
     process.env.VITE_SUPABASE_URL,
-    process.env.VITE_SUPABASE_ANON_KEY,
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     {
       auth: { flowType: "pkce" },
       cookies: {
@@ -36,5 +36,12 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
 
 export const supabaseAdminClient = createClient(
   process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  process.env.SUPABASE_SECRET_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+  },
 );

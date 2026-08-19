@@ -705,7 +705,9 @@ test.describe("organization settings members page", () => {
     }) => {
       // Grant clipboard permissions for copy test
       if (browserName === "chromium") {
-        await page.context().grantPermissions(["clipboard-read"]);
+        await page
+          .context()
+          .grantPermissions(["clipboard-read", "clipboard-write"]);
       }
 
       const data = await setupMultipleMembers({

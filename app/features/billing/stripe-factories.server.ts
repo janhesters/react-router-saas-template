@@ -665,7 +665,10 @@ export const createStripeSubscriptionScheduleFactory: Factory<
     description: null,
     invoice_settings: {
       account_tax_ids: null,
+      custom_fields: null,
       days_until_due: null,
+      description: null,
+      footer: null,
       issuer: {
         type: "self" as const,
       },

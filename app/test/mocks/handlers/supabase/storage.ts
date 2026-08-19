@@ -41,6 +41,7 @@ function getMimeType(filename: string): string {
 // Store multipart upload parts in memory
 // Key: uploadId, Value: Map of partNumber to Buffer
 const multipartUploads = new Map<string, Map<number, Buffer>>();
+const s3Endpoint = process.env.STORAGE_ENDPOINT;
 
 const uploadMock = http.post(
   // Use a wildcard for the path
@@ -180,7 +181,7 @@ const removeMock = http.delete(
 const s3UploadMock: RequestHandler = http.put(
   // Path‐style S3 endpoint under Supabase:
   //   https://<project>.supabase.co/storage/v1/s3/<bucket>/<key>
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  `${s3Endpoint}/:bucketName/*`,
   async ({ params, request }) => {
     const bucket = params.bucketName as string;
     const url = new URL(request.url);
@@ -211,7 +212,7 @@ const s3UploadMock: RequestHandler = http.put(
 
 const s3DeleteMock: RequestHandler = http.delete(
   // Matches DELETE on https://<project>/storage/v1/s3/<bucket>/<key>
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  `${s3Endpoint}/:bucketName/*`,
   async ({ params, request }) => {
     const bucket = params.bucketName as string;
     const url = new URL(request.url);
@@ -233,7 +234,7 @@ const s3DeleteMock: RequestHandler = http.delete(
 );
 
 const s3InitMultipartMock: RequestHandler = http.post(
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  `${s3Endpoint}/:bucketName/*`,
   ({ params, request }) => {
     const url = new URL(request.url);
 
@@ -273,7 +274,7 @@ const s3InitMultipartMock: RequestHandler = http.post(
   Server-side S3 multipart upload: upload part
 */
 const s3UploadPartMock: RequestHandler = http.put(
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  `${s3Endpoint}/:bucketName/*`,
   async ({ request }) => {
     const url = new URL(request.url);
     const uploadId = url.searchParams.get("uploadId");
@@ -302,7 +303,7 @@ const s3UploadPartMock: RequestHandler = http.put(
   Server-side S3 multipart upload: complete
 */
 const s3CompleteMultipartMock: RequestHandler = http.post(
-  `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/s3/:bucketName/*`,
+  `${s3Endpoint}/:bucketName/*`,
   async ({ params, request }) => {
     const url = new URL(request.url);
     const uploadId = url.searchParams.get("uploadId");

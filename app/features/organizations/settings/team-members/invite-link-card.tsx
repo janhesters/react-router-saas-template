@@ -7,6 +7,7 @@ import copyToClipboard from "copy-to-clipboard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import {
   CREATE_NEW_INVITE_LINK_INTENT,
@@ -37,6 +38,7 @@ export function InviteLinkCard({
   const { t, i18n } = useTranslation("organizations", {
     keyPrefix: "settings.teamMembers.inviteLink",
   });
+  const hydrated = useHydrated();
 
   const [linkCopied, setLinkCopied] = useState(false);
 
@@ -110,9 +112,10 @@ export function InviteLinkCard({
                   "border-l-input dark:hover:border-transparent",
                   "dark:hover:border-l-input",
                 )}
-                onClick={() => {
-                  copyToClipboard(inviteLink.href);
-                  setLinkCopied(true);
+                disabled={!hydrated}
+                onClick={async () => {
+                  const copied = await copyToClipboard(inviteLink.href);
+                  setLinkCopied(copied);
                 }}
                 size="icon"
                 variant="ghost"

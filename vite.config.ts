@@ -46,7 +46,7 @@ const rootConfig = defineConfig({
     sudoFilesPlugin,
   ],
   resolve: { tsconfigPaths: true },
-  server: { port: 3000 },
+  server: { port: Number(process.env.PORT ?? 3000), strictPort: true },
 });
 
 const testConfig = defineVitestConfig({
