@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1
 
-FROM oven/bun:1.3.14-debian AS base
+FROM oven/bun:1.4.0-debian AS base
 # React's streaming server renderer requires a real Node.js runtime. Bun stays
 # responsible for dependency installation and package scripts.
-COPY --from=node:24.19.0-trixie-slim /usr/local/bin/node /usr/local/bin/node
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libatomic1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=node:26.7.0-trixie-slim /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 
 FROM base AS build-env

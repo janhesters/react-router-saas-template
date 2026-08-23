@@ -193,8 +193,8 @@ jobs:
 
       - name: 🔎 Verify runtimes
         run: |
-          test "$(docker run --rm --entrypoint node react-router-saas-template:ci --version)" = "v24.19.0"
-          test "$(docker run --rm --entrypoint bun react-router-saas-template:ci --version)" = "1.3.14"
+          test "$(docker run --rm --entrypoint node react-router-saas-template:ci --version)" = "v26.7.0"
+          test "$(docker run --rm --entrypoint bun react-router-saas-template:ci --version)" = "1.4.0"
           docker run --rm \
             --env DATABASE_URL=postgresql://prisma:prisma@localhost:5432/prisma \
             --entrypoint ./node_modules/.bin/prisma \
