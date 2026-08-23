@@ -73,7 +73,7 @@
     "@testing-library/react": "16.3.2",
     "@testing-library/user-event": "14.6.6",
     "@types/canvas-confetti": "1.9.0",
-    "@types/node": "26.2.0",
+    "@types/node": "24.13.3",
     "@types/ramda": "0.32.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
@@ -92,7 +92,7 @@
     "vitest": "4.1.11"
   },
   "engines": {
-    "node": ">=26.7.0 <27"
+    "node": ">=24.19.0 <25"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,json,css,md}": [
