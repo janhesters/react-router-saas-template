@@ -11,7 +11,11 @@ import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-con
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
 import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
-import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
+import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
+import {
+  retrieveEmailInviteLinkFromDatabaseById,
+  saveOrganizationEmailInviteLinkToDatabase,
+} from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
   createPopulatedOrganizationEmailInviteLink,
   createPopulatedOrganizationInviteLink,
@@ -261,6 +265,148 @@ test.describe(`${path} API route`, () => {
     // Cleanup
     if (userAccount) {
       await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
+  });
+
+  test("given: an OTP registration whose verified email does not match the active email invite, should: reject the invite and clear its cookie", async ({
+    page,
+  }) => {
+    const acceptingIdentity = createPopulatedUserAccount();
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      email: "intended-recipient@example.com",
+      invitedById: invitingUser.id,
+      organizationId: organization.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    await setupEmailInviteCookie({
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
+    });
+
+    const tokenHash = stringifyTokenHashData({
+      email: acceptingIdentity.email,
+      id: acceptingIdentity.supabaseUserId,
+    });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /create your account/i }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual("/onboarding/user-account");
+
+    const userAccount = await retrieveUserAccountFromDatabaseByEmail(
+      acceptingIdentity.email,
+    );
+    expect(userAccount).not.toBeNull();
+    const membership = userAccount
+      ? await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          { organizationId: organization.id, userId: userAccount.id },
+        )
+      : undefined;
+    expect(membership).toBeNull();
+
+    const storedInvite = await retrieveEmailInviteLinkFromDatabaseById(
+      invite.id,
+    );
+    expect(storedInvite?.deactivatedAt).toBeNull();
+
+    const cookies = await page.context().cookies();
+    expect(
+      cookies.find((cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME),
+    ).toBeUndefined();
+
+    if (userAccount) {
+      await deleteUserAccountFromDatabaseById(userAccount.id);
+    }
+    await teardownOrganizationAndMember({ organization, user: invitingUser });
+  });
+
+  test("given: a matching new user who reaches onboarding, should: prevent another account from reusing the email invite", async ({
+    page,
+  }) => {
+    const intendedIdentity = createPopulatedUserAccount();
+    const otherIdentity = createPopulatedUserAccount();
+    const { organization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      email: intendedIdentity.email,
+      invitedById: invitingUser.id,
+      organizationId: organization.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    await setupEmailInviteCookie({
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
+    });
+    const intendedTokenHash = stringifyTokenHashData({
+      email: intendedIdentity.email,
+      id: intendedIdentity.supabaseUserId,
+    });
+    await page.goto(`${path}?token_hash=${intendedTokenHash}`);
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /create your account/i }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      getAcceptedEmailInviteOnboardingPath(organization.slug),
+    );
+
+    const intendedUser = await retrieveUserAccountFromDatabaseByEmail(
+      intendedIdentity.email,
+    );
+    const intendedMembership = intendedUser
+      ? await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          { organizationId: organization.id, userId: intendedUser.id },
+        )
+      : null;
+    expect(intendedMembership).not.toBeNull();
+
+    const consumedInvite = await retrieveEmailInviteLinkFromDatabaseById(
+      invite.id,
+    );
+    expect(consumedInvite?.deactivatedAt).not.toBeNull();
+
+    await page.context().clearCookies();
+    await setupEmailInviteCookie({
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
+    });
+    const otherTokenHash = stringifyTokenHashData({
+      email: otherIdentity.email,
+      id: otherIdentity.supabaseUserId,
+    });
+    await page.goto(`${path}?token_hash=${otherTokenHash}`);
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /create your account/i }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual("/onboarding/user-account");
+
+    const otherUser = await retrieveUserAccountFromDatabaseByEmail(
+      otherIdentity.email,
+    );
+    const otherMembership = otherUser
+      ? await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          { organizationId: organization.id, userId: otherUser.id },
+        )
+      : undefined;
+    expect(otherMembership).toBeNull();
+
+    const cookies = await page.context().cookies();
+    expect(
+      cookies.find((cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME),
+    ).toBeUndefined();
+
+    if (intendedUser) {
+      await deleteUserAccountFromDatabaseById(intendedUser.id);
+    }
+    if (otherUser) {
+      await deleteUserAccountFromDatabaseById(otherUser.id);
     }
     await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
