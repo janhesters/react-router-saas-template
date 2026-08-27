@@ -11,7 +11,11 @@ import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-con
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
 import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
-import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
+import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
+import {
+  retrieveEmailInviteLinkFromDatabaseById,
+  saveOrganizationEmailInviteLinkToDatabase,
+} from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
   createPopulatedOrganizationEmailInviteLink,
   createPopulatedOrganizationInviteLink,
@@ -476,6 +480,69 @@ test.describe(`${path} API route`, () => {
       user: existingUser,
     });
     await teardownOrganizationAndMember({ organization, user: invitingUser });
+  });
+
+  test("given: an OAuth callback whose verified email does not match the active email invite, should: reject the invite and clear its cookie", async ({
+    page,
+  }) => {
+    const { organization: invitedOrganization, user: invitingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const { organization: existingOrganization, user: existingUser } =
+      await createUserWithOrgAndAddAsMember();
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      email: "intended-recipient@example.com",
+      invitedById: invitingUser.id,
+      organizationId: invitedOrganization.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
+
+    await setupCodeVerifierCookie({ page });
+    await setupEmailInviteCookie({
+      invite: { emailInviteToken: invite.token, expiresAt: invite.expiresAt },
+      page,
+    });
+
+    const code = stringifyAuthCodeData({
+      email: existingUser.email,
+      id: existingUser.supabaseUserId,
+      provider: "google",
+    });
+    await page.goto(`${path}?code=${code}`);
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${existingOrganization.slug}/dashboard`,
+    );
+
+    const membership =
+      await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+        {
+          organizationId: invitedOrganization.id,
+          userId: existingUser.id,
+        },
+      );
+    expect(membership).toBeNull();
+
+    const storedInvite = await retrieveEmailInviteLinkFromDatabaseById(
+      invite.id,
+    );
+    expect(storedInvite?.deactivatedAt).toBeNull();
+
+    const cookies = await page.context().cookies();
+    expect(
+      cookies.find((cookie) => cookie.name === EMAIL_INVITE_INFO_SESSION_NAME),
+    ).toBeUndefined();
+
+    await teardownOrganizationAndMember({
+      organization: existingOrganization,
+      user: existingUser,
+    });
+    await teardownOrganizationAndMember({
+      organization: invitedOrganization,
+      user: invitingUser,
+    });
   });
 
   test("given: a code for an existing user with an active email invite cookie for an organization that the user is already a member of, should: redirect them to the organization's dashboard and show a toast", async ({

@@ -8,8 +8,4 @@ export const supabaseHandlers: RequestHandler[] = [
   ...supabaseStorageHandlers,
 ];
 
-export {
-  createRateLimitedEmail,
-  stringifyAuthCodeData,
-  stringifyTokenHashData,
-} from "./auth";
+export { createRateLimitedEmail } from "./auth";
