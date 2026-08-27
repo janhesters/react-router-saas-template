@@ -1,8 +1,12 @@
+import { href } from "react-router";
+
 import { retrieveActiveEmailInviteLinkFromDatabaseByToken } from "../organizations-email-invite-link-model.server";
+import { ACCEPTED_EMAIL_INVITE_ORGANIZATION_SEARCH_PARAMETER } from "./accept-email-invite-constants";
 import {
   destroyEmailInviteInfoSession,
   getEmailInviteInfoFromSession,
 } from "./accept-email-invite-session.server";
+import type { Organization } from "~/generated/client";
 import { asyncPipe } from "~/utils/async-pipe.server";
 import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
 import { notFound } from "~/utils/http-responses.server";
@@ -33,6 +37,30 @@ export const throwIfEmailInviteIsExpired = (
  * @returns The token if found, otherwise undefined.
  */
 export const getEmailInviteToken = getSearchParameterFromRequest("token");
+
+/**
+ * Builds the onboarding URL after an email invite has already been consumed.
+ * The slug is only a navigation hint; onboarding verifies it against the
+ * authenticated user's memberships before redirecting.
+ */
+export function getAcceptedEmailInviteOnboardingPath(
+  organizationSlug: Organization["slug"],
+) {
+  const searchParameters = new URLSearchParams({
+    [ACCEPTED_EMAIL_INVITE_ORGANIZATION_SEARCH_PARAMETER]: organizationSlug,
+  });
+
+  return `${href("/onboarding/user-account")}?${searchParameters.toString()}`;
+}
+
+const getAcceptedOrganizationSearchParameter = getSearchParameterFromRequest(
+  ACCEPTED_EMAIL_INVITE_ORGANIZATION_SEARCH_PARAMETER,
+);
+
+/** Retrieves the accepted organization navigation hint from a request. */
+export function getAcceptedEmailInviteOrganizationSlug(request: Request) {
+  return getAcceptedOrganizationSearchParameter(request) || undefined;
+}
 
 /**
  * Validates and returns the organization email invite identified by the provided

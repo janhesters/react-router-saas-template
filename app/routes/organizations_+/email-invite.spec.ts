@@ -2,7 +2,10 @@ import { describe, expect, test } from "vitest";
 
 import { action } from "./email-invite";
 import { ACCEPT_EMAIL_INVITE_INTENT } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
-import { getEmailInviteInfoFromSession } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
+import {
+  createEmailInviteInfoHeaders,
+  getEmailInviteInfoFromSession,
+} from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import {
   retrieveEmailInviteLinkFromDatabaseById,
@@ -55,15 +58,18 @@ async function sendRequest({
 async function sendAuthenticatedRequest({
   userAccount,
   formData = toFormData(createBody()),
+  headers,
   token,
 }: {
   userAccount: UserAccount;
   formData?: FormData;
+  headers?: Headers;
   token?: string;
 }) {
   const url = createUrl(token);
   const request = await createAuthenticatedRequest({
     formData,
+    headers,
     method: "POST",
     url,
     user: userAccount,
@@ -84,7 +90,7 @@ async function setup() {
   const { organization: otherOrganization, user: otherUser } =
     await setupUserWithOrgAndAddAsMember();
   const emailInviteLink = createPopulatedOrganizationEmailInviteLink({
-    email: "test@example.com",
+    email: user.email,
     invitedById: otherUser.id,
     organizationId: otherOrganization.id,
   });
@@ -235,7 +241,7 @@ describe("/organizations/email-invite route action", () => {
       });
     });
 
-    test("given: an authenticated request with valid token for an organization the user is not a member of, should: add user as member and redirect to organization page", async () => {
+    test("given: a direct authenticated request whose verified email matches the invited email, should: create the membership and consume the invite", async () => {
       const { emailInviteLink, otherOrganization, user } = await setup();
 
       const actual = (await sendAuthenticatedRequest({
@@ -266,6 +272,78 @@ describe("/organizations/email-invite route action", () => {
         emailInviteLink.id,
       );
       expect(updatedInviteLink?.deactivatedAt).not.toBeNull();
+    });
+
+    test("given: a direct authenticated request whose verified email differs from the invited email, should: reject the invite without creating a membership", async () => {
+      const { otherOrganization, otherUser, user } = await setup();
+      const emailInviteLink = createPopulatedOrganizationEmailInviteLink({
+        email: "intended-recipient@example.com",
+        invitedById: otherUser.id,
+        organizationId: otherOrganization.id,
+      });
+      await saveOrganizationEmailInviteLinkToDatabase(emailInviteLink);
+      const inviteHeaders = await createEmailInviteInfoHeaders({
+        emailInviteToken: emailInviteLink.token,
+        expiresAt: emailInviteLink.expiresAt,
+      });
+      const headers = new Headers({
+        Cookie: inviteHeaders.get("Set-Cookie") ?? "",
+      });
+
+      const actual = (await sendAuthenticatedRequest({
+        headers,
+        token: emailInviteLink.token,
+        userAccount: user,
+      })) as ReturnType<typeof badRequest>;
+      const expected = badRequest({ error: "Invalid token" });
+
+      expect(actual.data).toEqual(expected.data);
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      const membership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          { organizationId: otherOrganization.id, userId: user.id },
+        );
+      expect(membership).toEqual(null);
+
+      const updatedInvite = await retrieveEmailInviteLinkFromDatabaseById(
+        emailInviteLink.id,
+      );
+      expect(updatedInvite?.deactivatedAt).toEqual(null);
+
+      const setCookie = new Headers(actual.init?.headers).get("Set-Cookie");
+      expect(setCookie).toContain("__email_invite_info=;");
+    });
+
+    test("given: a mismatched account and an owner invite, should: reject the invite without granting owner access", async () => {
+      const { otherOrganization, otherUser, user } = await setup();
+      const ownerInvite = createPopulatedOrganizationEmailInviteLink({
+        email: "intended-owner@example.com",
+        invitedById: otherUser.id,
+        organizationId: otherOrganization.id,
+        role: "owner",
+      });
+      await saveOrganizationEmailInviteLinkToDatabase(ownerInvite);
+
+      const actual = (await sendAuthenticatedRequest({
+        token: ownerInvite.token,
+        userAccount: user,
+      })) as ReturnType<typeof badRequest>;
+      const expected = badRequest({ error: "Invalid token" });
+
+      expect(actual.data).toEqual(expected.data);
+      expect(actual.init?.status).toEqual(expected.init?.status);
+
+      const membership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          { organizationId: otherOrganization.id, userId: user.id },
+        );
+      expect(membership).toEqual(null);
+
+      const updatedInvite = await retrieveEmailInviteLinkFromDatabaseById(
+        ownerInvite.id,
+      );
+      expect(updatedInvite?.deactivatedAt).toEqual(null);
     });
 
     test("given: an authenticated request with valid owner role token, should: add user as owner and deactivate the invite link", async () => {
@@ -330,10 +408,11 @@ describe("/organizations/email-invite route action", () => {
         `/organizations/${organization.slug}/dashboard`,
       );
 
-      const maybeToast = actual.headers.get("Set-Cookie");
+      const setCookie = actual.headers.get("Set-Cookie") ?? "";
+      const maybeToast = /__toast=[^;]+/.exec(setCookie)?.[0] ?? "";
       const { toast } = await getToast(
         new Request(createUrl(), {
-          headers: { cookie: maybeToast ?? "" },
+          headers: { cookie: maybeToast },
         }),
       );
       expect(toast).toMatchObject({

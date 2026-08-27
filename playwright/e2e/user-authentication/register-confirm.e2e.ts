@@ -9,6 +9,7 @@ import {
 } from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
+import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
 import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
@@ -194,17 +195,18 @@ test.describe(`${path} API route`, () => {
   test("given: a new user with an active email invite cookie, should: create their account, add them to the organization, and show success toast", async ({
     page,
   }) => {
-    // Create organization and email invite
+    // Generate email for the new user
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Create organization and email invite bound to the new user's email
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const invite = createPopulatedOrganizationEmailInviteLink({
+      email: testEmail,
       invitedById: invitingUser.id,
       organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
-
-    // Generate email for the new user
-    const testEmail = `test-${Date.now()}@example.com`;
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
@@ -220,7 +222,9 @@ test.describe(`${path} API route`, () => {
     await expect(
       page.getByRole("heading", { level: 1, name: /create your account/i }),
     ).toBeVisible();
-    expect(getPath(page)).toEqual(`/onboarding/user-account`);
+    expect(getPath(page)).toEqual(
+      getAcceptedEmailInviteOnboardingPath(organization.slug),
+    );
 
     // Verify the user account was created
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -323,15 +327,17 @@ test.describe(`${path} API route`, () => {
         lookupKey: priceLookupKeysByTierAndInterval.low.annual,
       });
 
-    // Create an email invite for this organization
+    // Generate email for the new user
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Create an email invite for this organization bound to the new user's
+    // email
     const invite = createPopulatedOrganizationEmailInviteLink({
+      email: testEmail,
       invitedById: invitingUser.id,
       organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
-
-    // Generate email for the new user
-    const testEmail = `test-${Date.now()}@example.com`;
 
     // Set the email invite cookie
     await setupEmailInviteCookie({

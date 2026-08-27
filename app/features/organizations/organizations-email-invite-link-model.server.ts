@@ -5,6 +5,19 @@ import type {
 } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
+/**
+ * Raised when an email invite can no longer be consumed. Callers must treat
+ * this like any other invalid invite and not disclose whether it existed.
+ */
+export class EmailInviteLinkNotConsumableError extends Error {
+  constructor(emailInviteLinkId: OrganizationEmailInviteLink["id"]) {
+    super(
+      `Email invite link ${emailInviteLinkId} is inactive, expired, or missing.`,
+    );
+    this.name = "EmailInviteLinkNotConsumableError";
+  }
+}
+
 /* CREATE */
 
 /**
@@ -93,5 +106,78 @@ export async function updateEmailInviteLinkInDatabaseById({
   return prisma.organizationEmailInviteLink.update({
     data: emailInviteLink,
     where: { id },
+  });
+}
+
+/**
+ * Consumes an email invite only while it is active and unexpired.
+ *
+ * The conditional update is the exclusive claim: concurrent consumers cannot
+ * both change the same active invite.
+ */
+export async function consumeEmailInviteLinkInDatabaseById(
+  id: OrganizationEmailInviteLink["id"],
+) {
+  const now = new Date();
+  const { count } = await prisma.organizationEmailInviteLink.updateMany({
+    data: { deactivatedAt: now },
+    where: { deactivatedAt: null, expiresAt: { gt: now }, id },
+  });
+
+  return count === 1;
+}
+
+/**
+ * Claims an active email invite and creates its membership in one transaction.
+ * A failed claim or membership write rolls the entire operation back.
+ */
+export async function consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
+  emailInviteLinkId,
+  organizationId,
+  role,
+  userAccountId,
+}: {
+  emailInviteLinkId: OrganizationEmailInviteLink["id"];
+  organizationId: Organization["id"];
+  role: OrganizationEmailInviteLink["role"];
+  userAccountId: string;
+}) {
+  const now = new Date();
+
+  return prisma.$transaction(async (transaction) => {
+    const { count } = await transaction.organizationEmailInviteLink.updateMany({
+      data: { deactivatedAt: now },
+      where: {
+        deactivatedAt: null,
+        expiresAt: { gt: now },
+        id: emailInviteLinkId,
+      },
+    });
+
+    if (count !== 1) {
+      throw new EmailInviteLinkNotConsumableError(emailInviteLinkId);
+    }
+
+    const membership = await transaction.organizationMembership.createMany({
+      data: [{ memberId: userAccountId, organizationId, role }],
+      skipDuplicates: true,
+    });
+
+    if (membership.count === 1) {
+      // A panel can survive a deactivated membership, so upsert it when the
+      // user rejoins instead of failing the transaction on its unique key.
+      await transaction.notificationPanel.upsert({
+        create: {
+          organization: { connect: { id: organizationId } },
+          user: { connect: { id: userAccountId } },
+        },
+        update: {},
+        where: {
+          userId_organizationId: { organizationId, userId: userAccountId },
+        },
+      });
+    }
+
+    return { membershipCreated: membership.count === 1 };
   });
 }

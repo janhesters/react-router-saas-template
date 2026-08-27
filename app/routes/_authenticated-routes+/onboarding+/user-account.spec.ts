@@ -3,7 +3,7 @@ import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./user-account";
 import { ONBOARDING_USER_ACCOUNT_INTENT } from "~/features/onboarding/user-account/onboarding-user-account-constants";
-import { createEmailInviteInfoCookie } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
+import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { createInviteLinkInfoCookie } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
 import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
@@ -32,16 +32,23 @@ import {
 import { toFormData } from "~/utils/to-form-data";
 import { getToast } from "~/utils/toast.server";
 
-const createUrl = () => `http://localhost:3000/onboarding/user-account`;
+const createUrl = (acceptedOrganizationSlug?: string) =>
+  `http://localhost:3000${
+    acceptedOrganizationSlug
+      ? getAcceptedEmailInviteOnboardingPath(acceptedOrganizationSlug)
+      : "/onboarding/user-account"
+  }`;
 
 const pattern = "/onboarding/user-account";
 
 async function sendAuthenticatedRequest({
   userAccount,
+  acceptedOrganizationSlug,
   formData,
   headers,
 }: {
   userAccount: ReturnType<typeof createPopulatedUserAccount>;
+  acceptedOrganizationSlug?: string;
   formData: FormData;
   headers?: Headers;
 }) {
@@ -49,7 +56,7 @@ async function sendAuthenticatedRequest({
     formData,
     headers,
     method: "POST",
-    url: createUrl(),
+    url: createUrl(acceptedOrganizationSlug),
     user: userAccount,
   });
   const params = {};
@@ -337,7 +344,7 @@ describe("/onboarding/user-account route action", () => {
       });
     });
 
-    test("given: a user who needs onboarding with an email invite session info in the request, should: redirect to the organizations dashboard page and show a toast", async () => {
+    test("given: a user with multiple memberships who needs onboarding after their email invite was consumed, should: use the accepted organization hint and show the correct toast", async () => {
       // The invited user who just picked their name
       const { userAccount } = await setup(
         createPopulatedUserAccount({ name: "" }),
@@ -357,23 +364,30 @@ describe("/onboarding/user-account route action", () => {
       });
       // Create and save the email invite
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
+        deactivatedAt: new Date(),
+        email: userAccount.email,
         invitedById: invitingUser.id,
         organizationId: organization.id,
       });
       await saveOrganizationEmailInviteLinkToDatabase(emailInvite);
-      // Generate the Set-Cookie header for the email invite session
-      const cookie = await createEmailInviteInfoCookie({
-        emailInviteToken: emailInvite.token,
-        expiresAt: emailInvite.expiresAt,
+      // A second membership ensures onboarding cannot safely infer the
+      // accepted organization from array order.
+      const unrelatedOrganization = createPopulatedOrganization();
+      await saveOrganizationToDatabase(unrelatedOrganization);
+      onTestFinished(async () => {
+        await deleteOrganizationFromDatabaseById(unrelatedOrganization.id);
       });
-      const headers = new Headers({ Cookie: cookie });
+      await addMembersToOrganizationInDatabaseById({
+        id: unrelatedOrganization.id,
+        members: [userAccount.id],
+      });
 
       // Form data with intent and name filled
       const formData = toFormData({ intent, name: "Test User" });
 
       const response = (await sendAuthenticatedRequest({
+        acceptedOrganizationSlug: organization.slug,
         formData,
-        headers,
         userAccount,
       })) as Response;
 

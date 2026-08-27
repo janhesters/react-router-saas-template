@@ -15,6 +15,21 @@ export async function saveUserAccountToDatabase(
   return prisma.userAccount.create({ data: userAccount });
 }
 
+/**
+ * Creates a local account for a Supabase identity, or returns and refreshes the
+ * existing account when an authentication callback is replayed.
+ */
+export async function upsertUserAccountInDatabaseBySupabaseUserId({
+  email,
+  supabaseUserId,
+}: Pick<UserAccount, "email" | "supabaseUserId">) {
+  return prisma.userAccount.upsert({
+    create: { email, supabaseUserId },
+    update: { email },
+    where: { supabaseUserId },
+  });
+}
+
 /* READ */
 
 /**
