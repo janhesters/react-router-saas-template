@@ -1,20 +1,20 @@
 import { href } from "react-router";
 import { z } from "zod";
 
-import {
-  retrieveActiveEmailInviteLinkFromDatabaseByToken,
-  updateEmailInviteLinkInDatabaseById,
-} from "../organizations-email-invite-link-model.server";
+import { retrieveActiveEmailInviteLinkFromDatabaseByToken } from "../organizations-email-invite-link-model.server";
 import { acceptEmailInvite } from "../organizations-helpers.server";
 import { ACCEPT_EMAIL_INVITE_INTENT } from "./accept-email-invite-constants";
 import { getEmailInviteToken } from "./accept-email-invite-helpers.server";
-import { createEmailInviteInfoHeaders } from "./accept-email-invite-session.server";
+import {
+  createEmailInviteInfoHeaders,
+  destroyEmailInviteInfoSession,
+} from "./accept-email-invite-session.server";
 import type { Route } from ".react-router/types/app/routes/organizations_+/+types/email-invite";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireSupabaseUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import { createSupabaseServerClient } from "~/features/user-authentication/supabase.server";
+import { getVerifiedUserEmail } from "~/features/user-authentication/verified-email-helpers";
 import { combineHeaders } from "~/utils/combine-headers.server";
-import { getErrorMessage } from "~/utils/get-error-message";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest } from "~/utils/http-responses.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
@@ -42,9 +42,7 @@ export async function acceptEmailInviteAction({
           data: { user },
         } = await supabase.auth.getUser();
 
-        const token = getEmailInviteToken(request);
-
-        if (!token) {
+        const respondWithGenericInvalidInvite = async () => {
           const toastHeaders = await createToastHeaders({
             description: i18n.t(
               "organizations:acceptEmailInvite.inviteEmailInvalidToastDescription",
@@ -57,102 +55,71 @@ export async function acceptEmailInviteAction({
 
           return badRequest(
             { error: "Invalid token" },
-            { headers: combineHeaders(headers, toastHeaders) },
+            {
+              headers: combineHeaders(
+                headers,
+                toastHeaders,
+                await destroyEmailInviteInfoSession(request),
+              ),
+            },
           );
+        };
+
+        const token = getEmailInviteToken(request);
+
+        if (!token) {
+          return await respondWithGenericInvalidInvite();
         }
 
         const link =
           await retrieveActiveEmailInviteLinkFromDatabaseByToken(token);
 
         if (!link) {
-          const toastHeaders = await createToastHeaders({
-            description: i18n.t(
-              "organizations:acceptEmailInvite.inviteEmailInvalidToastDescription",
-            ),
-            title: i18n.t(
-              "organizations:acceptEmailInvite.inviteEmailInvalidToastTitle",
-            ),
-            type: "error",
-          });
-
-          return badRequest(
-            { error: "Invalid token" },
-            { headers: combineHeaders(headers, toastHeaders) },
-          );
+          return await respondWithGenericInvalidInvite();
         }
 
         if (user) {
           const userAccount = await requireSupabaseUserExists(request, user.id);
 
-          try {
-            await acceptEmailInvite({
-              emailInviteId: link.id,
-              emailInviteToken: link.token,
-              i18n,
-              organizationId: link.organization.id,
-              request,
-              role: link.role,
-              userAccountId: userAccount.id,
-            });
+          const acceptance = await acceptEmailInvite({
+            emailInviteToken: token,
+            i18n,
+            request,
+            userAccountId: userAccount.id,
+            verifiedUserEmail: getVerifiedUserEmail(user),
+          });
 
-            return redirectWithToast(
-              href("/organizations/:organizationSlug/dashboard", {
-                organizationSlug: link.organization.slug,
-              }),
-              {
-                description: i18n.t(
-                  "organizations:acceptEmailInvite.joinSuccessToastDescription",
-                  {
-                    organizationName: link.organization.name,
-                  },
-                ),
-                title: i18n.t(
-                  "organizations:acceptEmailInvite.joinSuccessToastTitle",
-                ),
-                type: "success",
-              },
-              { headers },
-            );
-          } catch (error) {
-            const message = getErrorMessage(error);
-
-            if (
-              message.includes(
-                "Unique constraint failed on the fields: (`memberId`,`organizationId`)",
-              ) ||
-              message.includes(
-                "Unique constraint failed on the fields: (`userId`,`organizationId`)",
-              ) ||
-              message.includes(
-                'Unique constraint failed on the fields: (`"userId"',
-              )
-            ) {
-              await updateEmailInviteLinkInDatabaseById({
-                emailInviteLink: { deactivatedAt: new Date() },
-                id: link.id,
-              });
-              return await redirectWithToast(
-                href("/organizations/:organizationSlug/dashboard", {
-                  organizationSlug: link.organization.slug,
-                }),
-                {
-                  description: i18n.t(
-                    "organizations:acceptEmailInvite.alreadyMemberToastDescription",
-                    {
-                      organizationName: link.organization.name,
-                    },
-                  ),
-                  title: i18n.t(
-                    "organizations:acceptEmailInvite.alreadyMemberToastTitle",
-                  ),
-                  type: "info",
-                },
-                { headers },
-              );
-            }
-
-            throw error;
+          if (acceptance.outcome === "rejected") {
+            return await respondWithGenericInvalidInvite();
           }
+
+          const alreadyMember = acceptance.outcome === "alreadyMember";
+
+          return redirectWithToast(
+            href("/organizations/:organizationSlug/dashboard", {
+              organizationSlug: acceptance.organization.slug,
+            }),
+            {
+              description: i18n.t(
+                alreadyMember
+                  ? "organizations:acceptEmailInvite.alreadyMemberToastDescription"
+                  : "organizations:acceptEmailInvite.joinSuccessToastDescription",
+                { organizationName: acceptance.organization.name },
+              ),
+              title: i18n.t(
+                alreadyMember
+                  ? "organizations:acceptEmailInvite.alreadyMemberToastTitle"
+                  : "organizations:acceptEmailInvite.joinSuccessToastTitle",
+              ),
+              type: alreadyMember ? "info" : "success",
+            },
+            {
+              headers: combineHeaders(
+                headers,
+                await destroyEmailInviteInfoSession(request),
+              ),
+            },
+          );
         }
 
         const emailInviteInfo = await createEmailInviteInfoHeaders({

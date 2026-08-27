@@ -9,6 +9,7 @@ import {
 } from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
+import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
 import { saveOrganizationEmailInviteLinkToDatabase } from "~/features/organizations/organizations-email-invite-link-model.server";
 import {
@@ -309,18 +310,21 @@ test.describe(`${path} API route`, () => {
   test("given: a valid token hash for an existing user with an active email invite cookie, should: add them to the organization after login and show success toast", async ({
     page,
   }) => {
-    // Create organization and email invite
+    // Create organization that the user will be invited to
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
-    const invite = createPopulatedOrganizationEmailInviteLink({
-      invitedById: invitingUser.id,
-      organizationId: organization.id,
-    });
-    await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Create and save the user who will log in
     const userAccount = createPopulatedUserAccount();
     await saveUserAccountToDatabase(userAccount);
+
+    // Create an email invite bound to the user's email
+    const invite = createPopulatedOrganizationEmailInviteLink({
+      email: userAccount.email,
+      invitedById: invitingUser.id,
+      organizationId: organization.id,
+    });
+    await saveOrganizationEmailInviteLinkToDatabase(invite);
 
     // Set the email invite cookie
     await setupEmailInviteCookie({
@@ -367,10 +371,14 @@ test.describe(`${path} API route`, () => {
   test("given: a valid token hash for a new user with an active email invite cookie, should: create their account, add them to the organization, show a success toast, and clear the email invite cookie", async ({
     page,
   }) => {
-    // Create organization and email invite
+    // Generate a unique email for testing.
+    const testEmail = `test-${Date.now()}@example.com`;
+
+    // Create organization and email invite bound to the new user's email
     const { organization, user: invitingUser } =
       await createUserWithOrgAndAddAsMember();
     const invite = createPopulatedOrganizationEmailInviteLink({
+      email: testEmail,
       invitedById: invitingUser.id,
       organizationId: organization.id,
     });
@@ -382,9 +390,6 @@ test.describe(`${path} API route`, () => {
       page,
     });
 
-    // Generate a unique email for testing.
-    const testEmail = `test-${Date.now()}@example.com`;
-
     // Use the email as the token hash.
     const tokenHash = stringifyTokenHashData({ email: testEmail });
 
@@ -395,7 +400,9 @@ test.describe(`${path} API route`, () => {
     await expect(
       page.getByRole("heading", { level: 1, name: /create your account/i }),
     ).toBeVisible();
-    expect(getPath(page)).toEqual("/onboarding/user-account");
+    expect(getPath(page)).toEqual(
+      getAcceptedEmailInviteOnboardingPath(organization.slug),
+    );
 
     // Verify the user account was created in the database.
     const userAccount = await retrieveUserAccountFromDatabaseByEmail(testEmail);
@@ -555,16 +562,18 @@ test.describe(`${path} API route`, () => {
         lookupKey: priceLookupKeysByTierAndInterval.low.annual,
       });
 
-    // Create an email invite for this organization
+    // Create the existing user that will log in
+    const { user: existingUser, organization: existingOrg } =
+      await createUserWithOrgAndAddAsMember();
+
+    // Create an email invite for this organization bound to the existing
+    // user's email
     const invite = createPopulatedOrganizationEmailInviteLink({
+      email: existingUser.email,
       invitedById: invitingUser.id,
       organizationId: organization.id,
     });
     await saveOrganizationEmailInviteLinkToDatabase(invite);
-
-    // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
-      await createUserWithOrgAndAddAsMember();
 
     // Set the email invite cookie
     await setupEmailInviteCookie({

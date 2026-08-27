@@ -2,7 +2,10 @@ import { href, redirect } from "react-router";
 
 import type { Route } from "./+types/login.confirm";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
-import { getValidEmailInviteInfo } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
+import {
+  getAcceptedEmailInviteOnboardingPath,
+  getValidEmailInviteInfo,
+} from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { destroyEmailInviteInfoSession } from "~/features/organizations/accept-email-invite/accept-email-invite-session.server";
 import { getValidInviteLinkInfo } from "~/features/organizations/accept-invite-link/accept-invite-link-helpers.server";
 import { destroyInviteLinkInfoSession } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
@@ -12,9 +15,10 @@ import {
 } from "~/features/organizations/organizations-helpers.server";
 import {
   retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail,
-  saveUserAccountToDatabase,
+  upsertUserAccountInDatabaseBySupabaseUserId,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { anonymousContext } from "~/features/user-authentication/user-authentication-middleware.server";
+import { getVerifiedUserEmail } from "~/features/user-authentication/verified-email-helpers";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
 import { redirectWithToast } from "~/utils/toast.server";
@@ -57,118 +61,141 @@ export async function loader({ request, context }: Route.LoaderArgs) {
 
   const finalUserAccount =
     userAccount ??
-    (await saveUserAccountToDatabase({
+    (await upsertUserAccountInDatabaseBySupabaseUserId({
       email: user.email,
       supabaseUserId: user.id,
     }));
 
   if (inviteLinkInfo || emailInviteInfo) {
-    const organizationId =
-      // biome-ignore lint/style/noNonNullAssertion: The is checked above
-      inviteLinkInfo?.organizationId ?? emailInviteInfo!.organizationId;
-    const organizationSlug =
-      // biome-ignore lint/style/noNonNullAssertion: The is checked above
-      inviteLinkInfo?.organizationSlug ?? emailInviteInfo!.organizationSlug;
-    const organizationName =
-      // biome-ignore lint/style/noNonNullAssertion: The is checked above
-      inviteLinkInfo?.organizationName ?? emailInviteInfo!.organizationName;
-
-    // If the user is already a member of the organization, redirect to
-    // the organization dashboard and show a toast.
-    if (
-      userAccount?.memberships.some((m) => m.organizationId === organizationId)
-    ) {
-      return redirectWithToast(
-        href("/organizations/:organizationSlug/dashboard", {
-          organizationSlug,
-        }),
-        {
-          description: i18n.t(
-            "organizations:acceptInviteLink.alreadyMemberToastDescription",
-            {
-              organizationName,
-            },
-          ),
-          title: i18n.t(
-            "organizations:acceptInviteLink.alreadyMemberToastTitle",
-          ),
-          type: "info",
-        },
-        {
-          headers: combineHeaders(
-            await destroyEmailInviteInfoSession(request),
-            await destroyInviteLinkInfoSession(request),
-          ),
-        },
-      );
-    }
-
     if (emailInviteInfo) {
-      await acceptEmailInvite({
-        // If the user already has a name, we deactivate the email invite link,
-        // otherwise this will be done during onboarding.
-        deactivatedAt: userAccount?.name ? new Date() : null,
-        emailInviteId: emailInviteInfo.emailInviteId,
+      const acceptance = await acceptEmailInvite({
         emailInviteToken: emailInviteInfo.emailInviteToken,
         i18n,
-        organizationId: emailInviteInfo.organizationId,
         request,
-        role: emailInviteInfo.role,
         userAccountId: finalUserAccount.id,
+        verifiedUserEmail: getVerifiedUserEmail(user),
       });
 
-      // If the user has a name, they're already onboarded and we can redirect
-      // them to their new organization's dashboard.
-      return userAccount?.name
-        ? redirectWithToast(
-            href("/organizations/:organizationSlug/dashboard", {
-              organizationSlug: emailInviteInfo.organizationSlug,
-            }),
-            {
-              description: i18n.t(
-                "organizations:acceptInviteLink.joinSuccessToastDescription",
-                {
-                  organizationName: emailInviteInfo.organizationName,
-                },
+      if (acceptance.outcome === "alreadyMember") {
+        return redirectWithToast(
+          href("/organizations/:organizationSlug/dashboard", {
+            organizationSlug: acceptance.organization.slug,
+          }),
+          {
+            description: i18n.t(
+              "organizations:acceptInviteLink.alreadyMemberToastDescription",
+              { organizationName: acceptance.organization.name },
+            ),
+            title: i18n.t(
+              "organizations:acceptInviteLink.alreadyMemberToastTitle",
+            ),
+            type: "info",
+          },
+          {
+            headers: combineHeaders(
+              inviteLinkHeaders,
+              await destroyEmailInviteInfoSession(request),
+              await destroyInviteLinkInfoSession(request),
+            ),
+          },
+        );
+      }
+
+      if (acceptance.outcome === "accepted") {
+        return userAccount?.name
+          ? redirectWithToast(
+              href("/organizations/:organizationSlug/dashboard", {
+                organizationSlug: acceptance.organization.slug,
+              }),
+              {
+                description: i18n.t(
+                  "organizations:acceptInviteLink.joinSuccessToastDescription",
+                  { organizationName: acceptance.organization.name },
+                ),
+                title: i18n.t(
+                  "organizations:acceptInviteLink.joinSuccessToastTitle",
+                ),
+                type: "success",
+              },
+              {
+                headers: combineHeaders(
+                  inviteLinkHeaders,
+                  await destroyEmailInviteInfoSession(request),
+                  await destroyInviteLinkInfoSession(request),
+                ),
+              },
+            )
+          : redirect(
+              getAcceptedEmailInviteOnboardingPath(
+                acceptance.organization.slug,
               ),
-              title: i18n.t(
-                "organizations:acceptInviteLink.joinSuccessToastTitle",
-              ),
-              type: "success",
-            },
-            {
-              headers: combineHeaders(
-                inviteLinkHeaders,
-                await destroyEmailInviteInfoSession(request),
-              ),
-            },
-          )
-        : // Otherwise, they're new and we need to send them to the onboarding
-          // flow.
-          redirect(href("/onboarding/user-account"));
+              {
+                headers: combineHeaders(
+                  inviteLinkHeaders,
+                  await destroyEmailInviteInfoSession(request),
+                  await destroyInviteLinkInfoSession(request),
+                ),
+              },
+            );
+      }
+
+      return redirect(href("/organizations"), {
+        headers: combineHeaders(
+          inviteLinkHeaders,
+          await destroyEmailInviteInfoSession(request),
+          await destroyInviteLinkInfoSession(request),
+        ),
+      });
     } else if (inviteLinkInfo) {
+      const { organizationId, organizationName, organizationSlug } =
+        inviteLinkInfo;
+
+      if (
+        userAccount?.memberships.some(
+          (membership) => membership.organizationId === organizationId,
+        )
+      ) {
+        return redirectWithToast(
+          href("/organizations/:organizationSlug/dashboard", {
+            organizationSlug,
+          }),
+          {
+            description: i18n.t(
+              "organizations:acceptInviteLink.alreadyMemberToastDescription",
+              { organizationName },
+            ),
+            title: i18n.t(
+              "organizations:acceptInviteLink.alreadyMemberToastTitle",
+            ),
+            type: "info",
+          },
+          {
+            headers: combineHeaders(
+              await destroyEmailInviteInfoSession(request),
+              await destroyInviteLinkInfoSession(request),
+            ),
+          },
+        );
+      }
+
       await acceptInviteLink({
         i18n,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
         inviteLinkToken: inviteLinkInfo.inviteLinkToken,
-        organizationId: inviteLinkInfo.organizationId,
+        organizationId,
         request,
         userAccountId: finalUserAccount.id,
       });
 
-      // If the user has a name, they're already onboarded and we can redirect
-      // them to their new organization's dashboard.
       return userAccount?.name
         ? redirectWithToast(
             href("/organizations/:organizationSlug/dashboard", {
-              organizationSlug: inviteLinkInfo.organizationSlug,
+              organizationSlug,
             }),
             {
               description: i18n.t(
                 "organizations:acceptInviteLink.joinSuccessToastDescription",
-                {
-                  organizationName: inviteLinkInfo.organizationName,
-                },
+                { organizationName },
               ),
               title: i18n.t(
                 "organizations:acceptInviteLink.joinSuccessToastTitle",
@@ -182,9 +209,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
               ),
             },
           )
-        : // Otherwise, they're new and we need to send them to the onboarding
-          // flow.
-          redirect(href("/onboarding/user-account"));
+        : redirect(href("/onboarding/user-account"));
     }
   }
 

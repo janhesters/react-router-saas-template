@@ -23,6 +23,8 @@ export const createPopulatedSupabaseUser: Factory<User> = ({
   confirmed_at = faker.date
     .past({ refDate: updated_at, years: 0.9 })
     .toISOString(),
+  email_confirmed_at = confirmed_at,
+  phone_confirmed_at,
   last_sign_in_at = faker.date
     .recent({ days: 5, refDate: updated_at })
     .toISOString(),
@@ -33,10 +35,12 @@ export const createPopulatedSupabaseUser: Factory<User> = ({
   confirmed_at,
   created_at,
   email,
+  email_confirmed_at,
   factors,
   id,
   last_sign_in_at,
   phone,
+  phone_confirmed_at,
   role,
   updated_at,
   user_metadata,
