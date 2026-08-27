@@ -41,7 +41,12 @@ export default defineConfig({
   /* Run your local dev server before starting the tests */
   webServer: {
     command: process.env.CI ? "bun run start" : "bun run dev",
-    env: { MOCKS: "true", NODE_ENV: "test", TZ: "UTC" },
+    env: {
+      EMAIL_MOCKS: "true",
+      MOCKS: "true",
+      NODE_ENV: "test",
+      TZ: "UTC",
+    },
     reuseExistingServer: !process.env.CI,
     url: process.env.APP_URL ?? "http://localhost:3000",
   },
