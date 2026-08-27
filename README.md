@@ -633,12 +633,10 @@ by cryptographically random nonces that are generated on each request.
 - `build`: generates React Router and Prisma types, then builds the application.
 - `check`: formats code and applies Biome's safe fixes.
 - `dev`: generates Prisma Client, then starts the development server.
-- `dev:mocks`: starts development with service mocks against
-  `TEST_DATABASE_URL`.
+- `dev:mocks`: starts development with service mocks and deterministic email
+  delivery against `TEST_DATABASE_URL`.
 - `lint`: checks formatting and lint rules without changing files.
 - `start`: serves the production build with `react-router-serve`.
-- `start:mocks`: serves the production build with service mocks against
-  `TEST_DATABASE_URL`.
 - `test`: runs the Vitest suite once against `TEST_DATABASE_URL`.
 - `test:watch`: watches the Vitest suite against `TEST_DATABASE_URL`.
 - `test:e2e`: runs Playwright against `TEST_DATABASE_URL`.
@@ -706,6 +704,10 @@ Supabase, etc.), you can use the mock mode. This uses
    ```bash
    bun run dev:mocks
    ```
+
+`dev:mocks` sets both `MOCKS=true` and `EMAIL_MOCKS=true`. Email delivery then
+returns a stable mock ID without calling Resend. Startup rejects either flag
+when `NODE_ENV=production`.
 
 **Logging In:**
 

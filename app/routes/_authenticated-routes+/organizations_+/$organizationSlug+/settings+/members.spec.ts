@@ -1264,7 +1264,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       },
     );
 
-    test("given: email delivery fails, should: deactivate the unused invite", async () => {
+    test("given: invite email delivery fails, should: return an error without a success toast or active invitation", async () => {
       server.use(
         http.post("https://api.resend.com/emails", () =>
           HttpResponse.json(
@@ -1305,8 +1305,17 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
             },
           },
         },
+        init: { status: 400 },
       });
       expect(invites).toEqual([]);
+
+      const maybeToast = (actual.init?.headers as Headers)?.get("Set-Cookie");
+      const { toast } = await getToast(
+        new Request(createUrl(organization.slug), {
+          headers: { cookie: maybeToast ?? "" },
+        }),
+      );
+      expect(toast).toEqual(null);
     });
 
     test("given: a user on the lowest plan (low.monthly) trying to invite anyone, should: return 400 because the org is full", async () => {
