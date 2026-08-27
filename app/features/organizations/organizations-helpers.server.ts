@@ -20,12 +20,11 @@ import { getValidInviteLinkInfo } from "./accept-invite-link/accept-invite-link-
 import { destroyInviteLinkInfoSession } from "./accept-invite-link/accept-invite-link-session.server";
 import { saveInviteLinkUseToDatabase } from "./accept-invite-link/invite-link-use-model.server";
 import { BUCKET_NAME, LOGO_PATH_PREFIX } from "./organization-constants";
-import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "./organization-membership-model.server";
 import {
   consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase,
-  consumeEmailInviteLinkInDatabaseById,
+  EmailInviteLinkEmailMismatchError,
   EmailInviteLinkNotConsumableError,
-  retrieveActiveEmailInviteLinkFromDatabaseByToken,
+  EmailInviteLinkOrganizationFullError,
 } from "./organizations-email-invite-link-model.server";
 import {
   addMembersToOrganizationInDatabaseById,
@@ -42,7 +41,6 @@ import type {
 import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
-import { emailAddressesMatch } from "~/utils/normalize-email-address";
 import { createAdminS3Client } from "~/utils/s3.server";
 import { uploadToStorage } from "~/utils/storage.server";
 import { removeImageFromStorage } from "~/utils/storage-helpers.server";
@@ -260,47 +258,38 @@ export async function acceptEmailInvite({
   userAccountId: UserAccount["id"];
   verifiedUserEmail: string | undefined;
 }): Promise<AcceptEmailInviteResult> {
-  const emailInvite =
-    await retrieveActiveEmailInviteLinkFromDatabaseByToken(emailInviteToken);
+  try {
+    const result =
+      await consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
+        emailInviteToken,
+        userAccountId,
+        verifiedUserEmail,
+      });
 
-  if (
-    !emailInvite ||
-    !verifiedUserEmail ||
-    !emailAddressesMatch(verifiedUserEmail, emailInvite.email)
-  ) {
-    return { outcome: "rejected" };
-  }
+    if (result.outcome === "alreadyMember") {
+      return result;
+    }
 
-  const organizationSummary = emailInvite.organization;
-  const existingMembership =
-    await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId({
-      organizationId: emailInvite.organizationId,
-      userId: userAccountId,
-    });
+    // Stripe is external and runs only after the database transaction commits
+    // one newly-created membership.
+    if (result.seatAdjustment) {
+      await adjustSeats(result.seatAdjustment);
+    }
 
-  if (existingMembership) {
-    const consumed = await consumeEmailInviteLinkInDatabaseById(emailInvite.id);
+    return {
+      organization: result.organization,
+      outcome: "accepted",
+      role: result.role,
+    };
+  } catch (error) {
+    if (
+      error instanceof EmailInviteLinkNotConsumableError ||
+      error instanceof EmailInviteLinkEmailMismatchError
+    ) {
+      return { outcome: "rejected" };
+    }
 
-    return consumed
-      ? { organization: organizationSummary, outcome: "alreadyMember" }
-      : { outcome: "rejected" };
-  }
-
-  const organization =
-    await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
-      emailInvite.organizationId,
-    );
-
-  if (!organization) {
-    return { outcome: "rejected" };
-  }
-
-  const subscription = organization.stripeSubscriptions[0];
-
-  if (subscription) {
-    const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
-
-    if (organization._count.memberships >= maxSeats) {
+    if (error instanceof EmailInviteLinkOrganizationFullError) {
       throw await redirectWithToast(
         `${href("/organizations/email-invite")}?token=${emailInviteToken}`,
         {
@@ -315,51 +304,9 @@ export async function acceptEmailInvite({
         { headers: await destroyEmailInviteInfoSession(request) },
       );
     }
-  }
-
-  let acceptance: Awaited<
-    ReturnType<
-      typeof consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase
-    >
-  >;
-
-  try {
-    acceptance =
-      await consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
-        emailInviteLinkId: emailInvite.id,
-        organizationId: emailInvite.organizationId,
-        role: emailInvite.role,
-        userAccountId,
-      });
-  } catch (error) {
-    if (error instanceof EmailInviteLinkNotConsumableError) {
-      return { outcome: "rejected" };
-    }
 
     throw error;
   }
-
-  if (!acceptance.membershipCreated) {
-    return { organization: organizationSummary, outcome: "alreadyMember" };
-  }
-
-  if (
-    subscription &&
-    subscription.status !== "canceled" &&
-    subscription.items[0]
-  ) {
-    await adjustSeats({
-      newQuantity: organization._count.memberships + 1,
-      subscriptionId: subscription.stripeId,
-      subscriptionItemId: subscription.items[0].stripeId,
-    });
-  }
-
-  return {
-    organization: organizationSummary,
-    outcome: "accepted",
-    role: emailInvite.role,
-  };
 }
 
 /**

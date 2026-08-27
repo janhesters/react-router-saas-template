@@ -1,22 +1,65 @@
 import type {
   Organization,
   OrganizationEmailInviteLink,
-  Prisma,
+  OrganizationMembershipRole,
+  UserAccount,
 } from "~/generated/client";
+import { Prisma } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
+import { emailAddressesMatch } from "~/utils/normalize-email-address";
 
 /**
  * Raised when an email invite can no longer be consumed. Callers must treat
  * this like any other invalid invite and not disclose whether it existed.
  */
 export class EmailInviteLinkNotConsumableError extends Error {
-  constructor(emailInviteLinkId: OrganizationEmailInviteLink["id"]) {
-    super(
-      `Email invite link ${emailInviteLinkId} is inactive, expired, or missing.`,
-    );
+  constructor() {
+    super("Email invite link is inactive, expired, or missing.");
     this.name = "EmailInviteLinkNotConsumableError";
   }
 }
+
+/**
+ * Raised when the authenticated identity does not own the invite's current
+ * email address. Throwing rolls the invite claim back.
+ */
+export class EmailInviteLinkEmailMismatchError extends Error {
+  constructor() {
+    super("Verified email does not match the email invite link.");
+    this.name = "EmailInviteLinkEmailMismatchError";
+  }
+}
+
+/** Raised when accepting an invite would exceed the organization's seat cap. */
+export class EmailInviteLinkOrganizationFullError extends Error {
+  constructor() {
+    super("Organization has no available seats.");
+    this.name = "EmailInviteLinkOrganizationFullError";
+  }
+}
+
+type EmailInviteOrganizationSummary = Pick<
+  Organization,
+  "id" | "name" | "slug"
+>;
+
+type EmailInviteSeatAdjustment = {
+  newQuantity: number;
+  subscriptionId: string;
+  subscriptionItemId: string;
+};
+
+export type ConsumeEmailInviteLinkResult =
+  | {
+      organization: EmailInviteOrganizationSummary;
+      outcome: "accepted";
+      role: OrganizationMembershipRole;
+      seatAdjustment?: EmailInviteSeatAdjustment;
+    }
+  | {
+      organization: EmailInviteOrganizationSummary;
+      outcome: "alreadyMember";
+    };
 
 /* CREATE */
 
@@ -110,74 +153,157 @@ export async function updateEmailInviteLinkInDatabaseById({
 }
 
 /**
- * Consumes an email invite only while it is active and unexpired.
- *
- * The conditional update is the exclusive claim: concurrent consumers cannot
- * both change the same active invite.
- */
-export async function consumeEmailInviteLinkInDatabaseById(
-  id: OrganizationEmailInviteLink["id"],
-) {
-  const now = new Date();
-  const { count } = await prisma.organizationEmailInviteLink.updateMany({
-    data: { deactivatedAt: now },
-    where: { deactivatedAt: null, expiresAt: { gt: now }, id },
-  });
-
-  return count === 1;
-}
-
-/**
  * Claims an active email invite and creates its membership in one transaction.
- * A failed claim or membership write rolls the entire operation back.
+ *
+ * The claim returns the invite's current email, organization, and role while
+ * the row is locked. Email binding, membership creation, the seat-limit check,
+ * and notification setup therefore use only values derived inside the claim
+ * transaction. Any validation or write failure rolls the claim back.
  */
 export async function consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
-  emailInviteLinkId,
-  organizationId,
-  role,
+  emailInviteToken,
   userAccountId,
+  verifiedUserEmail,
 }: {
-  emailInviteLinkId: OrganizationEmailInviteLink["id"];
-  organizationId: Organization["id"];
-  role: OrganizationEmailInviteLink["role"];
-  userAccountId: string;
-}) {
+  emailInviteToken: OrganizationEmailInviteLink["token"];
+  userAccountId: UserAccount["id"];
+  verifiedUserEmail: string | undefined;
+}): Promise<ConsumeEmailInviteLinkResult> {
   const now = new Date();
 
-  return prisma.$transaction(async (transaction) => {
-    const { count } = await transaction.organizationEmailInviteLink.updateMany({
-      data: { deactivatedAt: now },
-      where: {
-        deactivatedAt: null,
-        expiresAt: { gt: now },
-        id: emailInviteLinkId,
-      },
-    });
+  try {
+    return await prisma.$transaction(async (transaction) => {
+      const claimedInvite =
+        await transaction.organizationEmailInviteLink.update({
+          data: { deactivatedAt: now },
+          select: {
+            email: true,
+            organization: {
+              select: {
+                _count: {
+                  select: {
+                    memberships: {
+                      where: {
+                        OR: [
+                          { deactivatedAt: null },
+                          { deactivatedAt: { gt: now } },
+                        ],
+                      },
+                    },
+                  },
+                },
+                id: true,
+                name: true,
+                slug: true,
+                stripeSubscriptions: {
+                  orderBy: { created: "desc" },
+                  select: {
+                    items: {
+                      select: {
+                        price: {
+                          select: {
+                            product: { select: { maxSeats: true } },
+                          },
+                        },
+                        stripeId: true,
+                      },
+                      take: 1,
+                    },
+                    status: true,
+                    stripeId: true,
+                  },
+                  take: 1,
+                },
+              },
+            },
+            role: true,
+          },
+          where: {
+            deactivatedAt: null,
+            expiresAt: { gt: now },
+            token: emailInviteToken,
+          },
+        });
 
-    if (count !== 1) {
-      throw new EmailInviteLinkNotConsumableError(emailInviteLinkId);
-    }
+      if (
+        !verifiedUserEmail ||
+        !emailAddressesMatch(verifiedUserEmail, claimedInvite.email)
+      ) {
+        throw new EmailInviteLinkEmailMismatchError();
+      }
 
-    const membership = await transaction.organizationMembership.createMany({
-      data: [{ memberId: userAccountId, organizationId, role }],
-      skipDuplicates: true,
-    });
+      const organization = {
+        id: claimedInvite.organization.id,
+        name: claimedInvite.organization.name,
+        slug: claimedInvite.organization.slug,
+      };
+      const { count: membershipsCreated } =
+        await transaction.organizationMembership.createMany({
+          data: [
+            {
+              memberId: userAccountId,
+              organizationId: organization.id,
+              role: claimedInvite.role,
+            },
+          ],
+          skipDuplicates: true,
+        });
 
-    if (membership.count === 1) {
+      if (membershipsCreated === 0) {
+        return { organization, outcome: "alreadyMember" };
+      }
+
+      const subscription = claimedInvite.organization.stripeSubscriptions[0];
+      const subscriptionItem = subscription?.items[0];
+
+      if (subscription) {
+        const maxSeats = subscriptionItem?.price.product.maxSeats ?? 25;
+
+        if (claimedInvite.organization._count.memberships >= maxSeats) {
+          throw new EmailInviteLinkOrganizationFullError();
+        }
+      }
+
       // A panel can survive a deactivated membership, so upsert it when the
       // user rejoins instead of failing the transaction on its unique key.
       await transaction.notificationPanel.upsert({
         create: {
-          organization: { connect: { id: organizationId } },
-          user: { connect: { id: userAccountId } },
+          organizationId: organization.id,
+          userId: userAccountId,
         },
         update: {},
         where: {
-          userId_organizationId: { organizationId, userId: userAccountId },
+          userId_organizationId: {
+            organizationId: organization.id,
+            userId: userAccountId,
+          },
         },
       });
+
+      const seatAdjustment =
+        subscription && subscription.status !== "canceled" && subscriptionItem
+          ? {
+              newQuantity: claimedInvite.organization._count.memberships + 1,
+              subscriptionId: subscription.stripeId,
+              subscriptionItemId: subscriptionItem.stripeId,
+            }
+          : undefined;
+
+      return {
+        organization,
+        outcome: "accepted",
+        role: claimedInvite.role,
+        ...(seatAdjustment ? { seatAdjustment } : {}),
+      };
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2025"
+    ) {
+      throw new EmailInviteLinkNotConsumableError();
     }
 
-    return { membershipCreated: membership.count === 1 };
-  });
+    throw error;
+  }
 }
