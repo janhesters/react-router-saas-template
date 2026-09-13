@@ -177,12 +177,6 @@ jobs:
       - name: 🎭 Playwright Run Chrome
         run: bun run test:e2e -- --project=chromium
 
-      - name: 🧪 Validate failure-only artifact upload (temporary)
-        run: |
-          test -s playwright-report/index.html
-          echo "Intentional failure to validate the Playwright report upload for issue #149."
-          exit 1
-
       - name: 📸 Playwright Screenshots
         uses: actions/upload-artifact@v7
         if: failure()
