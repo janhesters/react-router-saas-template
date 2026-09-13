@@ -2,9 +2,9 @@
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
 import { href } from "react-router";
 
+import { expect, test } from "../../fixtures";
 import { setupOrganizationAndLoginAsMember } from "../../utils";
 import type { LinkNotificationProps } from "~/features/notifications/notification-components";
 import {

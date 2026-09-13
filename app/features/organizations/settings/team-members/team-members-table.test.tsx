@@ -104,9 +104,9 @@ describe("TeamMembersTable Component", () => {
     expect(screen.getByText(/no members found/i)).toBeInTheDocument();
   });
 
-  test("given: a member, should: display initials as fallback in avatar", () => {
+  test("given: a member without an avatar, should: display initials as fallback in avatar", () => {
     const props = createProps({
-      members: [createMember({ name: "John Doe" })],
+      members: [createMember({ avatar: "", name: "John Doe" })],
     });
     const { slug } = createPopulatedOrganization();
     const path = `/organizations/${slug}/settings/team-members`;

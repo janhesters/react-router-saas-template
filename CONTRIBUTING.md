@@ -151,6 +151,25 @@ bun run test        # Unit & integration
 bun run test:e2e:ui # End-to-end
 ```
 
+### Test images
+
+Use `TEST_IMAGE_DATA_URL` from `app/test/test-image.ts` for default avatars and
+organization logos. The shared PNG loads without a network request. The user
+and organization factories already use it, so seeds and Playwright setup helpers
+inherit the same default. Keep external image generators such as `faker.image`
+out of rendering fixtures.
+
+Import Playwright's `test` and `expect` from `playwright/fixtures.ts`. Its image
+guard blocks external image requests and fails tests which request them.
+Intentional Supabase Storage image requests read the files saved by the upload
+mocks. Upload tests should check the owner-scoped URL, uploaded bytes, and image
+dimensions after reloading the page. Check image dimensions for default avatars
+and logos too, so a fallback cannot hide a broken image.
+
+Literal external or OAuth image URLs are valid in parsing and preservation
+tests which never fetch them. Intercept requests when a provider image needs to
+render. Keep explicit empty-image overrides for fallback tests.
+
 ## Style Guide
 
 ### TypeScript

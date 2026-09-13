@@ -1,7 +1,7 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "../../fixtures";
 import { createValidContactSalesFormData } from "~/features/billing/contact-sales/contact-sales-factories.server";
 import {
   deleteContactSalesFormSubmissionFromDatabaseById,

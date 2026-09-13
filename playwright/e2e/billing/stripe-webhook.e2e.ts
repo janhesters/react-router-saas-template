@@ -2,9 +2,9 @@
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
 import type { APIRequestContext } from "@playwright/test";
-import { expect, test } from "@playwright/test";
 import type Stripe from "stripe";
 
+import { expect, test } from "../../fixtures";
 import { getJson } from "../../utils";
 import {
   createPopulatedStripePrice,

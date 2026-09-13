@@ -1,8 +1,8 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "../../fixtures";
 import {
   getPath,
   loginAndSaveUserAccountToDatabase,

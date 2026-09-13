@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-
+import { expect, test } from "../../fixtures";
 import { getPath, setupOrganizationAndLoginAsMember } from "../../utils";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
 

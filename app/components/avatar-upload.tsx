@@ -127,7 +127,7 @@ export function AvatarUploadPreviewImage({
 }: ComponentProps<typeof AvatarPrimitive.Image>) {
   const { previewUrl } = useAvatarUpload();
 
-  return <AvatarImage src={previewUrl} {...props} />;
+  return <AvatarImage src={previewUrl || src} {...props} />;
 }
 
 export function AvatarUploadInput({

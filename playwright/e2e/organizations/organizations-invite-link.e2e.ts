@@ -1,8 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import type { Page } from "@playwright/test";
-import { expect, test } from "@playwright/test";
 import { promiseHash } from "remix-utils/promise";
 
+import { expect, test } from "../../fixtures";
 import { getPath, setupOrganizationAndLoginAsMember } from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { createPopulatedOrganizationInviteLink } from "~/features/organizations/organizations-factories.server";
