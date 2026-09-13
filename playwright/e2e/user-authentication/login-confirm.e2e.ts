@@ -1,6 +1,6 @@
-import { expect, test } from "@playwright/test";
 import { href } from "react-router";
 
+import { expect, test } from "../../fixtures";
 import {
   getPath,
   loginByCookie,

@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-
+import { expect, test } from "../../fixtures";
 import { getPath, loginAndSaveUserAccountToDatabase } from "../../utils";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";

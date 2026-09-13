@@ -12,6 +12,7 @@ import type {
   OrganizationMembership,
 } from "~/generated/client";
 import { OrganizationMembershipRole } from "~/generated/client";
+import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import { slugify } from "~/utils/slugify.server";
 import type { Factory } from "~/utils/types";
 
@@ -29,7 +30,7 @@ export const createPopulatedOrganization: Factory<Organization> = ({
   slug = slugify(name),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 1 }),
-  imageUrl = faker.image.url(),
+  imageUrl = TEST_IMAGE_DATA_URL,
   billingEmail = faker.internet.email(),
   stripeCustomerId = `cus_${createId()}`,
   trialEnd = addDays(createdAt, 14),

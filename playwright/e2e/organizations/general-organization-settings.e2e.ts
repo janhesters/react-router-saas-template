@@ -1,8 +1,10 @@
+import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "../../fixtures";
 import {
+  expectImageToBeRendered,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -12,6 +14,7 @@ import { retrieveOrganizationFromDatabaseById } from "~/features/organizations/o
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
 import { OrganizationMembershipRole } from "~/generated/client";
+import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
@@ -81,9 +84,6 @@ test.describe("general organization settings", () => {
     page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
-      organization: createPopulatedOrganization({
-        imageUrl: "https://picsum.photos/seed/8rTyBWnE/77/2168",
-      }),
       page,
       role: OrganizationMembershipRole.member,
     });
@@ -100,9 +100,10 @@ test.describe("general organization settings", () => {
     await expect(page.getByText(/organization name/i)).toBeVisible();
     await expect(page.getByText(organization.name).nth(1)).toBeVisible();
     await expect(page.getByText(/organization logo/i)).toBeVisible();
-    await expect(
+    await expectImageToBeRendered(
       page.getByRole("img", { name: /organization logo/i }),
-    ).toBeVisible();
+      TEST_IMAGE_DATA_URL,
+    );
 
     // Verify no edit controls are visible
     await expect(
@@ -119,9 +120,6 @@ test.describe("general organization settings", () => {
     page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
-      organization: createPopulatedOrganization({
-        imageUrl: "https://picsum.photos/seed/8rTyBWnE/77/2168",
-      }),
       page,
       role: OrganizationMembershipRole.admin,
     });
@@ -138,9 +136,10 @@ test.describe("general organization settings", () => {
     await expect(page.getByText(/organization name/i)).toBeVisible();
     await expect(page.getByText(organization.name).nth(1)).toBeVisible();
     await expect(page.getByText(/organization logo/i)).toBeVisible();
-    await expect(
+    await expectImageToBeRendered(
       page.getByRole("img", { name: /organization logo/i }),
-    ).toBeVisible();
+      TEST_IMAGE_DATA_URL,
+    );
 
     // Verify no edit controls are visible
     await expect(
@@ -178,6 +177,8 @@ test.describe("general organization settings", () => {
       await expect(
         page.getByRole("textbox", { name: /organization name/i }),
       ).toBeVisible();
+      const logo = page.getByRole("img", { name: /logo preview/i });
+      await expectImageToBeRendered(logo, TEST_IMAGE_DATA_URL);
 
       // Enter organization name first time
       const newName = createPopulatedOrganization().name;
@@ -190,6 +191,8 @@ test.describe("general organization settings", () => {
         'input[type="file"]',
         "playwright/fixtures/200x200.jpg",
       );
+      await expect(logo).toHaveAttribute("src", /^blob:/);
+      await expectImageToBeRendered(logo);
 
       // Enter name again to ensure form is ready (sometimes with MSW activated
       // on the server, it takes time for the fields to become available)
@@ -224,9 +227,21 @@ test.describe("general organization settings", () => {
         organization.id,
       );
       expect(updatedOrganization?.name).toEqual(newName);
-      // With server-side uploads, the file is uploaded to Supabase storage
-      expect(updatedOrganization?.imageUrl).toMatch(
-        /storage\/v1\/object\/public\/app-images\/organization-logos/,
+      const storedLogoUrl = `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/organization-logos/${organization.id}.jpg`;
+      expect(updatedOrganization?.imageUrl).toEqual(storedLogoUrl);
+
+      // Reload to verify persisted Storage bytes, rather than the blob preview.
+      const download = page.waitForResponse(storedLogoUrl);
+      await page.reload();
+      const response = await download;
+      expect(response.ok()).toBe(true);
+      expect(await response.body()).toEqual(
+        await readFile("playwright/fixtures/200x200.jpg"),
+      );
+      await expectImageToBeRendered(logo, storedLogoUrl);
+      await expectImageToBeRendered(
+        page.getByRole("img", { exact: true, name: newName }),
+        storedLogoUrl,
       );
 
       await teardownOrganizationAndMember({ organization, user });

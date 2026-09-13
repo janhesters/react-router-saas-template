@@ -6,10 +6,12 @@
 // TODO: make sure the app can't be used when the subscription is cancelled and ran out.
 // TODO: implement confirmation before joining organization.
 
+import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "../../fixtures";
 import {
+  expectImageToBeRendered,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -26,6 +28,7 @@ import {
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { OrganizationMembershipRole } from "~/generated/client";
+import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
@@ -66,10 +69,14 @@ test.describe("account settings", () => {
     await expect(page.getByRole("textbox", { name: /email/i })).toHaveValue(
       user.email,
     );
-    // Verify avatar field is present (the fallback shows a UserIcon SVG, not an img)
+    // The fixture image must decode successfully, without falling back to an icon.
     await expect(
       page.getByText(/your avatar will be shown across the application/i),
     ).toBeVisible();
+    await expectImageToBeRendered(
+      page.getByRole("img", { name: /avatar preview/i }),
+      TEST_IMAGE_DATA_URL,
+    );
 
     await deleteUserAccountFromDatabaseById(user.id);
   });
@@ -142,6 +149,8 @@ test.describe("account settings", () => {
       page.getByRole("heading", { level: 1, name: /settings/i }),
     ).toBeVisible();
     await expect(page.getByText(/manage your account settings/i)).toBeVisible();
+    const avatar = page.getByRole("img", { name: /avatar preview/i });
+    await expectImageToBeRendered(avatar, TEST_IMAGE_DATA_URL);
 
     // Set new name
     const newName = createPopulatedUserAccount().name;
@@ -151,10 +160,8 @@ test.describe("account settings", () => {
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles("playwright/fixtures/200x200.jpg");
 
-    // Verify preview shows (the file has been selected)
-    await expect(
-      page.getByRole("img", { name: /avatar preview/i }),
-    ).toBeVisible();
+    await expect(avatar).toHaveAttribute("src", /^blob:/);
+    await expectImageToBeRendered(avatar);
 
     // Save changes
     await page.getByRole("button", { name: /save changes/i }).click();
@@ -169,10 +176,18 @@ test.describe("account settings", () => {
     // Verify name was updated in database
     const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
     expect(updatedUser?.name).toEqual(newName);
-    // With server-side uploads, the file is uploaded to Supabase storage
-    expect(updatedUser?.imageUrl).toMatch(
-      /storage\/v1\/object\/public\/app-images\/user-avatars/,
+    const storedAvatarUrl = `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/user-avatars/${user.id}.jpg`;
+    expect(updatedUser?.imageUrl).toEqual(storedAvatarUrl);
+
+    // Reload to verify persisted Storage bytes, rather than the blob preview.
+    const download = page.waitForResponse(storedAvatarUrl);
+    await page.reload();
+    const response = await download;
+    expect(response.ok()).toBe(true);
+    expect(await response.body()).toEqual(
+      await readFile("playwright/fixtures/200x200.jpg"),
     );
+    await expectImageToBeRendered(avatar, storedAvatarUrl);
 
     await deleteUserAccountFromDatabaseById(user.id);
   });

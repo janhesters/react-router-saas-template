@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
-import type { APIResponse, Page } from "@playwright/test";
-import { request } from "@playwright/test";
+import type { APIResponse, Locator, Page } from "@playwright/test";
+import { expect, request } from "@playwright/test";
 import dotenv from "dotenv";
 import { promiseHash } from "remix-utils/promise";
 
@@ -29,6 +29,24 @@ import {
 } from "~/test/test-utils";
 
 dotenv.config();
+
+export async function expectImageToBeRendered(image: Locator, src?: string) {
+  await expect(image).toBeVisible();
+  if (src) {
+    await expect(image).toHaveAttribute("src", src);
+  }
+  await expect
+    .poll(() =>
+      image.evaluate(
+        (element) =>
+          element instanceof HTMLImageElement &&
+          element.complete &&
+          element.naturalWidth > 0 &&
+          element.naturalHeight > 0,
+      ),
+    )
+    .toBe(true);
+}
 
 /**
  * Returns the pathname with the search of a given page's url.

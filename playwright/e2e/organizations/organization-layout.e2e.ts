@@ -1,7 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
 
+import { expect, test } from "../../fixtures";
 import {
+  expectImageToBeRendered,
   getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
@@ -13,6 +14,7 @@ import {
 } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
+import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
 
 test.describe("organization layout", () => {
@@ -118,6 +120,17 @@ test.describe("organization layout", () => {
       sidebarNav.getByRole("link", { name: /settings/i }),
     ).toHaveAttribute("href", `/organizations/${organization.slug}/settings`);
 
+    await expectImageToBeRendered(
+      page.getByRole("img", { exact: true, name: organization.name }),
+      TEST_IMAGE_DATA_URL,
+    );
+    await expectImageToBeRendered(
+      page
+        .getByRole("button", { name: /open user menu/i })
+        .getByRole("img", { exact: true, name: user.name }),
+      TEST_IMAGE_DATA_URL,
+    );
+
     // Verify user menu
     await page.getByRole("button", { name: /open user menu/i }).click();
     await expect(page.getByRole("link", { name: /account/i })).toHaveAttribute(
@@ -127,6 +140,10 @@ test.describe("organization layout", () => {
     await expect(
       page.getByRole("menuitem", { name: /log out/i }),
     ).toBeVisible();
+    await expectImageToBeRendered(
+      page.getByRole("menu").getByRole("img", { exact: true, name: user.name }),
+      TEST_IMAGE_DATA_URL,
+    );
     await page.keyboard.press("Escape");
 
     if (isMobile) {

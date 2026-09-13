@@ -3,18 +3,11 @@ import path from "node:path";
 import type { RequestHandler } from "msw";
 import { HttpResponse, http } from "msw";
 
+import { MOCK_STORAGE_DIR } from "./mock-storage";
+
 /*
 Storage handlers
 */
-
-const FIXTURES_DIR = path.join(
-  process.cwd(),
-  "app",
-  "tests",
-  "mocks",
-  "fixtures",
-);
-const MOCK_STORAGE_DIR = path.join(FIXTURES_DIR, "supabase-storage");
 
 // Map of file extensions to MIME types
 const MIME_TYPES: Record<string, string> = {

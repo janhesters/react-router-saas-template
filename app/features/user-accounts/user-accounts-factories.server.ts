@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
 
 import type { UserAccount } from "~/generated/client";
+import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import type { Factory } from "~/utils/types";
 
 /**
@@ -17,7 +18,7 @@ export const createPopulatedUserAccount: Factory<UserAccount> = ({
   name = faker.person.fullName(),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 3 }),
-  imageUrl = faker.image.avatar(),
+  imageUrl = TEST_IMAGE_DATA_URL,
 } = {}) => ({
   createdAt,
   email,
