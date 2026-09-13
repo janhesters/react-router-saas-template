@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { promiseHash } from "remix-utils/promise";
 
 import type { LookupKey } from "~/features/billing/billing-constants";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import type { StripeSubscriptionWithItemsAndPrice } from "~/features/billing/billing-factories.server";
 import { createPopulatedStripeSubscriptionWithItemsAndPrice } from "~/features/billing/billing-factories.server";
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
@@ -208,6 +209,9 @@ export async function setupOrganizationAndLoginAsMember({
   user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member,
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
+    items: [
+      { price: { lookupKey: priceLookupKeysByTierAndInterval.high.annual } },
+    ],
     organizationId: organization.id,
   }),
   lookupKey,

@@ -11,6 +11,7 @@ import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-con
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
 import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
+import { retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId } from "~/features/organizations/accept-invite-link/invite-link-use-model.server";
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import {
   retrieveEmailInviteLinkFromDatabaseById,
@@ -83,6 +84,69 @@ test.describe(`${path} API route`, () => {
 
     // Clean up.
     await deleteUserAccountFromDatabaseById(userAccount.id);
+  });
+
+  test("given: an OTP registration retry with an invite link for a full organization the user already belongs to, should: redirect with an informational toast and clear the invite cookie", async ({
+    page,
+  }) => {
+    const { organization, user } = await createUserWithOrgAndAddAsMember({
+      lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+    });
+    const originalMembership =
+      await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+        {
+          organizationId: organization.id,
+          userId: user.id,
+        },
+      );
+    const link = createPopulatedOrganizationInviteLink({
+      creatorId: user.id,
+      organizationId: organization.id,
+    });
+    await saveOrganizationInviteLinkToDatabase(link);
+    await setupInviteLinkCookie({
+      link: { expiresAt: link.expiresAt, inviteLinkToken: link.token },
+      page,
+    });
+
+    const tokenHash = stringifyTokenHashData({
+      email: user.email,
+      id: user.supabaseUserId,
+    });
+    await page.goto(`${path}?token_hash=${tokenHash}`);
+
+    await expect(
+      page.getByRole("heading", { level: 1, name: /dashboard/i }),
+    ).toBeVisible();
+    expect(getPath(page)).toEqual(
+      `/organizations/${organization.slug}/dashboard`,
+    );
+    await expect(
+      page
+        .getByRole("region", { name: /notifications/i })
+        .getByText(`You are already a member of ${organization.name}`),
+    ).toBeVisible();
+    expect(
+      (await page.context().cookies()).find(
+        (cookie) => cookie.name === INVITE_LINK_INFO_SESSION_NAME,
+      ),
+    ).toBeUndefined();
+    expect(
+      await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+        {
+          organizationId: organization.id,
+          userId: user.id,
+        },
+      ),
+    ).toEqual(originalMembership);
+    expect(
+      await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+        inviteLinkId: link.id,
+        userId: user.id,
+      }),
+    ).toBeNull();
+
+    await teardownOrganizationAndMember({ organization, user });
   });
 
   test("given: an invalid token_hash, should: return an error", async ({

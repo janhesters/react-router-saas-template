@@ -1,5 +1,134 @@
-import type { OrganizationInviteLink, Prisma } from "~/generated/client";
+import type {
+  Organization,
+  OrganizationInviteLink,
+  Prisma,
+  UserAccount,
+} from "~/generated/client";
 import { prisma } from "~/utils/database.server";
+
+/** Raised when joining through a reusable link would exceed the seat cap. */
+export class InviteLinkOrganizationFullError extends Error {
+  constructor() {
+    super("Organization has no available seats.");
+    this.name = "InviteLinkOrganizationFullError";
+  }
+}
+
+export type JoinOrganizationWithInviteLinkResult =
+  | { outcome: "alreadyMember" }
+  | {
+      outcome: "accepted";
+      seatAdjustment?: {
+        newQuantity: number;
+        subscriptionId: string;
+        subscriptionItemId: string;
+      };
+    };
+
+/**
+ * Creates a membership, notification panel, and reusable-link history together.
+ * Existing members return before capacity checks or writes. A concurrent join
+ * is recognized by the insert count, without relying on database error text.
+ */
+export async function joinOrganizationWithInviteLinkInDatabase({
+  inviteLinkId,
+  organizationId,
+  userAccountId,
+}: {
+  inviteLinkId: OrganizationInviteLink["id"];
+  organizationId: Organization["id"];
+  userAccountId: UserAccount["id"];
+}): Promise<JoinOrganizationWithInviteLinkResult> {
+  return prisma.$transaction(async (transaction) => {
+    const membership = await transaction.organizationMembership.findUnique({
+      where: {
+        memberId_organizationId: { memberId: userAccountId, organizationId },
+      },
+    });
+    if (membership) {
+      return { outcome: "alreadyMember" };
+    }
+
+    const { count } = await transaction.organizationMembership.createMany({
+      data: [{ memberId: userAccountId, organizationId, role: "member" }],
+      skipDuplicates: true,
+    });
+    if (count === 0) {
+      return { outcome: "alreadyMember" };
+    }
+
+    const organization = await transaction.organization.findUniqueOrThrow({
+      select: {
+        _count: {
+          select: {
+            memberships: {
+              where: {
+                OR: [
+                  { deactivatedAt: null },
+                  { deactivatedAt: { gt: new Date() } },
+                ],
+              },
+            },
+          },
+        },
+        stripeSubscriptions: {
+          orderBy: { created: "desc" },
+          select: {
+            items: {
+              select: {
+                price: { select: { product: { select: { maxSeats: true } } } },
+                stripeId: true,
+              },
+              take: 1,
+            },
+            status: true,
+            stripeId: true,
+          },
+          take: 1,
+        },
+      },
+      where: { id: organizationId },
+    });
+    const subscription = organization.stripeSubscriptions[0];
+    const subscriptionItem = subscription?.items[0];
+
+    // The transaction's count includes the new membership. Throwing rolls it
+    // back when the organization has no room for this member.
+    if (
+      subscription &&
+      organization._count.memberships >
+        (subscriptionItem?.price.product.maxSeats ?? 25)
+    ) {
+      throw new InviteLinkOrganizationFullError();
+    }
+
+    await transaction.notificationPanel.upsert({
+      create: { organizationId, userId: userAccountId },
+      update: {},
+      where: {
+        userId_organizationId: { organizationId, userId: userAccountId },
+      },
+    });
+    await transaction.inviteLinkUse.upsert({
+      create: { inviteLinkId, userId: userAccountId },
+      update: {},
+      where: { inviteLinkId_userId: { inviteLinkId, userId: userAccountId } },
+    });
+
+    return {
+      outcome: "accepted",
+      ...(subscription && subscription.status !== "canceled" && subscriptionItem
+        ? {
+            seatAdjustment: {
+              newQuantity: organization._count.memberships,
+              subscriptionId: subscription.stripeId,
+              subscriptionItemId: subscriptionItem.stripeId,
+            },
+          }
+        : {}),
+    };
+  });
+}
 
 /* CREATE */
 

@@ -11,6 +11,7 @@ import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-con
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
 import { getAcceptedEmailInviteOnboardingPath } from "~/features/organizations/accept-email-invite/accept-email-invite-helpers.server";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
+import { retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId } from "~/features/organizations/accept-invite-link/invite-link-use-model.server";
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import {
   retrieveEmailInviteLinkFromDatabaseById,
@@ -257,11 +258,21 @@ test.describe(`${path} API route`, () => {
     await teardownOrganizationAndMember({ organization, user: invitingUser });
   });
 
-  test("given: a valid token hash for an existing user with an active invite link cookie for an organization they're already a member of, should: redirect to the organization's dashboard and show a toast", async ({
+  test("given: an OTP login with an invite link for a full organization the user already belongs to, should: redirect with an informational toast and clear the invite cookie", async ({
     page,
   }) => {
     // Create organization and user who is already a member
-    const { organization, user } = await createUserWithOrgAndAddAsMember();
+    const { organization, user } = await createUserWithOrgAndAddAsMember({
+      lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+    });
+
+    const originalMembership =
+      await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+        {
+          organizationId: organization.id,
+          userId: user.id,
+        },
+      );
 
     // Create an invite link for the same organization
     const link = createPopulatedOrganizationInviteLink({
@@ -307,7 +318,21 @@ test.describe(`${path} API route`, () => {
     );
     expect(inviteLinkCookie).toBeUndefined();
 
-    // Cleanup
+    expect(
+      await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+        {
+          organizationId: organization.id,
+          userId: user.id,
+        },
+      ),
+    ).toEqual(originalMembership);
+    expect(
+      await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+        inviteLinkId: link.id,
+        userId: user.id,
+      }),
+    ).toBeNull();
+
     await teardownOrganizationAndMember({ organization, user });
   });
 

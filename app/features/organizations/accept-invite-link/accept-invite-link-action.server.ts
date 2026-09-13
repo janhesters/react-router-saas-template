@@ -11,7 +11,6 @@ import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { requireSupabaseUserExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import { createSupabaseServerClient } from "~/features/user-authentication/supabase.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
-import { getErrorMessage } from "~/utils/get-error-message";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest } from "~/utils/http-responses.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
@@ -62,70 +61,36 @@ export async function acceptInviteLinkAction({
         if (user) {
           const userAccount = await requireSupabaseUserExists(request, user.id);
 
-          try {
-            await acceptInviteLink({
-              i18n,
-              inviteLinkId: link.id,
-              inviteLinkToken: link.token,
-              organizationId: link.organization.id,
-              request,
-              userAccountId: userAccount.id,
-            });
+          const acceptance = await acceptInviteLink({
+            i18n,
+            inviteLinkId: link.id,
+            inviteLinkToken: link.token,
+            organizationId: link.organization.id,
+            request,
+            userAccountId: userAccount.id,
+          });
+          const alreadyMember = acceptance.outcome === "alreadyMember";
 
-            return redirectWithToast(
-              href("/organizations/:organizationSlug/dashboard", {
-                organizationSlug: link.organization.slug,
-              }),
-              {
-                description: i18n.t(
-                  "organizations:acceptInviteLink.joinSuccessToastDescription",
-                  {
-                    organizationName: link.organization.name,
-                  },
-                ),
-                title: i18n.t(
-                  "organizations:acceptInviteLink.joinSuccessToastTitle",
-                ),
-                type: "success",
-              },
-              { headers },
-            );
-          } catch (error) {
-            const message = getErrorMessage(error);
-
-            if (
-              message.includes(
-                "Unique constraint failed on the fields: (`memberId`,`organizationId`)",
-              ) ||
-              message.includes(
-                "Unique constraint failed on the fields: (`userId`,`organizationId`)",
-              ) ||
-              message.includes(
-                'Unique constraint failed on the fields: (`"userId"',
-              )
-            ) {
-              return await redirectWithToast(
-                href("/organizations/:organizationSlug/dashboard", {
-                  organizationSlug: link.organization.slug,
-                }),
-                {
-                  description: i18n.t(
-                    "organizations:acceptInviteLink.alreadyMemberToastDescription",
-                    {
-                      organizationName: link.organization.name,
-                    },
-                  ),
-                  title: i18n.t(
-                    "organizations:acceptInviteLink.alreadyMemberToastTitle",
-                  ),
-                  type: "info",
-                },
-                { headers },
-              );
-            }
-
-            throw error;
-          }
+          return redirectWithToast(
+            href("/organizations/:organizationSlug/dashboard", {
+              organizationSlug: link.organization.slug,
+            }),
+            {
+              description: i18n.t(
+                alreadyMember
+                  ? "organizations:acceptInviteLink.alreadyMemberToastDescription"
+                  : "organizations:acceptInviteLink.joinSuccessToastDescription",
+                { organizationName: link.organization.name },
+              ),
+              title: i18n.t(
+                alreadyMember
+                  ? "organizations:acceptInviteLink.alreadyMemberToastTitle"
+                  : "organizations:acceptInviteLink.joinSuccessToastTitle",
+              ),
+              type: alreadyMember ? "info" : "success",
+            },
+            { headers },
+          );
         }
 
         const inviteLinkInfo = await createInviteLinkInfoHeaders({

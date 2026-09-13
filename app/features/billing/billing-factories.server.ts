@@ -33,7 +33,7 @@ export const createPopulatedStripeProduct: Factory<StripeProduct> = ({
  * @returns A populated Stripe price with given params.
  */
 export const createPopulatedStripePrice: Factory<StripePrice> = ({
-  lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}`,
+  lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}_${createId()}`,
   stripeId = `price_${createId()}`,
   active = true,
   currency = "usd",
@@ -201,7 +201,6 @@ export function createPopulatedStripePriceWithProduct(
   const { product: productOverrides, ...priceOverrides } = overrides;
   const product = createPopulatedStripeProduct(productOverrides);
   const price = createPopulatedStripePrice({
-    lookupKey: getRandomLookupKey(),
     ...priceOverrides,
     productId: product.stripeId,
   });
@@ -354,10 +353,7 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
     ? itemsOverride.map((itemOverride) => {
         const { price: priceOverrides, ...itemBaseOverrides } =
           itemOverride || {};
-        const price = createPopulatedStripePrice({
-          lookupKey: getRandomLookupKey(),
-          ...priceOverrides,
-        });
+        const price = createPopulatedStripePrice(priceOverrides);
         const item = createPopulatedStripeSubscriptionItem({
           ...itemBaseOverrides,
           priceId: price.stripeId,
@@ -366,9 +362,7 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
       })
     : [
         (() => {
-          const price = createPopulatedStripePrice({
-            lookupKey: getRandomLookupKey(),
-          });
+          const price = createPopulatedStripePrice();
           const item = createPopulatedStripeSubscriptionItem({
             priceId: price.stripeId,
           });

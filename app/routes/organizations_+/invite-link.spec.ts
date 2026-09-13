@@ -1,8 +1,10 @@
 import { describe, expect, test } from "vitest";
 
 import { action } from "./invite-link";
+import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
 import { ACCEPT_INVITE_LINK_INTENT } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
 import { getInviteLinkInfoFromSession } from "~/features/organizations/accept-invite-link/accept-invite-link-session.server";
+import { retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId } from "~/features/organizations/accept-invite-link/invite-link-use-model.server";
 import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import { createPopulatedOrganizationInviteLink } from "~/features/organizations/organizations-factories.server";
 import { saveOrganizationInviteLinkToDatabase } from "~/features/organizations/organizations-invite-link-model.server";
@@ -256,36 +258,126 @@ describe("/organizations/invite-link route action", () => {
       });
     });
 
-    test("given: an authenticated request with valid token for an organization the user is already a member of, should: redirect to organization page", async () => {
-      const { organization, user } = await setupUserWithOrgAndAddAsMember();
-      const inviteLink = createPopulatedOrganizationInviteLink({
-        creatorId: user.id,
-        organizationId: organization.id,
-      });
-      await saveOrganizationInviteLinkToDatabase(inviteLink);
-
-      const actual = (await sendAuthenticatedRequest({
+    test("given: an accepted invite link submitted again, should: return an informational toast without changing membership or usage", async () => {
+      const { inviteLink, otherOrganization, user } = await setup();
+      const firstResponse = (await sendAuthenticatedRequest({
         token: inviteLink.token,
         userAccount: user,
       })) as Response;
-
-      expect(actual.status).toEqual(302);
-      expect(actual.headers.get("Location")).toEqual(
-        `/organizations/${organization.slug}/dashboard`,
+      expect(firstResponse.headers.get("Location")).toEqual(
+        `/organizations/${otherOrganization.slug}/dashboard`,
       );
+      const originalMembership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: otherOrganization.id,
+            userId: user.id,
+          },
+        );
+      const originalUse =
+        await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+          inviteLinkId: inviteLink.id,
+          userId: user.id,
+        });
+      expect(originalMembership).not.toBeNull();
+      expect(originalUse).not.toBeNull();
 
-      const maybeToast = actual.headers.get("Set-Cookie");
+      const response = (await sendAuthenticatedRequest({
+        token: inviteLink.token,
+        userAccount: user,
+      })) as Response;
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toEqual(
+        `/organizations/${otherOrganization.slug}/dashboard`,
+      );
       const { toast } = await getToast(
         new Request(createUrl(), {
-          headers: { cookie: maybeToast ?? "" },
+          headers: { cookie: response.headers.get("Set-Cookie") ?? "" },
         }),
       );
-      expect(toast).toMatchObject({
-        description: `You are already a member of ${organization.name}`,
-        id: expect.any(String) as string,
-        title: "Already a member",
-        type: "info",
-      });
+      expect(toast).toMatchObject({ title: "Already a member", type: "info" });
+      expect(
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: otherOrganization.id,
+            userId: user.id,
+          },
+        ),
+      ).toEqual(originalMembership);
+      expect(
+        await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+          inviteLinkId: inviteLink.id,
+          userId: user.id,
+        }),
+      ).toEqual(originalUse);
     });
+
+    test.each([
+      {
+        capacity: "available seats",
+        lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
+      },
+      {
+        capacity: "no available seats",
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
+      },
+    ])(
+      "given: an existing member accepting an invite to an organization with $capacity, should: redirect with an informational toast and preserve membership",
+      async ({ lookupKey }) => {
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
+          lookupKey,
+        });
+        const originalMembership =
+          await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+            {
+              organizationId: organization.id,
+              userId: user.id,
+            },
+          );
+        const inviteLink = createPopulatedOrganizationInviteLink({
+          creatorId: user.id,
+          organizationId: organization.id,
+        });
+        await saveOrganizationInviteLinkToDatabase(inviteLink);
+
+        const actual = (await sendAuthenticatedRequest({
+          token: inviteLink.token,
+          userAccount: user,
+        })) as Response;
+
+        expect(actual.status).toEqual(302);
+        expect(actual.headers.get("Location")).toEqual(
+          `/organizations/${organization.slug}/dashboard`,
+        );
+
+        const maybeToast = actual.headers.get("Set-Cookie");
+        const { toast } = await getToast(
+          new Request(createUrl(), {
+            headers: { cookie: maybeToast ?? "" },
+          }),
+        );
+        expect(toast).toMatchObject({
+          description: `You are already a member of ${organization.name}`,
+          id: expect.any(String) as string,
+          title: "Already a member",
+          type: "info",
+        });
+
+        expect(
+          await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+            {
+              organizationId: organization.id,
+              userId: user.id,
+            },
+          ),
+        ).toEqual(originalMembership);
+        expect(
+          await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+            inviteLinkId: inviteLink.id,
+            userId: user.id,
+          }),
+        ).toBeNull();
+      },
+    );
   });
 });

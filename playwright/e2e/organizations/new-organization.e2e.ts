@@ -1,6 +1,8 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
+
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
+import { createId } from "@paralleldrive/cuid2";
 
 import { expect, test } from "../../fixtures";
 import {
@@ -17,6 +19,7 @@ import { createPopulatedUserAccount } from "~/features/user-accounts/user-accoun
 import { deleteUserAccountFromDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
 import { OrganizationMembershipRole } from "~/generated/client";
 import { teardownOrganizationAndMember } from "~/test/test-utils";
+import { slugify } from "~/utils/slugify.server";
 
 const path = "/organizations/new";
 
@@ -80,7 +83,8 @@ test.describe("new organization page", () => {
       await expect(privacyLink).toHaveAttribute("href", "/privacy-policy");
 
       // Enter organization name
-      const { name: newName, slug: newSlug } = createPopulatedOrganization();
+      const newName = `${createPopulatedOrganization().name} ${createId()}`;
+      const newSlug = slugify(newName);
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
@@ -176,7 +180,8 @@ test.describe("new organization page", () => {
       ).toBeVisible();
 
       // Enter organization name
-      const { name: newName, slug: newSlug } = createPopulatedOrganization();
+      const newName = `${createPopulatedOrganization().name} ${createId()}`;
+      const newSlug = slugify(newName);
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
@@ -244,7 +249,8 @@ test.describe("new organization page", () => {
       ).toBeVisible();
 
       // Create organization
-      const { name: newName, slug: newSlug } = createPopulatedOrganization();
+      const newName = `${createPopulatedOrganization().name} ${createId()}`;
+      const newSlug = slugify(newName);
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
@@ -304,7 +310,8 @@ test.describe("new organization page", () => {
       ).toBeVisible();
 
       // Create organization
-      const { name: newName, slug: newSlug } = createPopulatedOrganization();
+      const newName = `${createPopulatedOrganization().name} ${createId()}`;
+      const newSlug = slugify(newName);
       await page
         .getByRole("textbox", { name: /organization name/i })
         .fill(newName);
