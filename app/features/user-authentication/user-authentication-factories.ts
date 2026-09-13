@@ -12,7 +12,7 @@ import type { Factory } from "~/utils/types";
  */
 export const createPopulatedSupabaseUser: Factory<User> = ({
   id = faker.string.uuid(),
-  email = faker.internet.email(),
+  email = `user-${createId()}@example.com`,
   app_metadata = {},
   user_metadata = {},
   aud = "authenticated",

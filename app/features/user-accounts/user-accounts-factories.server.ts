@@ -14,7 +14,7 @@ import type { Factory } from "~/utils/types";
 export const createPopulatedUserAccount: Factory<UserAccount> = ({
   id = createId(),
   supabaseUserId = faker.string.uuid(),
-  email = faker.internet.email(),
+  email = `user-${createId()}@example.com`,
   name = faker.person.fullName(),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 3 }),

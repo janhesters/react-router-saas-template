@@ -18,6 +18,7 @@ import { anonymousContext } from "~/features/user-authentication/user-authentica
 import { getVerifiedUserEmail } from "~/features/user-authentication/verified-email-helpers";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
+import { redirectWithToast } from "~/utils/toast.server";
 
 export async function loader({ request, context }: Route.LoaderArgs) {
   const { supabase } = context.get(anonymousContext);
@@ -65,7 +66,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         ? undefined
         : acceptance.organization.slug;
   } else if (inviteLinkInfo) {
-    await acceptInviteLink({
+    const acceptance = await acceptInviteLink({
       i18n,
       inviteLinkId: inviteLinkInfo.inviteLinkId,
       inviteLinkToken: inviteLinkInfo.inviteLinkToken,
@@ -73,6 +74,30 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       request,
       userAccountId: userAccount.id,
     });
+
+    if (acceptance.outcome === "alreadyMember") {
+      return redirectWithToast(
+        href("/organizations/:organizationSlug/dashboard", {
+          organizationSlug: inviteLinkInfo.organizationSlug,
+        }),
+        {
+          description: i18n.t(
+            "organizations:acceptInviteLink.alreadyMemberToastDescription",
+            { organizationName: inviteLinkInfo.organizationName },
+          ),
+          title: i18n.t(
+            "organizations:acceptInviteLink.alreadyMemberToastTitle",
+          ),
+          type: "info",
+        },
+        {
+          headers: combineHeaders(
+            emailInviteHeaders,
+            await destroyInviteLinkInfoSession(request),
+          ),
+        },
+      );
+    }
   }
 
   return redirect(

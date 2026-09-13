@@ -18,7 +18,6 @@ import { getValidEmailInviteInfo } from "./accept-email-invite/accept-email-invi
 import { destroyEmailInviteInfoSession } from "./accept-email-invite/accept-email-invite-session.server";
 import { getValidInviteLinkInfo } from "./accept-invite-link/accept-invite-link-helpers.server";
 import { destroyInviteLinkInfoSession } from "./accept-invite-link/accept-invite-link-session.server";
-import { saveInviteLinkUseToDatabase } from "./accept-invite-link/invite-link-use-model.server";
 import { BUCKET_NAME, LOGO_PATH_PREFIX } from "./organization-constants";
 import {
   consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase,
@@ -27,18 +26,20 @@ import {
   EmailInviteLinkOrganizationFullError,
 } from "./organizations-email-invite-link-model.server";
 import {
-  addMembersToOrganizationInDatabaseById,
+  InviteLinkOrganizationFullError,
+  joinOrganizationWithInviteLinkInDatabase,
+} from "./organizations-invite-link-model.server";
+import {
   deleteOrganizationFromDatabaseById,
-  retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId,
   retrieveOrganizationWithSubscriptionsFromDatabaseById,
 } from "./organizations-model.server";
 import type {
   Organization,
   OrganizationEmailInviteLink,
   OrganizationInviteLink,
+  OrganizationMembershipRole,
   UserAccount,
 } from "~/generated/client";
-import { OrganizationMembershipRole } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
 import { createAdminS3Client } from "~/utils/s3.server";
@@ -171,56 +172,41 @@ export async function acceptInviteLink({
   organizationId: Organization["id"];
   request: Request;
   userAccountId: UserAccount["id"];
-}) {
-  const organization =
-    await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
-      organizationId,
-    );
-
-  if (organization) {
-    const subscription = organization.stripeSubscriptions[0];
-
-    if (subscription) {
-      const maxSeats = subscription.items[0]?.price.product.maxSeats ?? 25;
-
-      if (organization._count.memberships >= maxSeats) {
-        throw await redirectWithToast(
-          `${href("/organizations/invite-link")}?token=${inviteLinkToken}`,
-          {
-            description: i18n.t(
-              "organizations:acceptInviteLink.organizationFullToastDescription",
-            ),
-            title: i18n.t(
-              "organizations:acceptInviteLink.organizationFullToastTitle",
-            ),
-            type: "error",
-          },
-          { headers: await destroyInviteLinkInfoSession(request) },
-        );
-      }
-    }
-
-    await addMembersToOrganizationInDatabaseById({
-      id: organizationId,
-      members: [userAccountId],
-      role: OrganizationMembershipRole.member,
-    });
-    await saveInviteLinkUseToDatabase({
+}): Promise<{ outcome: "accepted" | "alreadyMember" }> {
+  try {
+    const result = await joinOrganizationWithInviteLinkInDatabase({
       inviteLinkId,
-      userId: userAccountId,
+      organizationId,
+      userAccountId,
     });
 
-    if (
-      subscription &&
-      subscription.status !== "canceled" &&
-      subscription.items[0]
-    ) {
-      await adjustSeats({
-        newQuantity: organization._count.memberships + 1,
-        subscriptionId: subscription.stripeId,
-        subscriptionItemId: subscription.items[0].stripeId,
-      });
+    if (result.outcome === "alreadyMember") {
+      return result;
     }
+
+    if (result.seatAdjustment) {
+      await adjustSeats(result.seatAdjustment);
+    }
+
+    return { outcome: "accepted" };
+  } catch (error) {
+    if (error instanceof InviteLinkOrganizationFullError) {
+      throw await redirectWithToast(
+        `${href("/organizations/invite-link")}?token=${inviteLinkToken}`,
+        {
+          description: i18n.t(
+            "organizations:acceptInviteLink.organizationFullToastDescription",
+          ),
+          title: i18n.t(
+            "organizations:acceptInviteLink.organizationFullToastTitle",
+          ),
+          type: "error",
+        },
+        { headers: await destroyInviteLinkInfoSession(request) },
+      );
+    }
+
+    throw error;
   }
 }
 

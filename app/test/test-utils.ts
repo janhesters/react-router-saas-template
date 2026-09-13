@@ -24,15 +24,11 @@ import { createPopulatedOrganization } from "~/features/organizations/organizati
 import { organizationMembershipMiddleware } from "~/features/organizations/organizations-middleware.server";
 import {
   addMembersToOrganizationInDatabaseById,
-  deleteOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
   upsertStripeSubscriptionForOrganizationInDatabaseById,
 } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
-import {
-  deleteUserAccountFromDatabaseById,
-  saveUserAccountToDatabase,
-} from "~/features/user-accounts/user-accounts-model.server";
+import { saveUserAccountToDatabase } from "~/features/user-accounts/user-accounts-model.server";
 import {
   createPopulatedSupabaseSession,
   createPopulatedSupabaseUser,
@@ -43,6 +39,7 @@ import {
   OrganizationMembershipRole,
   StripePriceInterval,
 } from "~/generated/client";
+import { prisma } from "~/utils/database.server";
 import type { DeepPartial } from "~/utils/types";
 
 /**
@@ -285,6 +282,9 @@ export async function createTestSubscriptionForUserAndOrganization({
   user,
   organization,
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
+    items: [
+      { price: { lookupKey: priceLookupKeysByTierAndInterval.high.annual } },
+    ],
     organizationId: organization.id,
   }),
   stripeCustomerId = createPopulatedOrganization().stripeCustomerId!,
@@ -361,7 +361,8 @@ export async function createUserWithOrgAndAddAsMember({
 }
 
 /**
- * Deletes an organization and a user from the database.
+ * Deletes an organization and a user, including their cascading relations.
+ * Missing records are harmless; database failures reject and roll back cleanup.
  *
  * @param params - The organization and user to delete.
  * @returns  A Promise that resolves when the organization and user account
@@ -373,17 +374,11 @@ export async function teardownOrganizationAndMember({
 }: {
   organization: Organization;
   user: UserAccount;
-}) {
-  try {
-    await deleteOrganizationFromDatabaseById(organization.id);
-  } catch {
-    // do nothing, the org was probably deleted in the test
-  }
-  try {
-    await deleteUserAccountFromDatabaseById(user.id);
-  } catch {
-    // do nothing, the user was probably deleted in the test
-  }
+}): Promise<void> {
+  await prisma.$transaction([
+    prisma.organization.deleteMany({ where: { id: organization.id } }),
+    prisma.userAccount.deleteMany({ where: { id: user.id } }),
+  ]);
 }
 
 /**

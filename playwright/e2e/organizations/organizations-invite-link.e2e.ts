@@ -5,6 +5,8 @@ import { promiseHash } from "remix-utils/promise";
 import { expect, test } from "../../fixtures";
 import { getPath, setupOrganizationAndLoginAsMember } from "../../utils";
 import { priceLookupKeysByTierAndInterval } from "~/features/billing/billing-constants";
+import { retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId } from "~/features/organizations/accept-invite-link/invite-link-use-model.server";
+import { retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId } from "~/features/organizations/organization-membership-model.server";
 import { createPopulatedOrganizationInviteLink } from "~/features/organizations/organizations-factories.server";
 import { saveOrganizationInviteLinkToDatabase } from "~/features/organizations/organizations-invite-link-model.server";
 import type { OrganizationInviteLink } from "~/generated/client";
@@ -155,7 +157,7 @@ test.describe("organizations invite link page", () => {
       await teardownOrganizationAndMember(auth);
     });
 
-    test("given: a valid token, should: let the user join the organization", async ({
+    test("given: a valid token accepted twice, should: join once and then show an informational toast", async ({
       page,
     }) => {
       const { link, auth, data } = await setup({ page });
@@ -199,6 +201,48 @@ test.describe("organizations invite link page", () => {
       expect(getPath(page)).toEqual(
         `/organizations/${data.organization.slug}/dashboard`,
       );
+
+      const membership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: data.organization.id,
+            userId: auth.user.id,
+          },
+        );
+      const usage = await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+        inviteLinkId: link.id,
+        userId: auth.user.id,
+      });
+      expect(membership).not.toBeNull();
+      expect(usage).not.toBeNull();
+
+      await page.goto(getInviteLinkPagePath(link.token));
+      await page.getByRole("button", { name: /accept invite/i }).click();
+      await expect(
+        page.getByRole("heading", { level: 1, name: /dashboard/i }),
+      ).toBeVisible();
+      expect(getPath(page)).toEqual(
+        `/organizations/${data.organization.slug}/dashboard`,
+      );
+      await expect(
+        page
+          .getByRole("region", { name: /notifications/i })
+          .getByText(`You are already a member of ${data.organization.name}`),
+      ).toBeVisible();
+      expect(
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: data.organization.id,
+            userId: auth.user.id,
+          },
+        ),
+      ).toEqual(membership);
+      expect(
+        await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+          inviteLinkId: link.id,
+          userId: auth.user.id,
+        }),
+      ).toEqual(usage);
 
       await teardownOrganizationAndMember(data);
       await teardownOrganizationAndMember(auth);
@@ -260,15 +304,23 @@ test.describe("organizations invite link page", () => {
       await teardownOrganizationAndMember(auth);
     });
 
-    test("given: a valid token for an organization that the user is already a member of, should: redirect to the organization and show a toast that they're already a member", async ({
+    test("given: an existing member accepting an invite to a full organization, should: redirect to its dashboard with an informational toast and preserve membership", async ({
       page,
     }) => {
       // Create an organization and make the user a member and log in as that
       // user
       const { user, organization } = await setupOrganizationAndLoginAsMember({
-        lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
+        lookupKey: priceLookupKeysByTierAndInterval.low.annual,
         page,
       });
+
+      const originalMembership =
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: organization.id,
+            userId: user.id,
+          },
+        );
 
       // Create an invite link for the same organization
       const link = createPopulatedOrganizationInviteLink({
@@ -299,6 +351,21 @@ test.describe("organizations invite link page", () => {
             new RegExp(`You are already a member of ${organization.name}`, "i"),
           ),
       ).toBeVisible();
+
+      expect(
+        await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+          {
+            organizationId: organization.id,
+            userId: user.id,
+          },
+        ),
+      ).toEqual(originalMembership);
+      expect(
+        await retrieveInviteLinkUseFromDatabaseByUserIdAndLinkId({
+          inviteLinkId: link.id,
+          userId: user.id,
+        }),
+      ).toBeNull();
 
       await teardownOrganizationAndMember({ organization, user });
     });

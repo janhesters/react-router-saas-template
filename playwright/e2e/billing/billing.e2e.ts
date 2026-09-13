@@ -746,6 +746,11 @@ test.describe("billing page", () => {
       role,
       subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
         cancelAtPeriodEnd: true,
+        items: [
+          {
+            price: { lookupKey: priceLookupKeysByTierAndInterval.high.annual },
+          },
+        ],
       }),
     });
 
@@ -811,6 +816,7 @@ test.describe("billing page", () => {
           {
             // make sure there's a currentPeriodEnd in the past
             currentPeriodEnd: faker.date.past(),
+            price: { lookupKey: priceLookupKeysByTierAndInterval.high.annual },
           },
         ],
         status: StripeSubscriptionStatus.canceled,

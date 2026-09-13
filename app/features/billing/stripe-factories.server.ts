@@ -148,7 +148,7 @@ export const createStripeCustomerPortalSessionFactory: Factory<
  * Creates a Stripe Price object with populated values.
  */
 export const createStripePriceFactory: Factory<Stripe.Price> = ({
-  lookup_key = `${faker.word.noun()}-${faker.word.noun()}-${faker.word.noun()}`,
+  lookup_key = `${faker.word.noun()}-${faker.word.noun()}-${faker.word.noun()}-${createId()}`,
   id = `price_${createId()}`,
   object = "price",
   active = true,

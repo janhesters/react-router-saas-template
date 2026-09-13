@@ -150,35 +150,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       const { organizationId, organizationName, organizationSlug } =
         inviteLinkInfo;
 
-      if (
-        userAccount?.memberships.some(
-          (membership) => membership.organizationId === organizationId,
-        )
-      ) {
-        return redirectWithToast(
-          href("/organizations/:organizationSlug/dashboard", {
-            organizationSlug,
-          }),
-          {
-            description: i18n.t(
-              "organizations:acceptInviteLink.alreadyMemberToastDescription",
-              { organizationName },
-            ),
-            title: i18n.t(
-              "organizations:acceptInviteLink.alreadyMemberToastTitle",
-            ),
-            type: "info",
-          },
-          {
-            headers: combineHeaders(
-              await destroyEmailInviteInfoSession(request),
-              await destroyInviteLinkInfoSession(request),
-            ),
-          },
-        );
-      }
-
-      await acceptInviteLink({
+      const acceptance = await acceptInviteLink({
         i18n,
         inviteLinkId: inviteLinkInfo.inviteLinkId,
         inviteLinkToken: inviteLinkInfo.inviteLinkToken,
@@ -186,25 +158,31 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         request,
         userAccountId: finalUserAccount.id,
       });
+      const alreadyMember = acceptance.outcome === "alreadyMember";
 
-      return userAccount?.name
+      return alreadyMember || userAccount?.name
         ? redirectWithToast(
             href("/organizations/:organizationSlug/dashboard", {
               organizationSlug,
             }),
             {
               description: i18n.t(
-                "organizations:acceptInviteLink.joinSuccessToastDescription",
+                alreadyMember
+                  ? "organizations:acceptInviteLink.alreadyMemberToastDescription"
+                  : "organizations:acceptInviteLink.joinSuccessToastDescription",
                 { organizationName },
               ),
               title: i18n.t(
-                "organizations:acceptInviteLink.joinSuccessToastTitle",
+                alreadyMember
+                  ? "organizations:acceptInviteLink.alreadyMemberToastTitle"
+                  : "organizations:acceptInviteLink.joinSuccessToastTitle",
               ),
-              type: "success",
+              type: alreadyMember ? "info" : "success",
             },
             {
               headers: combineHeaders(
                 emailInviteHeaders,
+                await destroyEmailInviteInfoSession(request),
                 await destroyInviteLinkInfoSession(request),
               ),
             },
