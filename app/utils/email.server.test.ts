@@ -1,6 +1,9 @@
 import { HttpResponse, http } from "msw";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
+// sendEmail reads env vars on each call, so stubs work with a static import.
+// Load React Email before tests run to keep cold imports outside test timeouts.
+import { sendEmail } from "./email.server";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 
 const resendEmailEndpoint = "https://api.resend.com/emails";
@@ -10,10 +13,9 @@ const server = setupMockServerLifecycle();
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllEnvs();
-  vi.resetModules();
 });
 
-async function sendTestEmail({
+function sendTestEmail({
   html = "<p>Test email</p>",
   subject = "Test subject",
   text = "Test email",
@@ -24,8 +26,6 @@ async function sendTestEmail({
   text?: string;
   to?: string;
 } = {}) {
-  const { sendEmail } = await import("./email.server");
-
   return sendEmail({ html, subject, text, to });
 }
 
