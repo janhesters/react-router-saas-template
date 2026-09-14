@@ -141,7 +141,7 @@ test.describe("organization layout", () => {
       page.getByRole("menuitem", { name: /log out/i }),
     ).toBeVisible();
     await expectImageToBeRendered(
-      page.getByRole("menu").getByRole("img", { exact: true, name: user.name }),
+      page.getByRole("menu").getByAltText(user.name, { exact: true }),
       TEST_IMAGE_DATA_URL,
     );
     await page.keyboard.press("Escape");

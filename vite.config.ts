@@ -71,7 +71,6 @@ const testConfig = defineVitestConfig({
   test: {
     projects: [
       {
-        ...rootConfig,
         test: {
           env: { TZ: "UTC" },
           include: ["app/**/*.test.ts"],
@@ -79,7 +78,6 @@ const testConfig = defineVitestConfig({
         },
       },
       {
-        ...rootConfig,
         test: {
           env: { TZ: "UTC" },
           globalSetup: "app/test/vitest.global-setup.ts",
@@ -89,7 +87,6 @@ const testConfig = defineVitestConfig({
         },
       },
       {
-        ...rootConfig,
         test: {
           env: { TZ: "UTC" },
           environment: "happy-dom",

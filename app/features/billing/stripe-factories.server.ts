@@ -263,7 +263,12 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   cancel_at = null,
   cancel_at_period_end = false,
   canceled_at = null,
-  cancellation_details = { comment: null, feedback: null, reason: null },
+  cancellation_details = {
+    comment: null,
+    feedback: null,
+    feedback_option: null,
+    reason: null,
+  },
   collection_method = "charge_automatically",
   currency = "usd",
   customer = createStripeCustomerFactory().id,
