@@ -8,7 +8,6 @@ import { withOrganizationMutationLock } from "../../deletion/organization-mutati
 import {
   retrieveActiveOrganizationMembershipByEmailAndOrganizationId,
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
-  updateOrganizationMembershipInDatabase,
 } from "../../organization-membership-model.server";
 import {
   saveOrganizationEmailInviteLinkToDatabase,
@@ -36,8 +35,9 @@ import {
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/organizations_+/$organizationSlug+/settings+/+types/members";
 import { adjustSeats } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
-import type { Prisma } from "~/generated/client";
+import type { OrganizationMembership, Prisma } from "~/generated/client";
 import { OrganizationMembershipRole } from "~/generated/client";
+import { prisma } from "~/utils/database.server";
 import { sendEmail } from "~/utils/email.server";
 import { getIsDataWithResponseInit } from "~/utils/get-is-data-with-response-init.server";
 import { badRequest, created, forbidden } from "~/utils/http-responses.server";
@@ -50,6 +50,64 @@ const schema = z.discriminatedUnion("intent", [
   z.object({ intent: z.literal(DEACTIVATE_INVITE_LINK_INTENT) }),
   changeRoleSchema,
 ]);
+
+function membershipIsActive(
+  membership: Pick<OrganizationMembership, "deactivatedAt">,
+  now: Date,
+): boolean {
+  return membership.deactivatedAt === null || membership.deactivatedAt > now;
+}
+
+function requireMembershipChangePermission({
+  actorMembership,
+  targetMembership,
+  targetUserId,
+  userId,
+  requestedRoleOrStatus,
+  now,
+}: {
+  actorMembership: OrganizationMembership | null;
+  targetMembership: OrganizationMembership | null;
+  targetUserId: string;
+  userId: string;
+  requestedRoleOrStatus: OrganizationMembershipRole | "deactivated";
+  now: Date;
+}): OrganizationMembership {
+  if (
+    !actorMembership ||
+    !membershipIsActive(actorMembership, now) ||
+    actorMembership.role === OrganizationMembershipRole.member
+  ) {
+    throw forbidden();
+  }
+  if (targetUserId === userId) {
+    throw forbidden({
+      errors: { form: "You cannot change your own role or status." },
+    });
+  }
+  if (!targetMembership) {
+    throw badRequest({
+      errors: { userId: "Target user is not a member of this organization." },
+    });
+  }
+  if (actorMembership.role === OrganizationMembershipRole.admin) {
+    if (targetMembership.role === OrganizationMembershipRole.owner) {
+      throw forbidden({
+        errors: {
+          form: "Administrators cannot modify the role or status of owners.",
+        },
+      });
+    }
+    if (requestedRoleOrStatus === OrganizationMembershipRole.owner) {
+      throw forbidden({
+        errors: {
+          form: "Administrators cannot promote members to the owner role.",
+        },
+      });
+    }
+  }
+  return targetMembership;
+}
 
 export async function teamMembersAction({
   request,
@@ -134,8 +192,8 @@ export async function teamMembersAction({
 
       case CHANGE_ROLE_INTENT: {
         return await withOrganizationMutationLock(organization.id, async () => {
-          // Middleware can precede account deletion or another role change.
-          // Recheck authority while deletion is excluded by the same lock.
+          const now = new Date();
+          const { userId: targetUserId, role: requestedRoleOrStatus } = body;
           const actorMembership =
             await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
               {
@@ -143,69 +201,30 @@ export async function teamMembersAction({
                 userId: user.id,
               },
             );
-          if (
-            !actorMembership ||
-            (actorMembership.deactivatedAt !== null &&
-              actorMembership.deactivatedAt <= new Date()) ||
-            actorMembership.role === OrganizationMembershipRole.member
-          ) {
-            throw forbidden();
-          }
-          const role = actorMembership.role;
+          const targetMembership = requireMembershipChangePermission({
+            actorMembership,
+            now,
+            requestedRoleOrStatus,
+            targetMembership:
+              await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+                {
+                  organizationId: organization.id,
+                  userId: targetUserId,
+                },
+              ),
+            targetUserId,
+            userId: user.id,
+          });
+          const targetIsActive = membershipIsActive(targetMembership, now);
+          if (requestedRoleOrStatus === "deactivated" && !targetIsActive)
+            return data({});
           const currentBilling =
             await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
               organization.id,
+              now,
             );
           if (!currentBilling) throw forbidden();
           const currentOrganization = { ...organization, ...currentBilling };
-          const { userId: targetUserId, role: requestedRoleOrStatus } = body;
-
-          // Prevent users from changing their own role/status
-          if (targetUserId === user.id) {
-            throw forbidden({
-              errors: { form: "You cannot change your own role or status." },
-            });
-          }
-
-          // Retrieve the target member's current membership details
-          const targetMembership =
-            await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-              {
-                organizationId: organization.id,
-                userId: targetUserId,
-              },
-            );
-
-          // Handle case where target user isn't found in this org
-          if (!targetMembership) {
-            throw badRequest({
-              errors: {
-                userId: "Target user is not a member of this organization.",
-              },
-            });
-          }
-
-          // Apply role-based permissions (requesting user's role = 'role')
-          if (role === OrganizationMembershipRole.admin) {
-            // Admins cannot modify Owners
-            if (targetMembership.role === OrganizationMembershipRole.owner) {
-              throw forbidden({
-                errors: {
-                  form: "Administrators cannot modify the role or status of owners.",
-                },
-              });
-            }
-
-            // Admins also cannot promote others to Owner
-            if (requestedRoleOrStatus === OrganizationMembershipRole.owner) {
-              throw forbidden({
-                errors: {
-                  form: "Administrators cannot promote members to the owner role.",
-                },
-              });
-            }
-          }
-          // Owners have full permissions (already checked for self-modification)
 
           /// Get the subscription of the organization, if it exists.
           const subscription = currentOrganization.stripeSubscriptions[0];
@@ -231,7 +250,7 @@ export async function teamMembersAction({
 
             // If the user was deactivated, and there is a subscription,
             // they will now take up a seat again.
-            if (targetMembership.deactivatedAt) {
+            if (!targetIsActive) {
               if (getOrganizationIsFull(currentOrganization)) {
                 const toastHeaders = await createToastHeaders({
                   description: i18n.t(
@@ -269,11 +288,52 @@ export async function teamMembersAction({
             }
           }
 
-          // Perform the database update
-          await updateOrganizationMembershipInDatabase({
-            data: updateData,
-            organizationId: organization.id,
-            userId: targetUserId,
+          // Provider calls can outlive their separate advisory connection.
+          // Match account deletion's row-lock order, then authorize and publish
+          // atomically on this transaction's connection, after network work.
+          await prisma.$transaction(async (transaction) => {
+            await transaction.$queryRaw`SELECT id FROM "Organization" WHERE id = ${organization.id} FOR UPDATE`;
+            await transaction.$queryRaw`SELECT "memberId" FROM "OrganizationMembership" WHERE "organizationId" = ${organization.id} ORDER BY "memberId" FOR UPDATE`;
+            const publishedAt = new Date();
+            const currentTarget = requireMembershipChangePermission({
+              actorMembership:
+                await transaction.organizationMembership.findUnique({
+                  where: {
+                    memberId_organizationId: {
+                      memberId: user.id,
+                      organizationId: organization.id,
+                    },
+                  },
+                }),
+              now: publishedAt,
+              requestedRoleOrStatus,
+              targetMembership:
+                await transaction.organizationMembership.findUnique({
+                  where: {
+                    memberId_organizationId: {
+                      memberId: targetUserId,
+                      organizationId: organization.id,
+                    },
+                  },
+                }),
+              targetUserId,
+              userId: user.id,
+            });
+            if (
+              requestedRoleOrStatus === "deactivated" &&
+              !membershipIsActive(currentTarget, publishedAt)
+            ) {
+              return;
+            }
+            await transaction.organizationMembership.update({
+              data: updateData,
+              where: {
+                memberId_organizationId: {
+                  memberId: targetUserId,
+                  organizationId: organization.id,
+                },
+              },
+            });
           });
 
           // Return success

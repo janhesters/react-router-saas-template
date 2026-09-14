@@ -13,11 +13,16 @@ const STRIPE_REQUEST_OPTIONS = { maxNetworkRetries: 1, timeout: 20_000 };
 
 async function reconcileOrganizationSeats(
   organizationId: string,
+  subscriptionId?: string,
 ): Promise<void> {
   await withOrganizationMutationLock(organizationId, async () => {
     const organization = await prisma.organization.findUnique({
       include: {
-        stripeSubscriptions: { orderBy: { created: "desc" }, take: 1 },
+        stripeSubscriptions: {
+          orderBy: { created: "desc" },
+          take: 1,
+          where: subscriptionId ? { stripeId: subscriptionId } : undefined,
+        },
       },
       where: { id: organizationId },
     });
@@ -126,7 +131,9 @@ export async function cleanupAccountDeletionResource({
       where: { stripeId: target },
     });
     if (subscription)
-      await reconcileOrganizationSeats(subscription.organizationId);
+      // Late checkout resources each own one subscription, even if another
+      // subscription for the same organization was created more recently.
+      await reconcileOrganizationSeats(subscription.organizationId, target);
     return;
   }
 

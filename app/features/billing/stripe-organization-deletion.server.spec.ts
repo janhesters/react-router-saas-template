@@ -5,6 +5,7 @@ import { describe, expect, onTestFinished, test, vi } from "vitest";
 
 import {
   createStripeCheckoutSessionCompletedEventFactory,
+  createStripeCustomerDeletedEventFactory,
   createStripeCustomerSubscriptionCreatedEventFactory,
   createStripeCustomerSubscriptionDeletedEventFactory,
   createStripeCustomerSubscriptionUpdatedEventFactory,
@@ -13,6 +14,7 @@ import {
 import {
   handleStripeCheckoutSessionCompletedEvent,
   handleStripeCustomerCreatedEvent,
+  handleStripeCustomerDeletedEvent,
   handleStripeCustomerSubscriptionCreatedEvent,
   handleStripeCustomerSubscriptionDeletedEvent,
   handleStripeCustomerSubscriptionUpdatedEvent,
@@ -196,6 +198,86 @@ describe("Stripe events after organization deletion", () => {
         })
       ).stripeCustomerId,
     ).toBe("cus_newer");
+  });
+
+  test("given: customer.created arrives after customer.deleted, should: leave the organization unbound to the deleted customer", async () => {
+    const customerId = `cus_${createId()}`;
+    const { organization } = await setupUserWithTrialOrgAndAddAsMember({
+      organization: createPopulatedOrganization({
+        stripeCustomerId: customerId,
+      }),
+    });
+    const customer = createStripeCustomerFactory({
+      id: customerId,
+      metadata: { organizationId: organization.id },
+    });
+    server.use(
+      http.get(`${stripeUrl}/customers/${customerId}`, () =>
+        HttpResponse.json({
+          deleted: true,
+          id: customerId,
+          object: "customer",
+        }),
+      ),
+    );
+    expect(
+      (
+        await handleStripeCustomerDeletedEvent(
+          createStripeCustomerDeletedEventFactory({
+            data: { object: customer },
+          }),
+        )
+      ).status,
+    ).toEqual(200);
+    expect(
+      (
+        await handleStripeCustomerCreatedEvent({
+          ...createStripeEventFactory(),
+          data: { object: customer },
+          type: "customer.created",
+        })
+      ).status,
+    ).toEqual(200);
+    expect(
+      (
+        await prisma.organization.findUniqueOrThrow({
+          where: { id: organization.id },
+        })
+      ).stripeCustomerId,
+    ).toEqual(null);
+  });
+
+  test("given: current customer state cannot be verified, should: retry creation delivery without restoring a customer association", async () => {
+    const { organization } = await setupUserWithTrialOrgAndAddAsMember({
+      organization: createPopulatedOrganization({ stripeCustomerId: null }),
+    });
+    const customer = createStripeCustomerFactory({
+      metadata: { organizationId: organization.id },
+    });
+    server.use(
+      http.get(`${stripeUrl}/customers/${customer.id}`, () =>
+        HttpResponse.json(
+          { error: { message: "Stripe unavailable", type: "api_error" } },
+          { headers: { "stripe-should-retry": "false" }, status: 503 },
+        ),
+      ),
+    );
+    expect(
+      (
+        await handleStripeCustomerCreatedEvent({
+          ...createStripeEventFactory(),
+          data: { object: customer },
+          type: "customer.created",
+        })
+      ).status,
+    ).toEqual(500);
+    expect(
+      (
+        await prisma.organization.findUniqueOrThrow({
+          where: { id: organization.id },
+        })
+      ).stripeCustomerId,
+    ).toEqual(null);
   });
 
   test("returns a retryable failure if the late customer cannot be persisted", async () => {

@@ -30,6 +30,7 @@ import { getErrorMessage } from "~/utils/get-error-message";
 const ok = () => Response.json({ message: "OK" });
 const retry = () =>
   Response.json({ message: "Webhook processing failed" }, { status: 500 });
+const STRIPE_REQUEST_OPTIONS = { maxNetworkRetries: 1, timeout: 20_000 };
 
 async function withOrganizationCustomer({
   organizationId,
@@ -217,6 +218,19 @@ export const handleStripeCustomerCreatedEvent = async (
         })
       )
         return;
+      const organization = await prisma.organization.findUnique({
+        select: { stripeCustomerId: true },
+        where: { id: organizationId },
+      });
+      if (!organization || organization.stripeCustomerId) return;
+      // Creation events can arrive after deletion cleared the association.
+      // Verify canonical state before restoring a customer from its snapshot.
+      const current = await stripeAdmin.customers.retrieve(
+        customer.id,
+        {},
+        STRIPE_REQUEST_OPTIONS,
+      );
+      if (current.deleted) return;
       // A delayed creation event must not replace a newer billing customer.
       await prisma.organization.updateMany({
         data: { stripeCustomerId: customer.id },

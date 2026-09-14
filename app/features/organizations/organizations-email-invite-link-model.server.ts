@@ -162,10 +162,12 @@ export async function updateEmailInviteLinkInDatabaseById({
  */
 export async function consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
   emailInviteToken,
+  expectedOrganizationId,
   userAccountId,
   verifiedUserEmail,
 }: {
   emailInviteToken: OrganizationEmailInviteLink["token"];
+  expectedOrganizationId?: Organization["id"];
   userAccountId: UserAccount["id"];
   verifiedUserEmail: string | undefined;
 }): Promise<ConsumeEmailInviteLinkResult> {
@@ -221,6 +223,7 @@ export async function consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase
           where: {
             deactivatedAt: null,
             expiresAt: { gt: now },
+            organizationId: expectedOrganizationId,
             token: emailInviteToken,
           },
         });
