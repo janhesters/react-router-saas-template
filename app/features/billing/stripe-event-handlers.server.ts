@@ -1,5 +1,7 @@
 import type { Stripe } from "stripe";
 
+import { recordDeletedOrganizationCustomer } from "../organizations/deletion/organization-deletion.server";
+import { withOrganizationMutationLock } from "../organizations/deletion/organization-mutation-lock.server";
 import { updateOrganizationInDatabaseById } from "../organizations/organizations-model.server";
 import { updateStripeCustomer } from "./stripe-helpers.server";
 import {
@@ -21,9 +23,62 @@ import {
   updateStripeSubscriptionScheduleFromAPIInDatabase,
 } from "./stripe-subscription-schedule-model.server";
 import { stripeAdmin } from "~/features/billing/stripe-admin.server";
+import { recordDeletedAccountsSubscription } from "~/features/user-accounts/deletion/account-deletion.server";
+import { prisma } from "~/utils/database.server";
 import { getErrorMessage } from "~/utils/get-error-message";
 
 const ok = () => Response.json({ message: "OK" });
+const retry = () =>
+  Response.json({ message: "Webhook processing failed" }, { status: 500 });
+
+async function withOrganizationCustomer({
+  organizationId,
+  customerId,
+  update,
+}: {
+  organizationId?: string;
+  customerId?: string;
+  update: () => Promise<unknown>;
+}) {
+  if (!organizationId || !customerId) {
+    await update();
+    return;
+  }
+
+  await withOrganizationMutationLock(organizationId, async () => {
+    // Persist late-created customers before acknowledging the event. Cleanup
+    // remains durable even if this delivery arrives after deletion completed.
+    if (
+      await recordDeletedOrganizationCustomer({ customerId, organizationId })
+    ) {
+      return;
+    }
+    // Historical subscriptions can belong to an older customer. Customer
+    // association is handled by checkout/customer events, not subscription sync.
+    await update();
+  });
+}
+
+async function saveSubscription(
+  subscription: Stripe.Subscription,
+  { preserveExisting = false }: { preserveExisting?: boolean } = {},
+) {
+  const existing = await prisma.stripeSubscription.findUnique({
+    where: { stripeId: subscription.id },
+  });
+  // A replayed creation event must not roll back a later cancellation or plan.
+  const saved =
+    existing && preserveExisting
+      ? existing
+      : existing
+        ? await updateStripeSubscriptionFromAPIInDatabase(subscription)
+        : await createStripeSubscriptionInDatabase(subscription);
+  await recordDeletedAccountsSubscription({
+    organizationId: saved.organizationId,
+    subscriptionId: saved.stripeId,
+  });
+  return saved;
+}
 
 const prettyPrint = (event: Stripe.Event) => {
   console.log(
@@ -99,28 +154,37 @@ export const handleStripeCheckoutSessionCompletedEvent = async (
   event: Stripe.CheckoutSessionCompletedEvent,
 ) => {
   try {
-    if (event.data.object.metadata?.organizationId) {
-      const organization = await updateOrganizationInDatabaseById({
-        id: event.data.object.metadata.organizationId,
-        organization: {
-          ...(event.data.object.customer_details?.email && {
-            billingEmail: event.data.object.customer_details.email,
-          }),
-          ...(typeof event.data.object.customer === "string" && {
-            stripeCustomerId: event.data.object.customer,
-          }),
-          // End the trial now.
-          trialEnd: new Date(),
+    const organizationId = event.data.object.metadata?.organizationId;
+    if (organizationId) {
+      const customer = event.data.object.customer;
+      const customerId = typeof customer === "string" ? customer : customer?.id;
+      await withOrganizationCustomer({
+        customerId,
+        organizationId,
+        update: async () => {
+          const organization = await updateOrganizationInDatabaseById({
+            id: organizationId,
+            organization: {
+              ...(event.data.object.customer_details?.email && {
+                billingEmail: event.data.object.customer_details.email,
+              }),
+              ...(customerId && {
+                stripeCustomerId: customerId,
+              }),
+              // End the trial now.
+              trialEnd: new Date(),
+            },
+          });
+
+          if (customerId) {
+            await updateStripeCustomer({
+              customerId,
+              customerName: organization.name,
+              organizationId: organization.id,
+            });
+          }
         },
       });
-
-      if (typeof event.data.object.customer === "string") {
-        await updateStripeCustomer({
-          customerId: event.data.object.customer,
-          customerName: organization.name,
-          organizationId: organization.id,
-        });
-      }
     } else {
       console.error("No organization ID found in checkout session metadata");
       prettyPrint(event);
@@ -132,19 +196,54 @@ export const handleStripeCheckoutSessionCompletedEvent = async (
       "Error handling Stripe checkout session completed event",
       message,
     );
+    return retry();
   }
 
   return ok();
+};
+
+export const handleStripeCustomerCreatedEvent = async (
+  event: Stripe.CustomerCreatedEvent,
+) => {
+  const customer = event.data.object;
+  const organizationId = customer.metadata.organizationId;
+  if (!organizationId) return ok();
+  try {
+    await withOrganizationMutationLock(organizationId, async () => {
+      if (
+        await recordDeletedOrganizationCustomer({
+          customerId: customer.id,
+          organizationId,
+        })
+      )
+        return;
+      // A delayed creation event must not replace a newer billing customer.
+      await prisma.organization.updateMany({
+        data: { stripeCustomerId: customer.id },
+        where: { id: organizationId, stripeCustomerId: null },
+      });
+    });
+    return ok();
+  } catch (error) {
+    console.error("Error recording Stripe customer", getErrorMessage(error));
+    return retry();
+  }
 };
 
 export const handleStripeCustomerDeletedEvent = async (
   event: Stripe.CustomerDeletedEvent,
 ) => {
   try {
-    if (event.data.object.metadata?.organizationId) {
-      await updateOrganizationInDatabaseById({
-        id: event.data.object.metadata.organizationId,
-        organization: { stripeCustomerId: null },
+    const organizationId = event.data.object.metadata?.organizationId;
+    if (organizationId) {
+      await withOrganizationMutationLock(organizationId, async () => {
+        await prisma.organization.updateMany({
+          data: { stripeCustomerId: null },
+          where: {
+            id: organizationId,
+            stripeCustomerId: event.data.object.id,
+          },
+        });
       });
     } else {
       prettyPrint(event);
@@ -162,11 +261,20 @@ export const handleStripeCustomerSubscriptionCreatedEvent = async (
   event: Stripe.CustomerSubscriptionCreatedEvent,
 ) => {
   try {
-    await createStripeSubscriptionInDatabase(event.data.object);
+    const subscription = event.data.object;
+    await withOrganizationCustomer({
+      customerId:
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id,
+      organizationId: subscription.metadata.organizationId,
+      update: () => saveSubscription(subscription, { preserveExisting: true }),
+    });
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
     console.error("Error creating Stripe subscription", message);
+    return retry();
   }
 
   return ok();
@@ -190,11 +298,20 @@ export const handleStripeCustomerSubscriptionUpdatedEvent = async (
   event: Stripe.CustomerSubscriptionUpdatedEvent,
 ) => {
   try {
-    await updateStripeSubscriptionFromAPIInDatabase(event.data.object);
+    const subscription = event.data.object;
+    await withOrganizationCustomer({
+      customerId:
+        typeof subscription.customer === "string"
+          ? subscription.customer
+          : subscription.customer.id,
+      organizationId: subscription.metadata.organizationId,
+      update: () => saveSubscription(subscription),
+    });
   } catch (error) {
     const message = getErrorMessage(error);
     prettyPrint(event);
     console.error("Error updating Stripe subscription", message);
+    return retry();
   }
 
   return ok();

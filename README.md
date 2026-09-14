@@ -951,6 +951,80 @@ Learn more about AIDD and SudoLang in
 [The Art of Effortless Programming](https://leanpub.com/effortless-programming)
 by [Eric Elliott](https://www.threads.com/@__ericelliott).
 
+## Organization deletion
+
+An active organization owner can delete an organization from its general
+settings by confirming its exact name. The application saves a durable cleanup
+job and deletes the organization and its related database records in one
+transaction. If that transaction fails, nothing is deleted.
+
+The organization becomes inaccessible as soon as that transaction commits.
+The requester is redirected to a status page that remains available after
+deleting their last organization. It reports completion only after Stripe
+billing and stored logos have been cleaned up. Failed cleanup stays pending;
+the requester can retry it from the same page. Account settings also links to
+their recent deletion jobs if they close the page or lose the redirect.
+
+Each server process starts a cleanup worker when its server entry initializes.
+It checks for pending jobs every 15 seconds, uses database leases to coordinate
+with other processes, and retries failures with an increasing delay up to one
+hour. A process that stops during cleanup leaves recoverable work in the
+database; another worker can reclaim its lease after five minutes. Deploy at
+least one continuously running server for automatic retries. If adapting the
+template to a runtime that suspends background work, schedule
+`processPendingOrganizationDeletions` from
+`app/features/organizations/deletion/organization-deletion.server.ts` in a
+durable worker instead.
+
+Cleanup expires open checkouts, cancels outstanding subscriptions and schedules,
+deletes the organization's dedicated Stripe customer, and removes its logo
+objects. Configure your Stripe webhook endpoint to deliver `customer.created`,
+`checkout.session.completed`, `customer.subscription.created`, and
+`customer.subscription.updated`. These events attach late customers to the saved
+deletion job, including customers created before a server crash. Failed cleanup
+recording returns HTTP 500 so Stripe retries the event. Do not share one Stripe
+customer between organizations or manually remove deletion jobs while Stripe
+can still deliver events for them.
+
+The `OrganizationDeletion` and `OrganizationDeletionResource` tables must exist
+before deploying this code. New projects include them in their initial Prisma
+migration; existing projects should create and deploy a migration for the schema
+change. These records retain the original organization ID, name, slug, requester
+ID, resource identifiers, and cleanup progress for recovery.
+
+## Account deletion
+
+Users can delete their account from account settings by confirming their email
+address. The last active owner of an organization with other active members must
+transfer ownership before deleting their account. Organizations where the user
+is the only active member and an owner are deleted with the account. Shared
+organizations with another active owner remain available to their members.
+
+One database transaction saves the account cleanup job, queues cleanup for
+solely owned organizations, and removes the account and its memberships. A
+failed transaction leaves all accounts and organizations intact. Cleanup removes
+the Supabase Auth identity and owned avatar objects, finishes organization
+cleanup, and reconciles billing seats for retained organizations. Provider
+failures retain their work for retry without delaying independent cleanup.
+
+The account loses application access when deletion commits. A signed, HttpOnly
+recovery cookie keeps the cleanup status page available after sign-out for 30
+days. The page shows completion after all cleanup succeeds. Old authentication
+callbacks cannot recreate a deleted account. Shared subscriptions remain intact
+when Stripe events reference the former purchaser.
+
+The `AccountDeletion` and `AccountDeletionResource` tables must also exist before
+deployment. They retain account and Auth identifiers, a hash of the recovery
+token, resource identifiers, and cleanup progress. Keep the identity tombstone
+after completion so stale callbacks remain rejected. A new Supabase identity
+can register with the same email address.
+
+The account worker uses the same 15-second polling, five-minute leases, and retry
+schedule as organization cleanup. Runtimes that suspend background work must
+also schedule `processPendingAccountDeletions` from
+`app/features/user-accounts/deletion/account-deletion.server.ts` in their durable
+worker. Automatic cleanup continues even when the requester closes the browser.
+
 ## Building for production
 
 Create a production build:

@@ -24,6 +24,43 @@ model UserAccount {
   notificationRecipient     NotificationRecipient[]
 }
 
+/// Identity tombstone and cleanup journal survive removal of the account row.
+model AccountDeletion {
+  id                String                    @id
+  supabaseUserId    String                    @unique
+  recoveryTokenHash String
+  createdAt         DateTime                  @default(now())
+  completedAt       DateTime?
+  nextAttemptAt     DateTime                  @default(now())
+  attempts          Int                       @default(0)
+  lastError         String?
+  leaseToken        String?
+  leaseExpiresAt    DateTime?
+  resources         AccountDeletionResource[]
+
+  @@index([completedAt, nextAttemptAt])
+}
+
+enum AccountDeletionResourceKind {
+  authUser
+  storageObject
+  organizationDeletion
+  billingSeats
+  billingSubscription
+}
+
+model AccountDeletionResource {
+  id          String                      @id @default(cuid(2))
+  deletionId  String
+  deletion    AccountDeletion             @relation(fields: [deletionId], references: [id], onDelete: Cascade)
+  kind        AccountDeletionResourceKind
+  target      String
+  completedAt DateTime?
+
+  @@unique([deletionId, kind, target])
+  @@index([kind, target])
+}
+
 model Organization {
   id                          String                        @id() @default(cuid(2))
   createdAt                   DateTime                      @default(now())
@@ -43,6 +80,42 @@ model Organization {
   stripeSubscriptions         StripeSubscription[]
   notificationPanels          NotificationPanel[]
   notifications               Notification[]
+}
+
+/// Durable cleanup survives the organization and its cascading database deletes.
+model OrganizationDeletion {
+  id               String                         @id
+  organizationName String
+  organizationSlug String
+  requestedById    String
+  createdAt        DateTime                       @default(now())
+  completedAt      DateTime?
+  nextAttemptAt    DateTime                       @default(now())
+  attempts         Int                            @default(0)
+  lastError        String?
+  leaseToken       String?
+  leaseExpiresAt   DateTime?
+  resources        OrganizationDeletionResource[]
+
+  @@index([completedAt, nextAttemptAt])
+  @@index([requestedById, createdAt])
+}
+
+enum OrganizationDeletionResourceKind {
+  stripeCustomer
+  stripeSubscription
+  storageObject
+}
+
+model OrganizationDeletionResource {
+  id          String                           @id @default(cuid(2))
+  deletionId  String
+  deletion    OrganizationDeletion             @relation(fields: [deletionId], references: [id], onDelete: Cascade)
+  kind        OrganizationDeletionResourceKind
+  target      String
+  completedAt DateTime?
+
+  @@unique([deletionId, kind, target])
 }
 
 enum OrganizationMembershipRole {

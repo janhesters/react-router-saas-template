@@ -104,7 +104,7 @@ function parseStorageImageUrl(imageUrl: string, normalizePath = false) {
   }
 }
 
-function getOwnedImageKey({ imageUrl, ownerId, kind }: OwnedImage) {
+export function getOwnedImageKey({ imageUrl, ownerId, kind }: OwnedImage) {
   if (!ownerIdPattern.test(ownerId)) {
     return;
   }

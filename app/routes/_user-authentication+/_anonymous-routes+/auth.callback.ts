@@ -14,7 +14,7 @@ import {
   acceptInviteLink,
 } from "~/features/organizations/organizations-helpers.server";
 import {
-  retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail,
+  retrieveUserAccountFromDatabaseBySupabaseUserId,
   upsertUserAccountInDatabaseBySupabaseUserId,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { anonymousContext } from "~/features/user-authentication/user-authentication-middleware.server";
@@ -57,8 +57,13 @@ export async function loader({ request, context }: Route.LoaderArgs) {
       throw new Error("User email not found");
     }
 
-    const maybeUser =
-      await retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail(email);
+    const maybeUser = await retrieveUserAccountFromDatabaseBySupabaseUserId(
+      user.id,
+    );
+    const userProfile = await upsertUserAccountInDatabaseBySupabaseUserId({
+      email,
+      supabaseUserId: user.id,
+    });
 
     if (maybeUser) {
       if (inviteLinkInfo || emailInviteInfo) {
@@ -156,11 +161,6 @@ export async function loader({ request, context }: Route.LoaderArgs) {
         headers: combineHeaders(inviteLinkHeaders, emailInviteHeaders),
       });
     }
-
-    const userProfile = await upsertUserAccountInDatabaseBySupabaseUserId({
-      email,
-      supabaseUserId: user.id,
-    });
 
     if (emailInviteInfo) {
       const acceptance = await acceptEmailInvite({

@@ -14,7 +14,7 @@ import {
   acceptInviteLink,
 } from "~/features/organizations/organizations-helpers.server";
 import {
-  retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail,
+  retrieveUserAccountFromDatabaseBySupabaseUserId,
   upsertUserAccountInDatabaseBySupabaseUserId,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { anonymousContext } from "~/features/user-authentication/user-authentication-middleware.server";
@@ -54,17 +54,14 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   // will already have created a user (with an unconfirmed email).
   // So we need to check if the user already exists in the database and if not,
   // we need to create a new user account.
-  const userAccount =
-    await retrieveUserAccountWithActiveMembershipsFromDatabaseByEmail(
-      user.email,
-    );
+  const userAccount = await retrieveUserAccountFromDatabaseBySupabaseUserId(
+    user.id,
+  );
 
-  const finalUserAccount =
-    userAccount ??
-    (await upsertUserAccountInDatabaseBySupabaseUserId({
-      email: user.email,
-      supabaseUserId: user.id,
-    }));
+  const finalUserAccount = await upsertUserAccountInDatabaseBySupabaseUserId({
+    email: user.email,
+    supabaseUserId: user.id,
+  });
 
   if (inviteLinkInfo || emailInviteInfo) {
     if (emailInviteInfo) {

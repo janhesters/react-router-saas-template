@@ -8,6 +8,8 @@ import type {
 import { StripeSubscriptionStatus } from "~/generated/client";
 import { prisma } from "~/utils/database.server";
 
+type Transaction = Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+
 function toStripeSubscriptionStatus(
   status: Stripe.Subscription.Status,
 ): StripeSubscriptionStatus {
@@ -31,6 +33,19 @@ function toStripeSubscriptionStatus(
     default:
       throw new Error(`Unsupported Stripe subscription status: ${status}`);
   }
+}
+
+async function lockSubscriptionPurchaser(
+  transaction: Transaction,
+  purchasedById: string | undefined,
+): Promise<boolean> {
+  if (!purchasedById) return false;
+  // Stripe retains purchaser metadata after account deletion. Lock an existing
+  // purchaser until the write commits so deletion cannot race this relation.
+  const purchasers = await transaction.$queryRaw<{ id: string }[]>`
+    SELECT id FROM "UserAccount" WHERE id = ${purchasedById} FOR KEY SHARE
+  `;
+  return purchasers.length > 0;
 }
 
 /* CREATE */
@@ -61,23 +76,31 @@ export async function createStripeSubscriptionInDatabase(
   const organizationId = metadata.organizationId;
   const purchasedById = metadata.purchasedById;
 
-  return prisma.stripeSubscription.create({
-    data: {
-      cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-      created: new Date(stripeSubscription.created * 1000),
-      items: {
-        create: stripeSubscription.items.data.map((item) => ({
-          currentPeriodEnd: new Date(item.current_period_end * 1000),
-          currentPeriodStart: new Date(item.current_period_start * 1000),
-          price: { connect: { stripeId: item.price.id } },
-          stripeId: item.id,
-        })),
+  return prisma.$transaction(async (transaction) => {
+    const purchaserExists = await lockSubscriptionPurchaser(
+      transaction,
+      purchasedById,
+    );
+    return transaction.stripeSubscription.create({
+      data: {
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        created: new Date(stripeSubscription.created * 1000),
+        items: {
+          create: stripeSubscription.items.data.map((item) => ({
+            currentPeriodEnd: new Date(item.current_period_end * 1000),
+            currentPeriodStart: new Date(item.current_period_start * 1000),
+            price: { connect: { stripeId: item.price.id } },
+            stripeId: item.id,
+          })),
+        },
+        organization: { connect: { id: organizationId } },
+        purchasedBy: purchaserExists
+          ? { connect: { id: purchasedById } }
+          : undefined,
+        status: toStripeSubscriptionStatus(stripeSubscription.status),
+        stripeId: stripeSubscription.id,
       },
-      organization: { connect: { id: organizationId } },
-      purchasedBy: { connect: { id: purchasedById } },
-      status: toStripeSubscriptionStatus(stripeSubscription.status),
-      stripeId: stripeSubscription.id,
-    },
+    });
   });
 }
 
@@ -171,23 +194,31 @@ export async function updateStripeSubscriptionFromAPIInDatabase(
   const { metadata } = stripeSubscription;
   const purchasedById = metadata.purchasedById;
 
-  return prisma.stripeSubscription.update({
-    data: {
-      cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
-      created: new Date(stripeSubscription.created * 1000),
-      items: {
-        create: stripeSubscription.items.data.map((item) => ({
-          currentPeriodEnd: new Date(item.current_period_end * 1000),
-          currentPeriodStart: new Date(item.current_period_start * 1000),
-          price: { connect: { stripeId: item.price.id } },
-          stripeId: item.id,
-        })),
-        deleteMany: {},
+  return prisma.$transaction(async (transaction) => {
+    const purchaserExists = await lockSubscriptionPurchaser(
+      transaction,
+      purchasedById,
+    );
+    return transaction.stripeSubscription.update({
+      data: {
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
+        created: new Date(stripeSubscription.created * 1000),
+        items: {
+          create: stripeSubscription.items.data.map((item) => ({
+            currentPeriodEnd: new Date(item.current_period_end * 1000),
+            currentPeriodStart: new Date(item.current_period_start * 1000),
+            price: { connect: { stripeId: item.price.id } },
+            stripeId: item.id,
+          })),
+          deleteMany: {},
+        },
+        purchasedBy: purchaserExists
+          ? { connect: { id: purchasedById } }
+          : { disconnect: true },
+        status: toStripeSubscriptionStatus(stripeSubscription.status),
       },
-      purchasedBy: { connect: { id: purchasedById } },
-      status: toStripeSubscriptionStatus(stripeSubscription.status),
-    },
-    where: { stripeId: stripeSubscription.id },
+      where: { stripeId: stripeSubscription.id },
+    });
   });
 }
 

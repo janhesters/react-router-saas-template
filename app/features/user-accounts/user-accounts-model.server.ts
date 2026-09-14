@@ -23,10 +23,25 @@ export async function upsertUserAccountInDatabaseBySupabaseUserId({
   email,
   supabaseUserId,
 }: Pick<UserAccount, "email" | "supabaseUserId">) {
-  return prisma.userAccount.upsert({
-    create: { email, supabaseUserId },
-    update: { email },
-    where: { supabaseUserId },
+  return prisma.$transaction(async (transaction) => {
+    // Supabase cleanup is asynchronous. Serialize callbacks with deletion so
+    // an identity awaiting provider cleanup cannot recreate its local account.
+    await transaction.$queryRaw`
+      SELECT 1 FROM pg_advisory_xact_lock(
+        hashtextextended(${`account:${supabaseUserId}`}, 0)
+      )
+    `;
+    const deletion = await transaction.accountDeletion.findUnique({
+      where: { supabaseUserId },
+    });
+    if (deletion) {
+      throw new Response("This account has been deleted.", { status: 410 });
+    }
+    return transaction.userAccount.upsert({
+      create: { email, supabaseUserId },
+      update: { email },
+      where: { supabaseUserId },
+    });
   });
 }
 

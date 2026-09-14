@@ -146,10 +146,7 @@ export async function billingAction({
 
         const checkoutSession = await createStripeCheckoutSession({
           baseUrl,
-          customerEmail: organization.billingEmail,
-          customerId: organization.stripeCustomerId,
           organizationId: organization.id,
-          organizationSlug: organization.slug,
           priceId: price.stripeId,
           purchasedById: user.id,
           seatsUsed: organization._count.memberships,

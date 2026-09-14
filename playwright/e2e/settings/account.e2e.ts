@@ -8,17 +8,16 @@
 
 import { readFile } from "node:fs/promises";
 import AxeBuilder from "@axe-core/playwright";
+import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures";
 import {
   expectImageToBeRendered,
-  getPath,
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
 } from "../../utils";
 import {
   addMembersToOrganizationInDatabaseById,
-  deleteOrganizationFromDatabaseById,
   retrieveOrganizationFromDatabaseById,
 } from "~/features/organizations/organizations-model.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
@@ -27,12 +26,14 @@ import {
   retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
+import type { UserAccount } from "~/generated/client";
 import { OrganizationMembershipRole } from "~/generated/client";
 import { TEST_IMAGE_DATA_URL } from "~/test/test-image";
 import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
 } from "~/test/test-utils";
+import { prisma } from "~/utils/database.server";
 
 test.describe("account settings", () => {
   test("given: a logged out user, should: redirect to login page with redirectTo parameter", async ({
@@ -216,10 +217,36 @@ test.describe("account settings", () => {
     await deleteUserAccountFromDatabaseById(user.id);
   });
 
-  test("given: a logged in user that is only a member or admin of organizations, should: be able to delete their account", async ({
+  test("given: an account without organizations, should: delete the account and retain access to cleanup status after signing out", async ({
     page,
   }) => {
-    // The user is a member of the first organization.
+    test.setTimeout(40_000);
+    const user = await loginAndSaveUserAccountToDatabase({ page });
+
+    try {
+      await confirmAccountDeletion(page, user.email);
+      await expectAccountDeletionComplete(page, user);
+      const deletionUrl = page.url();
+
+      await page.reload();
+      await expect(
+        page.getByRole("heading", { name: /^your account has been deleted$/i }),
+      ).toBeVisible();
+      await page.goto("/settings/account");
+      await expect(page).toHaveURL("/login?redirectTo=%2Fsettings%2Faccount");
+      await page.goto(deletionUrl);
+      await expect(
+        page.getByRole("heading", { name: /^your account has been deleted$/i }),
+      ).toBeVisible();
+    } finally {
+      await cleanupAccountDeletion(user);
+    }
+  });
+
+  test("given: a member and admin of organizations, should: delete the account and preserve both organizations and their billing records", async ({
+    page,
+  }) => {
+    test.setTimeout(40_000);
     const { user, organization } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.member,
@@ -228,105 +255,146 @@ test.describe("account settings", () => {
       await createUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
-    // The user is an admin of the second organization.
+    await addMembersToOrganizationInDatabaseById({
+      id: organization.id,
+      members: [otherUser.id],
+      role: OrganizationMembershipRole.owner,
+    });
     await addMembersToOrganizationInDatabaseById({
       id: otherOrganization.id,
       members: [user.id],
       role: OrganizationMembershipRole.admin,
     });
 
-    // Visit the account settings page
-    await page.goto("/settings/account");
-    await expect(
-      page.getByRole("heading", { level: 2, name: /danger zone/i }),
-    ).toBeVisible();
+    try {
+      const originalOrganizations = await prisma.organization.findMany({
+        orderBy: { id: "asc" },
+        where: { id: { in: [organization.id, otherOrganization.id] } },
+      });
+      const originalSubscriptions = await prisma.stripeSubscription.findMany({
+        orderBy: { stripeId: "asc" },
+        select: { organizationId: true, status: true, stripeId: true },
+        where: {
+          organizationId: { in: [organization.id, otherOrganization.id] },
+        },
+      });
+      await confirmAccountDeletion(page, user.email);
+      await expectAccountDeletionComplete(page, user);
 
-    // Open the delete account dialog
-    await page.getByRole("button", { name: /delete account/i }).click();
-
-    // Verify dialog content
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { level: 2, name: /delete account/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/are you sure you want to delete your account/i),
-    ).toBeVisible();
-    // Cancel the deletion
-    await page.getByRole("button", { name: /cancel/i }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-
-    // Confirm the deletion
-    await page.getByRole("button", { name: /delete account/i }).click();
-    await page.getByRole("button", { name: /delete this account/i }).click();
-
-    // Verify the user is deleted
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: /react router saas template/i,
-      }),
-    ).toBeVisible();
-    expect(getPath(page)).toEqual("/");
-    const deletedUser = await retrieveUserAccountFromDatabaseById(user.id);
-    expect(deletedUser).toBeNull();
-
-    await deleteOrganizationFromDatabaseById(organization.id);
-    await deleteOrganizationFromDatabaseById(otherOrganization.id);
-    await deleteUserAccountFromDatabaseById(otherUser.id);
+      expect(
+        await prisma.organization.findMany({
+          orderBy: { id: "asc" },
+          where: { id: { in: [organization.id, otherOrganization.id] } },
+        }),
+      ).toEqual(originalOrganizations);
+      expect(
+        await prisma.stripeSubscription.findMany({
+          orderBy: { stripeId: "asc" },
+          select: { organizationId: true, status: true, stripeId: true },
+          where: {
+            organizationId: { in: [organization.id, otherOrganization.id] },
+          },
+        }),
+      ).toEqual(originalSubscriptions);
+      expect(
+        await prisma.organizationMembership.count({
+          where: { memberId: user.id },
+        }),
+      ).toEqual(0);
+      expect(await retrieveUserAccountFromDatabaseById(otherUser.id)).toEqual(
+        otherUser,
+      );
+    } finally {
+      await cleanupAccountDeletion(user);
+      await teardownOrganizationAndMember({ organization, user });
+      await teardownOrganizationAndMember({
+        organization: otherOrganization,
+        user: otherUser,
+      });
+    }
   });
 
-  test("given: a logged in user that is the sole owner (as in the user is both the owner and the only member) of their organization, should: be able to delete their account", async ({
+  test("given: the sole member and owner of an organization, should: disclose its deletion and finish account and organization cleanup", async ({
     page,
   }) => {
+    test.setTimeout(40_000);
     const { user, organization } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.owner,
     });
 
-    // Visit the account settings page
-    await page.goto("/settings/account");
-    await expect(
-      page.getByRole("heading", { level: 2, name: /danger zone/i }),
-    ).toBeVisible();
+    try {
+      await confirmAccountDeletion(page, user.email, organization.name);
+      await expectAccountDeletionComplete(page, user);
 
-    // Open the delete account dialog
-    await page.getByRole("button", { name: /delete account/i }).click();
-
-    // Verify dialog content
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await expect(
-      page.getByRole("heading", { level: 2, name: /delete account/i }),
-    ).toBeVisible();
-    await expect(
-      page.getByText(/the following organization will be deleted/i),
-    ).toBeVisible();
-    await expect(page.getByText(organization.name)).toBeVisible();
-    // Cancel the deletion
-    await page.getByRole("button", { name: /cancel/i }).click();
-    await expect(page.getByRole("dialog")).not.toBeVisible();
-
-    // Confirm the deletion
-    await page.getByRole("button", { name: /delete account/i }).click();
-    await page.getByRole("button", { name: /delete this account/i }).click();
-
-    // Verify the user is deleted
-    await expect(
-      page.getByRole("heading", {
-        level: 1,
-        name: /react router saas template/i,
-      }),
-    ).toBeVisible();
-    expect(getPath(page)).toEqual("/");
-    const deletedUser = await retrieveUserAccountFromDatabaseById(user.id);
-    expect(deletedUser).toBeNull();
-    const deletedOrganization = await retrieveOrganizationFromDatabaseById(
-      organization.id,
-    );
-    expect(deletedOrganization).toBeNull();
+      expect(
+        await retrieveOrganizationFromDatabaseById(organization.id),
+      ).toBeNull();
+      const organizationDeletion = await prisma.organizationDeletion.findUnique(
+        {
+          where: { id: organization.id },
+        },
+      );
+      expect(organizationDeletion?.completedAt).toBeInstanceOf(Date);
+    } finally {
+      await cleanupAccountDeletion(user);
+      await prisma.organizationDeletion.deleteMany({
+        where: { id: organization.id },
+      });
+      await teardownOrganizationAndMember({ organization, user });
+    }
   });
 
-  test("given: a logged in user that is an owner of an organization with more members, should: prohibit the user from deleting their account", async ({
+  test("given: an owner with another active owner in the organization, should: delete the account and preserve the remaining owner and organization", async ({
+    page,
+  }) => {
+    test.setTimeout(40_000);
+    const { user, organization } = await setupOrganizationAndLoginAsMember({
+      page,
+      role: OrganizationMembershipRole.owner,
+    });
+    const otherUser = createPopulatedUserAccount();
+    await saveUserAccountToDatabase(otherUser);
+    await addMembersToOrganizationInDatabaseById({
+      id: organization.id,
+      members: [otherUser.id],
+      role: OrganizationMembershipRole.owner,
+    });
+
+    try {
+      const originalOrganization = await retrieveOrganizationFromDatabaseById(
+        organization.id,
+      );
+      await confirmAccountDeletion(page, user.email);
+      await expectAccountDeletionComplete(page, user);
+
+      expect(await retrieveUserAccountFromDatabaseById(otherUser.id)).toEqual(
+        otherUser,
+      );
+      expect(
+        await retrieveOrganizationFromDatabaseById(organization.id),
+      ).toEqual(originalOrganization);
+      expect(
+        await prisma.organizationMembership.findMany({
+          select: { memberId: true, role: true },
+          where: { organizationId: organization.id },
+        }),
+      ).toEqual([
+        { memberId: otherUser.id, role: OrganizationMembershipRole.owner },
+      ]);
+      expect(
+        await prisma.organizationDeletion.count({
+          where: { id: organization.id },
+        }),
+      ).toEqual(0);
+    } finally {
+      await cleanupAccountDeletion(user);
+      await teardownOrganizationAndMember({ organization, user });
+      await deleteUserAccountFromDatabaseById(otherUser.id);
+    }
+  });
+
+  test("given: the last active owner of an organization with other members, should: require an ownership transfer and reject direct account deletion", async ({
     page,
   }) => {
     const { user, organization } = await setupOrganizationAndLoginAsMember({
@@ -341,25 +409,118 @@ test.describe("account settings", () => {
       role: OrganizationMembershipRole.member,
     });
 
-    await page.goto("/settings/account");
+    try {
+      const originalOrganization = await retrieveOrganizationFromDatabaseById(
+        organization.id,
+      );
+      await page.goto("/settings/account");
+      await expect(
+        page.getByRole("button", { name: /^delete account$/i }),
+      ).toBeDisabled();
+      await expect(
+        page.getByText(/you are the last active owner/i),
+      ).toContainText(organization.name);
+      const response = await page.request.post("/settings/account", {
+        maxRedirects: 0,
+        multipart: { confirmation: user.email, intent: "delete-user-account" },
+      });
+      expect(response.status()).toEqual(400);
+      expect(response.headers().location).toEqual(undefined);
+      expect(await retrieveUserAccountFromDatabaseById(user.id)).toEqual(user);
+      expect(await retrieveUserAccountFromDatabaseById(otherUser.id)).toEqual(
+        otherUser,
+      );
+      expect(
+        await retrieveOrganizationFromDatabaseById(organization.id),
+      ).toEqual(originalOrganization);
+      expect(
+        await prisma.accountDeletion.count({
+          where: { supabaseUserId: user.supabaseUserId },
+        }),
+      ).toEqual(0);
+    } finally {
+      await teardownOrganizationAndMember({ organization, user });
+      await deleteUserAccountFromDatabaseById(otherUser.id);
+    }
+  });
 
-    await expect(
-      page.getByText(
-        new RegExp(
-          `Your account is currently an owner in this organization: ${organization.name}.`,
-        ),
-      ),
-    ).toBeVisible();
-    await expect(
-      page.getByText(
-        /you must remove yourself, transfer ownership, or delete this organization before you can delete your user./i,
-      ),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /delete account/i }),
-    ).toBeDisabled();
+  test("given: an incorrect confirmation email, should: reject deletion in the dialog and on direct requests", async ({
+    page,
+  }) => {
+    const user = await loginAndSaveUserAccountToDatabase({ page });
 
-    await teardownOrganizationAndMember({ organization, user });
-    await deleteUserAccountFromDatabaseById(otherUser.id);
+    try {
+      await page.goto("/settings/account");
+      await page.getByRole("button", { name: /^delete account$/i }).click();
+      const dialog = page.getByRole("dialog");
+      await dialog
+        .getByRole("textbox", { name: /to confirm, type/i })
+        .fill("wrong@example.com");
+      await dialog
+        .getByRole("button", { name: /delete this account/i })
+        .click();
+      await expect(dialog.getByRole("alert")).toContainText(
+        "The confirmation text doesn't match your email address.",
+      );
+      const response = await page.request.post("/settings/account", {
+        maxRedirects: 0,
+        multipart: {
+          confirmation: "wrong@example.com",
+          intent: "delete-user-account",
+        },
+      });
+      expect(response.status()).toEqual(400);
+      expect(await retrieveUserAccountFromDatabaseById(user.id)).toEqual(user);
+      expect(
+        await prisma.accountDeletion.count({
+          where: { supabaseUserId: user.supabaseUserId },
+        }),
+      ).toEqual(0);
+      await page.reload();
+      await expect(page).toHaveURL("/settings/account");
+    } finally {
+      await cleanupAccountDeletion(user);
+    }
   });
 });
+
+async function confirmAccountDeletion(
+  page: Page,
+  email: string,
+  organizationName?: string,
+) {
+  await page.goto("/settings/account");
+  await page.getByRole("button", { name: /^delete account$/i }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  if (organizationName) {
+    await expect(dialog).toContainText(
+      `The following organization will be deleted: ${organizationName}`,
+    );
+  }
+  await dialog.getByRole("textbox", { name: /to confirm, type/i }).fill(email);
+  await dialog.getByRole("button", { name: /delete this account/i }).click();
+  await expect(page).toHaveURL(/\/account-deletions\/[^/]+$/);
+}
+
+async function expectAccountDeletionComplete(page: Page, user: UserAccount) {
+  await expect(
+    page.getByRole("heading", { name: /^your account has been deleted$/i }),
+  ).toBeVisible({ timeout: 25_000 });
+  expect(await retrieveUserAccountFromDatabaseById(user.id)).toBeNull();
+  const deletion = await prisma.accountDeletion.findUnique({
+    include: { resources: true },
+    where: { supabaseUserId: user.supabaseUserId },
+  });
+  expect(deletion?.completedAt).toBeInstanceOf(Date);
+  expect(
+    deletion?.resources.every((resource) => resource.completedAt !== null),
+  ).toEqual(true);
+}
+
+async function cleanupAccountDeletion(user: UserAccount) {
+  await prisma.accountDeletion.deleteMany({
+    where: { supabaseUserId: user.supabaseUserId },
+  });
+  await prisma.userAccount.deleteMany({ where: { id: user.id } });
+}

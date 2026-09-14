@@ -12,6 +12,15 @@ const MAX_NAME_LENGTH = 255;
 z.config({ jitless: true });
 
 export const deleteOrganizationFormSchema = z.object({
+  confirmation: z
+    .string({
+      error:
+        "organizations:settings.general.dangerZone.errors.confirmationRequired",
+    })
+    .min(1, {
+      message:
+        "organizations:settings.general.dangerZone.errors.confirmationRequired",
+    }),
   intent: z.literal(DELETE_ORGANIZATION_INTENT),
 });
 

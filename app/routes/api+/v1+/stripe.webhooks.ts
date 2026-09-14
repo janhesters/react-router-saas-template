@@ -3,6 +3,7 @@ import { stripeAdmin } from "~/features/billing/stripe-admin.server";
 import {
   handleStripeChargeDisputeClosedEvent,
   handleStripeCheckoutSessionCompletedEvent,
+  handleStripeCustomerCreatedEvent,
   handleStripeCustomerDeletedEvent,
   handleStripeCustomerSubscriptionCreatedEvent,
   handleStripeCustomerSubscriptionDeletedEvent,
@@ -62,6 +63,9 @@ export async function action({ request }: Route.ActionArgs) {
       case "checkout.session.completed": {
         return handleStripeCheckoutSessionCompletedEvent(event);
       }
+      case "customer.created": {
+        return handleStripeCustomerCreatedEvent(event);
+      }
       case "customer.deleted": {
         return handleStripeCustomerDeletedEvent(event);
       }
@@ -106,7 +110,6 @@ export async function action({ request }: Route.ActionArgs) {
       case "charge.dispute.created":
       case "charge.dispute.funds_withdrawn":
       case "charge.succeeded":
-      case "customer.created":
       case "customer.updated":
       case "invoice.marked_uncollectible":
       case "invoice.created":

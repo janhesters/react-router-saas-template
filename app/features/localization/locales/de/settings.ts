@@ -6,12 +6,16 @@ export default {
   userAccount: {
     dangerZone: {
       blockingOrganizations_one:
-        "Dein Konto ist derzeit Eigentümer dieser Organisation: <1>{{organizations}}</1>.",
+        "Du bist der letzte aktive Eigentümer dieser Organisation: <1>{{organizations}}</1>.",
       blockingOrganizations_other:
-        "Dein Konto ist derzeit Eigentümer dieser Organisationen: <1>{{organizations}}</1>.",
+        "Du bist der letzte aktive Eigentümer dieser Organisationen: <1>{{organizations}}</1>.",
       blockingOrganizationsHelp:
-        "Du musst dich selbst entfernen, die Eigentümerschaft übertragen oder diese Organisation löschen, bevor du deinen Benutzer löschen kannst.",
+        "Übertrage die Eigentümerschaft auf ein anderes Mitglied oder lösche die Organisation, bevor du dein Konto löschst.",
       cancel: "Abbrechen",
+      cleanupDescription:
+        "Du verlierst sofort den Zugriff. Deine Mitgliedschaften werden entfernt. Organisationen mit anderen Mitgliedern bleiben erhalten. Deine Anmeldedaten werden gelöscht und gespeicherte Bilder bereinigt. Ist ein Dienst nicht erreichbar, wird die Bereinigung erneut versucht.",
+      confirmationLabel: 'Gib zur Bestätigung unten "{{email}}" ein',
+      confirmationPlaceholder: "Deine E-Mail-Adresse ...",
       deleteButton: "Konto löschen",
       deleteConfirm: "Dieses Konto löschen",
       deleteDescription:
@@ -21,11 +25,42 @@ export default {
       dialogDescription:
         "Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
       dialogTitle: "Konto löschen",
+      errors: {
+        confirmationMismatch:
+          "Der Bestätigungstext stimmt nicht mit deiner E-Mail-Adresse überein.",
+        confirmationRequired:
+          "Gib deine E-Mail-Adresse ein, um die Löschung zu bestätigen.",
+        ownershipRequired:
+          "Übertrage die Eigentümerschaft von Organisationen mit anderen Mitgliedern, bevor du dein Konto löschst.",
+        startFailed:
+          "Die Kontolöschung konnte nicht gestartet werden. Bitte versuche es erneut.",
+      },
       implicitlyDeletedOrganizations_one:
-        "Die folgende Organisation wird gelöscht: <1>{{organizations}}</1>",
+        "Die folgende Organisation wird gelöscht: <1>{{organizations}}</1>. Ihre Abonnements werden gekündigt.",
       implicitlyDeletedOrganizations_other:
-        "Die folgenden Organisationen werden gelöscht: <1>{{organizations}}</1>",
+        "Die folgenden Organisationen werden gelöscht: <1>{{organizations}}</1>. Ihre Abonnements werden gekündigt.",
       title: "Gefahrenzone",
+    },
+    deletionStatus: {
+      completed: {
+        description:
+          "Dein Konto wurde gelöscht. Die Bereinigung ist abgeschlossen, einschließlich der zusammen mit deinem Konto gelöschten Organisationen.",
+        title: "Dein Konto wurde gelöscht",
+      },
+      continueButton: "Zurück zur Startseite",
+      pageTitle: "Kontolöschung",
+      pending: {
+        description:
+          "Dein Kontozugriff wurde entfernt. Wir schließen die Bereinigung deiner Anmeldedaten und Dateien sowie aller zusammen mit deinem Konto gelöschten Organisationen ab. Du kannst diese Seite verlassen, während die Bereinigung weiterläuft.",
+        title: "Kontobereinigung läuft",
+      },
+      retryButton: "Bereinigung erneut versuchen",
+      retrying: {
+        description:
+          "Ein Dienst ist vorübergehend nicht erreichbar. Dein Kontozugriff bleibt entfernt und die Bereinigung wird automatisch erneut versucht. Du kannst sie auch jetzt erneut starten.",
+        title: "Kontobereinigung wird erneut versucht",
+      },
+      retryingButton: "Bereinigung wird erneut versucht ...",
     },
     description: "Verwalte deine Kontoeinstellungen.",
     errors: {
@@ -57,6 +92,11 @@ export default {
       namePlaceholder: "Dein Name ...",
       save: "Änderungen speichern",
       saving: "Änderungen werden gespeichert ...",
+    },
+    organizationDeletions: {
+      description:
+        "Prüfe den Fortschritt der Bereinigung deiner gelöschten Organisationen.",
+      title: "Gelöschte Organisationen",
     },
     pageTitle: "Konto",
     toast: {

@@ -4,6 +4,7 @@ import { addDays } from "date-fns";
 import { data } from "react-router";
 import { z } from "zod";
 
+import { withOrganizationMutationLock } from "../../deletion/organization-mutation-lock.server";
 import {
   retrieveActiveOrganizationMembershipByEmailAndOrganizationId,
   retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId,
@@ -20,6 +21,7 @@ import {
   updateOrganizationInviteLinkInDatabaseById,
 } from "../../organizations-invite-link-model.server";
 import { organizationMembershipContext } from "../../organizations-middleware.server";
+import { retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId } from "../../organizations-model.server";
 import { InviteEmail } from "./invite-email";
 import {
   CHANGE_ROLE_INTENT,
@@ -131,126 +133,152 @@ export async function teamMembersAction({
       }
 
       case CHANGE_ROLE_INTENT: {
-        const { userId: targetUserId, role: requestedRoleOrStatus } = body;
+        return await withOrganizationMutationLock(organization.id, async () => {
+          // Middleware can precede account deletion or another role change.
+          // Recheck authority while deletion is excluded by the same lock.
+          const actorMembership =
+            await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+              {
+                organizationId: organization.id,
+                userId: user.id,
+              },
+            );
+          if (
+            !actorMembership ||
+            (actorMembership.deactivatedAt !== null &&
+              actorMembership.deactivatedAt <= new Date()) ||
+            actorMembership.role === OrganizationMembershipRole.member
+          ) {
+            throw forbidden();
+          }
+          const role = actorMembership.role;
+          const currentBilling =
+            await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
+              organization.id,
+            );
+          if (!currentBilling) throw forbidden();
+          const currentOrganization = { ...organization, ...currentBilling };
+          const { userId: targetUserId, role: requestedRoleOrStatus } = body;
 
-        // Prevent users from changing their own role/status
-        if (targetUserId === user.id) {
-          throw forbidden({
-            errors: { form: "You cannot change your own role or status." },
-          });
-        }
-
-        // Retrieve the target member's current membership details
-        const targetMembership =
-          await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
-            {
-              organizationId: organization.id,
-              userId: targetUserId,
-            },
-          );
-
-        // Handle case where target user isn't found in this org
-        if (!targetMembership) {
-          throw badRequest({
-            errors: {
-              userId: "Target user is not a member of this organization.",
-            },
-          });
-        }
-
-        // Apply role-based permissions (requesting user's role = 'role')
-        if (role === OrganizationMembershipRole.admin) {
-          // Admins cannot modify Owners
-          if (targetMembership.role === OrganizationMembershipRole.owner) {
+          // Prevent users from changing their own role/status
+          if (targetUserId === user.id) {
             throw forbidden({
+              errors: { form: "You cannot change your own role or status." },
+            });
+          }
+
+          // Retrieve the target member's current membership details
+          const targetMembership =
+            await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
+              {
+                organizationId: organization.id,
+                userId: targetUserId,
+              },
+            );
+
+          // Handle case where target user isn't found in this org
+          if (!targetMembership) {
+            throw badRequest({
               errors: {
-                form: "Administrators cannot modify the role or status of owners.",
+                userId: "Target user is not a member of this organization.",
               },
             });
           }
 
-          // Admins also cannot promote others to Owner
-          if (requestedRoleOrStatus === OrganizationMembershipRole.owner) {
-            throw forbidden({
-              errors: {
-                form: "Administrators cannot promote members to the owner role.",
-              },
-            });
-          }
-        }
-        // Owners have full permissions (already checked for self-modification)
-
-        /// Get the subscription of the organization, if it exists.
-        const subscription = organization.stripeSubscriptions[0];
-        // Prepare the data for the database update
-        let updateData: Prisma.OrganizationMembershipUpdateInput;
-        if (requestedRoleOrStatus === "deactivated") {
-          // Set deactivatedAt timestamp
-          updateData = { deactivatedAt: new Date() };
-
-          if (subscription?.items[0]) {
-            await adjustSeats({
-              newQuantity: organization._count.memberships - 1,
-              subscriptionId: subscription.stripeId,
-              subscriptionItemId: subscription.items[0].stripeId,
-            });
-          }
-        } else {
-          // Update role and ensure deactivatedAt is null
-          // `requestedRoleOrStatus` here is guaranteed by zod schema to be
-          // 'member', 'admin', or 'owner'
-          const newRole = requestedRoleOrStatus;
-          updateData = { deactivatedAt: null, role: newRole };
-
-          // If the user was deactivated, and there is a subscription,
-          // they will now take up a seat again.
-          if (targetMembership.deactivatedAt) {
-            if (getOrganizationIsFull(organization)) {
-              const toastHeaders = await createToastHeaders({
-                description: i18n.t(
-                  "organizations:settings.teamMembers.inviteByEmail.organizationFullToastDescription",
-                ),
-                title: i18n.t(
-                  "organizations:settings.teamMembers.inviteByEmail.organizationFullToastTitle",
-                ),
-                type: "error",
-              });
-              return badRequest(
-                {
-                  result: report(submission, {
-                    error: {
-                      fieldErrors: {
-                        email: [
-                          "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
-                        ],
-                      },
-                      formErrors: [],
-                    },
-                  }),
+          // Apply role-based permissions (requesting user's role = 'role')
+          if (role === OrganizationMembershipRole.admin) {
+            // Admins cannot modify Owners
+            if (targetMembership.role === OrganizationMembershipRole.owner) {
+              throw forbidden({
+                errors: {
+                  form: "Administrators cannot modify the role or status of owners.",
                 },
-                { headers: toastHeaders },
-              );
+              });
             }
+
+            // Admins also cannot promote others to Owner
+            if (requestedRoleOrStatus === OrganizationMembershipRole.owner) {
+              throw forbidden({
+                errors: {
+                  form: "Administrators cannot promote members to the owner role.",
+                },
+              });
+            }
+          }
+          // Owners have full permissions (already checked for self-modification)
+
+          /// Get the subscription of the organization, if it exists.
+          const subscription = currentOrganization.stripeSubscriptions[0];
+          // Prepare the data for the database update
+          let updateData: Prisma.OrganizationMembershipUpdateInput;
+          if (requestedRoleOrStatus === "deactivated") {
+            // Set deactivatedAt timestamp
+            updateData = { deactivatedAt: new Date() };
 
             if (subscription?.items[0]) {
               await adjustSeats({
-                newQuantity: organization._count.memberships + 1,
+                newQuantity: currentOrganization._count.memberships - 1,
                 subscriptionId: subscription.stripeId,
                 subscriptionItemId: subscription.items[0].stripeId,
               });
             }
+          } else {
+            // Update role and ensure deactivatedAt is null
+            // `requestedRoleOrStatus` here is guaranteed by zod schema to be
+            // 'member', 'admin', or 'owner'
+            const newRole = requestedRoleOrStatus;
+            updateData = { deactivatedAt: null, role: newRole };
+
+            // If the user was deactivated, and there is a subscription,
+            // they will now take up a seat again.
+            if (targetMembership.deactivatedAt) {
+              if (getOrganizationIsFull(currentOrganization)) {
+                const toastHeaders = await createToastHeaders({
+                  description: i18n.t(
+                    "organizations:settings.teamMembers.inviteByEmail.organizationFullToastDescription",
+                  ),
+                  title: i18n.t(
+                    "organizations:settings.teamMembers.inviteByEmail.organizationFullToastTitle",
+                  ),
+                  type: "error",
+                });
+                return badRequest(
+                  {
+                    result: report(submission, {
+                      error: {
+                        fieldErrors: {
+                          email: [
+                            "organizations:settings.teamMembers.inviteByEmail.form.organizationFull",
+                          ],
+                        },
+                        formErrors: [],
+                      },
+                    }),
+                  },
+                  { headers: toastHeaders },
+                );
+              }
+
+              if (subscription?.items[0]) {
+                await adjustSeats({
+                  newQuantity: currentOrganization._count.memberships + 1,
+                  subscriptionId: subscription.stripeId,
+                  subscriptionItemId: subscription.items[0].stripeId,
+                });
+              }
+            }
           }
-        }
 
-        // Perform the database update
-        await updateOrganizationMembershipInDatabase({
-          data: updateData,
-          organizationId: organization.id,
-          userId: targetUserId,
+          // Perform the database update
+          await updateOrganizationMembershipInDatabase({
+            data: updateData,
+            organizationId: organization.id,
+            userId: targetUserId,
+          });
+
+          // Return success
+          return data({});
         });
-
-        // Return success
-        return data({});
       }
 
       case INVITE_BY_EMAIL_INTENT: {

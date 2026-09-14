@@ -57,6 +57,27 @@ export default {
     breadcrumb: "Dashboard",
     pageTitle: "Dashboard",
   },
+  deletion: {
+    completed: {
+      description:
+        "Deine Organisation und ihre Daten wurden gelöscht. Die Bereinigung von Abrechnung und Dateien ist abgeschlossen. Die Konten der Mitglieder bleiben bestehen.",
+      title: "Organisation gelöscht",
+    },
+    continueButton: "Weiter zu deinen Organisationen",
+    pageTitle: "Organisation löschen",
+    pending: {
+      description:
+        "Deine Organisation ist nicht mehr zugänglich. Abrechnung und Dateien werden bereinigt. Du kannst diese Seite verlassen; die Bereinigung läuft automatisch weiter.",
+      title: "Organisation wird gelöscht",
+    },
+    retryButton: "Bereinigung erneut starten",
+    retrying: {
+      description:
+        "Deine Organisation ist nicht mehr zugänglich. Die Bereinigung von Abrechnung oder Dateien konnte noch nicht abgeschlossen werden. Wir versuchen es automatisch erneut. Du kannst sie auch jetzt erneut starten. Das Löschen ist erst nach der Bereinigung abgeschlossen.",
+      title: "Bereinigung läuft noch",
+    },
+    retryingButton: "Bereinigung wird erneut gestartet ...",
+  },
   getHelp: {
     breadcrumb: "Hilfe erhalten",
     pageTitle: "Hilfe erhalten",
@@ -148,10 +169,10 @@ export default {
         deleteButton: "Diese Organisation löschen",
         deleteButtonSubmitting: "Organisation wird gelöscht...",
         deleteDescription:
-          "Sobald sie gelöscht ist, ist sie für immer weg. Bitte sei dir sicher.",
+          "Lösche diese Organisation und ihre Daten dauerhaft, beende ihre Abrechnung und entferne ihre Dateien. Die Konten der Mitglieder bleiben bestehen.",
         deleteTitle: "Diese Organisation löschen",
         dialogDescription:
-          "Bist du sicher, dass du diese Organisation löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+          "Dies entfernt die Organisation dauerhaft für alle Mitglieder und startet die Bereinigung von Abrechnung und Dateien. Diese Aktion kann nicht rückgängig gemacht werden.",
         dialogTitle: "Organisation löschen",
         errors: {
           confirmationMismatch:

@@ -1,165 +1,147 @@
-import { faker } from "@faker-js/faker";
-import { describe, expect, test } from "vitest";
+import { parseSubmission, report } from "@conform-to/react/future";
+import type { ActionFunction } from "react-router";
+import { useActionData } from "react-router";
+import { describe, expect, test, vi } from "vitest";
 
 import type { DangerZoneProps } from "./danger-zone";
-import { DangerZone, DELETE_USER_ACCOUNT_INTENT } from "./danger-zone";
+import { DangerZone } from "./danger-zone";
 import {
   createRoutesStub,
   render,
   screen,
   userEvent,
+  waitFor,
 } from "~/test/react-test-utils";
-import type { Factory } from "~/utils/types";
 
-const createOrganizationNames = (count: number) =>
-  faker.helpers.uniqueArray(() => faker.company.name(), count);
+const email = "alex@example.com";
 
-const createProps: Factory<DangerZoneProps> = ({
-  imlicitlyDeletedOrganizations = [],
-  isDeletingAccount = false,
-  organizationsBlockingAccountDeletion = [],
-} = {}) => ({
-  imlicitlyDeletedOrganizations,
-  isDeletingAccount,
-  organizationsBlockingAccountDeletion,
-});
+function renderDangerZone({
+  action = vi.fn(() => ({ result: undefined })),
+  ...props
+}: Partial<DangerZoneProps> & {
+  action?: ActionFunction;
+} = {}) {
+  const RouterStub = createRoutesStub([
+    {
+      action,
+      Component: () => (
+        <DangerZone
+          email={email}
+          implicitlyDeletedOrganizations={[]}
+          lastResult={useActionData()?.result}
+          organizationsBlockingAccountDeletion={[]}
+          {...props}
+        />
+      ),
+      path: "/",
+    },
+  ]);
+  render(<RouterStub initialEntries={["/"]} />);
+}
 
 describe("DangerZone component", () => {
-  test("given: no implicitly deleted organizations and no organizations blocking account deletion, should: render danger zone with an enabled button and clicking it opens a menu that asks to confirm the deletion", async () => {
+  test("given: an account without ownership blockers, should: require the exact email address before submitting deletion", async () => {
     const user = userEvent.setup();
-    const path = "/settings/account";
-    const props = createProps();
-    const RouterStub = createRoutesStub([
-      { Component: () => <DangerZone {...props} />, path },
-    ]);
+    const action = vi.fn(() => ({ result: undefined }));
+    renderDangerZone({ action });
 
-    render(<RouterStub initialEntries={[path]} />);
+    await user.click(screen.getByRole("button", { name: /^delete account$/i }));
+    const confirmation = screen.getByRole("textbox", {
+      name: /to confirm, type/i,
+    });
+    await user.type(confirmation, "another@example.com");
+    await user.click(
+      screen.getByRole("button", { name: /delete this account/i }),
+    );
 
-    // Verify heading and descriptions
-    expect(
-      screen.getByRole("heading", { level: 2, name: /danger zone/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /once you delete your account, there is no going back. please be certain/i,
-      ),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "The confirmation text doesn't match your email address.",
+    );
+    expect(action).not.toHaveBeenCalled();
 
-    // Click button to open the dialog
-    await user.click(screen.getByRole("button", { name: /delete account/i }));
+    await user.clear(confirmation);
+    await user.type(confirmation, email);
+    await user.click(
+      screen.getByRole("button", { name: /delete this account/i }),
+    );
+    await waitFor(() => expect(action).toHaveBeenCalledOnce());
+  });
 
-    // Verify dialog content
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { level: 2, name: /delete account/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/are you sure you want to delete your account/i),
-    ).toBeInTheDocument();
+  test("given: an account owns organizations with no other members, should: identify every organization that will be deleted before confirmation", async () => {
+    const user = userEvent.setup();
+    renderDangerZone({
+      implicitlyDeletedOrganizations: ["Acme Studio", "Personal Workspace"],
+    });
 
-    // Verify form submission
+    await user.click(screen.getByRole("button", { name: /^delete account$/i }));
+
+    expect(screen.getByRole("dialog")).toHaveTextContent(
+      "The following organizations will be deleted: Acme Studio, Personal Workspace",
+    );
+    expect(screen.getByRole("dialog")).toHaveTextContent(
+      "You will lose access immediately. Your memberships will be removed, and organizations with other members will be preserved.",
+    );
+  });
+
+  test("given: the account is an organization's last active owner with other active members, should: identify the ownership blocker and prevent deletion", async () => {
+    const user = userEvent.setup();
+    renderDangerZone({
+      organizationsBlockingAccountDeletion: ["Shared Workspace"],
+    });
+
     const deleteButton = screen.getByRole("button", {
-      name: /delete this account/i,
+      name: /^delete account$/i,
     });
-    expect(deleteButton).toHaveAttribute("name", "intent");
-    expect(deleteButton).toHaveAttribute("value", DELETE_USER_ACCOUNT_INTENT);
-    expect(deleteButton).toHaveAttribute("type", "submit");
-  });
+    expect(deleteButton).toBeDisabled();
+    expect(deleteButton).toHaveAccessibleDescription(
+      /You are the last active owner of this organization: Shared Workspace\s*\. Transfer ownership to another member or delete the organization before deleting your account\./,
+    );
 
-  test("given: organizations blocking account deletion, should: show warning and disable delete button", () => {
-    const blockingOrgs = createOrganizationNames(2);
-    const props = createProps({
-      organizationsBlockingAccountDeletion: blockingOrgs,
-    });
-    const path = "/settings/account";
-    const RouterStub = createRoutesStub([
-      { Component: () => <DangerZone {...props} />, path },
-    ]);
-
-    render(<RouterStub initialEntries={[path]} />);
-
-    // Verify warning message
-    expect(
-      screen.getByText(
-        /your account is currently an owner in these organizations:/i,
-      ),
-    ).toBeInTheDocument();
-    expect(screen.getByText(blockingOrgs.join(", "))).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        /you must remove yourself, transfer ownership, or delete this organization before you can delete your user/i,
-      ),
-    ).toBeInTheDocument();
-
-    // Verify button is disabled
-    expect(
-      screen.getByRole("button", { name: /delete account/i }),
-    ).toBeDisabled();
-  });
-
-  test("given: organizations that will be implicitly deleted, should: show warning in confirmation dialog", async () => {
-    const user = userEvent.setup();
-    const implicitlyDeletedOrgs = createOrganizationNames(2);
-    const props = createProps({
-      imlicitlyDeletedOrganizations: implicitlyDeletedOrgs,
-    });
-    const path = "/settings/account";
-    const RouterStub = createRoutesStub([
-      { Component: () => <DangerZone {...props} />, path },
-    ]);
-
-    render(<RouterStub initialEntries={[path]} />);
-
-    // Open dialog
-    await user.click(screen.getByRole("button", { name: /delete account/i }));
-
-    // Verify warning about implicit deletions
-    expect(
-      screen.getByText(/the following organizations will be deleted:/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(implicitlyDeletedOrgs.join(", ")),
-    ).toBeInTheDocument();
-  });
-
-  test("given: dialog is open and cancel is clicked, should: close the dialog", async () => {
-    const user = userEvent.setup();
-    const path = "/settings/account";
-    const RouterStub = createRoutesStub([
-      { Component: () => <DangerZone {...createProps()} />, path },
-    ]);
-
-    render(<RouterStub initialEntries={[path]} />);
-
-    // Open dialog
-    await user.click(screen.getByRole("button", { name: /delete account/i }));
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
-
-    // Close dialog
-    await user.click(screen.getByRole("button", { name: /cancel/i }));
+    await user.click(deleteButton);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  test("given: account is being deleted, should: show loading state and disable buttons", async () => {
+  test("given: an account holder cancels deletion, should: close the dialog without submitting", async () => {
     const user = userEvent.setup();
-    const path = "/settings/account";
-    const props = createProps({ isDeletingAccount: true });
-    const RouterStub = createRoutesStub([
-      { Component: () => <DangerZone {...props} />, path },
-    ]);
+    const action = vi.fn(() => ({ result: undefined }));
+    renderDangerZone({ action });
+    await user.click(screen.getByRole("button", { name: /^delete account$/i }));
+    await user.type(
+      screen.getByRole("textbox", { name: /to confirm, type/i }),
+      email,
+    );
+    await user.click(screen.getByRole("button", { name: /cancel/i }));
 
-    render(<RouterStub initialEntries={[path]} />);
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    expect(action).not.toHaveBeenCalled();
+  });
 
-    // Open dialog
-    await user.click(screen.getByRole("button", { name: /delete account/i }));
+  test("given: a server rejects deletion admission, should: display the error and keep the confirmation dialog open", async () => {
+    const user = userEvent.setup();
+    renderDangerZone({
+      action: vi.fn(async ({ request }: { request: Request }) => ({
+        result: report(parseSubmission(await request.formData()), {
+          error: {
+            fieldErrors: {},
+            formErrors: ["Deletion could not start. Please retry."],
+          },
+        }),
+      })),
+    });
+    await user.click(screen.getByRole("button", { name: /^delete account$/i }));
+    await user.type(
+      screen.getByRole("textbox", { name: /to confirm, type/i }),
+      email,
+    );
+    await user.click(
+      screen.getByRole("button", { name: /delete this account/i }),
+    );
 
-    // Verify loading state
-    expect(screen.getByText(/deleting account/i)).toBeInTheDocument();
-
-    // Verify buttons are disabled
-    expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: /deleting account/i }),
-    ).toBeDisabled();
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Deletion could not start. Please retry.",
+    );
+    expect(screen.getByRole("dialog")).toBeVisible();
   });
 });

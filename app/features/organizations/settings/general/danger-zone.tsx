@@ -1,8 +1,8 @@
+import type { SubmissionResult } from "@conform-to/react/future";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Form, useNavigation } from "react-router";
 import { useHydrated } from "remix-utils/use-hydrated";
-import { z } from "zod";
 
 import { DELETE_ORGANIZATION_INTENT } from "./general-settings-constants";
 import { deleteOrganizationFormSchema } from "./general-settings-schemas";
@@ -30,10 +30,12 @@ import { Spinner } from "~/components/ui/spinner";
 import { useForm } from "~/utils/conform";
 
 export type DangerZoneProps = {
+  lastResult?: SubmissionResult;
   organizationName: string;
 };
 
 function DeleteOrganizationDialogComponent({
+  lastResult,
   organizationName,
 }: DangerZoneProps) {
   const { t } = useTranslation("organizations", {
@@ -42,25 +44,19 @@ function DeleteOrganizationDialogComponent({
 
   const localDeleteOrganizationFormSchema = useMemo(
     () =>
-      deleteOrganizationFormSchema.and(
-        z.object({
-          confirmation: z
-            .string()
-            .min(1, {
-              message:
-                "organizations:settings.general.dangerZone.errors.confirmationRequired",
-            })
-            .refine((value) => value === organizationName, {
-              message:
-                "organizations:settings.general.dangerZone.errors.confirmationMismatch",
-            }),
-        }),
+      deleteOrganizationFormSchema.refine(
+        (value) => value.confirmation === organizationName,
+        {
+          message:
+            "organizations:settings.general.dangerZone.errors.confirmationMismatch",
+          path: ["confirmation"],
+        },
       ),
     [organizationName],
   );
 
   const { form, fields, intent } = useForm(localDeleteOrganizationFormSchema, {
-    lastResult: null,
+    lastResult,
     shouldRevalidate: "onInput",
     shouldValidate: "onInput",
   });
@@ -98,6 +94,7 @@ function DeleteOrganizationDialogComponent({
         </DialogHeader>
 
         <Form method="POST" {...form.props}>
+          <FieldError errors={form.errors} id={form.errorId} />
           <FieldSet disabled={isSubmitting}>
             <Field data-invalid={fields.confirmation.ariaInvalid}>
               <FieldLabel htmlFor={fields.confirmation.id}>
@@ -130,11 +127,7 @@ function DeleteOrganizationDialogComponent({
           </DialogClose>
 
           <Button
-            disabled={
-              isSubmitting ||
-              !fields.confirmation.touched ||
-              !fields.confirmation.valid
-            }
+            disabled={isSubmitting}
             form={form.props.id}
             name="intent"
             type="submit"
@@ -156,7 +149,7 @@ function DeleteOrganizationDialogComponent({
   );
 }
 
-export function DangerZone({ organizationName }: DangerZoneProps) {
+export function DangerZone({ lastResult, organizationName }: DangerZoneProps) {
   const { t } = useTranslation("organizations", {
     keyPrefix: "settings.general.dangerZone",
   });
@@ -176,6 +169,7 @@ export function DangerZone({ organizationName }: DangerZoneProps) {
         </ItemContent>
         <ItemActions>
           <DeleteOrganizationDialogComponent
+            lastResult={lastResult}
             organizationName={organizationName}
           />
         </ItemActions>

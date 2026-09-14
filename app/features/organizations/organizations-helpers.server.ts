@@ -5,10 +5,7 @@ import type { RouterContextProvider } from "react-router";
 import { href } from "react-router";
 import { promiseHash } from "remix-utils/promise";
 
-import {
-  adjustSeats,
-  deactivateStripeCustomer,
-} from "../billing/stripe-helpers.server";
+import { adjustSeats } from "../billing/stripe-helpers.server";
 import type {
   OnboardingUser,
   OrganizationWithMembershipsAndSubscriptions,
@@ -28,10 +25,6 @@ import {
   InviteLinkOrganizationFullError,
   joinOrganizationWithInviteLinkInDatabase,
 } from "./organizations-invite-link-model.server";
-import {
-  deleteOrganizationFromDatabaseById,
-  retrieveOrganizationWithSubscriptionsFromDatabaseById,
-} from "./organizations-model.server";
 import type {
   Organization,
   OrganizationEmailInviteLink,
@@ -42,7 +35,6 @@ import type {
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
 import { uploadOwnedImage } from "~/utils/image-replacement.server";
-import { reclaimImageFromStorage } from "~/utils/storage-helpers.server";
 import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 import { redirectWithToast } from "~/utils/toast.server";
 
@@ -126,30 +118,6 @@ export async function requireUserIsMemberOfOrganization({
     organizationSlug,
   );
   return { organization, role, user };
-}
-
-/**
- * Deletes an organization and all associated subscriptions.
- *
- * @param organizationId - The ID of the organization to delete.
- */
-export async function deleteOrganization(organizationId: Organization["id"]) {
-  const organization =
-    await retrieveOrganizationWithSubscriptionsFromDatabaseById(organizationId);
-
-  if (organization) {
-    if (organization.stripeCustomerId) {
-      await deactivateStripeCustomer(organization.stripeCustomerId);
-    }
-
-    const deletedOrganization =
-      await deleteOrganizationFromDatabaseById(organizationId);
-    await reclaimImageFromStorage({
-      imageUrl: deletedOrganization.imageUrl,
-      kind: "organization-logo",
-      ownerId: organizationId,
-    });
-  }
 }
 
 /**
