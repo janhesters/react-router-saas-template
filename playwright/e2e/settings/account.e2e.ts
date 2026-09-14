@@ -317,7 +317,7 @@ test.describe("account settings", () => {
   test("given: the sole member and owner of an organization, should: disclose its deletion and finish account and organization cleanup", async ({
     page,
   }) => {
-    test.setTimeout(40_000);
+    test.setTimeout(60_000);
     const { user, organization } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.owner,
@@ -325,7 +325,9 @@ test.describe("account settings", () => {
 
     try {
       await confirmAccountDeletion(page, user.email, organization.name);
-      await expectAccountDeletionComplete(page, user);
+      // The organization worker may own the dependency's lease on the first
+      // account sweep. Allow two 15-second polls and the status refresh.
+      await expectAccountDeletionComplete(page, user, 45_000);
 
       expect(
         await retrieveOrganizationFromDatabaseById(organization.id),
@@ -503,10 +505,14 @@ async function confirmAccountDeletion(
   await expect(page).toHaveURL(/\/account-deletions\/[^/]+$/);
 }
 
-async function expectAccountDeletionComplete(page: Page, user: UserAccount) {
+async function expectAccountDeletionComplete(
+  page: Page,
+  user: UserAccount,
+  timeout = 25_000,
+) {
   await expect(
     page.getByRole("heading", { name: /^your account has been deleted$/i }),
-  ).toBeVisible({ timeout: 25_000 });
+  ).toBeVisible({ timeout });
   expect(await retrieveUserAccountFromDatabaseById(user.id)).toBeNull();
   const deletion = await prisma.accountDeletion.findUnique({
     include: { resources: true },

@@ -15,16 +15,19 @@ import { getValidEmailInviteInfo } from "./accept-email-invite/accept-email-invi
 import { destroyEmailInviteInfoSession } from "./accept-email-invite/accept-email-invite-session.server";
 import { getValidInviteLinkInfo } from "./accept-invite-link/accept-invite-link-helpers.server";
 import { destroyInviteLinkInfoSession } from "./accept-invite-link/accept-invite-link-session.server";
+import { withOrganizationMutationLock } from "./deletion/organization-mutation-lock.server";
 import {
   consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase,
   EmailInviteLinkEmailMismatchError,
   EmailInviteLinkNotConsumableError,
   EmailInviteLinkOrganizationFullError,
+  retrieveActiveEmailInviteLinkFromDatabaseByToken,
 } from "./organizations-email-invite-link-model.server";
 import {
   InviteLinkOrganizationFullError,
   joinOrganizationWithInviteLinkInDatabase,
 } from "./organizations-invite-link-model.server";
+import { retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId } from "./organizations-model.server";
 import type {
   Organization,
   OrganizationEmailInviteLink,
@@ -120,6 +123,31 @@ export async function requireUserIsMemberOfOrganization({
   return { organization, role, user };
 }
 
+/** Call while holding the organization lock through membership and Stripe writes. */
+async function adjustOrganizationSeatsAfterInvite(
+  organizationId: string,
+): Promise<void> {
+  const organization =
+    await retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
+      organizationId,
+    );
+  const subscription = organization?.stripeSubscriptions[0];
+  const item = subscription?.items[0];
+  if (
+    !organization ||
+    !subscription ||
+    subscription.status === "canceled" ||
+    !item
+  )
+    return;
+
+  await adjustSeats({
+    newQuantity: organization._count.memberships,
+    subscriptionId: subscription.stripeId,
+    subscriptionItemId: item.stripeId,
+  });
+}
+
 /**
  * Accepts an invite link and adds the user to the organization. Also adjusts
  * the number of seats on the organization's subscription if it exists.
@@ -144,21 +172,20 @@ export async function acceptInviteLink({
   userAccountId: UserAccount["id"];
 }): Promise<{ outcome: "accepted" | "alreadyMember" }> {
   try {
-    const result = await joinOrganizationWithInviteLinkInDatabase({
-      inviteLinkId,
-      organizationId,
-      userAccountId,
+    return await withOrganizationMutationLock(organizationId, async () => {
+      const result = await joinOrganizationWithInviteLinkInDatabase({
+        inviteLinkId,
+        organizationId,
+        userAccountId,
+      });
+
+      if (result.outcome === "alreadyMember") return result;
+
+      // Keep deletion and other membership edits out until the provider write
+      // settles, and use the current committed count instead of a snapshot.
+      await adjustOrganizationSeatsAfterInvite(organizationId);
+      return { outcome: "accepted" };
     });
-
-    if (result.outcome === "alreadyMember") {
-      return result;
-    }
-
-    if (result.seatAdjustment) {
-      await adjustSeats(result.seatAdjustment);
-    }
-
-    return { outcome: "accepted" };
   } catch (error) {
     if (error instanceof InviteLinkOrganizationFullError) {
       throw await redirectWithToast(
@@ -199,7 +226,8 @@ export type AcceptEmailInviteResult =
  *
  * Organization and role are derived from the active invite. Its exclusive
  * claim and membership creation share one transaction, and seat billing runs
- * only after that transaction commits.
+ * only after that transaction commits. The organization lock spans both the
+ * membership transaction and its provider write.
  */
 export async function acceptEmailInvite({
   emailInviteToken,
@@ -215,28 +243,33 @@ export async function acceptEmailInvite({
   verifiedUserEmail: string | undefined;
 }): Promise<AcceptEmailInviteResult> {
   try {
-    const result =
-      await consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
-        emailInviteToken,
-        userAccountId,
-        verifiedUserEmail,
-      });
+    const invite =
+      await retrieveActiveEmailInviteLinkFromDatabaseByToken(emailInviteToken);
+    if (!invite) return { outcome: "rejected" };
 
-    if (result.outcome === "alreadyMember") {
-      return result;
-    }
+    return await withOrganizationMutationLock(
+      invite.organizationId,
+      async () => {
+        const result =
+          await consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase({
+            emailInviteToken,
+            // Revalidate the organization as part of the exclusive claim: a
+            // changed invite must not create membership under another org's lock.
+            expectedOrganizationId: invite.organizationId,
+            userAccountId,
+            verifiedUserEmail,
+          });
 
-    // Stripe is external and runs only after the database transaction commits
-    // one newly-created membership.
-    if (result.seatAdjustment) {
-      await adjustSeats(result.seatAdjustment);
-    }
+        if (result.outcome === "alreadyMember") return result;
 
-    return {
-      organization: result.organization,
-      outcome: "accepted",
-      role: result.role,
-    };
+        await adjustOrganizationSeatsAfterInvite(result.organization.id);
+        return {
+          organization: result.organization,
+          outcome: "accepted",
+          role: result.role,
+        };
+      },
+    );
   } catch (error) {
     if (
       error instanceof EmailInviteLinkNotConsumableError ||

@@ -159,6 +159,7 @@ export async function retrieveOrganizationWithMembersAndLatestInviteLinkFromData
  */
 export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabaseByOrganizationId(
   organizationId: Organization["id"],
+  now = new Date(),
 ) {
   return prisma.organization.findUnique({
     select: {
@@ -166,10 +167,7 @@ export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabase
         select: {
           memberships: {
             where: {
-              OR: [
-                { deactivatedAt: null },
-                { deactivatedAt: { gt: new Date() } },
-              ],
+              OR: [{ deactivatedAt: null }, { deactivatedAt: { gt: now } }],
             },
           },
         },
