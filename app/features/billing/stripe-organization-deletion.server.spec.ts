@@ -3,6 +3,7 @@ import { HttpResponse, http } from "msw";
 import type Stripe from "stripe";
 import { describe, expect, onTestFinished, test, vi } from "vitest";
 
+import { priceLookupKeysByTierAndInterval } from "./billing-constants";
 import {
   createStripeCheckoutSessionCompletedEventFactory,
   createStripeCustomerDeletedEventFactory,
@@ -430,11 +431,14 @@ describe("subscription event ordering", () => {
     async (change) => {
       const { organization, user } =
         await setupUserWithTrialOrgAndAddAsMember();
-      const [originalPrice, changedPrice] = await prisma.stripePrice.findMany({
-        take: 2,
-      });
-      if (!originalPrice || !changedPrice)
-        throw new Error("Expected two seeded prices");
+      const [originalPrice, changedPrice] = await Promise.all([
+        prisma.stripePrice.findUniqueOrThrow({
+          where: { lookupKey: priceLookupKeysByTierAndInterval.low.monthly },
+        }),
+        prisma.stripePrice.findUniqueOrThrow({
+          where: { lookupKey: priceLookupKeysByTierAndInterval.high.monthly },
+        }),
+      ]);
       const original = createStripeSubscriptionFactory({
         metadata: { organizationId: organization.id, purchasedById: user.id },
       });
@@ -493,7 +497,9 @@ describe("subscription event ordering", () => {
           stripeCustomerId: currentCustomer,
         }),
       });
-      const price = await prisma.stripePrice.findFirstOrThrow();
+      const price = await prisma.stripePrice.findUniqueOrThrow({
+        where: { lookupKey: priceLookupKeysByTierAndInterval.low.monthly },
+      });
       const historical = createStripeSubscriptionFactory({
         customer: `cus_${createId()}`,
         metadata: { organizationId: organization.id, purchasedById: user.id },
