@@ -2,12 +2,10 @@ import type { Return } from "@prisma/client/runtime/client";
 import type { FileUpload } from "@remix-run/form-data-parser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { AVATAR_PATH_PREFIX, BUCKET_NAME } from "../../user-account-constants";
 import type { requireAuthenticatedUserWithMembershipsExists } from "../../user-accounts-helpers.server";
 import type { DangerZoneProps } from "./danger-zone";
 import { OrganizationMembershipRole } from "~/generated/client";
-import { createAdminS3Client } from "~/utils/s3.server";
-import { uploadToStorage } from "~/utils/storage.server";
+import { uploadOwnedImage } from "~/utils/image-replacement.server";
 
 export function mapUserAccountWithMembershipsToDangerZoneProps(
   user: Awaited<
@@ -57,14 +55,10 @@ export async function uploadUserAvatar({
   userId: string;
   supabase: SupabaseClient;
 }) {
-  const fileExtension = file.name.split(".").pop() ?? "";
-  const key = `${AVATAR_PATH_PREFIX}/${userId}.${fileExtension}`;
-  await uploadToStorage({
-    bucket: BUCKET_NAME,
-    client: createAdminS3Client(),
-    contentType: file.type,
+  return uploadOwnedImage({
     file,
-    key,
+    kind: "avatar",
+    ownerId: userId,
+    supabase,
   });
-  return supabase.storage.from(BUCKET_NAME).getPublicUrl(key).data.publicUrl;
 }

@@ -164,11 +164,17 @@ export default {
       },
       description: "Allgemeine Einstellungen für diese Organisation.",
       errors: {
+        imageConflict:
+          "Das Logo wurde während des Uploads geändert. Lade die Seite neu und versuche es erneut.",
         invalidFileType:
           "Ungültiger Dateityp. Nur PNG-, JPG-, JPEG-, GIF- und WebP-Bilder sind erlaubt.",
         logoTooLarge: "Das Logo muss kleiner als 1 MB sein.",
         nameMax: "Der Organisationsname darf höchstens 255 Zeichen lang sein.",
         nameMin: "Der Organisationsname muss mindestens 3 Zeichen lang sein.",
+        saveFailed:
+          "Wir konnten nicht bestätigen, dass deine Änderungen gespeichert wurden. Lade die Seite neu, bevor du es erneut versuchst.",
+        uploadFailed:
+          "Das Logo konnte nicht hochgeladen werden. Bitte versuche es erneut.",
       },
       form: {
         logoDescription:

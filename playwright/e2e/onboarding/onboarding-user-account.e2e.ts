@@ -113,11 +113,14 @@ test.describe("onboarding user account page", () => {
       const updatedUser = await retrieveUserAccountFromDatabaseById(id);
       expect(updatedUser?.name).toEqual(newName);
 
-      // Verify image URL is in the correct Supabase storage format
-      const supabaseUrl = process.env.VITE_SUPABASE_URL as string;
-      expect(updatedUser?.imageUrl).toMatch(
+      // The upload must use the configured origin and a fresh owner-scoped key.
+      const imageUrl = new URL(updatedUser?.imageUrl ?? "");
+      expect(imageUrl.origin).toBe(
+        new URL(process.env.VITE_SUPABASE_URL).origin,
+      );
+      expect(imageUrl.pathname).toMatch(
         new RegExp(
-          `${supabaseUrl}/storage/v1/object/public/app-images/user-avatars/${id}\\.jpg$`,
+          `^/storage/v1/object/public/app-images/user-avatars/${id}/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.jpg$`,
         ),
       );
 

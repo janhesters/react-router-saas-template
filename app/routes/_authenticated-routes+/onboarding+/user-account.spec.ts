@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: test code */
+import { HttpResponse, http } from "msw";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./user-account";
@@ -21,6 +22,7 @@ import {
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
+  retrieveUserAccountFromDatabaseById,
   saveUserAccountToDatabase,
 } from "~/features/user-accounts/user-accounts-model.server";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
@@ -79,7 +81,7 @@ async function setup(userAccount = createPopulatedUserAccount()) {
   return { userAccount };
 }
 
-setupMockServerLifecycle(...supabaseHandlers);
+const server = setupMockServerLifecycle(...supabaseHandlers);
 
 describe("/onboarding/user-account route action", () => {
   test("given: an unauthenticated request, should: throw a redirect to the login page", async () => {
@@ -139,6 +141,130 @@ describe("/onboarding/user-account route action", () => {
 
   describe(`${ONBOARDING_USER_ACCOUNT_INTENT} intent`, () => {
     const intent = ONBOARDING_USER_ACCOUNT_INTENT;
+
+    test.each(["stored", "OAuth"])(
+      "given: no uploaded photo and an existing %s image, should: retain its URL while saving the name",
+      async (source) => {
+        const userAccount = createPopulatedUserAccount({ name: "" });
+        userAccount.imageUrl =
+          source === "stored"
+            ? `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/user-avatars/${userAccount.id}.png`
+            : "https://oauth.example.com/avatar.png";
+        await setup(userAccount);
+
+        const response = await sendAuthenticatedRequest({
+          formData: toFormData({ intent, name: "Test User" }),
+          userAccount,
+        });
+
+        expect(response).toMatchObject({ status: 302 });
+        expect(
+          await retrieveUserAccountFromDatabaseById(userAccount.id),
+        ).toMatchObject({ imageUrl: userAccount.imageUrl, name: "Test User" });
+      },
+    );
+
+    test("given: overlapping onboarding photo uploads, should: reject the stale publication and preserve the winner's bytes", async () => {
+      const { userAccount } = await setup(
+        createPopulatedUserAccount({ imageUrl: "", name: "" }),
+      );
+      const publicPrefix = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/`;
+      const s3Prefix = `${process.env.STORAGE_ENDPOINT}/app-images/`;
+      const objects = new Map<string, string>();
+      const uploadedKeys: string[] = [];
+      let markFirstUploadStarted = () => {};
+      const firstUploadStarted = new Promise<void>((resolve) => {
+        markFirstUploadStarted = resolve;
+      });
+      let resumeFirstUpload = () => {};
+      const firstUploadGate = new Promise<void>((resolve) => {
+        resumeFirstUpload = resolve;
+      });
+      onTestFinished(resumeFirstUpload);
+
+      server.use(
+        http.put(`${s3Prefix}*`, async ({ request }) => {
+          const key = new URL(request.url).pathname.slice(
+            new URL(s3Prefix).pathname.length,
+          );
+          const bytes = await request.text();
+          uploadedKeys.push(key);
+          if (bytes === "stale image bytes") {
+            markFirstUploadStarted();
+            await firstUploadGate;
+          }
+          objects.set(key, bytes);
+          return new HttpResponse(null, {
+            headers: { ETag: '"image-etag"' },
+            status: 200,
+          });
+        }),
+        http.delete(
+          `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/app-images`,
+          async ({ request }) => {
+            const { prefixes } = (await request.json()) as {
+              prefixes: string[];
+            };
+            for (const key of prefixes) objects.delete(key);
+            return HttpResponse.json(prefixes.map((name) => ({ name })));
+          },
+        ),
+        http.get(`${publicPrefix}*`, ({ request }) => {
+          const key = new URL(request.url).pathname.slice(
+            new URL(publicPrefix).pathname.length,
+          );
+          const bytes = objects.get(key);
+          return new HttpResponse(bytes ?? "Missing object", {
+            status: bytes === undefined ? 404 : 200,
+          });
+        }),
+      );
+
+      const sendImage = (bytes: string, name: string) =>
+        sendAuthenticatedRequest({
+          formData: toFormData({
+            image: new File([bytes], "avatar.png", { type: "image/png" }),
+            intent,
+            name,
+          }),
+          userAccount,
+        });
+
+      const staleRequest = sendImage("stale image bytes", "Stale User");
+      await firstUploadStarted;
+      try {
+        const winner = await sendImage("winning image bytes", "Winning User");
+        expect(winner).toMatchObject({ status: 302 });
+      } finally {
+        resumeFirstUpload();
+      }
+      const staleResponse = await staleRequest;
+
+      expect(staleResponse).toMatchObject({
+        data: {
+          result: {
+            error: {
+              fieldErrors: {
+                image: [
+                  "Your avatar changed during this upload. Refresh the page and try again.",
+                ],
+              },
+            },
+          },
+        },
+        init: { status: 409 },
+      });
+      const published = await retrieveUserAccountFromDatabaseById(
+        userAccount.id,
+      );
+      expect(published).toMatchObject({ name: "Winning User" });
+      expect(published!.imageUrl).toEqual(`${publicPrefix}${uploadedKeys[1]}`);
+      const image = await fetch(published!.imageUrl);
+      expect(image.status).toEqual(200);
+      expect(await image.text()).toEqual("winning image bytes");
+      expect(new Set(uploadedKeys).size).toEqual(2);
+      expect(objects.size).toEqual(1);
+    });
 
     test("given: a valid name for a user without organizations, should: update name and redirect to organization onboarding", async () => {
       const userAccount = createPopulatedUserAccount({ name: "" });

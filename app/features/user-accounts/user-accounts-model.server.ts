@@ -283,13 +283,18 @@ export async function retrieveUserAccountWithMembershipsAndMemberCountsAndSubscr
  * @returns The updated user account.
  */
 export async function updateUserAccountInDatabaseById({
+  expectedImageUrl,
   id,
   user,
 }: {
+  expectedImageUrl?: UserAccount["imageUrl"];
   id: UserAccount["id"];
   user: Omit<Prisma.UserAccountUpdateInput, "id">;
 }) {
-  return prisma.userAccount.update({ data: user, where: { id } });
+  return prisma.userAccount.update({
+    data: user,
+    where: { id, imageUrl: expectedImageUrl },
+  });
 }
 
 /* DELETE */

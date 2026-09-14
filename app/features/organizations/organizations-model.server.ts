@@ -204,13 +204,18 @@ export async function retrieveMemberCountAndLatestStripeSubscriptionFromDatabase
  * @returns The updated organization.
  */
 export async function updateOrganizationInDatabaseById({
+  expectedImageUrl,
   id,
   organization,
 }: {
+  expectedImageUrl?: Organization["imageUrl"];
   id: Organization["id"];
   organization: Omit<Prisma.OrganizationUpdateInput, "id">;
 }) {
-  return prisma.organization.update({ data: organization, where: { id } });
+  return prisma.organization.update({
+    data: organization,
+    where: { id, imageUrl: expectedImageUrl },
+  });
 }
 
 /**

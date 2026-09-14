@@ -1042,6 +1042,9 @@ test.describe("organization settings members page", () => {
         name: /rows per page/i,
       });
 
+      // This control becomes enabled once the table's event handlers attach.
+      await expect(rowsPerPageSelect).toBeEnabled();
+
       // Initial state (Page 1 of 2, 10 rows)
       await expect(tableBody.getByRole("row")).toHaveCount(10);
       await expect(pageInfo).toHaveText("Page 1 of 2");

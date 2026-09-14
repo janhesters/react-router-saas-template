@@ -30,10 +30,15 @@ export default {
     description: "Manage your account settings.",
     errors: {
       avatarTooLarge: "Avatar must be less than 1MB.",
+      imageConflict:
+        "Your avatar changed during this upload. Refresh the page and try again.",
       invalidFileType:
         "Invalid file type. Only PNG, JPG, JPEG, GIF, and WebP images are allowed.",
       nameMax: "Your name must be at most 128 characters long.",
       nameMin: "Your name must be at least 2 characters long.",
+      saveFailed:
+        "We couldn't confirm your changes were saved. Refresh the page before trying again.",
+      uploadFailed: "Your avatar couldn't be uploaded. Please try again.",
     },
     form: {
       avatarDescription: "Your avatar will be shown across the application.",

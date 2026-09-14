@@ -71,7 +71,7 @@ test.describe("general organization settings", () => {
     await expect(
       page.getByRole("link", { name: /return home/i }),
     ).toHaveAttribute("href", "/");
-    expect(await page.title()).toMatch(/404|react router saas template/i);
+    await expect(page).toHaveTitle(/404|react router saas template/i);
 
     await teardownOrganizationAndMember({
       organization: otherOrganization,
@@ -227,8 +227,16 @@ test.describe("general organization settings", () => {
         organization.id,
       );
       expect(updatedOrganization?.name).toEqual(newName);
-      const storedLogoUrl = `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/organization-logos/${organization.id}.jpg`;
-      expect(updatedOrganization?.imageUrl).toEqual(storedLogoUrl);
+      const storedLogoUrl = updatedOrganization?.imageUrl ?? "";
+      const logoUrl = new URL(storedLogoUrl);
+      expect(logoUrl.origin).toBe(
+        new URL(process.env.VITE_SUPABASE_URL).origin,
+      );
+      expect(logoUrl.pathname).toMatch(
+        new RegExp(
+          `^/storage/v1/object/public/app-images/organization-logos/${organization.id}/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.jpg$`,
+        ),
+      );
 
       // Reload to verify persisted Storage bytes, rather than the blob preview.
       const download = page.waitForResponse(storedLogoUrl);

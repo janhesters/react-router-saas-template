@@ -160,9 +160,11 @@ describe("/settings/account route action", () => {
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(newName);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const expectedKey = `${AVATAR_PATH_PREFIX}/${user.id}.png`;
-      const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
-      expect(updatedUser?.imageUrl).toEqual(expectedUrl);
+      const expectedPrefix = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${AVATAR_PATH_PREFIX}/${user.id}/`;
+      expect(updatedUser?.imageUrl.startsWith(expectedPrefix)).toBe(true);
+      expect(updatedUser?.imageUrl.slice(expectedPrefix.length)).toMatch(
+        /^[0-9a-f-]{36}\.png$/,
+      );
 
       const maybeToast = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(
@@ -190,9 +192,11 @@ describe("/settings/account route action", () => {
       const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
       expect(updatedUser?.name).toEqual(user.name);
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const expectedKey = `${AVATAR_PATH_PREFIX}/${user.id}.png`;
-      const expectedUrl = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${expectedKey}`;
-      expect(updatedUser?.imageUrl).toEqual(expectedUrl);
+      const expectedPrefix = `${supabaseUrl}/storage/v1/object/public/${BUCKET_NAME}/${AVATAR_PATH_PREFIX}/${user.id}/`;
+      expect(updatedUser?.imageUrl.startsWith(expectedPrefix)).toBe(true);
+      expect(updatedUser?.imageUrl.slice(expectedPrefix.length)).toMatch(
+        /^[0-9a-f-]{36}\.png$/,
+      );
 
       const maybeToast = new Headers(actual.init?.headers).get("Set-Cookie");
       const { toast } = await getToast(

@@ -30,10 +30,16 @@ export default {
     description: "Verwalte deine Kontoeinstellungen.",
     errors: {
       avatarTooLarge: "Der Avatar muss kleiner als 1 MB sein.",
+      imageConflict:
+        "Dein Avatar wurde während des Uploads geändert. Lade die Seite neu und versuche es erneut.",
       invalidFileType:
         "Ungültiger Dateityp. Nur PNG-, JPG-, JPEG-, GIF- und WebP-Bilder sind erlaubt.",
       nameMax: "Dein Name darf höchstens 128 Zeichen lang sein.",
       nameMin: "Dein Name muss mindestens 2 Zeichen lang sein.",
+      saveFailed:
+        "Wir konnten nicht bestätigen, dass deine Änderungen gespeichert wurden. Lade die Seite neu, bevor du es erneut versuchst.",
+      uploadFailed:
+        "Dein Avatar konnte nicht hochgeladen werden. Bitte versuche es erneut.",
     },
     form: {
       avatarDescription:

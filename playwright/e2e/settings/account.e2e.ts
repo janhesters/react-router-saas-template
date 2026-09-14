@@ -176,8 +176,16 @@ test.describe("account settings", () => {
     // Verify name was updated in database
     const updatedUser = await retrieveUserAccountFromDatabaseById(user.id);
     expect(updatedUser?.name).toEqual(newName);
-    const storedAvatarUrl = `${process.env.VITE_SUPABASE_URL}/storage/v1/object/public/app-images/user-avatars/${user.id}.jpg`;
-    expect(updatedUser?.imageUrl).toEqual(storedAvatarUrl);
+    const storedAvatarUrl = updatedUser?.imageUrl ?? "";
+    const avatarUrl = new URL(storedAvatarUrl);
+    expect(avatarUrl.origin).toBe(
+      new URL(process.env.VITE_SUPABASE_URL).origin,
+    );
+    expect(avatarUrl.pathname).toMatch(
+      new RegExp(
+        `^/storage/v1/object/public/app-images/user-avatars/${user.id}/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\\.jpg$`,
+      ),
+    );
 
     // Reload to verify persisted Storage bytes, rather than the blob preview.
     const download = page.waitForResponse(storedAvatarUrl);
