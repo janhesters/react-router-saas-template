@@ -122,6 +122,70 @@ const createCustomerMock = http.post(
   },
 );
 
+const retrieveCustomerMock = http.get(
+  "https://api.stripe.com/v1/customers/:customerId",
+  ({ params }) =>
+    HttpResponse.json(
+      createStripeCustomerFactory({
+        id: params.customerId as string,
+      }),
+    ),
+);
+
+const deleteCustomerMock = http.delete(
+  "https://api.stripe.com/v1/customers/:customerId",
+  ({ params }) =>
+    HttpResponse.json({
+      deleted: true,
+      id: params.customerId,
+      object: "customer",
+    }),
+);
+
+const listCheckoutSessionsMock = http.get(
+  "https://api.stripe.com/v1/checkout/sessions",
+  () =>
+    HttpResponse.json({
+      data: [],
+      has_more: false,
+      object: "list",
+      url: "/v1/checkout/sessions",
+    }),
+);
+
+const expireCheckoutSessionMock = http.post(
+  "https://api.stripe.com/v1/checkout/sessions/:sessionId/expire",
+  ({ params }) =>
+    HttpResponse.json(
+      createStripeCheckoutSessionFactory({
+        id: params.sessionId as string,
+        status: "expired",
+      }),
+    ),
+);
+
+const listSchedulesMock = http.get(
+  "https://api.stripe.com/v1/subscription_schedules",
+  () =>
+    HttpResponse.json({
+      data: [],
+      has_more: false,
+      object: "list",
+      url: "/v1/subscription_schedules",
+    }),
+);
+
+const cancelScheduleMock = http.post(
+  "https://api.stripe.com/v1/subscription_schedules/:scheduleId/cancel",
+  ({ params }) =>
+    HttpResponse.json(
+      createStripeSubscriptionScheduleFactory({
+        id: params.scheduleId as string,
+        status: "canceled",
+      }),
+    ),
+);
+
 const createSubscriptionMock = http.post(
   "https://api.stripe.com/v1/subscriptions",
   async ({ request }) => {
@@ -328,14 +392,20 @@ const updateSubscriptionMock = http.post(
 );
 
 export const stripeHandlers = [
+  cancelScheduleMock,
   cancelSubscriptionMock,
   createBillingPortalSessionMock,
   createCheckoutSessionMock,
   createCustomerMock,
   createSubscriptionMock,
+  deleteCustomerMock,
   deleteSubscriptionMock,
+  expireCheckoutSessionMock,
+  listCheckoutSessionsMock,
+  listSchedulesMock,
   listSubscriptionsMock,
   releaseScheduleMock,
+  retrieveCustomerMock,
   retrieveScheduleMock,
   retrieveSubscriptionMock,
   updateCustomerMock,

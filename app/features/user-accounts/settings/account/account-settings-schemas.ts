@@ -12,6 +12,13 @@ const MAX_NAME_LENGTH = 128;
 z.config({ jitless: true });
 
 export const deleteUserAccountFormSchema = z.object({
+  confirmation: z
+    .string({
+      error: "settings:userAccount.dangerZone.errors.confirmationRequired",
+    })
+    .min(1, {
+      message: "settings:userAccount.dangerZone.errors.confirmationRequired",
+    }),
   intent: z.literal(DELETE_USER_ACCOUNT_INTENT),
 });
 

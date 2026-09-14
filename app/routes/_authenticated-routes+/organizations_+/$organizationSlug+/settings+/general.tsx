@@ -62,7 +62,10 @@ export default function GeneralOrganizationSettingsRoute({
 
             <Separator />
 
-            <DangerZone organizationName={organization.name} />
+            <DangerZone
+              lastResult={actionData?.result}
+              organizationName={organization.name}
+            />
           </>
         ) : (
           <>

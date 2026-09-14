@@ -1,6 +1,11 @@
+import type { SubmissionResult } from "@conform-to/react/future";
+import { useMemo } from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { Form } from "react-router";
+import { Form, useNavigation } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
+import { DELETE_USER_ACCOUNT_INTENT } from "./account-settings-constants";
+import { deleteUserAccountFormSchema } from "./account-settings-schemas";
 import { Button } from "~/components/ui/button";
 import {
   Dialog,
@@ -12,6 +17,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/components/ui/dialog";
+import { Field, FieldError, FieldLabel, FieldSet } from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
 import {
   Item,
   ItemActions,
@@ -20,50 +27,65 @@ import {
   ItemTitle,
 } from "~/components/ui/item";
 import { Spinner } from "~/components/ui/spinner";
-import type { Organization } from "~/generated/browser";
-import { cn } from "~/lib/utils";
-
-export const DELETE_USER_ACCOUNT_INTENT = "delete-user-account";
+import { useForm } from "~/utils/conform";
 
 export type DangerZoneProps = {
-  imlicitlyDeletedOrganizations: Organization["name"][];
-  isDeletingAccount?: boolean;
-  organizationsBlockingAccountDeletion: Organization["name"][];
+  email: string;
+  implicitlyDeletedOrganizations: string[];
+  lastResult?: SubmissionResult;
+  organizationsBlockingAccountDeletion: string[];
 };
 
-function Strong({
-  children,
-  className,
-}: {
-  children?: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span className={cn("font-semibold text-foreground", className)}>
-      {children}
-    </span>
-  );
-}
-
-function DeleteAccountDialogComponent({
-  imlicitlyDeletedOrganizations,
-  isDeletingAccount = false,
-  isDeleteBlocked,
-}: {
-  imlicitlyDeletedOrganizations: Organization["name"][];
-  isDeletingAccount: boolean;
-  isDeleteBlocked: boolean;
-}) {
+function DeleteAccountDialog({
+  email,
+  implicitlyDeletedOrganizations,
+  lastResult,
+  organizationsBlockingAccountDeletion,
+}: DangerZoneProps) {
   const { t } = useTranslation("settings", {
     keyPrefix: "userAccount.dangerZone",
   });
-
-  const hasImplicitDeletions = imlicitlyDeletedOrganizations.length > 0;
+  const confirmationSchema = useMemo(
+    () =>
+      deleteUserAccountFormSchema.refine(
+        (value) => value.confirmation === email,
+        {
+          message:
+            "settings:userAccount.dangerZone.errors.confirmationMismatch",
+          path: ["confirmation"],
+        },
+      ),
+    [email],
+  );
+  const { form, fields, intent } = useForm(confirmationSchema, {
+    lastResult,
+    shouldRevalidate: "onInput",
+    shouldValidate: "onInput",
+  });
+  const navigation = useNavigation();
+  const isSubmitting =
+    navigation.state === "submitting" &&
+    navigation.formData?.get("intent") === DELETE_USER_ACCOUNT_INTENT;
+  const hydrated = useHydrated();
 
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          intent.reset();
+        }
+      }}
+    >
       <DialogTrigger
-        render={<Button disabled={isDeleteBlocked} variant="destructive" />}
+        render={
+          <Button
+            aria-describedby="account-deletion-description"
+            disabled={
+              !hydrated || organizationsBlockingAccountDeletion.length > 0
+            }
+            variant="destructive"
+          />
+        }
       >
         {t("deleteButton")}
       </DialogTrigger>
@@ -71,32 +93,52 @@ function DeleteAccountDialogComponent({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{t("dialogTitle")}</DialogTitle>
-          <div className="space-y-2">
-            <DialogDescription>{t("dialogDescription")}</DialogDescription>
-
-            {hasImplicitDeletions && (
-              <div className="text-muted-foreground text-sm">
-                <Trans
-                  components={{ 1: <Strong /> }}
-                  count={imlicitlyDeletedOrganizations.length}
-                  i18nKey="userAccount.dangerZone.implicitlyDeletedOrganizations"
-                  ns="settings"
-                  shouldUnescape
-                  values={{
-                    organizations: imlicitlyDeletedOrganizations.join(", "),
-                  }}
-                />
-              </div>
-            )}
-          </div>
+          <DialogDescription>{t("dialogDescription")}</DialogDescription>
+          <p className="text-muted-foreground text-sm">
+            {t("cleanupDescription")}
+          </p>
+          {implicitlyDeletedOrganizations.length > 0 && (
+            <p className="text-muted-foreground text-sm">
+              <Trans
+                components={{ 1: <strong className="text-foreground" /> }}
+                count={implicitlyDeletedOrganizations.length}
+                i18nKey="userAccount.dangerZone.implicitlyDeletedOrganizations"
+                ns="settings"
+                shouldUnescape
+                values={{
+                  organizations: implicitlyDeletedOrganizations.join(", "),
+                }}
+              />
+            </p>
+          )}
         </DialogHeader>
+
+        <Form method="POST" {...form.props}>
+          <FieldError errors={form.errors} id={form.errorId} />
+          <FieldSet disabled={isSubmitting}>
+            <Field data-invalid={fields.confirmation.ariaInvalid}>
+              <FieldLabel htmlFor={fields.confirmation.id}>
+                {t("confirmationLabel", { email })}
+              </FieldLabel>
+              <Input
+                {...fields.confirmation.inputProps}
+                autoComplete="off"
+                placeholder={t("confirmationPlaceholder")}
+              />
+              <FieldError
+                errors={fields.confirmation.errors}
+                id={fields.confirmation.errorId}
+              />
+            </Field>
+          </FieldSet>
+        </Form>
 
         <DialogFooter className="sm:justify-end">
           <DialogClose
             render={
               <Button
                 className="mt-2 sm:mt-0"
-                disabled={isDeletingAccount}
+                disabled={isSubmitting}
                 type="button"
                 variant="secondary"
               />
@@ -104,41 +146,34 @@ function DeleteAccountDialogComponent({
           >
             {t("cancel")}
           </DialogClose>
-
-          <Form method="POST" replace>
-            <Button
-              disabled={isDeletingAccount}
-              name="intent"
-              type="submit"
-              value={DELETE_USER_ACCOUNT_INTENT}
-              variant="destructive"
-            >
-              {isDeletingAccount ? (
-                <>
-                  <Spinner />
-                  {t("deleting")}
-                </>
-              ) : (
-                t("deleteConfirm")
-              )}
-            </Button>
-          </Form>
+          <Button
+            disabled={isSubmitting}
+            form={form.props.id}
+            name="intent"
+            type="submit"
+            value={DELETE_USER_ACCOUNT_INTENT}
+            variant="destructive"
+          >
+            {isSubmitting ? (
+              <>
+                <Spinner />
+                {t("deleting")}
+              </>
+            ) : (
+              t("deleteConfirm")
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
-export function DangerZone({
-  imlicitlyDeletedOrganizations,
-  isDeletingAccount = false,
-  organizationsBlockingAccountDeletion,
-}: DangerZoneProps) {
+export function DangerZone(props: DangerZoneProps) {
   const { t } = useTranslation("settings", {
     keyPrefix: "userAccount.dangerZone",
   });
-
-  const isDeleteBlocked = organizationsBlockingAccountDeletion.length > 0;
+  const { organizationsBlockingAccountDeletion } = props;
 
   return (
     <section
@@ -151,11 +186,14 @@ export function DangerZone({
       <Item className="border-destructive" variant="outline">
         <ItemContent>
           <ItemTitle>{t("deleteTitle")}</ItemTitle>
-          <ItemDescription>
-            {isDeleteBlocked ? (
-              <span className="space-y-1">
+          <ItemDescription
+            className="line-clamp-none"
+            id="account-deletion-description"
+          >
+            {organizationsBlockingAccountDeletion.length > 0 ? (
+              <>
                 <Trans
-                  components={{ 1: <Strong /> }}
+                  components={{ 1: <strong className="text-foreground" /> }}
                   count={organizationsBlockingAccountDeletion.length}
                   i18nKey="userAccount.dangerZone.blockingOrganizations"
                   ns="settings"
@@ -165,19 +203,15 @@ export function DangerZone({
                       organizationsBlockingAccountDeletion.join(", "),
                   }}
                 />{" "}
-                <span>{t("blockingOrganizationsHelp")}</span>
-              </span>
+                {t("blockingOrganizationsHelp")}
+              </>
             ) : (
               t("deleteDescription")
             )}
           </ItemDescription>
         </ItemContent>
         <ItemActions>
-          <DeleteAccountDialogComponent
-            imlicitlyDeletedOrganizations={imlicitlyDeletedOrganizations}
-            isDeleteBlocked={isDeleteBlocked}
-            isDeletingAccount={isDeletingAccount}
-          />
+          <DeleteAccountDialog {...props} />
         </ItemActions>
       </Item>
     </section>

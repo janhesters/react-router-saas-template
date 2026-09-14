@@ -2,18 +2,17 @@ import { href } from "react-router";
 import type Stripe from "stripe";
 
 import { stripeAdmin } from "~/features/billing/stripe-admin.server";
+import { withOrganizationMutationLock } from "~/features/organizations/deletion/organization-mutation-lock.server";
 import type { Organization, UserAccount } from "~/generated/client";
+import { prisma } from "~/utils/database.server";
 
 /**
  * Creates a Stripe Checkout Session for a subscription purchase or update.
+ * Reads customer and billing details from the organization under its mutation
+ * lock, and persists a new customer before opening checkout.
  *
  * @param baseUrl - Your app's public URL (e.g., https://app.example.com).
- * @param customerEmail - The billing email for the customer/organization.
- * @param customerId - The Stripe customer ID, if already created; omit to
- * create a new customer.
  * @param organizationId - The Prisma ID of the organization.
- * @param organizationSlug - The slug of the organization for constructing
- * return URLs.
  * @param priceId - The Stripe Price ID to subscribe or update to.
  * @param purchasedById - The UserAccount ID of who initiated the purchase.
  * @param seatsUsed - Number of seats (quantity) to include in the subscription.
@@ -21,64 +20,87 @@ import type { Organization, UserAccount } from "~/generated/client";
  */
 export async function createStripeCheckoutSession({
   baseUrl,
-  customerEmail,
-  customerId,
   organizationId,
-  organizationSlug,
   priceId,
   purchasedById,
   seatsUsed,
 }: {
   baseUrl: string;
-  customerEmail: Organization["billingEmail"];
-  customerId: Organization["stripeCustomerId"];
   organizationId: Organization["id"];
-  organizationSlug: Organization["slug"];
   priceId: string;
   purchasedById: UserAccount["id"];
   seatsUsed: number;
 }) {
-  const hasCustomerId = customerId && customerId !== "";
+  return withOrganizationMutationLock(organizationId, async () => {
+    // A caller can have read the organization before deletion was admitted.
+    // Recheck under the same lock used by deletion before contacting Stripe.
+    const organization = await prisma.organization.findUnique({
+      where: { id: organizationId },
+    });
+    if (!organization) {
+      throw new Response("Organization not found", { status: 404 });
+    }
+    let customerId = organization.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripeAdmin.customers.create(
+        { metadata: { organizationId } },
+        {
+          idempotencyKey: `organization:${organizationId}:customer`,
+          maxNetworkRetries: 1,
+          timeout: 20_000,
+        },
+      );
+      customerId = customer.id;
+      // Persist before allowing checkout to create a subscription. If the
+      // process crashes here, customer.created metadata also identifies the
+      // customer for deletion cleanup.
+      await prisma.organization.update({
+        data: { stripeCustomerId: customerId },
+        where: { id: organizationId },
+      });
+    }
+    const customerEmail = organization.billingEmail;
+    const organizationSlug = organization.slug;
 
-  const session = await stripeAdmin.checkout.sessions.create({
-    automatic_tax: { enabled: true },
-    billing_address_collection: "auto",
-    cancel_url: `${baseUrl}${href(
-      "/organizations/:organizationSlug/settings/billing",
-      { organizationSlug },
-    )}`,
-    customer: hasCustomerId ? customerId : undefined,
-    ...(hasCustomerId && {
-      customer_update: { address: "auto", name: "auto", shipping: "auto" },
-    }),
-    line_items: [{ price: priceId, quantity: seatsUsed }],
-    metadata: {
-      customerEmail,
-      organizationId,
-      organizationSlug,
-      purchasedById,
-    },
-    mode: "subscription",
-    saved_payment_method_options: {
-      payment_method_save: "enabled",
-    },
-    subscription_data: {
-      metadata: {
-        customerEmail,
-        organizationId,
-        organizationSlug,
-        purchasedById,
+    return stripeAdmin.checkout.sessions.create(
+      {
+        automatic_tax: { enabled: true },
+        billing_address_collection: "auto",
+        cancel_url: `${baseUrl}${href(
+          "/organizations/:organizationSlug/settings/billing",
+          { organizationSlug },
+        )}`,
+        customer: customerId,
+        customer_update: { address: "auto", name: "auto", shipping: "auto" },
+        line_items: [{ price: priceId, quantity: seatsUsed }],
+        metadata: {
+          customerEmail,
+          organizationId,
+          organizationSlug,
+          purchasedById,
+        },
+        mode: "subscription",
+        saved_payment_method_options: {
+          payment_method_save: "enabled",
+        },
+        subscription_data: {
+          metadata: {
+            customerEmail,
+            organizationId,
+            organizationSlug,
+            purchasedById,
+          },
+        },
+        success_url: `${baseUrl}${href(
+          "/organizations/:organizationSlug/settings/billing/success",
+          { organizationSlug },
+        )}?session_id={CHECKOUT_SESSION_ID}`,
+        // Show check box to allow purchasing as a business.
+        tax_id_collection: { enabled: true },
       },
-    },
-    success_url: `${baseUrl}${href(
-      "/organizations/:organizationSlug/settings/billing/success",
-      { organizationSlug },
-    )}?session_id={CHECKOUT_SESSION_ID}`,
-    // Show check box to allow purchasing as a business.
-    tax_id_collection: { enabled: true },
+      { maxNetworkRetries: 1, timeout: 20_000 },
+    );
   });
-
-  return session;
 }
 
 /**

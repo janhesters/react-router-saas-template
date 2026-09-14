@@ -19,6 +19,7 @@ import {
   createUserWithOrgAndAddAsMember,
   teardownOrganizationAndMember,
 } from "~/test/test-utils";
+import { prisma } from "~/utils/database.server";
 
 test.describe("general organization settings", () => {
   test("given: a logged out user, should: redirect to login page with redirectTo parameter", async ({
@@ -306,81 +307,150 @@ test.describe("general organization settings", () => {
       await teardownOrganizationAndMember({ organization, user });
     });
 
-    test("given: delete organization button is clicked, should: show confirmation dialog and allow organization deletion if the user types in the organization's name as confirmation", async ({
+    test("given: a confirmed owner, should: delete the organization, show completed cleanup, and preserve the user account", async ({
+      page,
+    }) => {
+      test.setTimeout(40_000);
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
+        page,
+        role: OrganizationMembershipRole.owner,
+      });
+      try {
+        await page.goto(`/organizations/${organization.slug}/settings/general`);
+        await page
+          .getByRole("button", { name: /^delete organization$/i })
+          .click();
+        const dialog = page.getByRole("dialog");
+        await expect(dialog).toBeVisible();
+        await dialog
+          .getByRole("textbox", { name: /to confirm, type/i })
+          .fill(organization.name);
+        await dialog
+          .getByRole("button", { name: /delete this organization/i })
+          .click();
+        await expect(page).toHaveURL(
+          `/organization-deletions/${organization.id}`,
+        );
+        await expect(
+          page.getByRole("heading", { name: /^organization deleted$/i }),
+        ).toBeVisible({ timeout: 25_000 });
+        await expect(page.getByRole("status")).toContainText(
+          "Billing and file cleanup are complete.",
+        );
+        expect(
+          await retrieveOrganizationFromDatabaseById(organization.id),
+        ).toBeNull();
+        expect(
+          await prisma.userAccount.findUnique({ where: { id: user.id } }),
+        ).not.toBeNull();
+        await page.goto("/settings/account");
+        await page
+          .getByRole("link", { exact: true, name: organization.name })
+          .click();
+        await expect(page).toHaveURL(
+          `/organization-deletions/${organization.id}`,
+        );
+        await page.reload();
+        await expect(
+          page.getByRole("heading", { name: /^organization deleted$/i }),
+        ).toBeVisible();
+        await page
+          .getByRole("link", { name: /continue to your organizations/i })
+          .click();
+        await expect(page).toHaveURL("/onboarding/organization");
+      } finally {
+        await prisma.organizationDeletion.deleteMany({
+          where: { id: organization.id },
+        });
+        await teardownOrganizationAndMember({ organization, user });
+      }
+    });
+
+    test("given: an owner bypasses confirmation, should: reject deletion and preserve the organization", async ({
       page,
     }) => {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
         role: OrganizationMembershipRole.owner,
       });
+      const path = `/organizations/${organization.slug}/settings/general`;
+      try {
+        await page.goto(path);
+        for (const confirmation of [undefined, "wrong organization"]) {
+          const multipart: Record<string, string> = {
+            intent: "delete-organization",
+          };
+          if (confirmation !== undefined) multipart.confirmation = confirmation;
+          const response = await page.request.post(path, {
+            maxRedirects: 0,
+            multipart,
+          });
+          expect(response.status()).toBe(400);
+          expect(response.headers().location).toBeUndefined();
+          expect(response.headers()["set-cookie"] ?? "").not.toContain(
+            "__toast=",
+          );
+        }
+        expect(
+          await retrieveOrganizationFromDatabaseById(organization.id),
+        ).not.toBeNull();
+        expect(
+          await prisma.organizationDeletion.findUnique({
+            where: { id: organization.id },
+          }),
+        ).toBeNull();
+      } finally {
+        await teardownOrganizationAndMember({ organization, user });
+      }
+    });
 
-      await page.goto(`/organizations/${organization.slug}/settings/general`);
-
-      // Open delete dialog
-      await page.getByRole("button", { name: /delete organization/i }).click();
-
-      // Verify dialog content
-      await expect(page.getByRole("dialog")).toBeVisible();
-      await expect(
-        page.getByRole("heading", { level: 2, name: /delete organization/i }),
-      ).toBeVisible();
-      await expect(
-        page.getByText(/are you sure you want to delete this organization/i),
-      ).toBeVisible();
-
-      // Cancel deletion
-      await page.getByRole("button", { name: /cancel/i }).click();
-      await expect(page.getByRole("dialog")).not.toBeVisible();
-
-      // Confirm deletion
-      await page.getByRole("button", { name: /delete organization/i }).click();
-      await expect(
-        page.getByRole("button", { name: /delete this organization/i }),
-      ).toBeDisabled();
-      const confirmationInput = page.getByRole("textbox", {
-        name: new RegExp(
-          `to confirm, type "${organization.name}" in the box below`,
-          "i",
-        ),
+    test("given: billing cleanup is pending, should: explain the delay without claiming completion", async ({
+      page,
+    }) => {
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
+        page,
+        role: OrganizationMembershipRole.owner,
       });
-      // Typing in anything less than the organization's name should keep the
-      // delete button disabled
-      await confirmationInput.fill(organization.name.slice(0, -1));
-      await expect(
-        page.getByRole("button", { name: /delete this organization/i }),
-      ).toBeDisabled();
-      // Typing in the name but messing up its capitalization should keep the
-      // delete button disabled
-      await confirmationInput.clear();
-      await confirmationInput.fill(organization.name.toLowerCase());
-      await expect(
-        page.getByRole("button", { name: /delete this organization/i }),
-      ).toBeDisabled();
-      // Typing in the organization's name should enable the delete button
-      await confirmationInput.clear();
-      await confirmationInput.fill(organization.name);
-      await page
-        .getByRole("button", { name: /delete this organization/i })
-        .click();
-
-      // Verify toast
-      await expect(
-        page
-          .getByRole("region", { name: /notifications/i })
-          .getByText(/organization has been deleted/i),
-      ).toBeVisible();
-
-      // Since the user no longer has an organization, they should be redirected
-      // to the onboarding page
-      await expect(page).toHaveURL("/onboarding/organization");
-
-      // Verify organization was deleted
-      const deletedOrganization = await retrieveOrganizationFromDatabaseById(
-        organization.id,
-      );
-      expect(deletedOrganization).toBeNull();
-
-      await deleteUserAccountFromDatabaseById(user.id);
+      // Simulate a persisted failed provider call; the future retry time keeps
+      // the background worker from processing this fixture during assertions.
+      await prisma.organizationDeletion.create({
+        data: {
+          attempts: 1,
+          id: organization.id,
+          lastError: "Private provider diagnostic",
+          nextAttemptAt: new Date(Date.now() + 60 * 60_000),
+          organizationName: organization.name,
+          organizationSlug: organization.slug,
+          requestedById: user.id,
+        },
+      });
+      await prisma.organization.delete({ where: { id: organization.id } });
+      try {
+        await page.goto(`/organization-deletions/${organization.id}`);
+        await expect(
+          page.getByRole("heading", { name: /cleanup still in progress/i }),
+        ).toBeVisible();
+        await expect(page.getByRole("status")).toContainText(
+          "We will retry automatically",
+        );
+        await expect(
+          page.getByText("Private provider diagnostic"),
+        ).not.toBeVisible();
+        await expect(
+          page.getByText("Billing and file cleanup are complete.", {
+            exact: false,
+          }),
+        ).not.toBeVisible();
+        await page.getByRole("button", { name: /retry cleanup/i }).click();
+        await expect(
+          page.getByRole("heading", { name: /^organization deleted$/i }),
+        ).toBeVisible();
+      } finally {
+        await prisma.organizationDeletion.deleteMany({
+          where: { id: organization.id },
+        });
+        await teardownOrganizationAndMember({ organization, user });
+      }
     });
   });
 

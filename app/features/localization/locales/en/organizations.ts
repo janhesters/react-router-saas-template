@@ -53,6 +53,27 @@ export default {
     breadcrumb: "Dashboard",
     pageTitle: "Dashboard",
   },
+  deletion: {
+    completed: {
+      description:
+        "Your organization and its data have been deleted. Billing and file cleanup are complete. Member accounts remain available.",
+      title: "Organization deleted",
+    },
+    continueButton: "Continue to your organizations",
+    pageTitle: "Organization deletion",
+    pending: {
+      description:
+        "Your organization is no longer accessible. Billing and file cleanup are in progress. You can leave this page; cleanup will continue automatically.",
+      title: "Deleting organization",
+    },
+    retryButton: "Retry cleanup",
+    retrying: {
+      description:
+        "Your organization is no longer accessible. Billing or file cleanup could not finish yet. We will retry automatically, or you can retry now. Deletion is complete only when cleanup finishes.",
+      title: "Cleanup still in progress",
+    },
+    retryingButton: "Retrying cleanup ...",
+  },
   getHelp: {
     breadcrumb: "Get Help",
     pageTitle: "Get Help",
@@ -142,10 +163,10 @@ export default {
         deleteButton: "Delete this organization",
         deleteButtonSubmitting: "Deleting organization...",
         deleteDescription:
-          "Once deleted, it will be gone forever. Please be certain.",
+          "Permanently delete this organization and its data, cancel its billing, and remove its files. Member accounts remain available.",
         deleteTitle: "Delete this organization",
         dialogDescription:
-          "Are you sure you want to delete this organization? This action cannot be undone.",
+          "This permanently removes the organization for every member and starts billing and file cleanup. This action cannot be undone.",
         dialogTitle: "Delete Organization",
         errors: {
           confirmationMismatch:

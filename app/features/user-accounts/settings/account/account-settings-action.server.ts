@@ -1,6 +1,6 @@
 import { report } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { data } from "react-router";
+import { data, redirect } from "react-router";
 import { z } from "zod";
 
 import {
@@ -13,19 +13,21 @@ import {
   updateUserAccountFormSchema,
 } from "./account-settings-schemas";
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/settings+/+types/account";
-import { adjustSeats } from "~/features/billing/stripe-helpers.server";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
-import { deleteOrganization } from "~/features/organizations/organizations-helpers.server";
+import { withAccountMutationLock } from "~/features/organizations/deletion/organization-mutation-lock.server";
+import {
+  AccountDeletionError,
+  requestAccountDeletion,
+} from "~/features/user-accounts/deletion/account-deletion.server";
+import { serializeAccountDeletionRecovery } from "~/features/user-accounts/deletion/account-deletion-recovery.server";
 import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import {
-  deleteUserAccountFromDatabaseById,
+  retrieveUserAccountFromDatabaseById,
   updateUserAccountInDatabaseById,
 } from "~/features/user-accounts/user-accounts-model.server";
-import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
-import { badRequest } from "~/utils/http-responses.server";
+import { badRequest, notFound } from "~/utils/http-responses.server";
 import { replaceStoredImage } from "~/utils/image-replacement.server";
-import { reclaimImageFromStorage } from "~/utils/storage-helpers.server";
-import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
+import { createToastHeaders } from "~/utils/toast.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
 const accountSettingsActionSchema = coerceFormValue(
@@ -56,134 +58,119 @@ export async function accountSettingsAction({
 
   switch (result.data.intent) {
     case UPDATE_USER_ACCOUNT_INTENT: {
-      const updates: { name?: string } = {};
-
-      if (result.data.name && result.data.name !== user.name) {
-        updates.name = result.data.name;
-      }
-
-      if (result.data.avatar) {
-        const file = result.data.avatar;
-        const replacement = await replaceStoredImage({
-          kind: "avatar",
-          ownerId: user.id,
-          previousImageUrl: user.imageUrl,
-          publish: (imageUrl) =>
-            updateUserAccountInDatabaseById({
-              expectedImageUrl: user.imageUrl,
-              id: user.id,
-              user: { ...updates, imageUrl },
-            }),
-          upload: () => uploadUserAvatar({ file, supabase, userId: user.id }),
-        });
-        if (!replacement.success) {
-          return data(
-            {
-              result: report(result.submission, {
-                error: {
-                  fieldErrors: {
-                    avatar: [
-                      i18n.t(
-                        `settings:userAccount.errors.${replacement.reason}`,
-                      ),
-                    ],
-                  },
-                  formErrors: [],
-                },
-              }),
-            },
-            { status: replacement.status },
+      const input = result.data;
+      return withAccountMutationLock(
+        user.supabaseUserId,
+        async () => {
+          const currentUser = await retrieveUserAccountFromDatabaseById(
+            user.id,
           );
-        }
-      } else if (Object.keys(updates).length > 0) {
-        await updateUserAccountInDatabaseById({
-          id: user.id,
-          user: updates,
-        });
-      }
+          if (!currentUser) throw notFound();
+          const updates: { name?: string } = {};
 
-      const toastHeaders = await createToastHeaders({
-        title: i18n.t("settings:userAccount.toast.userAccountUpdated"),
-        type: "success",
-      });
-      return data({ result: undefined }, { headers: toastHeaders });
+          if (input.name && input.name !== currentUser.name) {
+            updates.name = input.name;
+          }
+
+          if (input.avatar) {
+            const file = input.avatar;
+            const replacement = await replaceStoredImage({
+              kind: "avatar",
+              ownerId: user.id,
+              previousImageUrl: currentUser.imageUrl,
+              publish: (imageUrl) =>
+                updateUserAccountInDatabaseById({
+                  expectedImageUrl: currentUser.imageUrl,
+                  id: user.id,
+                  user: { ...updates, imageUrl },
+                }),
+              upload: () =>
+                uploadUserAvatar({ file, supabase, userId: user.id }),
+            });
+            if (!replacement.success) {
+              return data(
+                {
+                  result: report(result.submission, {
+                    error: {
+                      fieldErrors: {
+                        avatar: [
+                          i18n.t(
+                            `settings:userAccount.errors.${replacement.reason}`,
+                          ),
+                        ],
+                      },
+                      formErrors: [],
+                    },
+                  }),
+                },
+                { status: replacement.status },
+              );
+            }
+          } else if (Object.keys(updates).length > 0) {
+            await updateUserAccountInDatabaseById({
+              id: user.id,
+              user: updates,
+            });
+          }
+
+          const toastHeaders = await createToastHeaders({
+            title: i18n.t("settings:userAccount.toast.userAccountUpdated"),
+            type: "success",
+          });
+          return data({ result: undefined }, { headers: toastHeaders });
+        },
+        { shared: true },
+      );
     }
 
     case DELETE_USER_ACCOUNT_INTENT: {
-      // Check if user is an owner of any organizations with other members
-      const orgsBlockingDeletion = user.memberships.filter(
-        (membership) =>
-          membership.role === "owner" &&
-          membership.organization._count.memberships > 1,
-      );
-
-      if (orgsBlockingDeletion.length > 0) {
+      let admission: Awaited<ReturnType<typeof requestAccountDeletion>>;
+      try {
+        admission = await requestAccountDeletion({
+          confirmation: result.data.confirmation,
+          userId: user.id,
+        });
+      } catch (error) {
+        if (!(error instanceof AccountDeletionError)) throw error;
         return badRequest({
           result: report(result.submission, {
             error: {
-              fieldErrors: {},
-              formErrors: [
-                "Cannot delete account while owner of organizations with other members",
-              ],
+              fieldErrors:
+                error.code === "confirmationMismatch"
+                  ? {
+                      confirmation: [
+                        i18n.t(
+                          "settings:userAccount.dangerZone.errors.confirmationMismatch",
+                        ),
+                      ],
+                    }
+                  : {},
+              formErrors:
+                error.code === "ownershipRequired"
+                  ? [
+                      i18n.t(
+                        "settings:userAccount.dangerZone.blockingOrganizationsHelp",
+                      ),
+                    ]
+                  : [],
             },
           }),
         });
       }
-
-      // Find organizations where user is the sole owner (only member)
-      const soleOwnerOrgs = user.memberships.filter(
-        (membership) =>
-          membership.role === "owner" &&
-          membership.organization._count.memberships === 1,
-      );
-
-      // Delete the organizations
-      await Promise.all(
-        soleOwnerOrgs.map(({ organization }) =>
-          deleteOrganization(organization.id),
-        ),
-      );
-
-      // Adjust the seats for the other user's memberships
-      await Promise.all(
-        user.memberships
-          .filter(
-            (membership) =>
-              !soleOwnerOrgs
-                .map(({ organization }) => organization.id)
-                .includes(membership.organization.id),
-          )
-          .filter(
-            (membership) => membership.organization.stripeSubscriptions[0],
-          )
-          .map((membership) => {
-            const subscription =
-              // biome-ignore lint/style/noNonNullAssertion: the subscription is guaranteed to exist
-              membership.organization.stripeSubscriptions[0]!;
-            return adjustSeats({
-              newQuantity: membership.organization._count.memberships - 1,
-              subscriptionId: subscription.stripeId,
-              // biome-ignore lint/style/noNonNullAssertion: the subscription item is guaranteed to exist
-              subscriptionItemId: subscription.items[0]!.price.stripeId,
-            });
+      // Admission is already committed. Sign-out failure cannot undo deletion;
+      // the removed local account and Auth tombstone deny further account access.
+      try {
+        await supabase.auth.signOut({ scope: "local" });
+      } catch (error) {
+        console.error("Account deletion sign-out failed", error);
+      }
+      return redirect(`/account-deletions/${admission.deletion.id}`, {
+        headers: {
+          "Set-Cookie": await serializeAccountDeletionRecovery({
+            deletionId: admission.deletion.id,
+            recoveryToken: admission.recoveryToken,
           }),
-      );
-
-      // Sign out the user before deleting their account
-      await supabase.auth.signOut();
-
-      // Delete the user account (this will cascade delete their memberships)
-      const deletedUser = await deleteUserAccountFromDatabaseById(user.id);
-      await reclaimImageFromStorage({
-        imageUrl: deletedUser.imageUrl,
-        kind: "avatar",
-        ownerId: user.id,
-      });
-      await supabaseAdminClient.auth.admin.deleteUser(user.supabaseUserId);
-
-      return redirectWithToast("/", {
-        title: i18n.t("settings:userAccount.toast.userAccountDeleted"),
-        type: "success",
+        },
       });
     }
   }

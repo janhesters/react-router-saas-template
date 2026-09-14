@@ -10,6 +10,8 @@ import type { EntryContext, RouterContextProvider } from "react-router";
 import { ServerRouter } from "react-router";
 
 import { getInstance } from "./features/localization/i18next-middleware.server";
+import { startOrganizationDeletionWorker } from "./features/organizations/deletion/organization-deletion-worker.server";
+import { startAccountDeletionWorker } from "./features/user-accounts/deletion/account-deletion-worker.server";
 import { getEnv, init } from "./utils/env.server";
 import { NonceProvider } from "./utils/nonce-provider";
 
@@ -22,14 +24,11 @@ const oneSecond = 1000;
 const nonceLength = 16;
 const MODE = process.env.NODE_ENV ?? "development";
 
-let mockServerInitialized = false;
+let mockServerInitialization: Promise<void> | undefined;
 
-async function initializeMockServer() {
-  if (mockServerInitialized) {
-    return;
-  }
-
-  if (process.env.MOCKS === "true") {
+function initializeMockServer(): Promise<void> {
+  mockServerInitialization ??= (async () => {
+    if (process.env.MOCKS !== "true") return;
     const { supabaseHandlers } = await import("~/test/mocks/handlers/supabase");
     const { resendHandlers } = await import("~/test/mocks/handlers/resend");
     const { stripeHandlers } = await import("~/test/mocks/handlers/stripe");
@@ -39,10 +38,16 @@ async function initializeMockServer() {
       ...resendHandlers,
       ...stripeHandlers,
     ]);
-  }
-
-  mockServerInitialized = true;
+  })();
+  return mockServerInitialization;
 }
+
+// Start on server initialization so persisted cleanup resumes without a visit
+// to the deleted organization's status page. Install mocks before provider work.
+void initializeMockServer().then(() => {
+  startOrganizationDeletionWorker();
+  startAccountDeletionWorker();
+});
 
 export default async function handleRequest(
   request: Request,

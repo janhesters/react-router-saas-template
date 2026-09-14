@@ -3,23 +3,33 @@ import { describe, expect, onTestFinished, test } from "vitest";
 
 import { action } from "./general";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
-import { retrieveOrganizationFromDatabaseById } from "~/features/organizations/organizations-model.server";
+import {
+  addMembersToOrganizationInDatabaseById,
+  retrieveOrganizationFromDatabaseById,
+} from "~/features/organizations/organizations-model.server";
 import {
   DELETE_ORGANIZATION_INTENT,
   UPDATE_ORGANIZATION_INTENT,
 } from "~/features/organizations/settings/general/general-settings-constants";
+import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
+import {
+  deleteUserAccountFromDatabaseById,
+  saveUserAccountToDatabase,
+} from "~/features/user-accounts/user-accounts-model.server";
 import type { Organization, UserAccount } from "~/generated/client";
 import { OrganizationMembershipRole } from "~/generated/client";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { supabaseHandlers } from "~/test/mocks/handlers/supabase";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
-import { setupUserWithOrgAndAddAsMember } from "~/test/server-test-utils";
+import {
+  setupUserWithOrgAndAddAsMember,
+  setupUserWithTrialOrgAndAddAsMember,
+} from "~/test/server-test-utils";
 import {
   createAuthenticatedRequest,
   createOrganizationMembershipTestContextProvider,
-  createUserWithOrgAndAddAsMember,
-  teardownOrganizationAndMember,
 } from "~/test/test-utils";
+import { prisma } from "~/utils/database.server";
 import { badRequest, forbidden, notFound } from "~/utils/http-responses.server";
 import { slugify } from "~/utils/slugify.server";
 import { toFormData } from "~/utils/to-form-data";
@@ -60,7 +70,7 @@ async function sendAuthenticatedRequest({
   });
 }
 
-setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
+const server = setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
 
 describe("/organizations/:organizationSlug/settings/general route action", () => {
   test("given: an unauthenticated request, should: throw a redirect to the login page", async () => {
@@ -145,6 +155,42 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
         expect(actual).toEqual(expected);
       },
     );
+
+    test("given: overlapping renames with the original slug, should: redirect both requests to the final slug", async () => {
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        organization: createPopulatedOrganization({ stripeCustomerId: null }),
+        role: OrganizationMembershipRole.owner,
+      });
+      const name = `Renamed ${createId()}`;
+      const params = { organizationSlug: organization.slug };
+      const requests = await Promise.all(
+        [0, 1].map(async () => {
+          const request = await createAuthenticatedRequest({
+            formData: toFormData({ intent, name }),
+            method: "POST",
+            url: createUrl(organization.slug),
+            user,
+          });
+          const context = await createOrganizationMembershipTestContextProvider(
+            { params, pattern, request },
+          );
+          return {
+            context,
+            params,
+            pattern,
+            request,
+            url: new URL(request.url),
+          };
+        }),
+      );
+      for (const args of requests) {
+        const response = (await action(args)) as Response;
+        expect(response.status).toEqual(302);
+        expect(response.headers.get("Location")).toEqual(
+          `/organizations/${slugify(name)}/settings/general`,
+        );
+      }
+    });
 
     test("given: a user who is an owner and a valid name, should: update organization name, show a toast and redirect to new URL", async () => {
       const { user, organization } = await setupUserWithOrgAndAddAsMember({
@@ -300,34 +346,150 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
       },
     );
 
-    test("given: a valid request from an owner, should: delete organization and redirect to organizations page", async () => {
-      const { user, organization } = await createUserWithOrgAndAddAsMember({
+    test.each([
+      { confirmation: undefined, given: "missing confirmation" },
+      { confirmation: "wrong organization", given: "wrong confirmation" },
+      { confirmation: "", given: "blank confirmation" },
+    ])(
+      "given: $given, should: reject deletion and preserve the organization",
+      async ({ confirmation }) => {
+        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+          role: OrganizationMembershipRole.owner,
+        });
+        const originalOrganization = await retrieveOrganizationFromDatabaseById(
+          organization.id,
+        );
+        const response = await sendAuthenticatedRequest({
+          formData: toFormData({
+            intent,
+            ...(confirmation === undefined ? {} : { confirmation }),
+          }),
+          organizationSlug: organization.slug,
+          user,
+        });
+        expect(response).toMatchObject({
+          data: {
+            result: {
+              error: { fieldErrors: { confirmation: expect.any(Array) } },
+            },
+          },
+          init: { status: 400 },
+        });
+        expect(
+          await retrieveOrganizationFromDatabaseById(organization.id),
+        ).toEqual(originalOrganization);
+        expect(
+          await prisma.organizationDeletion.findUnique({
+            where: { id: organization.id },
+          }),
+        ).toBeNull();
+      },
+    );
+
+    test("given: a confirmed deletion with other members and no billing customer, should: delete the organization, preserve all users, and redirect to pending cleanup", async () => {
+      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+        organization: createPopulatedOrganization({
+          imageUrl: "",
+          stripeCustomerId: null,
+        }),
         role: OrganizationMembershipRole.owner,
       });
       onTestFinished(async () => {
-        try {
-          await teardownOrganizationAndMember({ organization, user });
-        } catch {
-          // Do nothing cause the org was successfully deleted.
-        }
+        await prisma.organizationDeletion.deleteMany({
+          where: { id: organization.id },
+        });
+      });
+      const otherUser = createPopulatedUserAccount();
+      await saveUserAccountToDatabase(otherUser);
+      onTestFinished(async () => {
+        await deleteUserAccountFromDatabaseById(otherUser.id);
+      });
+      await addMembersToOrganizationInDatabaseById({
+        id: organization.id,
+        members: [otherUser.id],
       });
 
-      const formData = toFormData({ intent });
-
       const response = (await sendAuthenticatedRequest({
-        formData,
+        formData: toFormData({ confirmation: organization.name, intent }),
         organizationSlug: organization.slug,
         user,
       })) as Response;
-
-      expect(response.status).toEqual(302);
-      expect(response.headers.get("Location")).toEqual("/organizations");
-
-      // Verify organization was deleted
-      const deletedOrganization = await retrieveOrganizationFromDatabaseById(
-        organization.id,
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        `/organization-deletions/${organization.id}`,
       );
-      expect(deletedOrganization).toBeNull();
+      expect(response.headers.get("Set-Cookie")).toBeNull();
+      expect(
+        await retrieveOrganizationFromDatabaseById(organization.id),
+      ).toBeNull();
+      expect(
+        await prisma.organizationMembership.count({
+          where: { organizationId: organization.id },
+        }),
+      ).toBe(0);
+      expect(
+        await prisma.userAccount.findUnique({ where: { id: user.id } }),
+      ).toEqual(user);
+      expect(
+        await prisma.userAccount.findUnique({ where: { id: otherUser.id } }),
+      ).toEqual(otherUser);
+      expect(
+        await prisma.organizationDeletion.findUnique({
+          where: { id: organization.id },
+        }),
+      ).toMatchObject({
+        attempts: 0,
+        completedAt: null,
+        requestedById: user.id,
+      });
+    });
+
+    test("given: a deletion needs billing cleanup, should: queue it durably and redirect before any provider call", async () => {
+      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        role: OrganizationMembershipRole.owner,
+      });
+      onTestFinished(async () => {
+        await prisma.organizationDeletion.deleteMany({
+          where: { id: organization.id },
+        });
+      });
+      const providerRequests: string[] = [];
+      const listener = ({ request }: { request: Request }) => {
+        if (
+          request.url.startsWith("https://api.stripe.com/") ||
+          request.url.includes("/storage/")
+        ) {
+          providerRequests.push(`${request.method} ${request.url}`);
+        }
+      };
+      server.events.on("request:start", listener);
+      onTestFinished(() =>
+        server.events.removeListener("request:start", listener),
+      );
+      const response = (await sendAuthenticatedRequest({
+        formData: toFormData({ confirmation: organization.name, intent }),
+        organizationSlug: organization.slug,
+        user,
+      })) as Response;
+      expect(providerRequests).toEqual([]);
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe(
+        `/organization-deletions/${organization.id}`,
+      );
+      expect(response.headers.get("Set-Cookie")).toBeNull();
+      expect(
+        await retrieveOrganizationFromDatabaseById(organization.id),
+      ).toBeNull();
+      expect(
+        await prisma.organizationDeletion.findUnique({
+          where: { id: organization.id },
+        }),
+      ).toMatchObject({
+        attempts: 0,
+        completedAt: null,
+        lastError: null,
+        requestedById: user.id,
+      });
     });
   });
 });
