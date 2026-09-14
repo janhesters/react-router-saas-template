@@ -1,3 +1,4 @@
+import { report } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
 import { data, href } from "react-router";
 import { z } from "zod";
@@ -7,7 +8,7 @@ import {
   uploadOrganizationLogo,
 } from "../../organizations-helpers.server";
 import { organizationMembershipContext } from "../../organizations-middleware.server";
-import { updateOrganizationInDatabaseBySlug } from "../../organizations-model.server";
+import { updateOrganizationInDatabaseById } from "../../organizations-model.server";
 import {
   DELETE_ORGANIZATION_INTENT,
   UPDATE_ORGANIZATION_INTENT,
@@ -22,8 +23,8 @@ import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { OrganizationMembershipRole } from "~/generated/client";
 import { forbidden } from "~/utils/http-responses.server";
+import { replaceStoredImage } from "~/utils/image-replacement.server";
 import { slugify } from "~/utils/slugify.server";
-import { removeImageFromStorage } from "~/utils/storage-helpers.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
@@ -36,7 +37,6 @@ const generalOrganizationSettingsActionSchema = coerceFormValue(
 
 export async function generalOrganizationSettingsAction({
   request,
-  params,
   context,
 }: Route.ActionArgs) {
   const { organization, role } = context.get(organizationMembershipContext);
@@ -60,7 +60,7 @@ export async function generalOrganizationSettingsAction({
 
   switch (result.data.intent) {
     case UPDATE_ORGANIZATION_INTENT: {
-      const updates: { name?: string; slug?: string; imageUrl?: string } = {};
+      const updates: { name?: string; slug?: string } = {};
 
       if (result.data.name && result.data.name !== organization.name) {
         const newSlug = slugify(result.data.name);
@@ -68,47 +68,74 @@ export async function generalOrganizationSettingsAction({
         updates.slug = newSlug;
       }
 
+      let publishedSlug = organization.slug;
       if (result.data.logo) {
         const { supabase } = context.get(authContext);
-        // Remove old logo if it exists
-        if (organization.imageUrl) {
-          await removeImageFromStorage(organization.imageUrl);
-        }
-        // Upload new logo
-        const imageUrl = await uploadOrganizationLogo({
-          file: result.data.logo,
-          organizationId: organization.id,
-          supabase,
-        });
-        updates.imageUrl = imageUrl;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        await updateOrganizationInDatabaseBySlug({
-          organization: updates,
-          slug: params.organizationSlug,
-        });
-
-        if (updates.name && organization.stripeCustomerId) {
-          await updateStripeCustomer({
-            customerId: organization.stripeCustomerId,
-            customerName: updates.name,
-          });
-        }
-
-        if (updates.slug) {
-          return redirectWithToast(
-            href(`/organizations/:organizationSlug/settings/general`, {
-              organizationSlug: updates.slug,
+        const file = result.data.logo;
+        const replacement = await replaceStoredImage({
+          kind: "organization-logo",
+          ownerId: organization.id,
+          previousImageUrl: organization.imageUrl,
+          publish: (imageUrl) =>
+            updateOrganizationInDatabaseById({
+              expectedImageUrl: organization.imageUrl,
+              id: organization.id,
+              organization: { ...updates, imageUrl },
             }),
+          upload: () =>
+            uploadOrganizationLogo({
+              file,
+              organizationId: organization.id,
+              supabase,
+            }),
+        });
+        if (!replacement.success) {
+          return data(
             {
-              title: i18n.t(
-                "organizations:settings.general.toast.organizationProfileUpdated",
-              ),
-              type: "success",
+              result: report(result.submission, {
+                error: {
+                  fieldErrors: {
+                    logo: [
+                      i18n.t(
+                        `organizations:settings.general.errors.${replacement.reason}`,
+                      ),
+                    ],
+                  },
+                  formErrors: [],
+                },
+              }),
             },
+            { status: replacement.status },
           );
         }
+        publishedSlug = replacement.value.slug;
+      } else if (Object.keys(updates).length > 0) {
+        const updatedOrganization = await updateOrganizationInDatabaseById({
+          id: organization.id,
+          organization: updates,
+        });
+        publishedSlug = updatedOrganization.slug;
+      }
+
+      if (updates.name && organization.stripeCustomerId) {
+        await updateStripeCustomer({
+          customerId: organization.stripeCustomerId,
+          customerName: updates.name,
+        });
+      }
+
+      if (publishedSlug !== organization.slug) {
+        return redirectWithToast(
+          href(`/organizations/:organizationSlug/settings/general`, {
+            organizationSlug: publishedSlug,
+          }),
+          {
+            title: i18n.t(
+              "organizations:settings.general.toast.organizationProfileUpdated",
+            ),
+            type: "success",
+          },
+        );
       }
 
       const toastHeaders = await createToastHeaders({

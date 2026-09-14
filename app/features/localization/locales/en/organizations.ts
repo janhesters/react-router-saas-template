@@ -158,11 +158,16 @@ export default {
       },
       description: "General settings for this organization.",
       errors: {
+        imageConflict:
+          "The logo changed during this upload. Refresh the page and try again.",
         invalidFileType:
           "Invalid file type. Only PNG, JPG, JPEG, GIF, and WebP images are allowed.",
         logoTooLarge: "Logo must be less than 1MB.",
         nameMax: "Organization name must be at most 255 characters long.",
         nameMin: "Organization name must be at least 3 characters long.",
+        saveFailed:
+          "We couldn't confirm your changes were saved. Refresh the page before trying again.",
+        uploadFailed: "The logo couldn't be uploaded. Please try again.",
       },
       form: {
         logoDescription:

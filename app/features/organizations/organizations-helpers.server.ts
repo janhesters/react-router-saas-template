@@ -18,7 +18,6 @@ import { getValidEmailInviteInfo } from "./accept-email-invite/accept-email-invi
 import { destroyEmailInviteInfoSession } from "./accept-email-invite/accept-email-invite-session.server";
 import { getValidInviteLinkInfo } from "./accept-invite-link/accept-invite-link-helpers.server";
 import { destroyInviteLinkInfoSession } from "./accept-invite-link/accept-invite-link-session.server";
-import { BUCKET_NAME, LOGO_PATH_PREFIX } from "./organization-constants";
 import {
   consumeEmailInviteLinkAndAddMemberToOrganizationInDatabase,
   EmailInviteLinkEmailMismatchError,
@@ -42,9 +41,8 @@ import type {
 } from "~/generated/client";
 import { combineHeaders } from "~/utils/combine-headers.server";
 import { notFound } from "~/utils/http-responses.server";
-import { createAdminS3Client } from "~/utils/s3.server";
-import { uploadToStorage } from "~/utils/storage.server";
-import { removeImageFromStorage } from "~/utils/storage-helpers.server";
+import { uploadOwnedImage } from "~/utils/image-replacement.server";
+import { reclaimImageFromStorage } from "~/utils/storage-helpers.server";
 import { throwIfEntityIsMissing } from "~/utils/throw-if-entity-is-missing.server";
 import { redirectWithToast } from "~/utils/toast.server";
 
@@ -144,9 +142,13 @@ export async function deleteOrganization(organizationId: Organization["id"]) {
       await deactivateStripeCustomer(organization.stripeCustomerId);
     }
 
-    await removeImageFromStorage(organization.imageUrl);
-
-    await deleteOrganizationFromDatabaseById(organizationId);
+    const deletedOrganization =
+      await deleteOrganizationFromDatabaseById(organizationId);
+    await reclaimImageFromStorage({
+      imageUrl: deletedOrganization.imageUrl,
+      kind: "organization-logo",
+      ownerId: organizationId,
+    });
   }
 }
 
@@ -360,14 +362,10 @@ export async function uploadOrganizationLogo({
   organizationId: string;
   supabase: SupabaseClient;
 }) {
-  const fileExtension = file.name.split(".").pop() ?? "";
-  const key = `${LOGO_PATH_PREFIX}/${organizationId}.${fileExtension}`;
-  await uploadToStorage({
-    bucket: BUCKET_NAME,
-    client: createAdminS3Client(),
-    contentType: file.type,
+  return uploadOwnedImage({
     file,
-    key,
+    kind: "organization-logo",
+    ownerId: organizationId,
+    supabase,
   });
-  return supabase.storage.from(BUCKET_NAME).getPublicUrl(key).data.publicUrl;
 }

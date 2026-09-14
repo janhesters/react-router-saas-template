@@ -23,7 +23,8 @@ import {
 } from "~/features/user-accounts/user-accounts-model.server";
 import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
 import { badRequest } from "~/utils/http-responses.server";
-import { removeImageFromStorage } from "~/utils/storage-helpers.server";
+import { replaceStoredImage } from "~/utils/image-replacement.server";
+import { reclaimImageFromStorage } from "~/utils/storage-helpers.server";
 import { createToastHeaders, redirectWithToast } from "~/utils/toast.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
@@ -55,24 +56,46 @@ export async function accountSettingsAction({
 
   switch (result.data.intent) {
     case UPDATE_USER_ACCOUNT_INTENT: {
-      const updates: { name?: string; imageUrl?: string } = {};
+      const updates: { name?: string } = {};
 
       if (result.data.name && result.data.name !== user.name) {
         updates.name = result.data.name;
       }
 
       if (result.data.avatar) {
-        await removeImageFromStorage(user.imageUrl);
-
-        const publicUrl = await uploadUserAvatar({
-          file: result.data.avatar,
-          supabase,
-          userId: user.id,
+        const file = result.data.avatar;
+        const replacement = await replaceStoredImage({
+          kind: "avatar",
+          ownerId: user.id,
+          previousImageUrl: user.imageUrl,
+          publish: (imageUrl) =>
+            updateUserAccountInDatabaseById({
+              expectedImageUrl: user.imageUrl,
+              id: user.id,
+              user: { ...updates, imageUrl },
+            }),
+          upload: () => uploadUserAvatar({ file, supabase, userId: user.id }),
         });
-        updates.imageUrl = publicUrl;
-      }
-
-      if (Object.keys(updates).length > 0) {
+        if (!replacement.success) {
+          return data(
+            {
+              result: report(result.submission, {
+                error: {
+                  fieldErrors: {
+                    avatar: [
+                      i18n.t(
+                        `settings:userAccount.errors.${replacement.reason}`,
+                      ),
+                    ],
+                  },
+                  formErrors: [],
+                },
+              }),
+            },
+            { status: replacement.status },
+          );
+        }
+      } else if (Object.keys(updates).length > 0) {
         await updateUserAccountInDatabaseById({
           id: user.id,
           user: updates,
@@ -121,9 +144,6 @@ export async function accountSettingsAction({
         ),
       );
 
-      // Delete the user's profile picture
-      await removeImageFromStorage(user.imageUrl);
-
       // Adjust the seats for the other user's memberships
       await Promise.all(
         user.memberships
@@ -153,7 +173,12 @@ export async function accountSettingsAction({
       await supabase.auth.signOut();
 
       // Delete the user account (this will cascade delete their memberships)
-      await deleteUserAccountFromDatabaseById(user.id);
+      const deletedUser = await deleteUserAccountFromDatabaseById(user.id);
+      await reclaimImageFromStorage({
+        imageUrl: deletedUser.imageUrl,
+        kind: "avatar",
+        ownerId: user.id,
+      });
       await supabaseAdminClient.auth.admin.deleteUser(user.supabaseUserId);
 
       return redirectWithToast("/", {

@@ -1,5 +1,6 @@
+import { report } from "@conform-to/react/future";
 import { coerceFormValue } from "@conform-to/zod/v4/future";
-import { href, redirect } from "react-router";
+import { data, href, redirect } from "react-router";
 
 import { requireUserNeedsOnboarding } from "../onboarding-helpers.server";
 import { onboardingUserAccountSchema } from "./onboarding-user-account-schemas";
@@ -13,6 +14,7 @@ import { uploadUserAvatar } from "~/features/user-accounts/settings/account/acco
 import { updateUserAccountInDatabaseById } from "~/features/user-accounts/user-accounts-model.server";
 import { authContext } from "~/features/user-authentication/user-authentication-middleware.server";
 import { combineHeaders } from "~/utils/combine-headers.server";
+import { replaceStoredImage } from "~/utils/image-replacement.server";
 import { redirectWithToast } from "~/utils/toast.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
@@ -39,18 +41,45 @@ export async function onboardingUserAccountAction({
     return result.response;
   }
 
-  const imageUrl = result.data.image
-    ? await uploadUserAvatar({
-        file: result.data.image,
-        supabase,
-        userId: user.id,
-      })
-    : "";
+  if (result.data.image) {
+    const file = result.data.image;
+    const replacement = await replaceStoredImage({
+      kind: "avatar",
+      ownerId: user.id,
+      previousImageUrl: user.imageUrl,
+      publish: (imageUrl) =>
+        updateUserAccountInDatabaseById({
+          expectedImageUrl: user.imageUrl,
+          id: user.id,
+          user: { imageUrl, name: result.data.name },
+        }),
+      upload: () => uploadUserAvatar({ file, supabase, userId: user.id }),
+    });
 
-  await updateUserAccountInDatabaseById({
-    id: user.id,
-    user: { imageUrl, name: result.data.name },
-  });
+    if (!replacement.success) {
+      const i18n = getInstance(context);
+      return data(
+        {
+          result: report(result.submission, {
+            error: {
+              fieldErrors: {
+                image: [
+                  i18n.t(`settings:userAccount.errors.${replacement.reason}`),
+                ],
+              },
+              formErrors: [],
+            },
+          }),
+        },
+        { status: replacement.status },
+      );
+    }
+  } else {
+    await updateUserAccountInDatabaseById({
+      id: user.id,
+      user: { name: result.data.name },
+    });
+  }
 
   const { inviteLinkInfo, headers: inviteLinkHeaders } =
     await getInviteInfoForAuthRoutes(request);
