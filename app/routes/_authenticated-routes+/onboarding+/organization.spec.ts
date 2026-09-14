@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { createId } from "@paralleldrive/cuid2";
 import { describe, expect, onTestFinished, test } from "vitest";
 
@@ -30,11 +30,11 @@ const createUrl = () => `http://localhost:3000/onboarding/organization`;
 const pattern = "/onboarding/organization";
 
 async function sendAuthenticatedRequest({
-  userAccount,
   formData,
+  userAccount,
 }: {
-  userAccount: ReturnType<typeof createPopulatedUserAccount>;
   formData: FormData;
+  userAccount: ReturnType<typeof createPopulatedUserAccount>;
 }) {
   const request = await createAuthenticatedRequest({
     formData,

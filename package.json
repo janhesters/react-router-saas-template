@@ -1,8 +1,40 @@
 {
-  "config": {
-    "commitizen": {
-      "path": "cz-conventional-changelog"
-    }
+  "name": "reactsquad-react-router-saas-template",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun run typegen && react-router build",
+    "check": "bun run fix:lint && bun run fix:format",
+    "check:format": "oxfmt --check .",
+    "check:lint": "bun run typegen && oxlint .",
+    "check:shadcn": "bun scripts/check-shadcn-lint.ts",
+    "dev": "bun run typegen:prisma && react-router dev",
+    "dev:mocks": "EMAIL_MOCKS=true MOCKS=true bun scripts/run-with-test-database.ts bun run dev",
+    "fix:format": "oxfmt --write .",
+    "fix:lint": "bun run typegen && oxlint --fix .",
+    "lint": "bun run check:lint && bun run check:shadcn && bun run check:format",
+    "prepare": "husky",
+    "prisma:deploy": "bunx prisma migrate deploy",
+    "prisma:migrate": "bunx prisma migrate dev",
+    "prisma:migrate:init": "bunx prisma migrate dev --name init && bun run typegen:prisma",
+    "prisma:push": "bunx prisma db push && bun run typegen:prisma",
+    "prisma:seed": "bun ./prisma/seed.ts",
+    "prisma:studio": "bunx prisma studio",
+    "quickstart": "bun run setup:env && bun run test:db:reset && bun run test:db:seed && bun run dev:mocks",
+    "setup:env": "bun scripts/setup-env.ts",
+    "start": "react-router-serve ./build/server/index.js",
+    "stripe:resend-events": "bun scripts/resend-stripe-events.ts",
+    "test": "bun scripts/run-with-test-database.ts bunx vitest --reporter=verbose --run",
+    "test:db:reset": "bun scripts/run-with-test-database.ts bunx prisma db push --force-reset",
+    "test:db:seed": "bun scripts/run-with-test-database.ts bun ./prisma/seed.ts",
+    "test:e2e": "bun scripts/run-with-test-database.ts bunx playwright test",
+    "test:e2e:ui": "bun scripts/run-with-test-database.ts bunx playwright test --ui",
+    "test:watch": "bun scripts/run-with-test-database.ts bunx vitest --reporter=verbose",
+    "typecheck": "bun run typegen && tsc",
+    "typegen": "bun run typegen:router && bun run typegen:prisma",
+    "typegen:prisma": "DATABASE_URL=postgresql://prisma:prisma@localhost:5432/prisma bunx prisma generate",
+    "typegen:router": "react-router typegen",
+    "validate": "bun run typecheck && bun run lint"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1116.0",
@@ -61,13 +93,14 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
-    "@biomejs/biome": "2.5.10",
     "@commitlint/cli": "21.2.2",
     "@commitlint/config-conventional": "21.2.2",
     "@faker-js/faker": "10.6.0",
     "@playwright/test": "1.62.1",
     "@react-router/dev": "8.3.0",
     "@react-router/remix-routes-option-adapter": "8.3.0",
+    "@rolldown/plugin-transform-imports": "0.1.1",
+    "@shadcn/lint": "0.1.0",
     "@tailwindcss/vite": "4.3.3",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "7.0.1",
@@ -82,10 +115,15 @@
     "@vitest/coverage-v8": "4.1.11",
     "commitizen": "4.3.2",
     "cz-conventional-changelog": "3.3.0",
+    "eslint-plugin-no-only-tests": "3.4.0",
+    "eslint-plugin-perfectionist": "5.11.0",
     "happy-dom": "20.11.6",
     "husky": "9.1.7",
     "lint-staged": "17.3.0",
     "msw": "2.15.0",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.83.0",
+    "oxlint-tsgolint": "7.0.2001",
     "react-router-devtools": "6.2.3",
     "remix-flat-routes": "0.8.5",
     "tailwindcss": "4.3.3",
@@ -93,47 +131,25 @@
     "vite": "8.2.2",
     "vitest": "4.1.11"
   },
-  "engines": {
-    "node": ">=24.19.0 <25"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx,json,css,md}": [
-      "biome check --write --unsafe"
-    ]
-  },
-  "name": "reactsquad-react-router-saas-template",
   "overrides": {
     "typescript": "$typescript"
   },
-  "packageManager": "bun@1.4.0",
-  "private": true,
-  "scripts": {
-    "build": "bun run typegen && react-router build",
-    "check": "biome check --write .",
-    "dev": "bun run typegen:prisma && react-router dev",
-    "dev:mocks": "EMAIL_MOCKS=true MOCKS=true bun scripts/run-with-test-database.ts bun run dev",
-    "lint": "biome ci --css-parse-tailwind-directives=true .",
-    "prepare": "husky",
-    "prisma:deploy": "bunx prisma migrate deploy",
-    "prisma:migrate": "bunx prisma migrate dev",
-    "prisma:migrate:init": "bunx prisma migrate dev --name init && bun run typegen:prisma",
-    "prisma:push": "bunx prisma db push && bun run typegen:prisma",
-    "prisma:seed": "bun ./prisma/seed.ts",
-    "prisma:studio": "bunx prisma studio",
-    "quickstart": "bun run setup:env && bun run test:db:reset && bun run test:db:seed && bun run dev:mocks",
-    "setup:env": "bun scripts/setup-env.ts",
-    "start": "react-router-serve ./build/server/index.js",
-    "stripe:resend-events": "bun scripts/resend-stripe-events.ts",
-    "test": "bun scripts/run-with-test-database.ts bunx vitest --reporter=verbose --run",
-    "test:db:reset": "bun scripts/run-with-test-database.ts bunx prisma db push --force-reset",
-    "test:db:seed": "bun scripts/run-with-test-database.ts bun ./prisma/seed.ts",
-    "test:e2e": "bun scripts/run-with-test-database.ts bunx playwright test",
-    "test:e2e:ui": "bun scripts/run-with-test-database.ts bunx playwright test --ui",
-    "test:watch": "bun scripts/run-with-test-database.ts bunx vitest --reporter=verbose",
-    "typecheck": "bun run typegen && tsc",
-    "typegen": "bun run typegen:router && bun run typegen:prisma",
-    "typegen:prisma": "DATABASE_URL=postgresql://prisma:prisma@localhost:5432/prisma bunx prisma generate",
-    "typegen:router": "react-router typegen"
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx,mts,cts}": [
+      "oxlint --fix",
+      "oxfmt --write"
+    ],
+    "*.{json,jsonc,json5,css,scss,less,md,mdx,html,yml,yaml,toml}": [
+      "oxfmt --write"
+    ]
   },
-  "type": "module"
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "engines": {
+    "node": ">=24.19.0 <25"
+  },
+  "packageManager": "bun@1.4.0"
 }

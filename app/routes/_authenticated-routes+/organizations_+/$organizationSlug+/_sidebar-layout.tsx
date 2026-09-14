@@ -28,8 +28,8 @@ import {
  */
 export const shouldRevalidate = ({
   currentParams,
-  nextParams,
   defaultShouldRevalidate,
+  nextParams,
 }: ShouldRevalidateFunctionArgs) => {
   if (currentParams.organizationSlug !== nextParams.organizationSlug) {
     return true;
@@ -40,9 +40,9 @@ export const shouldRevalidate = ({
 export const middleware = [organizationMembershipMiddleware];
 
 export async function loader({
-  request,
-  params,
   context,
+  params,
+  request,
   url,
 }: Route.LoaderArgs) {
   if (
@@ -56,7 +56,7 @@ export async function loader({
     );
   }
 
-  const { user, organization } = context.get(organizationMembershipContext);
+  const { organization, user } = context.get(organizationMembershipContext);
 
   const { notificationData, products } = await promiseHash({
     notificationData:
@@ -92,8 +92,8 @@ export async function action(args: Route.ActionArgs) {
 
 export default function OrganizationLayoutRoute({
   loaderData,
-  params,
   matches,
+  params,
 }: Route.ComponentProps) {
   const {
     billingSidebarCardProps,

@@ -97,7 +97,7 @@ describe("account provider cleanup", () => {
   });
 
   async function setupBilling() {
-    const { user, organization } = await setupUserWithTrialOrgAndAddAsMember();
+    const { organization, user } = await setupUserWithTrialOrgAndAddAsMember();
     const current = createStripeSubscriptionFactory({
       metadata: { organizationId: organization.id, purchasedById: user.id },
     });
@@ -128,7 +128,7 @@ describe("account provider cleanup", () => {
   }
 
   test("given: a retained subscription and memberships changed since admission, should: reconcile the current seat count with the actual subscription item ID", async () => {
-    const { organization, current, updates } = await setupBilling();
+    const { current, organization, updates } = await setupBilling();
     const other = createPopulatedUserAccount();
     onTestFinished(async () => {
       await prisma.userAccount.deleteMany({ where: { id: other.id } });
@@ -154,7 +154,7 @@ describe("account provider cleanup", () => {
   });
 
   test("given: scheduled plan changes, should: preserve phase prices while reconciling future seat quantities", async () => {
-    const { organization, current, updates } = await setupBilling();
+    const { current, organization, updates } = await setupBilling();
     const now = Math.floor(Date.now() / 1000);
     const schedule = createStripeSubscriptionScheduleFactory({
       status: "active",

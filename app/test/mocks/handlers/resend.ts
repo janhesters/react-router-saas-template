@@ -4,15 +4,13 @@ import { HttpResponse, http } from "msw";
 
 import { requireHeader, writeEmail } from "../utils";
 
-const { json } = HttpResponse;
-
 export const resendHandlers: Array<HttpHandler> = [
   http.post("https://api.resend.com/emails", async ({ request }) => {
     requireHeader(request.headers, "Authorization");
     const body = await request.json();
     const email = await writeEmail(body);
 
-    return json({
+    return HttpResponse.json({
       created_at: new Date().toISOString(),
       from: email.from,
       id: createId(),

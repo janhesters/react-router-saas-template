@@ -1,9 +1,9 @@
 export default {
   acceptEmailInvite: {
+    acceptingInvite: "Einladung wird angenommen ...",
     acceptInvite: "Einladung annehmen",
     acceptInviteInstructions:
       "Klicke auf die Schaltfläche unten, um dich zu registrieren. Mit dieser E-Mail-Einladung trittst du automatisch der richtigen Organisation bei.",
-    acceptingInvite: "Einladung wird angenommen ...",
     alreadyMemberToastDescription:
       "Du bist bereits Mitglied von {{organizationName}}",
     alreadyMemberToastTitle: "Bereits Mitglied",
@@ -25,10 +25,10 @@ export default {
     welcomeToAppName: "Willkommen bei {{appName}}",
   },
   acceptInviteLink: {
+    acceptingInvite: "Einladung wird angenommen ...",
     acceptInvite: "Einladung annehmen",
     acceptInviteInstructions:
       "Klicke auf die Schaltfläche unten, um dich zu registrieren. Mit diesem Link trittst du automatisch der richtigen Organisation bei.",
-    acceptingInvite: "Einladung wird angenommen ...",
     alreadyMemberToastDescription:
       "Du bist bereits Mitglied von {{organizationName}}",
     alreadyMemberToastTitle: "Bereits Mitglied",

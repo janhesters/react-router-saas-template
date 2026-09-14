@@ -148,22 +148,22 @@ export async function createStripeCustomerPortalSession({
 export async function createStripeSwitchPlanSession({
   baseUrl,
   customerId,
+  newPriceId,
   organizationSlug,
+  quantity,
   subscriptionId,
   subscriptionItemId,
-  newPriceId,
-  quantity,
 }: {
   baseUrl: string;
   customerId: string;
-  organizationSlug: Organization["slug"];
-  subscriptionId: string;
-  subscriptionItemId: string;
   newPriceId: string;
+  organizationSlug: Organization["slug"];
   /** This MUST be the existing quantity of the subscription item, if you
    * want to preserve the quantity. Otherwise, Stripe will default to 1.
    */
   quantity: number;
+  subscriptionId: string;
+  subscriptionItemId: string;
 }) {
   // This will deep-link straight to the "Confirm this update" page
   const session = await stripeAdmin.billingPortal.sessions.create({
@@ -194,14 +194,14 @@ export async function createStripeSwitchPlanSession({
  * @returns A Promise that resolves to the updated Stripe Customer object.
  */
 export async function updateStripeCustomer({
+  customerEmail,
   customerId,
   customerName,
-  customerEmail,
   organizationId,
 }: {
+  customerEmail?: string;
   customerId: string;
   customerName?: string;
-  customerEmail?: string;
   organizationId?: Organization["id"];
 }) {
   const customer = await stripeAdmin.customers.update(customerId, {
@@ -305,15 +305,15 @@ export async function keepCurrentSubscription(
  * and schedule.
  */
 export async function adjustSeats({
+  newQuantity,
+  stripeScheduleId,
   subscriptionId,
   subscriptionItemId,
-  stripeScheduleId,
-  newQuantity,
 }: {
+  newQuantity: number;
+  stripeScheduleId?: Stripe.SubscriptionSchedule["id"];
   subscriptionId: Stripe.Subscription["id"];
   subscriptionItemId: Stripe.SubscriptionItem["id"];
-  stripeScheduleId?: Stripe.SubscriptionSchedule["id"];
-  newQuantity: number;
 }) {
   const updatedSub = await stripeAdmin.subscriptions.update(subscriptionId, {
     items: [{ id: subscriptionItemId, quantity: newQuantity }],

@@ -92,7 +92,7 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create an existing user account first.
-    const { user, organization } = await createUserWithOrgAndAddAsMember();
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
 
     // Set up the code verifier cookie.
     await setupCodeVerifierCookie({ page });
@@ -201,7 +201,7 @@ test.describe(`${path} API route`, () => {
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Set up the code verifier cookie
@@ -445,7 +445,7 @@ test.describe(`${path} API route`, () => {
       await createUserWithOrgAndAddAsMember();
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Create an email invite bound to the existing user's email
@@ -764,7 +764,7 @@ test.describe(`${path} API route`, () => {
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Set up the code verifier cookie
@@ -816,7 +816,7 @@ test.describe(`${path} API route`, () => {
       });
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Create an email invite for this organization bound to the existing

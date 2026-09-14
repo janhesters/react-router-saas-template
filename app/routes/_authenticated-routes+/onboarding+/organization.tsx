@@ -48,7 +48,7 @@ import {
 import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context, url }: Route.LoaderArgs) {
+export async function loader({ context, request, url }: Route.LoaderArgs) {
   await requireUserNeedsOnboarding({
     context,
     request,
@@ -75,7 +75,7 @@ export default function OrganizationOnboardingRoute({
   actionData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("onboarding", { keyPrefix: "organization" });
-  const { form, fields } = useForm(
+  const { fields, form } = useForm(
     coerceFormValue(onboardingOrganizationSchema),
     {
       lastResult: actionData?.result,
@@ -99,9 +99,9 @@ export default function OrganizationOnboardingRoute({
       <FieldSet disabled={isSubmitting}>
         <FieldGroup>
           <div className="flex flex-col gap-1">
-            <h1 className="font-bold text-2xl">{t("heading")}</h1>
+            <h1 className="text-2xl font-bold">{t("heading")}</h1>
             <p
-              className="text-pretty text-muted-foreground text-sm"
+              className="text-sm text-pretty text-muted-foreground"
               id={form.descriptionId}
             >
               {t("subtitle")}
@@ -155,7 +155,10 @@ export default function OrganizationOnboardingRoute({
                         className="size-16 rounded-lg object-cover md:size-24"
                         src=""
                       />
-                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                      <AvatarFallback
+                        className="size-16 rounded-lg md:size-24"
+                        variant="upload"
+                      >
                         <IconBuilding className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>
@@ -212,7 +215,10 @@ export default function OrganizationOnboardingRoute({
               <FieldDescription id={fields.referralSources.descriptionId}>
                 {t("referralSourcesDescription")}
               </FieldDescription>
-              <FieldGroup className="flex flex-row flex-wrap gap-2 [--radius:9999rem]">
+              <FieldGroup
+                className="flex flex-row flex-wrap gap-2"
+                variant="pills"
+              >
                 {REFERRAL_SOURCE_OPTIONS.map((option) => {
                   const labelId = `referral-source-${option}-label`;
                   return (
@@ -229,10 +235,11 @@ export default function OrganizationOnboardingRoute({
                         <Checkbox
                           aria-invalid={fields.referralSources.ariaInvalid}
                           aria-labelledby={labelId}
-                          className="-ml-6 -translate-x-1 rounded-full transition-all duration-100 ease-linear data-[state=checked]:ml-0 data-[state=checked]:translate-x-0"
+                          className="-ml-6 -translate-x-1 data-[state=checked]:ml-0 data-[state=checked]:translate-x-0"
                           id={`referral-source-${option}`}
                           name={fields.referralSources.name}
                           value={option}
+                          variant="pill"
                         />
                         <FieldTitle id={labelId}>
                           {t(`referralSource.${option}`)}
@@ -354,14 +361,14 @@ export default function OrganizationOnboardingRoute({
             >
               <FieldLegend variant="label">{t("earlyAccessLabel")}</FieldLegend>
               <FieldLabel
-                className="flex items-start gap-3 rounded-lg border p-3 hover:bg-accent/50 has-aria-checked:border-primary has-aria-checked:bg-primary/5 dark:has-aria-checked:border-primary dark:has-aria-checked:bg-primary/10"
+                className="flex items-start"
                 htmlFor={fields.earlyAccessOptIn.id}
+                variant="option"
               >
                 <Checkbox
                   aria-describedby={fields.earlyAccessOptIn.ariaDescribedBy}
                   aria-invalid={fields.earlyAccessOptIn.ariaInvalid}
                   aria-labelledby={`${fields.earlyAccessOptIn.id}-title`}
-                  className="data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground dark:data-[state=checked]:border-primary dark:data-[state=checked]:bg-primary"
                   id={fields.earlyAccessOptIn.id}
                   name={fields.earlyAccessOptIn.name}
                 />

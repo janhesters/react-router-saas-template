@@ -112,11 +112,11 @@ export async function loginByCookie({
  * @returns A promise that resolves to an authenticated APIRequestContext.
  */
 export async function createAuthenticatedRequest({
-  supabaseUserId,
   email,
+  supabaseUserId,
 }: {
-  supabaseUserId: UserAccount["supabaseUserId"];
   email: UserAccount["email"];
+  supabaseUserId: UserAccount["supabaseUserId"];
 }) {
   // Create a mock session with the provided user details
   const user = createPopulatedUserAccount({ email, supabaseUserId });
@@ -148,11 +148,11 @@ export async function createAuthenticatedRequest({
  * @returns The user account that was saved and logged in.
  */
 export async function loginAndSaveUserAccountToDatabase({
-  user = createPopulatedUserAccount(),
   page,
+  user = createPopulatedUserAccount(),
 }: {
-  user?: UserAccount;
   page: Page;
+  user?: UserAccount;
 }) {
   const [userAccount] = await Promise.all([
     saveUserAccountToDatabase(user),
@@ -204,9 +204,9 @@ export async function setupTrialOrganizationAndLoginAsMember({
  * @returns The organization and user that were created.
  */
 export async function setupOrganizationAndLoginAsMember({
+  lookupKey,
   organization = createPopulatedOrganization(),
   page,
-  user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member,
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
     items: [
@@ -214,14 +214,14 @@ export async function setupOrganizationAndLoginAsMember({
     ],
     organizationId: organization.id,
   }),
-  lookupKey,
+  user = createPopulatedUserAccount(),
 }: {
+  lookupKey?: LookupKey;
   organization?: Organization;
   page: Page;
   role?: OrganizationMembershipRole;
-  user?: UserAccount;
   subscription?: StripeSubscriptionWithItemsAndPrice;
-  lookupKey?: LookupKey;
+  user?: UserAccount;
 }) {
   const data = await setupTrialOrganizationAndLoginAsMember({
     organization,
@@ -233,7 +233,7 @@ export async function setupOrganizationAndLoginAsMember({
     await createTestSubscriptionForUserAndOrganization({
       lookupKey,
       organization: data.organization,
-      // biome-ignore lint/style/noNonNullAssertion: The mocks have a stripe customer id
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- The mocks have a stripe customer id
       stripeCustomerId: data.organization.stripeCustomerId!,
       subscription,
       user: data.user,
@@ -250,11 +250,11 @@ export async function setupOrganizationAndLoginAsMember({
  * @returns A promise that resolves when the cookie has been set.
  */
 export async function setupInviteLinkCookie({
-  page,
   link,
+  page,
 }: {
-  page: Page;
   link: CreateInviteLinkInfoCookieParams;
+  page: Page;
 }) {
   const cookieHeader = await createInviteLinkInfoCookie(link);
 
@@ -296,11 +296,11 @@ export async function setupInviteLinkCookie({
  * @returns A promise that resolves when the cookie has been set.
  */
 export async function setupEmailInviteCookie({
-  page,
   invite,
+  page,
 }: {
-  page: Page;
   invite: CreateEmailInviteInfoCookieParams;
+  page: Page;
 }) {
   const cookieHeader = await createEmailInviteInfoCookie(invite);
 

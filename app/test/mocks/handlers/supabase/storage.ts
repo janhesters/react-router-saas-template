@@ -77,12 +77,12 @@ const uploadMock = http.post(
 // based on what the 'remove' method seems to expect in its success case.
 // Adjust this based on the actual structure if needed.
 type FileObject = {
-  name: string;
-  id: string | undefined;
-  updated_at: string | undefined;
   created_at: string | undefined;
+  id: string | undefined;
   last_accessed_at: string | undefined;
   metadata: Record<string, unknown> | undefined;
+  name: string;
+  updated_at: string | undefined;
   // bucket_id?: string; // Optional: might be useful
 };
 
@@ -93,7 +93,7 @@ type RemoveRequestBody = {
 
 const removeMock = http.delete(
   `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/:bucketId`,
-  async ({ request, params }) => {
+  async ({ params, request }) => {
     try {
       // Use the generic type argument for request.json()
       // This tells TS what shape to expect *if* parsing succeeds.

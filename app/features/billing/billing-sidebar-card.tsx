@@ -26,16 +26,16 @@ import { cn } from "~/lib/utils";
 export type BillingSidebarCardProps = {
   className?: string;
   createSubscriptionModalProps: CreateSubscriptionModalContentProps;
-  state: "trialing" | "trialEnded" | "cancelled";
   showButton: boolean;
+  state: "trialing" | "trialEnded" | "cancelled";
   trialEndDate: Date;
 };
 
 export function BillingSidebarCard({
   className,
   createSubscriptionModalProps,
-  state,
   showButton,
+  state,
   trialEndDate,
 }: BillingSidebarCardProps) {
   const { t } = useTranslation("billing", {
@@ -46,18 +46,13 @@ export function BillingSidebarCard({
   return (
     <Dialog>
       <Card
-        className={cn(
-          "gap-4 py-4 shadow-none",
-          "bg-linear-to-t from-primary/5 to-card",
-          className,
-        )}
+        className={cn("gap-4 py-4", className)}
+        shadow="none"
+        variant="gradient"
       >
         <CardHeader
-          className={cn(
-            "px-4",
-            state === "cancelled" &&
-              "text-destructive *:data-[slot=card-description]:text-destructive/90",
-          )}
+          className="px-4"
+          tone={state === "cancelled" ? "destructive" : "default"}
         >
           <CardTitle className="text-sm">
             {state === "trialing"
@@ -85,9 +80,9 @@ export function BillingSidebarCard({
             <DialogTrigger
               render={
                 <Button
-                  className="w-full shadow-none"
-                  // Playwright shouldn't try to click the button before it's hydrated
+                  className="w-full" // Playwright shouldn't try to click the button before it's hydrated
                   disabled={!hydrated}
+                  shadow="none"
                   size="sm"
                   type="button"
                   variant="outline"

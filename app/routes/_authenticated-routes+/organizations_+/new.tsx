@@ -13,7 +13,7 @@ import { requireAuthenticatedUserExists } from "~/features/user-accounts/user-ac
 import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   await requireAuthenticatedUserExists({
     context,
     request,
@@ -58,7 +58,7 @@ export default function NewOrganizationRoute({
               <IconArrowLeft />
             </Link>
 
-            <h1 className="font-medium text-base">{t("pageTitle")}</h1>
+            <h1 className="text-base font-medium">{t("pageTitle")}</h1>
           </div>
 
           <ThemeToggle />

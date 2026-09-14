@@ -5,7 +5,7 @@ import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { organizationMembershipContext } from "~/features/organizations/organizations-middleware.server";
 import { SettingsSidebar } from "~/features/organizations/settings/settings-sidebar";
 
-export async function loader({ params, context }: Route.LoaderArgs) {
+export async function loader({ context, params }: Route.LoaderArgs) {
   const { role } = context.get(organizationMembershipContext);
   const i18next = getInstance(context);
   const t = i18next.getFixedT(null, "organizations", "settings");

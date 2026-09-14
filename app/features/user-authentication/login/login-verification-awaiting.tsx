@@ -30,7 +30,7 @@ export function LoginVerificationAwaiting({
     keyPrefix: "login.magicLink",
   });
 
-  const { secondsLeft, reset } = useCountdown(60);
+  const { reset, secondsLeft } = useCountdown(60);
 
   const waitingToResend = secondsLeft !== 0;
 
@@ -46,7 +46,7 @@ export function LoginVerificationAwaiting({
 
       <CardContent>
         <div className="grid gap-4">
-          <p className="text-muted-foreground text-xs">
+          <p className="text-xs text-muted-foreground">
             <Trans
               components={{ 1: <b /> }}
               count={secondsLeft}

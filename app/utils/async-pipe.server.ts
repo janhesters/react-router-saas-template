@@ -1,5 +1,5 @@
-/** biome-ignore-all lint/suspicious/noExplicitAny: asyncPipe is hard to type */
-/** biome-ignore-all lint/style/noNonNullAssertion: We check for null values */
+/* oxlint-disable typescript/no-explicit-any -- asyncPipe is hard to type */
+/* oxlint-disable typescript/no-non-null-assertion -- We check for null values */
 // A type that represents either a value or a promise of that value.
 type MaybePromise<T> = T | Promise<T>;
 

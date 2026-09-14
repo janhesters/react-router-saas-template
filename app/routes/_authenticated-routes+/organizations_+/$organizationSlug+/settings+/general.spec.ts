@@ -140,7 +140,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     ])(
       "given: a user who is NOT an owner (but is a $given), should: return a 403",
       async ({ role }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
         const newName = createPopulatedOrganization().name;
@@ -157,7 +157,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     );
 
     test("given: overlapping renames with the original slug, should: redirect both requests to the final slug", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         organization: createPopulatedOrganization({ stripeCustomerId: null }),
         role: OrganizationMembershipRole.owner,
       });
@@ -193,7 +193,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     });
 
     test("given: a user who is an owner and a valid name, should: update organization name, show a toast and redirect to new URL", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
       const name = `${createPopulatedOrganization().name} ${createId()}`;
@@ -300,7 +300,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     ])(
       "given: $given, should: return a 400 status code with an error message",
       async ({ body, expected }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.owner,
         });
 
@@ -331,7 +331,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     ])(
       "given: a user who is NOT an owner (but is a$given), should: return a 403",
       async ({ role }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -353,7 +353,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     ])(
       "given: $given, should: reject deletion and preserve the organization",
       async ({ confirmation }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.owner,
         });
         const originalOrganization = await retrieveOrganizationFromDatabaseById(
@@ -387,7 +387,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     );
 
     test("given: a confirmed deletion with other members and no billing customer, should: delete the organization, preserve all users, and redirect to pending cleanup", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         organization: createPopulatedOrganization({
           imageUrl: "",
           stripeCustomerId: null,
@@ -445,7 +445,7 @@ describe("/organizations/:organizationSlug/settings/general route action", () =>
     });
 
     test("given: a deletion needs billing cleanup, should: queue it durably and redirect before any provider call", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
       onTestFinished(async () => {

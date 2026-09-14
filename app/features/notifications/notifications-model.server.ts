@@ -9,11 +9,11 @@ import { prisma } from "~/utils/database.server";
 
 // Define the structure of the notification data we expect from the raw query
 export type NotificationQueryResult = {
-  recipientId: NotificationRecipient["id"];
-  readAt: NotificationRecipient["readAt"];
-  notificationId: Notification["id"];
   content: Notification["content"];
   createdAt: Notification["createdAt"];
+  notificationId: Notification["id"];
+  readAt: NotificationRecipient["readAt"];
+  recipientId: NotificationRecipient["id"];
 };
 
 /* CREATE */
@@ -46,13 +46,13 @@ export async function saveNotificationWithRecipientForUserAndOrganizationInDatab
  *          notification and its recipient, or null if creation failed unexpectedly.
  */
 export async function createNotificationForUserInDatabaseById({
-  userId,
-  organizationId,
   content,
+  organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
-  organizationId: Organization["id"];
   content: Prisma.InputJsonValue; // Use Prisma's specific JSON type for input
+  organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }): Promise<NotificationQueryResult | null> {
   const newNotification = await prisma.notification.create({
     data: {
@@ -81,7 +81,7 @@ export async function createNotificationForUserInDatabaseById({
     return null;
   }
 
-  // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a recipient
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a recipient
   const recipient = newNotification.recipients[0]!;
 
   // Map to the desired NotificationQueryResult structure
@@ -106,13 +106,13 @@ export async function createNotificationForUserInDatabaseById({
  *          and the count of recipient records created, or null if creation failed.
  */
 export async function createNotificationForUsersInDatabaseById({
-  userIds,
-  organizationId,
   content,
+  organizationId,
+  userIds,
 }: {
-  userIds: UserAccount["id"][];
-  organizationId: Organization["id"];
   content: Prisma.InputJsonValue; // Use Prisma's specific JSON type for input
+  organizationId: Organization["id"];
+  userIds: UserAccount["id"][];
 }): Promise<{ notification: Notification | null; recipientCount: number }> {
   // Avoid unnecessary database call if no users are provided
   if (userIds.length === 0) {
@@ -165,13 +165,13 @@ export async function createNotificationForUsersInDatabaseById({
  *          matches the user/org criteria, or null if not found
  */
 export async function retrieveNotificationRecipientForUserAndOrganizationFromDatabaseById({
-  userId,
   organizationId,
   recipientId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
   recipientId: NotificationRecipient["id"];
+  userId: UserAccount["id"];
 }) {
   return await prisma.notificationRecipient.findUnique({
     where: { id: recipientId, notification: { organizationId }, userId },
@@ -190,11 +190,11 @@ export async function retrieveNotificationRecipientForUserAndOrganizationFromDat
  *          match the user/org criteria
  */
 export async function retrieveNotificationRecipientsForUserAndOrganizationFromDatabase({
-  userId,
   organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }) {
   return await prisma.notificationRecipient.findMany({
     where: { notification: { organizationId }, userId },
@@ -213,11 +213,11 @@ export async function retrieveNotificationRecipientsForUserAndOrganizationFromDa
  *          matches the user/org criteria, or null if not found
  */
 export async function retrieveNotificationPanelForUserAndOrganizationFromDatabaseById({
-  userId,
   organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }) {
   return await prisma.notificationPanel.findUnique({
     where: { userId_organizationId: { organizationId, userId } },
@@ -253,15 +253,15 @@ export type InitialNotificationsData = {
  * - A default object with empty arrays if no data is found
  */
 export async function retrieveInitialNotificationsDataForUserAndOrganizationFromDatabaseById({
-  userId,
-  organizationId,
   allNotificationsLimit = 50, // Default limit per category
+  organizationId,
   unreadNotificationsLimit = 20, // Default limit per category
+  userId,
 }: {
-  userId: UserAccount["id"];
-  organizationId: Organization["id"];
   allNotificationsLimit?: number;
+  organizationId: Organization["id"];
   unreadNotificationsLimit?: number;
+  userId: UserAccount["id"];
 }): Promise<InitialNotificationsData> {
   // Ensure limit is a positive integer
   const safeAllNotificationsLimit = Math.max(
@@ -345,8 +345,8 @@ export async function retrieveInitialNotificationsDataForUserAndOrganizationFrom
 
 // Shared type for paginated results
 type PaginatedNotificationsResult = {
-  notifications: NotificationQueryResult[];
   hasMore: boolean;
+  notifications: NotificationQueryResult[];
 };
 
 /**
@@ -364,15 +364,15 @@ type PaginatedNotificationsResult = {
  *          - `hasMore`: A boolean indicating if more notifications exist beyond this batch.
  */
 export async function retrieveMoreAllNotificationsForUserAndOrganizationFromDatabaseById({
-  userId,
-  organizationId,
-  limit = 10,
   cursor,
+  limit = 10,
+  organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
-  organizationId: Organization["id"];
-  limit?: number;
   cursor: NotificationRecipient["id"]; // Cursor is the ID of the last item fetched
+  limit?: number;
+  organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }): Promise<PaginatedNotificationsResult> {
   const safeLimit = Math.max(1, Math.floor(limit));
 
@@ -428,15 +428,15 @@ export async function retrieveMoreAllNotificationsForUserAndOrganizationFromData
  *          - `hasMore`: A boolean indicating if more unread notifications exist beyond this batch.
  */
 export async function retrieveMoreUnreadNotificationsForUserAndOrganizationFromDatabaseById({
-  userId,
-  organizationId,
-  limit = 10,
   cursor,
+  limit = 10,
+  organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
-  organizationId: Organization["id"];
-  limit?: number;
   cursor: NotificationRecipient["id"]; // Cursor is the ID of the last item fetched
+  limit?: number;
+  organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }): Promise<PaginatedNotificationsResult> {
   const safeLimit = Math.max(1, Math.floor(limit));
 
@@ -496,11 +496,11 @@ export async function retrieveMoreUnreadNotificationsForUserAndOrganizationFromD
  *          or null if the panel wasn't found.
  */
 export async function updateNotificationPanelLastOpenedAtForUserAndOrganizationInDatabaseById({
-  userId,
   organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }) {
   try {
     return await prisma.notificationPanel.update({
@@ -536,13 +536,13 @@ export async function updateNotificationPanelLastOpenedAtForUserAndOrganizationI
  *          or null if the recipient wasn't found or didn't belong to the user/org.
  */
 export async function markNotificationAsReadForUserAndOrganizationInDatabaseById({
-  userId,
   organizationId,
   recipientId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
   recipientId: NotificationRecipient["id"];
+  userId: UserAccount["id"];
 }): Promise<NotificationQueryResult | null> {
   try {
     const updatedRecipient = await prisma.notificationRecipient.update({
@@ -606,11 +606,11 @@ export async function markNotificationAsReadForUserAndOrganizationInDatabaseById
  * updated.
  */
 export async function markAllUnreadNotificationsAsReadForUserAndOrganizationInDatabaseById({
-  userId,
   organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }): Promise<{ count: number }> {
   const result = await prisma.notificationRecipient.updateMany({
     data: {

@@ -10,17 +10,17 @@ import { createRoutesStub, render, screen } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
 const createMember: Factory<Member> = ({
+  avatar = createPopulatedUserAccount().imageUrl,
+  deactivatedAt = faker.datatype.boolean() ? faker.date.recent() : null,
   email = createPopulatedUserAccount().email,
   id = createPopulatedUserAccount().id,
+  isCurrentUser,
   name = createPopulatedUserAccount().name,
   role = faker.helpers.arrayElement(Object.values(OrganizationMembershipRole)),
-  deactivatedAt = faker.datatype.boolean() ? faker.date.recent() : null,
   status = faker.helpers.arrayElement([
     "joinedViaLink",
     "joinedViaEmailInvite",
   ]),
-  avatar = createPopulatedUserAccount().imageUrl,
-  isCurrentUser,
 } = {}) => ({
   avatar,
   deactivatedAt,

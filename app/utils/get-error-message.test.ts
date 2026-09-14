@@ -45,7 +45,7 @@ describe("getErrorMessage()", () => {
 
   test("given: an error that extends a custom error class, should: return the error's message", () => {
     class CustomError extends Error {
-      // biome-ignore lint/complexity/noUselessConstructor: test code
+      // oxlint-disable-next-line eslint/no-useless-constructor -- test code
       public constructor(message: string) {
         super(message);
       }

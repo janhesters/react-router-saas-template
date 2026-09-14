@@ -62,7 +62,7 @@ async function setup() {
 
 describe("account deletion response boundaries", () => {
   test("given: admission fails before commit, should: preserve the session and not call Auth deletion", async () => {
-    const { admission, signOut, deleteAuthUser, run } = await setup();
+    const { admission, deleteAuthUser, run, signOut } = await setup();
     const error = new Error("Database unavailable");
     admission.mockRejectedValue(error);
     await expect(run()).rejects.toEqual(error);
@@ -73,7 +73,7 @@ describe("account deletion response boundaries", () => {
   test.each(["confirmationMismatch", "ownershipRequired"] as const)(
     "given: admission rejects %s, should: show a form error without signing out",
     async (code) => {
-      const { admission, signOut, run } = await setup();
+      const { admission, run, signOut } = await setup();
       admission.mockRejectedValue(new deletion.AccountDeletionError(code));
       const result = await run();
       expect(result).toMatchObject({ init: { status: 400 } });
@@ -84,7 +84,7 @@ describe("account deletion response boundaries", () => {
   test.each(["throw", "API error"] as const)(
     "given: sign-out fails with %s after admission, should: return recovery for the committed deletion",
     async (failure) => {
-      const { admission, signOut, deleteAuthUser, run, user } = await setup();
+      const { admission, deleteAuthUser, run, signOut, user } = await setup();
       const error = new AuthApiError(
         "Sign-out failed",
         500,

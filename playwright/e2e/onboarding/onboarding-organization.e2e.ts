@@ -32,7 +32,7 @@ test.describe("onboarding organization page", () => {
   test("given: a logged in and onboarded user, should: redirect to organization page", async ({
     page,
   }) => {
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
     });
 

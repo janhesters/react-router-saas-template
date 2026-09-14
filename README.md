@@ -16,7 +16,8 @@ explaining the template.
 - 🎨 [Shadcn UI](https://ui.shadcn.com/) components
 - 🗄️ [Postgres](https://www.postgresql.org/) with
   [Supabase](https://supabase.com/) & [Prisma](https://www.prisma.io/)
-- 🧹 [Biome](https://biomejs.dev/) for linting and formatting
+- 🧹 [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for linting and
+  [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting
 - ⚡️ [Vitest](https://vitest.dev/) for testing
 - 🎭 [Playwright](https://playwright.dev/) for E2E testing
 - 🛠️ [Commitizen](https://commitizen-tools.github.io/commitizen/),
@@ -217,10 +218,7 @@ the Supabase Dashboard.
 
 <p>Follow this link to register:</p>
 <p>
-  <a
-    href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
-    >Sign Up</a
-  >
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Sign Up</a>
 </p>
 ```
 
@@ -234,9 +232,7 @@ the Supabase Dashboard.
 
 <p>Follow this link to login:</p>
 <p>
-  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
-    >Log In</a
-  >
+  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email">Log In</a>
 </p>
 ```
 
@@ -608,12 +604,12 @@ ALLOW_INDEXING=false
 
 **When to Use:**
 
-| Environment         | Recommended Value | Reason                                                       |
-| ------------------- | ----------------- | ------------------------------------------------------------ |
-| **Production**      | `"true"` or omit  | Allow search engines to index your public site               |
-| **Staging**         | `"false"`         | Prevent duplicate content and indexing of test environments  |
-| **Development**     | `"false"`         | Prevent local development sites from being indexed           |
-| **Preview/PR**      | `"false"`         | Prevent temporary preview deployments from being indexed     |
+| Environment     | Recommended Value | Reason                                                      |
+| --------------- | ----------------- | ----------------------------------------------------------- |
+| **Production**  | `"true"` or omit  | Allow search engines to index your public site              |
+| **Staging**     | `"false"`         | Prevent duplicate content and indexing of test environments |
+| **Development** | `"false"`         | Prevent local development sites from being indexed          |
+| **Preview/PR**  | `"false"`         | Prevent temporary preview deployments from being indexed    |
 
 #### Content Security Policy (CSP)
 
@@ -631,11 +627,16 @@ by cryptographically random nonces that are generated on each request.
 ### Project helper scripts
 
 - `build`: generates React Router and Prisma types, then builds the application.
-- `check`: formats code and applies Biome's safe fixes.
+- `check`: applies Oxlint fixes, then formats files with Oxfmt.
+- `check:lint`: generates React Router and Prisma types, then runs Oxlint.
+- `check:format`: checks formatting with Oxfmt without changing files.
+- `check:shadcn`: verifies that each shadcn rule rejects a violating example.
 - `dev`: generates Prisma Client, then starts the development server.
 - `dev:mocks`: starts development with service mocks and deterministic email
   delivery against `TEST_DATABASE_URL`.
-- `lint`: checks formatting and lint rules without changing files.
+- `fix:lint`: generates React Router and Prisma types, then applies Oxlint fixes.
+- `fix:format`: formats files with Oxfmt.
+- `lint`: runs `check:lint`, `check:format`, and `check:shadcn`.
 - `start`: serves the production build with `react-router-serve`.
 - `test`: runs the Vitest suite once against `TEST_DATABASE_URL`.
 - `test:watch`: watches the Vitest suite against `TEST_DATABASE_URL`.
@@ -643,6 +644,7 @@ by cryptographically random nonces that are generated on each request.
 - `test:db:reset`: resets and pushes the schema to `TEST_DATABASE_URL`.
 - `test:db:seed`: seeds demo data into `TEST_DATABASE_URL`.
 - `typecheck`: generates both route and Prisma types, then runs TypeScript.
+- `validate`: runs type checking, linting, and formatting checks.
 
 ### Prisma helper scripts
 
@@ -689,10 +691,12 @@ Supabase, etc.), you can use the mock mode. This uses
 **Setup:**
 
 1. Reset and seed the disposable test database with demo data:
+
    ```bash
    bun run test:db:reset
    bun run test:db:seed
    ```
+
    This creates three demo organizations with subscriptions:
    - `hobby@example.com` - Hobby Plan (1 seat, monthly)
    - `startup@example.com` - Startup Plan (5 seats, annual)
@@ -750,8 +754,8 @@ next request without persisting in the session.
 - Example:
   ```tsx
   return redirectWithToast(`/organizations/${newOrganizations.slug}/home`, {
-    title: 'Organization created',
-    description: 'Your organization has been created.',
+    title: "Organization created",
+    description: "Your organization has been created.",
   });
   ```
 - Accepts extra arguments for `ResponseInit` to set headers.
@@ -766,8 +770,8 @@ next request without persisting in the session.
     { success: true },
     {
       headers: await createToastHeaders({
-        description: 'Organization updated',
-        type: 'success',
+        description: "Organization updated",
+        type: "success",
       }),
     },
   );
@@ -783,8 +787,8 @@ next request without persisting in the session.
     { success: true },
     {
       headers: combineHeaders(
-        await createToastHeaders({ title: 'Profile updated' }),
-        { 'x-foo': 'bar' },
+        await createToastHeaders({ title: "Profile updated" }),
+        { "x-foo": "bar" },
       ),
     },
   );
@@ -814,13 +818,13 @@ You can deactivate those elements in checks like this:
 
 ```ts
 const accessibilityScanResults = await new AxeBuilder({ page })
-  .disableRules('color-contrast')
+  .disableRules("color-contrast")
   .analyze();
 
 // or
 
 const accessibilityScanResults = await new AxeBuilder({ page })
-  .disableRules('color-contrast')
+  .disableRules("color-contrast")
   .analyze();
 ```
 
@@ -838,7 +842,7 @@ We have a utility for testing authenticated features without having to go
 through the login flow:
 
 ```ts
-test('something that requires an authenticated user', async ({ page }) => {
+test("something that requires an authenticated user", async ({ page }) => {
   await loginByCookie({ page });
   // ... your tests ...
 });
@@ -852,15 +856,15 @@ To mark a test as todo in Playwright,
 [you have to use `.fixme()`](https://github.com/microsoft/playwright/issues/10918).
 
 ```ts
-test('something that should be done later', ({}, testInfo) => {
+test("something that should be done later", ({}, testInfo) => {
   testInfo.fixme();
 });
 
-test.fixme('something that should be done later', async ({ page }) => {
+test.fixme("something that should be done later", async ({ page }) => {
   // ...
 });
 
-test('something that should be done later', ({ page }) => {
+test("something that should be done later", ({ page }) => {
   test.fixme();
   // ...
 });
@@ -893,17 +897,51 @@ in-editor type checking and
 auto-complete. To run type checking across the whole project, run
 `bun run typecheck`.
 
-### Linting and Formatting
+### Linting and formatting
 
-This project uses [Biome](https://biomejs.dev/) for linting and formatting. That
-is configured in `biome.json`.
+This project uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for
+linting and [Oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) for formatting.
+Oxlint's correctness rules and type-aware checks are configured in
+`.oxlintrc.json`. The lint scripts generate React Router and Prisma types before
+running Oxlint so these checks can resolve generated imports.
 
-It's recommended to install the
-[Biome VS Code extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
-to get auto-formatting on save and inline linting feedback. You can also run
-`bun run check` to format and fix linting issues across all files in the
-project, or `bun run lint` to check for errors without making changes (useful
-for CI).
+Oxfmt uses `.oxfmtrc.json` for 80-column formatting, import sorting, and
+`package.json` sorting. It also sorts Tailwind classes using `app/app.css`,
+including classes passed to `cn`, `clsx`, and `cva`.
+
+Run `bun run check` to apply lint fixes and format files. Run `bun run lint` to
+check linting and formatting without changing source files, or `bun run validate`
+to include TypeScript checks. Both tools respect `.gitignore` and exclude
+generated files and build output.
+
+Install the
+[Oxc VS Code extension](https://marketplace.visualstudio.com/items?itemName=oxc.oxc-vscode)
+for formatting on save and inline lint feedback. The Husky pre-commit hook
+generates types, then uses lint-staged to lint and fix staged code and format
+supported staged files.
+
+[`@shadcn/lint`](https://github.com/shadcn-ui/lint) runs all six rules as errors:
+`no-restyle`, `no-raw-colors`, `no-arbitrary-values`, `no-inline-styles`,
+`no-unknown-classes`, and `require-static-classes`. CI runs `bun run lint` and
+fails on violations. The `check:shadcn` step also checks valid code and an
+invalid example for each rule against the project configuration, so disabling
+a rule or breaking component discovery fails CI.
+
+The rules discover UI components and the Tailwind theme from `components.json`
+and resolve the `~/` alias through `tsconfig.json`. Use component variants for
+appearance and theme tokens for colors. Layout classes remain available;
+component contracts in `.oxlintrc.json` also permit spacing on containers,
+typography on text components, and selected placement and visibility controls.
+Static decorative effects live in `app/styles/decorations.css`.
+
+Following the [upstream component-authoring guidance](https://github.com/shadcn-ui/lint/blob/main/docs/adoption.md),
+UI and Magic UI implementations may define appearance, arbitrary values, and
+dynamic classes. The other three checks still apply there. Two further
+exceptions preserve third-party brand colors in logo SVGs and the inline CSS
+required by the invitation HTML email. Application code remains subject to all
+six rules. See the [rule options](https://github.com/shadcn-ui/lint/blob/main/docs/rules.md)
+and [component contracts](https://github.com/shadcn-ui/lint/blob/main/docs/design-systems.md)
+when changing the design system.
 
 ### AI-Driven Development
 

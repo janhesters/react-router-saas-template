@@ -48,7 +48,7 @@ export async function sidebarLayoutAction({
   request,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, role } = context.get(
+    const { organization, role, user } = context.get(
       organizationMembershipContext,
     );
     const result = await validateFormData(request, schema);
@@ -133,7 +133,7 @@ export async function sidebarLayoutAction({
           seatsUsed: organization._count.memberships,
         });
 
-        // biome-ignore lint/style/noNonNullAssertion: Checkout sessions always have a URL
+        // oxlint-disable-next-line typescript/no-non-null-assertion -- Checkout sessions always have a URL
         return redirect(checkoutSession.url!);
       }
     }

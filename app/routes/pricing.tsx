@@ -2,6 +2,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { href, Link } from "react-router";
+import { useHydrated } from "remix-utils/use-hydrated";
 
 import type { Route } from "./+types/pricing";
 import { Badge } from "~/components/ui/badge";
@@ -39,6 +40,7 @@ export default function PricingRoute() {
   const { t } = useTranslation("billing", { keyPrefix: "pricing" });
   const { t: tPage } = useTranslation("billing", { keyPrefix: "pricingPage" });
   const [billingPeriod, setBillingPeriod] = useState("annual");
+  const hydrated = useHydrated();
 
   const getFeatures = (key: string): string[] =>
     t(`plans.${key}.features`, "", { returnObjects: true }) as string[];
@@ -50,11 +52,11 @@ export default function PricingRoute() {
         <div className="mx-auto mb-8 max-w-2xl text-center">
           <h1 className="text-primary">{tPage("pageTitle")}</h1>
 
-          <h2 className="mt-2 font-bold text-4xl sm:text-5xl">
+          <h2 className="mt-2 text-4xl font-bold sm:text-5xl">
             {tPage("pricingHeading")}
           </h2>
 
-          <p className="mt-6 text-pretty text-lg text-muted-foreground">
+          <p className="mt-6 text-lg text-pretty text-muted-foreground">
             {tPage("pageDescription")}
           </p>
         </div>
@@ -62,13 +64,17 @@ export default function PricingRoute() {
         <Tabs onValueChange={setBillingPeriod} value={billingPeriod}>
           <div className="mb-4 flex flex-col items-center gap-3 sm:flex-row md:mb-2">
             <TabsList>
-              <TabsTrigger value="monthly">{t("monthly")}</TabsTrigger>
+              <TabsTrigger disabled={!hydrated} value="monthly">
+                {t("monthly")}
+              </TabsTrigger>
 
-              <TabsTrigger value="annual">{t("annual")}</TabsTrigger>
+              <TabsTrigger disabled={!hydrated} value="annual">
+                {t("annual")}
+              </TabsTrigger>
             </TabsList>
 
             {billingPeriod === "monthly" && (
-              <p className="text-primary text-sm">{t("saveAnnually")}</p>
+              <p className="text-sm text-primary">{t("saveAnnually")}</p>
             )}
           </div>
 
@@ -119,7 +125,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="font-normal text-muted-foreground text-sm" />
+                            <span className="text-sm font-normal text-muted-foreground" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -153,9 +159,9 @@ export default function PricingRoute() {
                   </TierCardContent>
                 </TierCard>
 
-                <TierCard className="ring-2 ring-primary">
+                <TierCard variant="featured">
                   <TierCardHeader>
-                    <TierCardTitle className="text-primary">
+                    <TierCardTitle tone="primary">
                       {t("plans.high.title")}
                       <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
@@ -164,7 +170,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="font-normal text-muted-foreground text-sm" />
+                            <span className="text-sm font-normal text-muted-foreground" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -248,7 +254,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="font-normal text-muted-foreground text-sm" />
+                            <span className="text-sm font-normal text-muted-foreground" />
                           ),
                         }}
                         i18nKey="pricing.price"
@@ -284,9 +290,9 @@ export default function PricingRoute() {
                   </TierCardContent>
                 </TierCard>
 
-                <TierCard className="-mt-1.5 ring-2 ring-primary">
+                <TierCard className="-mt-1.5" variant="featured">
                   <TierCardHeader>
-                    <TierCardTitle className="text-primary">
+                    <TierCardTitle tone="primary">
                       {t("plans.high.title")}
                       <Badge>{t("mostPopular")}</Badge>
                     </TierCardTitle>
@@ -295,7 +301,7 @@ export default function PricingRoute() {
                       <Trans
                         components={{
                           1: (
-                            <span className="font-normal text-muted-foreground text-sm" />
+                            <span className="text-sm font-normal text-muted-foreground" />
                           ),
                         }}
                         i18nKey="pricing.price"

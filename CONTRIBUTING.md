@@ -59,8 +59,7 @@ Follow the steps outlined in the main [README.md](./README.md#getting-started).
    [Database-backed tests](./README.md#database-backed-tests), then run:
 
    ```bash
-   bun run typecheck    # Type checking
-   bun run lint         # Linting
+   bun run validate    # Type checking, linting, and formatting checks
    bun run test         # Unit & integration tests
    bun run test:e2e:ui  # End-to-end tests
    ```
@@ -196,9 +195,25 @@ render. Keep explicit empty-image overrides for fallback tests.
 - All files must be named in `kebab-case`.
 - All constants must be named in `SCREAMING_SNAKE_CASE`.
 
-### Code Quality
+### Code quality
 
-- Biome
+- Oxlint checks correctness and uses type information from TypeScript.
+  Configure lint rules in `.oxlintrc.json`.
+- Oxfmt formats files and sorts imports, `package.json`, and Tailwind classes.
+  Configure formatting in `.oxfmtrc.json`.
+- `@shadcn/lint` enforces all six design-system rules as errors in local linting
+  and CI. Use component variants for appearance, theme colors, and static
+  classes. `.oxlintrc.json` defines component contracts and scoped exceptions
+  for primitive authoring, brand artwork, and HTML email. See the
+  [linting policy](README.md#linting-and-formatting) for details.
+- CI also runs `check:shadcn`, which proves that each rule rejects an invalid
+  example through the project configuration. Keep this check passing when
+  changing the design system.
+- Run `bun run check` to apply lint fixes and format files. Run
+  `bun run validate` before submitting a pull request to check types, linting,
+  and formatting.
+- The pre-commit hook generates types, fixes lint issues in staged code, and
+  formats supported staged files with lint-staged.
 - Write self-documenting code
 - Add TSDoc to your complex functions
 - Comment complex logic

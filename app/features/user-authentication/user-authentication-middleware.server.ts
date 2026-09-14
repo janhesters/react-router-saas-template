@@ -11,10 +11,10 @@ export const authContext = createContext<{
 }>();
 
 export const authMiddleware: MiddlewareFunction = async (
-  { request, context, url },
+  { context, request, url },
   next,
 ) => {
-  const { supabase, headers } = createSupabaseServerClient({ request });
+  const { headers, supabase } = createSupabaseServerClient({ request });
 
   const {
     data: { user },
@@ -45,10 +45,10 @@ export const anonymousContext = createContext<{
 }>();
 
 export const anonymousMiddleware: MiddlewareFunction = async (
-  { request, context },
+  { context, request },
   next,
 ) => {
-  const { supabase, headers } = createSupabaseServerClient({ request });
+  const { headers, supabase } = createSupabaseServerClient({ request });
   const {
     data: { user },
     error,

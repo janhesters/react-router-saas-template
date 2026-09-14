@@ -23,7 +23,7 @@ export function Logos() {
   const { t } = useTranslation("landing", { keyPrefix: "logos" });
   return (
     <section className="py-12 text-center sm:px-4">
-      <h2 className="text-center font-semibold text-muted-foreground text-sm">
+      <h2 className="text-center text-sm font-semibold text-muted-foreground">
         {t("title")}
       </h2>
 
@@ -102,7 +102,7 @@ export function Logos() {
               icon: <SiPrettier className="size-16" title="Prettier" />,
               key: "prettier",
             },
-          ].map(({ key, icon }) => (
+          ].map(({ icon, key }) => (
             <div
               className="flex size-32 items-center justify-center text-4xl opacity-60 grayscale transition hover:opacity-100 hover:grayscale-0"
               key={key}

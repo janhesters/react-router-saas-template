@@ -11,16 +11,16 @@ type StatusHandler = (info: {
 }) => ReactElement | null;
 
 const ErrorMessage = ({
-  title,
   description,
+  title,
 }: {
-  title: string;
   description: string;
+  title: string;
 }) => (
   <div className="flex h-full flex-col p-2">
     <Alert
-      className="flex h-full flex-col items-center justify-center border-destructive/50 bg-destructive/10 dark:border-destructive/80 dark:bg-destructive/5"
-      variant="destructive"
+      className="flex h-full flex-col items-center justify-center"
+      variant="destructive-panel"
     >
       <AlertTitle className="font-semibold">{title}</AlertTitle>
       <AlertDescription>{description}</AlertDescription>

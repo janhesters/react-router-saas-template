@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/suspicious/noTemplateCurlyInString: It's a currency */
+/* oxlint-disable eslint/no-template-curly-in-string -- It's a currency */
 export default {
   billingPage: {
     breadcrumb: "Billing",

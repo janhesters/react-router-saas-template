@@ -344,7 +344,7 @@ describe("BillingPage component", () => {
     render(<RouterStub initialEntries={[path]} />);
 
     // Open the change plan modal
-    // biome-ignore lint/style/noNonNullAssertion: test code
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- test code
     const managePlanButton = screen.getAllByRole("button", {
       name: /manage plan/i,
     })[1]!;

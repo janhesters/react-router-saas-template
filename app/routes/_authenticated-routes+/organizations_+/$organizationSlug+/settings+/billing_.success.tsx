@@ -76,17 +76,17 @@ export default function BillingSuccessRoute({ params }: Route.ComponentProps) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-4 md:py-6 lg:px-6">
       <div className="flex max-w-xl flex-col items-center px-4 text-center">
-        <IconRosetteDiscountCheck className="mx-auto size-16 text-green-400 dark:text-green-500" />
+        <IconRosetteDiscountCheck className="mx-auto size-16 text-success-soft dark:text-success" />
 
-        <h3 className="mt-2 font-semibold text-foreground text-lg">
+        <h3 className="mt-2 text-lg font-semibold text-foreground">
           {t("paymentSuccessful")}
         </h3>
 
-        <p className="mt-2 text-balance text-base text-muted-foreground">
+        <p className="mt-2 text-base text-balance text-muted-foreground">
           {t("productReady")}
         </p>
 
-        <p className="mt-2 text-balance text-base text-muted-foreground">
+        <p className="mt-2 text-base text-balance text-muted-foreground">
           {t("thankYou")}
         </p>
 

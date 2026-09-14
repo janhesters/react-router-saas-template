@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "sortImports": {
+    "groups": [
+      "builtin",
+      "external",
+      {
+        "newlinesBetween": true
+      },
+      ["internal", "parent", "sibling", "index"],
+      "unknown"
+    ],
+    "internalPattern": ["~/", ".react-router/"],
+    "newlinesBetween": false
+  },
+  "sortPackageJson": {
+    "sortScripts": true
+  },
+  "sortTailwindcss": {
+    "stylesheet": "./app/app.css",
+    "functions": ["clsx", "cn", "cva"]
+  },
+  "ignorePatterns": [".agents", ".claude", ".cursor"]
+}

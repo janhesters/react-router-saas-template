@@ -55,7 +55,7 @@ function DeleteOrganizationDialogComponent({
     [organizationName],
   );
 
-  const { form, fields, intent } = useForm(localDeleteOrganizationFormSchema, {
+  const { fields, form, intent } = useForm(localDeleteOrganizationFormSchema, {
     lastResult,
     shouldRevalidate: "onInput",
     shouldValidate: "onInput",
@@ -162,7 +162,7 @@ export function DangerZone({ lastResult, organizationName }: DangerZoneProps) {
       <h2 className="font-medium text-destructive" id="danger-zone-heading">
         {t("title")}
       </h2>
-      <Item className="border-destructive" variant="outline">
+      <Item variant="destructive">
         <ItemContent>
           <ItemTitle>{t("deleteTitle")}</ItemTitle>
           <ItemDescription>{t("deleteDescription")}</ItemDescription>

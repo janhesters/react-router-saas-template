@@ -8,7 +8,7 @@ import {
 import { AcceptInviteLinkPage } from "~/features/organizations/accept-invite-link/accept-invite-link-page";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const token = getInviteLinkToken(request);
   const data = await requireCreatorAndOrganizationByTokenExists(token);
   const i18n = getInstance(context);

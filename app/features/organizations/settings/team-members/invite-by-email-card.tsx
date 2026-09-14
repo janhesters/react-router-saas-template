@@ -47,7 +47,7 @@ export function EmailInviteCard({
     keyPrefix: "settings.teamMembers.inviteByEmail",
   });
 
-  const { form, fields, intent } = useForm(inviteByEmailSchema, {
+  const { fields, form, intent } = useForm(inviteByEmailSchema, {
     lastResult,
   });
 

@@ -60,18 +60,18 @@ function membershipIsActive(
 
 function requireMembershipChangePermission({
   actorMembership,
+  now,
+  requestedRoleOrStatus,
   targetMembership,
   targetUserId,
   userId,
-  requestedRoleOrStatus,
-  now,
 }: {
   actorMembership: OrganizationMembership | null;
+  now: Date;
+  requestedRoleOrStatus: OrganizationMembershipRole | "deactivated";
   targetMembership: OrganizationMembership | null;
   targetUserId: string;
   userId: string;
-  requestedRoleOrStatus: OrganizationMembershipRole | "deactivated";
-  now: Date;
 }): OrganizationMembership {
   if (
     !actorMembership ||
@@ -110,11 +110,11 @@ function requireMembershipChangePermission({
 }
 
 export async function teamMembersAction({
-  request,
   context,
+  request,
 }: Route.ActionArgs) {
   try {
-    const { user, organization, role } = context.get(
+    const { organization, role, user } = context.get(
       organizationMembershipContext,
     );
     const i18n = getInstance(context);
@@ -193,7 +193,7 @@ export async function teamMembersAction({
       case CHANGE_ROLE_INTENT: {
         return await withOrganizationMutationLock(organization.id, async () => {
           const now = new Date();
-          const { userId: targetUserId, role: requestedRoleOrStatus } = body;
+          const { role: requestedRoleOrStatus, userId: targetUserId } = body;
           const actorMembership =
             await retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId(
               {

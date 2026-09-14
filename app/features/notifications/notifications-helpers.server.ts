@@ -33,8 +33,8 @@ export function mapInitialNotificationsDataToNotificationButtonProps({
   const latestNotificationDate = allNotifications?.[0]?.createdAt;
   const showBadge = Boolean(
     latestNotificationDate &&
-      (!lastOpenedAt ||
-        new Date(latestNotificationDate) > new Date(lastOpenedAt)),
+    (!lastOpenedAt ||
+      new Date(latestNotificationDate) > new Date(lastOpenedAt)),
   );
 
   return {

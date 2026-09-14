@@ -41,7 +41,7 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
     keyPrefix: "userAccount",
   });
 
-  const { form, fields } = useForm(
+  const { fields, form } = useForm(
     coerceFormValue(updateUserAccountFormSchema),
     {
       lastResult,
@@ -148,7 +148,10 @@ export function AccountSettings({ lastResult, user }: AccountSettingsProps) {
                         src={user.imageUrl ?? ""}
                       />
 
-                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                      <AvatarFallback
+                        className="size-16 rounded-lg md:size-24"
+                        variant="upload"
+                      >
                         <IconUser className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>

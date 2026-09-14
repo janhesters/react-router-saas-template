@@ -12,8 +12,8 @@ import { slugify } from "~/utils/slugify.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
 export async function onboardingOrganizationAction({
-  request,
   context,
+  request,
   url,
 }: Route.ActionArgs) {
   const { user } = await requireUserNeedsOnboarding({

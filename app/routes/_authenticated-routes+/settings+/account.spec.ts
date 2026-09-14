@@ -398,7 +398,7 @@ describe("/settings/account route action", () => {
       },
     ])(
       "given: $given, should: admit safe deletion or preserve all data when ownership must be transferred",
-      async ({ roles, blocked, sharedIndex, otherOwner }) => {
+      async ({ blocked, otherOwner, roles, sharedIndex }) => {
         const user = await setup();
         const organizations = [];
         const survivingUsers: string[] = [];

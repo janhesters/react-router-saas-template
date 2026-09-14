@@ -12,7 +12,7 @@ export const organizationMembershipContext = createContext<{
 }>();
 
 export const organizationMembershipMiddleware: MiddlewareFunction = async (
-  { request, params, context },
+  { context, params, request },
   next,
 ) => {
   const organizationSlug = params.organizationSlug;
@@ -24,7 +24,7 @@ export const organizationMembershipMiddleware: MiddlewareFunction = async (
     );
   }
 
-  const { user, organization, role } = await requireUserIsMemberOfOrganization({
+  const { organization, role, user } = await requireUserIsMemberOfOrganization({
     context,
     organizationSlug,
     request,

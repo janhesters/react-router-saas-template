@@ -25,7 +25,7 @@ export default function SettingsLayout() {
               <IconArrowLeft />
             </Link>
 
-            <h1 className="font-medium text-base">{t("pageTitle")}</h1>
+            <h1 className="text-base font-medium">{t("pageTitle")}</h1>
           </div>
 
           <ThemeToggle />

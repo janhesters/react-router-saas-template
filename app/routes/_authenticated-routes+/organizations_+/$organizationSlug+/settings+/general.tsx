@@ -48,7 +48,7 @@ export default function GeneralOrganizationSettingsRoute({
   const { t } = useTranslation("organizations", {
     keyPrefix: "settings.general",
   });
-  const { userIsOwner, organization } = loaderData;
+  const { organization, userIsOwner } = loaderData;
 
   return (
     <div className="px-4 py-4 md:py-6 lg:px-6">
@@ -70,9 +70,9 @@ export default function GeneralOrganizationSettingsRoute({
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <h2 className="font-semibold leading-none">{t("pageTitle")}</h2>
+              <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
 
-              <p className="text-muted-foreground text-sm">
+              <p className="text-sm text-muted-foreground">
                 {t("description")}
               </p>
             </div>

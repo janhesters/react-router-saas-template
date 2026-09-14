@@ -38,7 +38,7 @@ z.config({ jitless: true });
 export const LOGIN_WITH_EMAIL_INTENT = loginIntents.loginWithEmail;
 export const LOGIN_WITH_GOOGLE_INTENT = loginIntents.loginWithGoogle;
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const i18n = getInstance(context);
   const linkData = await getInviteInfoForAuthRoutes(request);
 
@@ -63,8 +63,8 @@ export async function action(args: Route.ActionArgs) {
 }
 
 export default function LoginRoute({
-  loaderData,
   actionData,
+  loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("userAuthentication", { keyPrefix: "login" });
   const { inviteLinkInfo } = loaderData;
@@ -72,7 +72,7 @@ export default function LoginRoute({
   const isAwaitingEmailConfirmation =
     getIsAwaitingEmailConfirmation(actionData);
 
-  const { form, fields } = useForm(loginWithEmailSchema, {
+  const { fields, form } = useForm(loginWithEmailSchema, {
     lastResult: actionData?.result,
   });
 
@@ -97,7 +97,7 @@ export default function LoginRoute({
     <FieldSet disabled={isSubmitting}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="font-bold text-2xl">
+          <h1 className="text-2xl font-bold">
             {inviteLinkInfo
               ? t("form.joinOrganization", {
                   creatorName: inviteLinkInfo.creatorName,
@@ -105,7 +105,7 @@ export default function LoginRoute({
                 })
               : t("title")}
           </h1>
-          <p className="text-balance text-muted-foreground text-sm">
+          <p className="text-sm text-balance text-muted-foreground">
             {inviteLinkInfo
               ? t("form.joinOrganizationDescription", {
                   creatorName: inviteLinkInfo.creatorName,

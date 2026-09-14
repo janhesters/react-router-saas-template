@@ -1,5 +1,4 @@
 import { IconBook2 } from "@tabler/icons-react";
-import type { CSSProperties } from "react";
 import { Trans, useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
@@ -9,11 +8,8 @@ import { Badge } from "~/components/ui/badge";
 import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
-const imageClassNames = "border-border rounded-xl border object-contain";
-const imageFadeStyle: CSSProperties = {
-  maskImage: "linear-gradient(to bottom, black 75%, transparent)",
-  WebkitMaskImage: "linear-gradient(to bottom, black 75%, transparent)",
-};
+const imageClassNames =
+  "mask-fade-bottom border-border rounded-xl border object-contain";
 
 export function Hero() {
   const { t } = useTranslation("landing", { keyPrefix: "hero" });
@@ -23,15 +19,9 @@ export function Hero() {
     <section className="relative z-0 py-24 text-center sm:pt-32">
       <div
         aria-hidden="true"
-        className="-top-40 -z-10 sm:-top-80 absolute inset-x-0 transform-gpu overflow-hidden blur-3xl"
+        className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
       >
-        <div
-          className="-translate-x-1/2 relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 rotate-30 bg-linear-to-tr from-primary to-secondary opacity-30 sm:left-[calc(50%-30rem)] sm:w-288.75"
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-        />
+        <div className="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-primary to-secondary opacity-30 clip-ambient-glow sm:left-[calc(50%-30rem)] sm:w-288.75" />
       </div>
 
       <div className="mx-auto max-w-2xl px-4">
@@ -53,7 +43,7 @@ export function Hero() {
 
           <span
             aria-hidden="true"
-            className="font-mono font-semibold text-4xl sm:text-7xl"
+            className="font-mono text-4xl font-semibold sm:text-7xl"
           >
             {t("title")}
           </span>
@@ -100,28 +90,20 @@ export function Hero() {
           alt={t("image.light")}
           className={cn(imageClassNames, "shadow-sm dark:hidden")}
           src="/images/app-light.png"
-          style={imageFadeStyle}
         />
 
         <img
           alt={t("image.dark")}
           className={cn(imageClassNames, "hidden dark:block")}
           src="/images/app-dark.png"
-          style={imageFadeStyle}
         />
       </div>
 
       <div
         aria-hidden="true"
-        className="-z-10 absolute inset-x-0 top-[calc(100%-13rem)] transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-80rem)]"
+        className="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-80rem)]"
       >
-        <div
-          className="-translate-x-1/2 relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 bg-linear-to-tr from-primary to-secondary opacity-30 sm:left-[calc(50%+36rem)] sm:w-288.75"
-          style={{
-            clipPath:
-              "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-          }}
-        />
+        <div className="relative left-[calc(50%+3rem)] aspect-1155/678 w-144.5 -translate-x-1/2 bg-linear-to-tr from-primary to-secondary opacity-30 clip-ambient-glow sm:left-[calc(50%+36rem)] sm:w-288.75" />
       </div>
     </section>
   );

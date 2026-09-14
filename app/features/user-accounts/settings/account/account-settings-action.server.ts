@@ -15,11 +15,11 @@ import {
 import type { Route } from ".react-router/types/app/routes/_authenticated-routes+/settings+/+types/account";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { withAccountMutationLock } from "~/features/organizations/deletion/organization-mutation-lock.server";
+import { serializeAccountDeletionRecovery } from "~/features/user-accounts/deletion/account-deletion-recovery.server";
 import {
   AccountDeletionError,
   requestAccountDeletion,
 } from "~/features/user-accounts/deletion/account-deletion.server";
-import { serializeAccountDeletionRecovery } from "~/features/user-accounts/deletion/account-deletion-recovery.server";
 import { requireAuthenticatedUserWithMembershipsAndSubscriptionsExists } from "~/features/user-accounts/user-accounts-helpers.server";
 import {
   retrieveUserAccountFromDatabaseById,
@@ -41,7 +41,7 @@ export async function accountSettingsAction({
   context,
   request,
 }: Route.ActionArgs) {
-  const { user, supabase } =
+  const { supabase, user } =
     await requireAuthenticatedUserWithMembershipsAndSubscriptionsExists({
       context,
       request,

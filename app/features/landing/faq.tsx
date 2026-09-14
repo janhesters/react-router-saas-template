@@ -10,9 +10,9 @@ import { buttonVariants } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 
 type FAQItem = {
-  question: string;
   answer: string;
   links?: Record<string, string>;
+  question: string;
 };
 
 export function FAQ() {
@@ -22,7 +22,7 @@ export function FAQ() {
   return (
     <section className="px-4 py-24">
       <div className="mx-auto max-w-4xl">
-        <h2 className="mb-10 font-semibold text-3xl text-primary">
+        <h2 className="mb-10 text-3xl font-semibold text-primary">
           {t("title")}
         </h2>
 
@@ -31,13 +31,13 @@ export function FAQ() {
             <AccordionItem key={item.question} value={`item-${index}`}>
               <AccordionTrigger>{item.question}</AccordionTrigger>
 
-              <AccordionContent className="text-muted-foreground">
+              <AccordionContent tone="muted">
                 {item.links ? (
                   <Trans
                     components={Object.fromEntries(
                       Object.entries(item.links).map(([_key, href], index_) => [
                         index_ + 1,
-                        // biome-ignore lint/a11y/useAnchorContent: the trans component adds the anchor content
+                        // oxlint-disable-next-line jsx-a11y/anchor-has-content, jsx-a11y/control-has-associated-label -- Trans supplies the translated link text.
                         <a
                           className={cn(
                             buttonVariants({ variant: "link" }),

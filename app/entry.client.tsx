@@ -30,4 +30,4 @@ async function hydrate() {
   });
 }
 
-hydrate();
+void hydrate();

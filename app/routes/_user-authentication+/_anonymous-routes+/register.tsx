@@ -38,7 +38,7 @@ z.config({ jitless: true });
 export const REGISTER_WITH_EMAIL_INTENT = registerIntents.registerWithEmail;
 export const REGISTER_WITH_GOOGLE_INTENT = registerIntents.registerWithGoogle;
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const i18n = getInstance(context);
   const linkData = await getInviteInfoForAuthRoutes(request);
 
@@ -63,8 +63,8 @@ export async function action(args: Route.ActionArgs) {
 }
 
 export default function RegisterRoute({
-  loaderData,
   actionData,
+  loaderData,
 }: Route.ComponentProps) {
   const { t } = useTranslation("userAuthentication", {
     keyPrefix: "register",
@@ -74,7 +74,7 @@ export default function RegisterRoute({
   const isAwaitingEmailConfirmation =
     getIsAwaitingEmailConfirmation(actionData);
 
-  const { form, fields } = useForm(registerWithEmailSchema, {
+  const { fields, form } = useForm(registerWithEmailSchema, {
     lastResult: actionData?.result,
   });
 
@@ -99,14 +99,14 @@ export default function RegisterRoute({
     <FieldSet disabled={isSubmitting}>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="font-bold text-2xl">
+          <h1 className="text-2xl font-bold">
             {inviteLinkInfo
               ? t("form.joinOrganization", {
                   organizationName: inviteLinkInfo.organizationName,
                 })
               : t("title")}
           </h1>
-          <p className="text-balance text-muted-foreground text-sm">
+          <p className="text-sm text-balance text-muted-foreground">
             {inviteLinkInfo
               ? t("form.joinOrganizationDescription", {
                   creatorName: inviteLinkInfo.creatorName,
@@ -183,7 +183,7 @@ export default function RegisterRoute({
         </Form>
 
         <Field>
-          <FieldDescription className="text-center text-muted-foreground text-sm">
+          <FieldDescription className="text-center">
             <Trans
               components={{
                 pp: (

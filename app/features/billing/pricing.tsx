@@ -18,7 +18,7 @@ export function TierGrid({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "grid @4xl/tiers:grid-cols-3 @xl/tiers:grid-cols-2 grid-cols-1 gap-8",
+        "grid grid-cols-1 gap-8 @xl/tiers:grid-cols-2 @4xl/tiers:grid-cols-3",
         "*:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card",
         className,
       )}
@@ -56,10 +56,8 @@ export function TierCardPrice({
 }: ComponentProps<typeof CardDescription>) {
   return (
     <CardDescription
-      className={cn(
-        "flex items-end font-bold text-foreground text-xl",
-        className,
-      )}
+      className={cn("flex items-end text-xl font-bold", className)}
+      tone="foreground"
       {...props}
     />
   );

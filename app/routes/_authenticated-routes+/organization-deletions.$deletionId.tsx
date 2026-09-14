@@ -22,7 +22,7 @@ import { requireAuthenticatedUserExists } from "~/features/user-accounts/user-ac
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { methodNotAllowed, notFound } from "~/utils/http-responses.server";
 
-async function requireDeletion({ context, request, params }: Route.LoaderArgs) {
+async function requireDeletion({ context, params, request }: Route.LoaderArgs) {
   const { user } = await requireAuthenticatedUserExists({ context, request });
   const deletion = await getOrganizationDeletionForUser({
     deletionId: params.deletionId,
@@ -91,6 +91,7 @@ export default function OrganizationDeletionRoute({
           <CardDescription>{organizationName}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- This live region announces deletion progress, not a form calculation. */}
           <p aria-live="polite" role="status">
             {t(`${status}.description`)}
           </p>

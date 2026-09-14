@@ -9,10 +9,10 @@ import { createRoutesStub, render, screen } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
 const createLinkNotificationProps: Factory<LinkNotificationProps> = ({
-  recipientId = createId(),
-  text = faker.lorem.sentence(),
   href = faker.internet.url(),
   isRead = false,
+  recipientId = createId(),
+  text = faker.lorem.sentence(),
 } = {}) => ({
   href,
   isRead,

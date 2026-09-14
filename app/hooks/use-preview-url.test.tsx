@@ -70,7 +70,7 @@ describe("usePreviewUrl Hook", () => {
     const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
     const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
 
-    const { result, rerender } = renderPreviewUrlHook({
+    const { rerender, result } = renderPreviewUrlHook({
       file: file1,
       initialUrl: undefined,
     });
@@ -99,7 +99,7 @@ describe("usePreviewUrl Hook", () => {
 
   test("given: component unmounts, should: revoke object URL", () => {
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
-    const { unmount, result } = renderPreviewUrlHook({
+    const { result, unmount } = renderPreviewUrlHook({
       file,
       initialUrl: undefined,
     });
@@ -122,7 +122,7 @@ describe("usePreviewUrl Hook", () => {
     const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
     const initialUrl = "https://example.com/image.jpg";
 
-    const { result, rerender } = renderPreviewUrlHook({
+    const { rerender, result } = renderPreviewUrlHook({
       file,
       initialUrl,
     });

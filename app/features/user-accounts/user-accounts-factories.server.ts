@@ -12,13 +12,13 @@ import type { Factory } from "~/utils/types";
  * @returns A populated user account with given params.
  */
 export const createPopulatedUserAccount: Factory<UserAccount> = ({
-  id = createId(),
-  supabaseUserId = faker.string.uuid(),
-  email = `user-${createId()}@example.com`,
-  name = faker.person.fullName(),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 3 }),
+  email = `user-${createId()}@example.com`,
+  id = createId(),
   imageUrl = TEST_IMAGE_DATA_URL,
+  name = faker.person.fullName(),
+  supabaseUserId = faker.string.uuid(),
 } = {}) => ({
   createdAt,
   email,

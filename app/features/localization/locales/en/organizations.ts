@@ -1,9 +1,9 @@
 export default {
   acceptEmailInvite: {
+    acceptingInvite: "Accepting invite ...",
     acceptInvite: "Accept invite",
     acceptInviteInstructions:
       "Click the button below to sign up. By using this email invite you will automatically join the correct organization.",
-    acceptingInvite: "Accepting invite ...",
     alreadyMemberToastDescription:
       "You are already a member of {{organizationName}}",
     alreadyMemberToastTitle: "Already a member",
@@ -23,10 +23,10 @@ export default {
     welcomeToAppName: "Welcome to {{appName}}",
   },
   acceptInviteLink: {
+    acceptingInvite: "Accepting invite ...",
     acceptInvite: "Accept invite",
     acceptInviteInstructions:
       "Click the button below to sign up. By using this link you will automatically join the correct organization.",
-    acceptingInvite: "Accepting invite ...",
     alreadyMemberToastDescription:
       "You are already a member of {{organizationName}}",
     alreadyMemberToastTitle: "Already a member",

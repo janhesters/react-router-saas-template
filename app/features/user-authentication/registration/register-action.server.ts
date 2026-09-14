@@ -19,7 +19,7 @@ const registerSchema = z.discriminatedUnion("intent", [
   registerWithGoogleSchema,
 ]);
 
-export async function registerAction({ request, context }: Route.ActionArgs) {
+export async function registerAction({ context, request }: Route.ActionArgs) {
   const { supabase } = context.get(anonymousContext);
   const i18n = getInstance(context);
   const result = await validateFormData(request, registerSchema);

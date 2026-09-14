@@ -67,7 +67,7 @@ export const getUserIsOnboarded = (user: OnboardingUser) =>
 export const throwIfUserIsOnboarded = (user: OnboardingUser) => {
   if (getUserIsOnboarded(user)) {
     if (user.memberships.length === 1) {
-      // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a membership
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a membership
       const slug = user.memberships[0]!.organization.slug;
       throw redirect(
         href("/organizations/:organizationSlug", {

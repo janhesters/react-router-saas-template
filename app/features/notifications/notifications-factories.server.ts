@@ -24,8 +24,8 @@ import type { Factory } from "~/utils/types";
 export const createPopulatedLinkNotificationData: Factory<
   LinkNotificationData
 > = ({
-  text = faker.lorem.sentences(2),
   href = faker.internet.url(),
+  text = faker.lorem.sentences(2),
 } = {}) => ({
   href,
   text,
@@ -43,8 +43,8 @@ export const createPopulatedLinkNotificationData: Factory<
  * @returns A populated notification type with given params.
  */
 export const createPopulatedNotificationType: Factory<NotificationType> = ({
-  recipientId = createId(),
   isRead = false,
+  recipientId = createId(),
   type = faker.helpers.arrayElement([LINK_NOTIFICATION_TYPE]),
   ...rest
 } = {}) => {
@@ -75,11 +75,11 @@ export const createPopulatedNotification: Factory<
     content: Prisma.InputJsonValue;
   }
 > = ({
-  id = createId(),
+  content = createPopulatedNotificationType(),
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  id = createId(),
   organizationId = createId(),
-  content = createPopulatedNotificationType(),
 } = {}) => ({ content, createdAt, id, organizationId, updatedAt });
 
 /**
@@ -91,12 +91,12 @@ export const createPopulatedNotification: Factory<
 export const createPopulatedNotificationRecipient: Factory<
   NotificationRecipient
 > = ({
-  id = createId(),
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  id = createId(),
   notificationId = createId(),
-  userId = createId(),
   readAt = null,
+  userId = createId(),
 } = {}) => ({ createdAt, id, notificationId, readAt, updatedAt, userId });
 
 /**
@@ -106,12 +106,12 @@ export const createPopulatedNotificationRecipient: Factory<
  * @returns A populated notification panel with given params.
  */
 export const createPopulatedNotificationPanel: Factory<NotificationPanel> = ({
-  id = createId(),
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
-  userId = createId(),
-  organizationId = createId(),
+  id = createId(),
   lastOpenedAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  organizationId = createId(),
+  userId = createId(),
 } = {}) => ({ createdAt, id, lastOpenedAt, organizationId, updatedAt, userId });
 
 /**
@@ -124,10 +124,10 @@ export const createPopulatedNotificationPanel: Factory<NotificationPanel> = ({
 export const createPopulatedNotificationQueryResult: Factory<
   NotificationQueryResult
 > = ({
-  recipientId = createPopulatedNotificationRecipient().id,
-  readAt = null,
-  notificationId = createPopulatedNotification().id,
   content = createPopulatedNotification()
     .content as unknown as Notification["content"],
   createdAt = createPopulatedNotification().createdAt,
+  notificationId = createPopulatedNotification().id,
+  readAt = null,
+  recipientId = createPopulatedNotificationRecipient().id,
 } = {}) => ({ content, createdAt, notificationId, readAt, recipientId });

@@ -1,0 +1,221 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error"
+  },
+  "jsPlugins": [
+    "@shadcn/lint",
+    "eslint-plugin-no-only-tests",
+    "eslint-plugin-perfectionist"
+  ],
+  "options": {
+    "denyWarnings": true,
+    "typeAware": true
+  },
+  "plugins": ["typescript", "import", "react", "unicorn", "jsx-a11y", "vitest"],
+  "rules": {
+    "eslint/no-restricted-globals": [
+      "error",
+      {
+        "name": "parseInt",
+        "message": "Use Number.parseInt instead."
+      },
+      {
+        "name": "parseFloat",
+        "message": "Use Number.parseFloat instead."
+      },
+      {
+        "name": "NaN",
+        "message": "Use Number.NaN instead."
+      },
+      {
+        "name": "Infinity",
+        "message": "Use Number.POSITIVE_INFINITY instead."
+      },
+      {
+        "name": "isNaN",
+        "message": "Use Number.isNaN instead."
+      }
+    ],
+    "eslint/no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          {
+            "name": "@conform-to/react/future",
+            "importNames": [
+              "FormProvider",
+              "useField",
+              "useForm",
+              "useFormMetadata",
+              "useIntent"
+            ],
+            "message": "Import the configured Conform hooks from ~/utils/conform instead. The package hooks lack the app-wide validation defaults and custom field metadata (inputProps, otpInputProps)."
+          }
+        ]
+      }
+    ],
+    "eslint/no-template-curly-in-string": "error",
+    "eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "eslint/no-useless-constructor": "error",
+    "import/consistent-type-specifier-style": ["error", "prefer-top-level"],
+    "jsx-a11y/no-autofocus": "off",
+    "no-only-tests/no-only-tests": "error",
+    "perfectionist/sort-jsx-props": [
+      "error",
+      {
+        "ignoreCase": false,
+        "type": "natural"
+      }
+    ],
+    "perfectionist/sort-object-types": [
+      "error",
+      {
+        "ignoreCase": false,
+        "type": "natural"
+      }
+    ],
+    "perfectionist/sort-objects": [
+      "error",
+      {
+        "ignoreCase": false,
+        "partitionByComment": true,
+        "partitionByNewLine": true,
+        "type": "natural"
+      }
+    ],
+    "react/exhaustive-deps": "error",
+    "react/immutability": "error",
+    "react/jsx-key": "error",
+    "react/no-array-index-key": "error",
+    "react/no-danger": "error",
+    "react/purity": "off",
+    "react/rules-of-hooks": "error",
+    "react/self-closing-comp": "error",
+    "react/set-state-in-effect": "off",
+    "shadcn/no-arbitrary-values": [
+      "error",
+      {
+        "allow": ["layout"]
+      }
+    ],
+    "shadcn/no-inline-styles": "error",
+    "shadcn/no-raw-colors": "error",
+    "shadcn/no-restyle": [
+      "error",
+      {
+        "allow": ["layout"],
+        "contracts": [
+          {
+            "pattern": "^Card$|^Field$|(Content|Header|Footer|Group|Set|Panel)$",
+            "allow": ["layout", "spacing"]
+          },
+          {
+            "pattern": "^(CardTitle|CardDescription|AlertTitle|FieldLabel|FieldDescription|DropdownMenuLabel|Label|ItemDescription)$",
+            "allow": ["layout", "typography"]
+          },
+          {
+            "pattern": "^Avatar(Image)?$",
+            "allow": ["layout", "shape"]
+          },
+          {
+            "pattern": "^AvatarFallback$",
+            "allow": ["layout", "shape", "typography"]
+          },
+          {
+            "pattern": "^(Alert|CommandItem|DropdownMenuItem|DropdownMenuTrigger)$",
+            "allow": ["layout", "spacing"]
+          },
+          {
+            "pattern": "^DropdownMenuContent$",
+            "allow": ["layout", "spacing", "rounded-*"]
+          },
+          {
+            "pattern": "^Button$",
+            "allow": ["layout", "opacity-*"]
+          },
+          {
+            "pattern": "^Card$",
+            "allow": [
+              "layout",
+              "spacing",
+              "motion",
+              "opacity-*",
+              "transition-sidebar-card"
+            ]
+          },
+          {
+            "pattern": "^Field$",
+            "allow": ["layout", "spacing", "motion"]
+          },
+          {
+            "pattern": "^TableBody$",
+            "allow": ["layout", "typography"]
+          },
+          {
+            "pattern": "^DropdownMenuLabel$",
+            "allow": ["layout", "spacing", "typography"]
+          }
+        ]
+      }
+    ],
+    "shadcn/no-unknown-classes": "error",
+    "shadcn/require-static-classes": "error",
+    "typescript/consistent-type-imports": [
+      "error",
+      {
+        "fixStyle": "separate-type-imports",
+        "prefer": "type-imports",
+        "disallowTypeAnnotations": false
+      }
+    ],
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-useless-default-assignment": "off",
+    "typescript/prefer-for-of": "error",
+    "unicorn/numeric-separators-style": "error",
+    "unicorn/prefer-string-trim-start-end": "error",
+    "vitest/no-conditional-expect": "off",
+    "vitest/no-disabled-tests": "off",
+    "vitest/no-duplicate-hooks": "error",
+    "vitest/no-focused-tests": "error",
+    "vitest/no-standalone-expect": "error",
+    "vitest/require-mock-type-parameters": "off",
+    "vitest/require-to-throw-message": "off",
+    "vitest/warn-todo": "off"
+  },
+  "overrides": [
+    {
+      "files": ["app/components/ui/**", "app/components/magicui/**"],
+      "rules": {
+        "shadcn/no-restyle": "off",
+        "shadcn/no-arbitrary-values": "off",
+        "shadcn/require-static-classes": "off"
+      }
+    },
+    {
+      "files": [
+        "app/features/landing/svgs/**",
+        "app/components/svgs/google-icon.tsx"
+      ],
+      "rules": {
+        "shadcn/no-raw-colors": "off"
+      }
+    },
+    {
+      "files": [
+        "app/features/organizations/settings/team-members/invite-email.tsx"
+      ],
+      "rules": {
+        "shadcn/no-inline-styles": "off"
+      }
+    }
+  ]
+}

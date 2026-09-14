@@ -175,7 +175,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
   });
 
   test("given: an invalid intent, should: return a 400", async () => {
-    const { user, organization } = await setupUserWithOrgAndAddAsMember({
+    const { organization, user } = await setupUserWithOrgAndAddAsMember({
       role: faker.helpers.arrayElement([
         OrganizationMembershipRole.admin,
         OrganizationMembershipRole.owner,
@@ -204,7 +204,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
   });
 
   test("given: a user who has the role of member, should: return a 403", async () => {
-    const { user, organization } = await setupUserWithOrgAndAddAsMember({
+    const { organization, user } = await setupUserWithOrgAndAddAsMember({
       role: OrganizationMembershipRole.member,
     });
 
@@ -228,7 +228,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: an %s and no link exists for the organization, should: create a new invite link that expires in two days",
       async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
           role,
         });
@@ -264,7 +264,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: an %s and a link already exists for the organization, should: deactivate the old link and creates a new invite link that expires in two days",
       async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
           role,
         });
@@ -308,7 +308,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     );
 
     test("given: a user on the lowest plan (low.monthly) and only one existing member, should: return 400 because the org is full", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
         role: OrganizationMembershipRole.owner,
       });
@@ -335,7 +335,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     });
 
     test("given: a user on a trial plan with 25 members, should: return 400 because the org is full", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
       await setupMultipleMembers({
@@ -374,7 +374,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: no active link exists for the organization and user is %s, should: return a 200 and do nothing",
       async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -403,7 +403,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: a link exists and is active for the organization and user is %s, should: deactivate the link",
       async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -508,7 +508,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       async ({ body, expected }) => {
         // Need an owner/admin to attempt the action, even with bad data,
         // to get past the initial permission check.
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.owner,
         });
 
@@ -538,7 +538,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: the user is an $requestingUserRole and tries to change their own role to $targetRoleChange, should: return a 403 forbidden",
       async ({ requestingUserRole, targetRoleChange }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: requestingUserRole,
         });
 
@@ -573,7 +573,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     ])(
       "given: the user is an admin and tries to $description, should: return a 403 forbidden",
       async ({ initialTargetRole, newRole }) => {
-        const { user: adminUser, organization } =
+        const { organization, user: adminUser } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.admin,
           });
@@ -634,7 +634,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           server.events.removeListener("response:mocked", updateListener);
         });
 
-        const { user: adminUser, organization } =
+        const { organization, user: adminUser } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.admin,
           });
@@ -688,7 +688,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           server.events.removeListener("response:mocked", updateListener);
         });
 
-        const { user: adminUser, organization } =
+        const { organization, user: adminUser } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.admin,
           });
@@ -769,7 +769,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           server.events.removeListener("response:mocked", updateListener);
         });
 
-        const { user: ownerUser, organization } =
+        const { organization, user: ownerUser } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.owner,
           });
@@ -824,7 +824,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
           server.events.removeListener("response:mocked", updateListener);
         });
 
-        const { user: ownerUser, organization } =
+        const { organization, user: ownerUser } =
           await setupUserWithOrgAndAddAsMember({
             role: OrganizationMembershipRole.owner,
           });
@@ -865,7 +865,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     );
 
     test("given: an owner on the lowest plan (low.monthly) reactivating a deactivated member, should: return 400 because the org is full", async () => {
-      const { user: ownerUser, organization } =
+      const { organization, user: ownerUser } =
         await setupUserWithOrgAndAddAsMember({
           lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
           role: OrganizationMembershipRole.owner,
@@ -931,7 +931,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     });
 
     test("given: an owner on a trial plan with 25 members reactivating someone, should: return 400 because the org is full", async () => {
-      const { user: ownerUser, organization } =
+      const { organization, user: ownerUser } =
         await setupUserWithTrialOrgAndAddAsMember({
           role: OrganizationMembershipRole.owner,
         });
@@ -1104,7 +1104,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       async ({ body, expected }) => {
         // Need an owner/admin to attempt the action, even with bad data,
         // to get past the initial permission check.
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: faker.helpers.arrayElement([
             OrganizationMembershipRole.admin,
             OrganizationMembershipRole.owner,
@@ -1122,7 +1122,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     );
 
     test("given: user is admin and tries to invite as owner, should: return 403 forbidden", async () => {
-      const { user: adminUser, organization } =
+      const { organization, user: adminUser } =
         await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
@@ -1155,7 +1155,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     });
 
     test("given: inviting a user that is already a member of the organization, should: return a 400 bad request", async () => {
-      const { user: adminUser, organization } =
+      const { organization, user: adminUser } =
         await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
@@ -1208,8 +1208,8 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
       },
     ])(
       "given: the user is an $inviterRole and invites as $inviteeRole, should: create an email invite, send email (mocked), and return 200 ok with success toast",
-      async ({ inviterRole, inviteeRole }) => {
-        const { user: inviterUser, organization } =
+      async ({ inviteeRole, inviterRole }) => {
+        const { organization, user: inviterUser } =
           await setupUserWithOrgAndAddAsMember({ role: inviterRole });
         const targetEmail = faker.internet.email();
 
@@ -1278,7 +1278,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
         ),
       );
 
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
       const targetEmail = faker.internet.email();
@@ -1319,7 +1319,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     });
 
     test("given: a user on the lowest plan (low.monthly) trying to invite anyone, should: return 400 because the org is full", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         lookupKey: priceLookupKeysByTierAndInterval.low.monthly,
         role: OrganizationMembershipRole.owner,
       });
@@ -1350,7 +1350,7 @@ describe(`${createUrl(":organizationSlug")} route action`, () => {
     });
 
     test("given: a user on a trial plan with 25 members trying to invite, should: return 400 because the org is full", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
       await setupMultipleMembers({

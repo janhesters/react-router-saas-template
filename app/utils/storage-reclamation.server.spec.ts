@@ -56,6 +56,7 @@ describe("storage reference lookup", () => {
         alias === "encoded-filename"
           ? imageUrl.replace(
               filename,
+              // oxlint-disable-next-line typescript/no-misused-spread -- The generated UUID and .png extension contain only ASCII characters.
               [...filename]
                 .map((character) => `%${character.charCodeAt(0).toString(16)}`)
                 .join(""),

@@ -4,13 +4,22 @@ import { cn } from "~/lib/utils";
 
 function Card({
   className,
+  shadow = "default",
   size = "default",
+  variant = "default",
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & {
+  shadow?: "default" | "none";
+  size?: "default" | "sm";
+  variant?: "default" | "featured" | "gradient";
+}) {
   return (
     <div
       className={cn(
-        "group/card flex flex-col gap-6 overflow-hidden rounded-xl bg-card py-6 text-card-foreground text-sm shadow-xs ring-1 ring-foreground/10 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card flex flex-col gap-6 overflow-hidden rounded-xl bg-card py-6 text-sm text-card-foreground shadow-xs ring-1 ring-foreground/10 has-[>img:first-child]:pt-0 data-[size=sm]:gap-4 data-[size=sm]:py-4 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        shadow === "none" && "shadow-none",
+        variant === "featured" && "ring-2 ring-primary",
+        variant === "gradient" && "bg-linear-to-t from-primary/5 to-card",
         className,
       )}
       data-size={size}
@@ -20,11 +29,17 @@ function Card({
   );
 }
 
-function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+function CardHeader({
+  className,
+  tone = "default",
+  ...props
+}: React.ComponentProps<"div"> & { tone?: "default" | "destructive" }) {
   return (
     <div
       className={cn(
-        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] group-data-[size=sm]/card:px-4 [.border-b]:pb-6 group-data-[size=sm]/card:[.border-b]:pb-4",
+        "group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-6 group-data-[size=sm]/card:px-4 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-6 group-data-[size=sm]/card:[.border-b]:pb-4",
+        tone === "destructive" &&
+          "text-destructive *:data-[slot=card-description]:text-destructive/90",
         className,
       )}
       data-slot="card-header"
@@ -33,11 +48,16 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+function CardTitle({
+  className,
+  tone = "default",
+  ...props
+}: React.ComponentProps<"div"> & { tone?: "default" | "primary" }) {
   return (
     <div
       className={cn(
-        "font-medium text-base leading-normal group-data-[size=sm]/card:text-sm",
+        "text-base leading-normal font-medium group-data-[size=sm]/card:text-sm",
+        tone === "primary" && "text-primary",
         className,
       )}
       data-slot="card-title"
@@ -46,10 +66,18 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+function CardDescription({
+  className,
+  tone = "default",
+  ...props
+}: React.ComponentProps<"div"> & { tone?: "default" | "foreground" }) {
   return (
     <div
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn(
+        "text-sm text-muted-foreground",
+        tone === "foreground" && "text-foreground",
+        className,
+      )}
       data-slot="card-description"
       {...props}
     />

@@ -16,7 +16,7 @@ const loginSchema = z.discriminatedUnion("intent", [
   loginWithGoogleSchema,
 ]);
 
-export async function loginAction({ request, context }: Route.ActionArgs) {
+export async function loginAction({ context, request }: Route.ActionArgs) {
   const { supabase } = context.get(anonymousContext);
   const i18n = getInstance(context);
   const result = await validateFormData(request, loginSchema);

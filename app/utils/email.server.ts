@@ -1,7 +1,4 @@
-/**
- * biome-ignore-all lint/suspicious/noConsole: email delivery failures use
- * structured, allowlisted metadata
- */
+/* Email delivery failures use structured, allowlisted metadata */
 import { createId } from "@paralleldrive/cuid2";
 import { render } from "@react-email/components";
 import type { ReactElement } from "react";
@@ -56,11 +53,11 @@ export async function sendEmail({
   react,
   ...options
 }: {
-  to: string;
   subject: string;
+  to: string;
 } & (
-  | { html: string; text: string; react?: never }
-  | { react: ReactElement; html?: never; text?: never }
+  | { html: string; react?: never; text: string }
+  | { html?: never; react: ReactElement; text?: never }
 )) {
   const correlationId = createId();
   const emailMocksAreEnabled = process.env.EMAIL_MOCKS === "true";

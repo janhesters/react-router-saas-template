@@ -32,7 +32,7 @@ import { onboardingUserAccountSchema } from "~/features/onboarding/user-account/
 import { useForm } from "~/utils/conform";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context, url }: Route.LoaderArgs) {
+export async function loader({ context, request, url }: Route.LoaderArgs) {
   const auth = await requireUserNeedsOnboarding({
     context,
     request,
@@ -62,7 +62,7 @@ export default function UserAccountOnboardingRoute({
 }: Route.ComponentProps) {
   const { t } = useTranslation("onboarding", { keyPrefix: "userAccount" });
   const hydrated = useHydrated();
-  const { form, fields } = useForm(
+  const { fields, form } = useForm(
     coerceFormValue(onboardingUserAccountSchema),
     {
       lastResult: actionData?.result,
@@ -76,8 +76,8 @@ export default function UserAccountOnboardingRoute({
       <FieldSet disabled={isSubmitting}>
         <FieldGroup>
           <div className="flex flex-col gap-1">
-            <h1 className="font-bold text-2xl">{t("heading")}</h1>
-            <p className="text-pretty text-muted-foreground text-sm">
+            <h1 className="text-2xl font-bold">{t("heading")}</h1>
+            <p className="text-sm text-pretty text-muted-foreground">
               {t("subtitle")}
             </p>
           </div>
@@ -116,7 +116,10 @@ export default function UserAccountOnboardingRoute({
                         className="size-16 rounded-lg object-cover md:size-24"
                         src={loaderData.user.imageUrl}
                       />
-                      <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                      <AvatarFallback
+                        className="size-16 rounded-lg md:size-24"
+                        variant="upload"
+                      >
                         <IconUser className="size-8 md:size-12" />
                       </AvatarFallback>
                     </Avatar>

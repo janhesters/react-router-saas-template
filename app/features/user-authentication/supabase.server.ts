@@ -21,7 +21,7 @@ export function createSupabaseServerClient({ request }: { request: Request }) {
           }[];
         },
         setAll(cookiesToSet) {
-          for (const { name, value, options } of cookiesToSet)
+          for (const { name, options, value } of cookiesToSet)
             headers.append(
               "Set-Cookie",
               serializeCookieHeader(name, value, options),

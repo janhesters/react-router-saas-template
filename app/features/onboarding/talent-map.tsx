@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noMagicNumbers: Marker sizes are based on city importance */
+/* Marker sizes are based on city importance */
 import type { COBEOptions } from "cobe";
 
 import { Globe } from "~/components/ui/globe";
@@ -100,8 +100,8 @@ export function TalentMap() {
         speed={16}
       />
       <Globe className="my-auto" config={{ markers }} />
-      <div className="pointer-events-none absolute inset-0 h-full bg-[radial-gradient(circle_at_50%_200%,rgba(0,0,0,0.2),rgba(255,255,255,0))]" />
-      <div className="pointer-events-none absolute inset-0 from-transparent to-70% to-background" />
+      <div className="pointer-events-none absolute inset-0 h-full talent-map-vignette" />
+      <div className="pointer-events-none absolute inset-0 from-transparent to-background to-70%" />
     </div>
   );
 }

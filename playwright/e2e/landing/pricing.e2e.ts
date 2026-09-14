@@ -32,7 +32,26 @@ test.describe("pricing page", () => {
   test("given: an anonymous user, should: show monthly/annual tabs with correct pricing", async ({
     page,
   }) => {
-    await page.goto(path);
+    let releaseTranslations: (() => void) | undefined;
+    const translationsReleased = new Promise<void>((resolve) => {
+      releaseTranslations = resolve;
+    });
+    const translationsRequested = page.waitForRequest("**/api/locales/**");
+    await page.route("**/api/locales/**", async (route) => {
+      await translationsReleased;
+      await route.continue();
+    });
+
+    try {
+      await page.goto(path);
+      await translationsRequested;
+
+      // The server-rendered tabs cannot accept clicks until React hydrates.
+      await expect(page.getByRole("tab", { name: /monthly/i })).toBeDisabled();
+      await expect(page.getByRole("tab", { name: /annual/i })).toBeDisabled();
+    } finally {
+      releaseTranslations?.();
+    }
 
     // Check initial state (annual by default)
     await expect(page.getByRole("tab", { name: /annual/i })).toHaveAttribute(

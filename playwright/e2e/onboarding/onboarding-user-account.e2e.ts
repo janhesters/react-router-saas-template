@@ -29,7 +29,7 @@ test.describe("onboarding user account page", () => {
   test("given: a logged in and onboarded user, should: redirect to organization page", async ({
     page,
   }) => {
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
     });
 
@@ -130,7 +130,7 @@ test.describe("onboarding user account page", () => {
     test("given: a logged in user without name but with organization, should: allow name creation and redirect to organization page", async ({
       page,
     }) => {
-      const { user, organization } = await setupOrganizationAndLoginAsMember({
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
         user: createPopulatedUserAccount({ name: "" }),
       });

@@ -70,8 +70,8 @@ export const requireAuthenticatedUserWithMembershipsExists = async ({
   request: Request;
 }) => {
   const {
-    user: { id },
     supabase,
+    user: { id },
   } = context.get(authContext);
   const user =
     await retrieveUserAccountWithMembershipsAndMemberCountsFromDatabaseBySupabaseUserId(
@@ -105,8 +105,8 @@ export const requireAuthenticatedUserWithMembershipsAndSubscriptionsExists =
     request: Request;
   }) => {
     const {
-      user: { id },
       supabase,
+      user: { id },
     } = context.get(authContext);
     const user =
       await retrieveUserAccountWithMembershipsAndMemberCountsAndSubscriptionsFromDatabaseBySupabaseUserId(

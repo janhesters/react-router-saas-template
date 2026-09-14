@@ -1,1 +1,2 @@
+bun run typegen
 bunx --bun --no-install lint-staged

@@ -52,13 +52,13 @@ async function sendRequest({
 }
 
 async function sendAuthenticatedRequest({
-  userAccount,
   formData = toFormData(createBody()),
   token,
+  userAccount,
 }: {
-  userAccount: UserAccount;
   formData?: FormData;
   token?: string;
+  userAccount: UserAccount;
 }) {
   const url = createUrl(token);
   const request = await createAuthenticatedRequest({

@@ -2,11 +2,11 @@ import type { FileUpload } from "@remix-run/form-data-parser";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { createAdminS3Client } from "./s3.server";
-import { uploadToStorage } from "./storage.server";
 import {
   createImageStorageKey,
   reclaimImageFromStorage,
 } from "./storage-helpers.server";
+import { uploadToStorage } from "./storage.server";
 import { BUCKET_NAME } from "~/features/user-accounts/user-account-constants";
 import { Prisma } from "~/generated/client";
 
@@ -65,13 +65,13 @@ export async function uploadOwnedImage({
  */
 export async function replaceStoredImage<Value>({
   previousImageUrl,
-  upload,
   publish,
+  upload,
   ...owner
 }: ImageOwner & {
   previousImageUrl: string;
-  upload: () => Promise<string>;
   publish: (imageUrl: string) => Promise<Value>;
+  upload: () => Promise<string>;
 }) {
   let imageUrl: string;
   try {

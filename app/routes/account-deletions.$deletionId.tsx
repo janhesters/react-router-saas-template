@@ -14,11 +14,11 @@ import {
 } from "~/components/ui/card";
 import { Spinner } from "~/components/ui/spinner";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
+import { readAccountDeletionRecovery } from "~/features/user-accounts/deletion/account-deletion-recovery.server";
 import {
   getAccountDeletionForRecovery,
   processAccountDeletion,
 } from "~/features/user-accounts/deletion/account-deletion.server";
-import { readAccountDeletionRecovery } from "~/features/user-accounts/deletion/account-deletion-recovery.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 import { methodNotAllowed, notFound } from "~/utils/http-responses.server";
 
@@ -28,7 +28,7 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow",
 };
 
-async function requireDeletion({ request, params }: Route.LoaderArgs) {
+async function requireDeletion({ params, request }: Route.LoaderArgs) {
   const recoveryToken = await readAccountDeletionRecovery(
     request,
     params.deletionId,
@@ -100,6 +100,7 @@ export default function AccountDeletionRoute({
           <CardDescription>{t("pageTitle")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- This live region announces deletion progress, not a form calculation. */}
           <p aria-live="polite" role="status">
             {t(`${status}.description`)}
           </p>

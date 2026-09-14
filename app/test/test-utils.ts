@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { faker } from "@faker-js/faker";
 import type { MiddlewareFunction, Params } from "react-router";
 import { RouterContextProvider } from "react-router";
@@ -201,17 +201,17 @@ export const createMockSupabaseSession = ({
  * @returns A Request object with authentication cookies.
  */
 export async function createAuthenticatedRequest({
-  url,
-  user,
-  method = "POST",
   formData,
   headers,
+  method = "POST",
+  url,
+  user,
 }: {
-  url: string;
-  user: UserAccount;
-  method?: string;
   formData?: FormData;
   headers?: Headers;
+  method?: string;
+  url: string;
+  user: UserAccount;
 }) {
   // Create a mock session with the provided user details.
   const mockSession = createMockSupabaseSession({ user });
@@ -250,8 +250,8 @@ export async function createUserWithTrialOrgAndAddAsMember({
     // This automatically sets the trial end to 14 days from the creation date.
     createdAt: faker.date.recent({ days: 3 }),
   }),
-  user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member as OrganizationMembershipRole,
+  user = createPopulatedUserAccount(),
 } = {}) {
   // Save user account and organization and add user as a member.
   await Promise.all([
@@ -279,22 +279,22 @@ export async function createUserWithTrialOrgAndAddAsMember({
  * @returns The updated organization with the new subscription data
  */
 export async function createTestSubscriptionForUserAndOrganization({
-  user,
+  lookupKey,
   organization,
+  stripeCustomerId = createPopulatedOrganization().stripeCustomerId!,
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
     items: [
       { price: { lookupKey: priceLookupKeysByTierAndInterval.high.annual } },
     ],
     organizationId: organization.id,
   }),
-  stripeCustomerId = createPopulatedOrganization().stripeCustomerId!,
-  lookupKey,
+  user,
 }: {
-  user: UserAccount;
+  lookupKey?: LookupKey;
   organization: Organization;
   stripeCustomerId: NonNullable<Organization["stripeCustomerId"]>;
   subscription?: StripeSubscriptionWithItemsAndPrice;
-  lookupKey?: LookupKey;
+  user: UserAccount;
 }) {
   const finalLookupKey =
     lookupKey ?? subscription.items[0]?.price?.lookupKey ?? "";
@@ -330,13 +330,13 @@ export async function createTestSubscriptionForUserAndOrganization({
  * @returns - An object containing the saved organization and user.
  */
 export async function createUserWithOrgAndAddAsMember({
+  lookupKey = priceLookupKeysByTierAndInterval.high.annual as LookupKey,
   organization = createPopulatedOrganization(),
-  user = createPopulatedUserAccount(),
   role = OrganizationMembershipRole.member as OrganizationMembershipRole,
   subscription = createPopulatedStripeSubscriptionWithItemsAndPrice({
     organizationId: organization.id,
   }),
-  lookupKey = priceLookupKeysByTierAndInterval.high.annual as LookupKey,
+  user = createPopulatedUserAccount(),
 } = {}) {
   // Save user account and organization and add user as a member.
   await createUserWithTrialOrgAndAddAsMember({
@@ -394,7 +394,7 @@ export async function teardownOrganizationAndMember({
  */
 export async function ensureStripeProductsAndPricesExist() {
   for (const tier of Object.keys(priceLookupKeysByTierAndInterval) as Tier[]) {
-    const { monthly, annual } = priceLookupKeysByTierAndInterval[tier];
+    const { annual, monthly } = priceLookupKeysByTierAndInterval[tier];
 
     const [existingMonthlyPrice, existingAnnualPrice] = await Promise.all([
       retrieveStripePriceFromDatabaseByLookupKey(monthly),
@@ -471,13 +471,13 @@ export async function ensureStripeProductsAndPricesExist() {
 export async function createTestContextProvider({
   middlewares = [],
   params,
-  request,
   pattern,
+  request,
 }: {
   middlewares?: MiddlewareFunction[];
   params: Params;
-  request: Request;
   pattern: string;
+  request: Request;
 }) {
   const context = new RouterContextProvider();
 
@@ -523,12 +523,12 @@ export async function createTestContextProvider({
  */
 export async function createAuthTestContextProvider({
   params,
-  request,
   pattern,
+  request,
 }: {
   params: Params;
-  request: Request;
   pattern: string;
+  request: Request;
 }) {
   return await createTestContextProvider({
     middlewares: [authMiddleware],
@@ -553,12 +553,12 @@ export async function createAuthTestContextProvider({
  */
 export async function createOrganizationMembershipTestContextProvider({
   params,
-  request,
   pattern,
+  request,
 }: {
   params: Params;
-  request: Request;
   pattern: string;
+  request: Request;
 }) {
   return await createTestContextProvider({
     middlewares: [authMiddleware, organizationMembershipMiddleware],

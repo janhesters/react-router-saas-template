@@ -10,7 +10,7 @@ import {
 import { AcceptEmailInvitePage } from "~/features/organizations/accept-email-invite/accept-email-invite-page";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const token = getEmailInviteToken(request);
   const data = await requireEmailInviteDataByTokenExists(token);
   const i18n = getInstance(context);

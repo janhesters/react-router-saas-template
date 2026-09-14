@@ -16,7 +16,7 @@ export type EmailInviteInfoSessionData = z.infer<typeof emailInviteSchema>;
 // Create the session storage instance
 // Note: We don't set a default maxAge here; it will be set dynamically
 // based on the email invite's expiration when committing the session.
-const { commitSession, getSession, destroySession } =
+const { commitSession, destroySession, getSession } =
   createCookieSessionStorage<EmailInviteInfoSessionData>({
     cookie: {
       httpOnly: true,

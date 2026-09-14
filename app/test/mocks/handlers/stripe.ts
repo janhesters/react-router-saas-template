@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { HttpResponse, http } from "msw";
 import type Stripe from "stripe";
 
@@ -318,7 +318,7 @@ const retrieveSubscriptionMock = http.get(
 
 const updateCustomerMock = http.post(
   "https://api.stripe.com/v1/customers/:customerId",
-  async ({ request, params }) => {
+  async ({ params, request }) => {
     const customerId = params.customerId as string;
     const body = await request.text();
     const paramsMap = new URLSearchParams(body);
@@ -354,7 +354,7 @@ const updateScheduleMock = http.post(
 
 const updateSubscriptionMock = http.post(
   "https://api.stripe.com/v1/subscriptions/:subscriptionId",
-  async ({ request, params }) => {
+  async ({ params, request }) => {
     const subscriptionId = params.subscriptionId as string;
     const body = await request.text();
     const paramsMap = new URLSearchParams(body);

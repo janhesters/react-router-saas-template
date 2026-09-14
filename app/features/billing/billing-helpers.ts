@@ -11,8 +11,8 @@ import { priceLookupKeysByTierAndInterval } from "./billing-constants";
  * @throws If no entry matches the given `lookupKey`.
  */
 export function getTierAndIntervalForLookupKey(lookupKey: string): {
-  tier: Tier;
   interval: Interval;
+  tier: Tier;
 } {
   for (const [tier, intervals] of Object.entries(
     priceLookupKeysByTierAndInterval,

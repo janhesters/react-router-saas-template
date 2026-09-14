@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 
 import { data, href } from "react-router";
 import { describe, expect, onTestFinished, test } from "vitest";
@@ -98,13 +98,13 @@ const server = setupMockServerLifecycle(...supabaseHandlers, ...stripeHandlers);
  * for the given user and organization.
  */
 async function setupNotificationsForUserAndOrganization({
-  user,
-  organization,
   count = 1,
+  organization,
+  user,
 }: {
-  user: UserAccount;
-  organization: Organization;
   count?: number;
+  organization: Organization;
+  user: UserAccount;
 }) {
   const notifications = Array.from({ length: count }).map(() =>
     createPopulatedNotification({ organizationId: organization.id }),
@@ -200,7 +200,7 @@ describe("/organizations/:organizationSlug route action", () => {
     }>) => toFormData({ currentPath, intent, organizationId });
 
     test("given: a valid organization switch request, should: redirect to the new organization's same route with updated cookie", async () => {
-      const { user, organization: currentOrg } =
+      const { organization: currentOrg, user } =
         await setupUserWithOrgAndAddAsMember();
       const targetOrg = createPopulatedOrganization();
       await saveOrganizationToDatabase(targetOrg);
@@ -234,7 +234,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: an invalid organization ID of a non-existent organization, should: return a 404 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const formData = createBody({
         currentPath: href("/organizations/:organizationSlug/settings/general", {
@@ -254,7 +254,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: a request to switch to an organization the user is not a member of, should: return a 404", async () => {
-      const { user, organization: currentOrg } =
+      const { organization: currentOrg, user } =
         await setupUserWithOrgAndAddAsMember();
       const { organization: targetOrg } =
         await setupUserWithOrgAndAddAsMember();
@@ -277,7 +277,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: a request without an intent, should: return a 400 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const formData = createBody({
         currentPath: href("/organizations/:organizationSlug/settings/general", {
@@ -308,7 +308,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: a request with an invalid intent, should: return a 400 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const formData = createBody({
         currentPath: href("/organizations/:organizationSlug/settings/general", {
@@ -340,7 +340,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: no organization ID, should: return a 400 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const formData = createBody({});
       formData.delete("organizationId");
@@ -366,7 +366,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: no current path, should: return a 400 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const formData = createBody({ organizationId: organization.id });
       formData.delete("currentPath");
@@ -396,7 +396,7 @@ describe("/organizations/:organizationSlug route action", () => {
     const intent = MARK_ALL_NOTIFICATIONS_AS_READ_INTENT;
 
     test("given: a valid request, should: mark all notifications as read", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
       await setupNotificationsForUserAndOrganization({
         count: 3,
         organization,
@@ -429,7 +429,7 @@ describe("/organizations/:organizationSlug route action", () => {
     const intent = MARK_ONE_NOTIFICATION_AS_READ_INTENT;
 
     test("given: a valid request, should: mark the specified notification as read", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
       const { recipients } = await setupNotificationsForUserAndOrganization({
         count: 2,
         organization,
@@ -459,7 +459,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: no recipientId, should: return a 400 with validation errors", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
       await setupNotificationsForUserAndOrganization({
         count: 1,
         organization,
@@ -487,7 +487,7 @@ describe("/organizations/:organizationSlug route action", () => {
     });
 
     test("given: a recipient belonging to another user, should: return a 404", async () => {
-      const { user: userA, organization } =
+      const { organization, user: userA } =
         await setupUserWithOrgAndAddAsMember();
       // seed one for A
       await setupNotificationsForUserAndOrganization({
@@ -526,7 +526,7 @@ describe("/organizations/:organizationSlug route action", () => {
     const intent = NOTIFICATION_PANEL_OPENED_INTENT;
 
     test("given: a valid request, should: return a 200 and mark the notification panel as opened", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember();
+      const { organization, user } = await setupUserWithOrgAndAddAsMember();
 
       const panelBefore =
         await retrieveNotificationPanelForUserAndOrganizationFromDatabaseById({
@@ -556,7 +556,7 @@ describe("/organizations/:organizationSlug route action", () => {
     const intent = OPEN_CHECKOUT_SESSION_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -576,7 +576,7 @@ describe("/organizations/:organizationSlug route action", () => {
     ])(
       "given: a valid request from a %s, but their organization already has a subscription, should: return a 409",
       async (role) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -597,7 +597,7 @@ describe("/organizations/:organizationSlug route action", () => {
     ])(
       "given: a valid request from a %s, but their organization has too many members for the chosen plan, should: return a 409",
       async (role) => {
-        const { user, organization } =
+        const { organization, user } =
           await setupUserWithTrialOrgAndAddAsMember({
             role,
           });
@@ -642,7 +642,7 @@ describe("/organizations/:organizationSlug route action", () => {
           server.events.removeListener("response:mocked", checkoutListener);
         });
 
-        const { user, organization } =
+        const { organization, user } =
           await setupUserWithTrialOrgAndAddAsMember({
             role,
           });

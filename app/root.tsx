@@ -1,5 +1,4 @@
 import "./app.css";
-
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import type { ShouldRevalidateFunctionArgs } from "react-router";
@@ -51,8 +50,8 @@ export const links: Route.LinksFunction = () => [
  * so, we opt in to revalidate the root loader data when the action status is in the 4xx range.
  */
 export const shouldRevalidate = ({
-  defaultShouldRevalidate,
   actionStatus,
+  defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) => {
   if (actionStatus && actionStatus > 399 && actionStatus < 500) {
     return true;
@@ -63,7 +62,7 @@ export const shouldRevalidate = ({
 
 export const middleware = [securityMiddleware, i18nextMiddleware];
 
-export async function loader({ request, context, url }: Route.LoaderArgs) {
+export async function loader({ context, request, url }: Route.LoaderArgs) {
   const { colorScheme, honeypotInputProps, toastData } = await promiseHash({
     colorScheme: getColorScheme(request),
     honeypotInputProps: honeypot.getInputProps(),
@@ -72,7 +71,7 @@ export async function loader({ request, context, url }: Route.LoaderArgs) {
   const locale = getLocale(context);
   const i18next = getInstance(context);
   const title = i18next.t("appName");
-  const { toast, headers: toastHeaders } = toastData;
+  const { headers: toastHeaders, toast } = toastData;
   return data(
     {
       colorScheme,
@@ -152,11 +151,7 @@ export function Layout({
 
         {/* Add nonce to inline scripts */}
         <script
-          /**
-           * biome-ignore lint/security/noDangerouslySetInnerHtml: This is how
-           * you're supposed to set variables that are available on the client
-           * side with React Router.
-           */
+          /* oxlint-disable-next-line react/no-danger -- This is how you're supposed to set variables that are available on the client side with React Router. */
           dangerouslySetInnerHTML={{
             __html: `window.ENV = ${JSON.stringify(data?.ENV ?? {}).replaceAll("<", "\\u003c")}`,
           }}
@@ -177,7 +172,7 @@ export default function App({ loaderData: { locale } }: Route.ComponentProps) {
 
   useEffect(() => {
     if (i18n.language !== locale) {
-      i18n.changeLanguage(locale);
+      void i18n.changeLanguage(locale);
     }
   }, [i18n, locale]);
 

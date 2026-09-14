@@ -13,6 +13,7 @@ function Spinner({
     <IconLoader
       aria-label={t("loading")}
       className={cn("size-4 animate-spin", className)}
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- The loading icon renders an SVG, not an HTML output element.
       role="status"
       {...props}
     />

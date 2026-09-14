@@ -8,7 +8,7 @@ export { expect } from "@playwright/test";
 
 export const test = base.extend<{ externalImageRequests: string[] }>({
   externalImageRequests: [
-    async ({ context, baseURL }, use) => {
+    async ({ baseURL, context }, use) => {
       const externalImageRequests: string[] = [];
       const appOrigin = new URL(baseURL ?? "http://localhost:3000").origin;
       const storageOrigin = new URL(process.env.VITE_SUPABASE_URL).origin;

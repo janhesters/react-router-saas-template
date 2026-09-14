@@ -1,6 +1,4 @@
-/** biome-ignore-all lint/style/noMagicNumbers: The numbers are random numbers,
- * there is no good description for the numbers.
- */
+/* The numbers are random numbers, there is no good description for the numbers. */
 import type { COBEOptions } from "cobe";
 import createGlobe from "cobe";
 import { useMotionValue, useSpring } from "motion/react";
@@ -91,7 +89,7 @@ export function Globe({
     onResize();
 
     const devicePixelRatio = mergedConfig.devicePixelRatio ?? 2;
-    // biome-ignore lint/style/noNonNullAssertion: The canvas is guaranteed to be available.
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- The canvas is guaranteed to be available.
     const globe = createGlobe(canvasRef.current!, {
       ...mergedConfig,
       height: width.current * devicePixelRatio,
@@ -129,7 +127,7 @@ export function Globe({
     >
       <canvas
         className={cn(
-          "contain-[layout_paint_size] size-full opacity-0 transition-opacity duration-500",
+          "size-full opacity-0 transition-opacity duration-500 contain-[layout_paint_size]",
         )}
         onMouseMove={(e) => updateMovement(e.clientX)}
         onPointerDown={(e) => {

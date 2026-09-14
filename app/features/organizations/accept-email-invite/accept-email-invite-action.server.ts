@@ -25,8 +25,8 @@ const acceptEmailInviteSchema = z.object({
 });
 
 export async function acceptEmailInviteAction({
-  request,
   context,
+  request,
 }: Route.ActionArgs) {
   try {
     const i18n = getInstance(context);
@@ -37,7 +37,7 @@ export async function acceptEmailInviteAction({
 
     switch (data.intent) {
       case ACCEPT_EMAIL_INVITE_INTENT: {
-        const { supabase, headers } = createSupabaseServerClient({ request });
+        const { headers, supabase } = createSupabaseServerClient({ request });
         const {
           data: { user },
         } = await supabase.auth.getUser();

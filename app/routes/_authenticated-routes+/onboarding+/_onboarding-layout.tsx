@@ -35,7 +35,7 @@ export default function OnboardingLayout({ loaderData }: Route.ComponentProps) {
         <div className="z-10 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-xl">&ldquo;{t("quote")}&rdquo;</p>
-            <footer className="font-mono font-semibold text-sm">
+            <footer className="font-mono text-sm font-semibold">
               {t("quoteAuthor")}
             </footer>
           </blockquote>
@@ -55,9 +55,9 @@ export default function OnboardingLayout({ loaderData }: Route.ComponentProps) {
           aria-hidden
           className="absolute inset-0 isolate opacity-60 contain-strict"
         >
-          <div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-140 rounded-full bg-[radial-gradient(68.54%_68.72%_at_55.02%_31.46%,--theme(--color-foreground/.06)_0,hsla(0,0%,55%,.02)_50%,--theme(--color-foreground/.01)_80%)]" />
-          <div className="absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)] [translate:5%_-50%]" />
-          <div className="-translate-y-87.5 absolute top-0 right-0 h-320 w-60 rounded-full bg-[radial-gradient(50%_50%_at_50%_50%,--theme(--color-foreground/.04)_0,--theme(--color-foreground/.01)_80%,transparent_100%)]" />
+          <div className="absolute top-0 right-0 h-320 w-140 -translate-y-87.5 rounded-full glow-foreground-diffuse" />
+          <div className="absolute top-0 right-0 h-320 w-60 translate-x-1/20 -translate-y-1/2 rounded-full glow-foreground-soft" />
+          <div className="absolute top-0 right-0 h-320 w-60 -translate-y-87.5 rounded-full glow-foreground-soft" />
         </div>
         <div
           className={cn(

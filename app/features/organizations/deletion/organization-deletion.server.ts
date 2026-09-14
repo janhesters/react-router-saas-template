@@ -18,13 +18,13 @@ const LOGO_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "webp"];
  * The manifest has no organization/user foreign key and survives their deletion.
  */
 export async function requestOrganizationDeletion({
+  confirmation,
   organizationId,
   userId,
-  confirmation,
 }: {
+  confirmation: string;
   organizationId: string;
   userId: string;
-  confirmation: string;
 }): Promise<OrganizationDeletion> {
   let committedDeletion: OrganizationDeletion | undefined;
   try {
@@ -51,15 +51,15 @@ export async function requestOrganizationDeletion({
  * Callers must hold the organization advisory lock until their transaction commits.
  */
 export async function createOrganizationDeletionInTransaction({
-  transaction,
-  organizationId,
-  userId,
   confirmation,
+  organizationId,
+  transaction,
+  userId,
 }: {
-  transaction: Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
-  organizationId: string;
-  userId: string;
   confirmation: string;
+  organizationId: string;
+  transaction: Parameters<Parameters<typeof prisma.$transaction>[0]>[0];
+  userId: string;
 }): Promise<OrganizationDeletion> {
   // The advisory lock uses a separate connection. Keep the snapshot and
   // deletion protected by this transaction even if that connection fails.
@@ -169,11 +169,11 @@ export async function getOrganizationDeletionForUser({
 
 /** Persist late checkout/customer creation before acknowledging the Stripe event. */
 export async function recordDeletedOrganizationCustomer({
-  organizationId,
   customerId,
+  organizationId,
 }: {
-  organizationId: string;
   customerId: string;
+  organizationId: string;
 }): Promise<boolean> {
   return prisma.$transaction(async (transaction) => {
     // The parent row lock also serializes with worker completion below.

@@ -21,7 +21,7 @@ test.describe("organizations email invite page", () => {
     async function setup(
       deactivatedAt?: OrganizationEmailInviteLink["deactivatedAt"],
     ) {
-      const { user, organization } = await createUserWithOrgAndAddAsMember();
+      const { organization, user } = await createUserWithOrgAndAddAsMember();
       const emailInvite = createPopulatedOrganizationEmailInviteLink({
         deactivatedAt,
         email: "invited@example.com",
@@ -36,7 +36,7 @@ test.describe("organizations email invite page", () => {
     test("given: an invalid token, should: show a 404 page", async ({
       page,
     }) => {
-      const { user, organization } = await setup();
+      const { organization, user } = await setup();
 
       await page.goto(getEmailInvitePagePath("invalid-token"));
 
@@ -51,7 +51,7 @@ test.describe("organizations email invite page", () => {
     test("given: a valid token, should: redirect to the register page", async ({
       page,
     }) => {
-      const { emailInvite, user, organization } = await setup();
+      const { emailInvite, organization, user } = await setup();
 
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
@@ -80,7 +80,7 @@ test.describe("organizations email invite page", () => {
     test("given: a valid token for a deactivated email invite, should: show a 404 page ", async ({
       page,
     }) => {
-      const { emailInvite, user, organization } = await setup(new Date());
+      const { emailInvite, organization, user } = await setup(new Date());
 
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
@@ -111,11 +111,11 @@ test.describe("organizations email invite page", () => {
 
   test.describe("given: a logged in user", () => {
     async function setup({
-      page,
       deactivatedAt,
+      page,
     }: {
-      page: Page;
       deactivatedAt?: OrganizationEmailInviteLink["deactivatedAt"];
+      page: Page;
     }) {
       const { auth, data } = await promiseHash({
         auth: setupOrganizationAndLoginAsMember({ page }),
@@ -160,7 +160,7 @@ test.describe("organizations email invite page", () => {
     test("given: a valid token, should: let the user join the organization", async ({
       page,
     }) => {
-      const { emailInvite, auth, data } = await setup({ page });
+      const { auth, data, emailInvite } = await setup({ page });
 
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 
@@ -209,7 +209,7 @@ test.describe("organizations email invite page", () => {
     test("given: a valid token for a deactivated email invite, should: show a 404 page ", async ({
       page,
     }) => {
-      const { emailInvite, auth, data } = await setup({
+      const { auth, data, emailInvite } = await setup({
         deactivatedAt: new Date(),
         page,
       });
@@ -268,7 +268,7 @@ test.describe("organizations email invite page", () => {
     }) => {
       // Create an organization and make the user a member and log in as that
       // user
-      const { user, organization } = await setupOrganizationAndLoginAsMember({
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
         lookupKey: priceLookupKeysByTierAndInterval.mid.annual,
         page,
       });
@@ -310,7 +310,7 @@ test.describe("organizations email invite page", () => {
     test("given a valid token, should: lack any automatically detectable accessibility issues", async ({
       page,
     }) => {
-      const { emailInvite, auth, data } = await setup({ page });
+      const { auth, data, emailInvite } = await setup({ page });
 
       await page.goto(getEmailInvitePagePath(emailInvite.token));
 

@@ -61,7 +61,7 @@ async function seed() {
   console.time(`👥 Created ${demoOrgs.length} organizations with owners`);
 
   for (const demo of demoOrgs) {
-    const { user, organization } = await createUserWithOrgAndAddAsMember({
+    const { organization, user } = await createUserWithOrgAndAddAsMember({
       lookupKey: demo.lookupKey,
       organization: demo.organization,
       role: OrganizationMembershipRole.owner,

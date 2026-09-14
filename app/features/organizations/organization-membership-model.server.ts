@@ -11,11 +11,11 @@ import { prisma } from "~/utils/database.server";
  * @returns The organization membership or null if not found.
  */
 export async function retrieveOrganizationMembershipFromDatabaseByUserIdAndOrganizationId({
-  userId,
   organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
   organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }) {
   return prisma.organizationMembership.findUnique({
     where: {
@@ -56,13 +56,13 @@ export async function retrieveActiveOrganizationMembershipByEmailAndOrganization
  * @returns The updated organization membership.
  */
 export async function updateOrganizationMembershipInDatabase({
-  userId,
-  organizationId,
   data,
+  organizationId,
+  userId,
 }: {
-  userId: UserAccount["id"];
-  organizationId: Organization["id"];
   data: Prisma.OrganizationMembershipUpdateInput; // Use Prisma type for flexibility
+  organizationId: Organization["id"];
+  userId: UserAccount["id"];
 }) {
   return prisma.organizationMembership.update({
     data,

@@ -19,11 +19,11 @@ export function NotFound({ className }: NotFoundProps) {
       )}
     >
       <div className="text-center">
-        <p className="font-semibold text-base text-primary">
+        <p className="text-base font-semibold text-primary">
           {t("notFound.status")}
         </p>
 
-        <h1 className="mt-4 font-bold text-3xl text-foreground tracking-tighter sm:text-5xl">
+        <h1 className="mt-4 text-3xl font-bold tracking-tighter text-foreground sm:text-5xl">
           {t("notFound.title")}
         </h1>
 

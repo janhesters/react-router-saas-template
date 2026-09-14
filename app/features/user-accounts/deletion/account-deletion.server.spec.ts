@@ -9,12 +9,12 @@ import {
   vi,
 } from "vitest";
 
+import { cleanupAccountDeletionResource } from "./account-deletion-providers.server";
 import {
   getAccountDeletionForRecovery,
   processAccountDeletion,
   requestAccountDeletion,
 } from "./account-deletion.server";
-import { cleanupAccountDeletionResource } from "./account-deletion-providers.server";
 import {
   recordDeletedOrganizationCustomer,
   requestOrganizationDeletion,
@@ -92,7 +92,7 @@ async function setupAccount() {
 
 describe("account deletion admission", () => {
   test("given: an account without organizations, should: atomically remove the account and persist Auth and avatar cleanup", async () => {
-    const { user, requestDeletion } = await setupAccount();
+    const { requestDeletion, user } = await setupAccount();
     const avatarKey = `user-avatars/${user.id}/${randomUUID()}.png`;
     await prisma.userAccount.update({
       data: {
@@ -128,7 +128,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: solely owned and shared organizations, should: delete only the sole organization and retain shared billing", async () => {
-    const { user, addOrganization, requestDeletion } = await setupAccount();
+    const { addOrganization, requestDeletion, user } = await setupAccount();
     const sole = await addOrganization("owner");
     const shared = await addOrganization("member", ["owner"]);
     const coOwned = await addOrganization("owner", ["owner"]);
@@ -172,7 +172,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: the last active owner of a shared organization, should: reject before deleting any account or organization", async () => {
-    const { user, addOrganization, requestDeletion } = await setupAccount();
+    const { addOrganization, requestDeletion, user } = await setupAccount();
     const sole = await addOrganization("owner");
     const shared = await addOrganization("owner", ["member"]);
     await expect(requestDeletion()).rejects.toMatchObject({
@@ -219,7 +219,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: a mismatched email confirmation, should: leave all account data unchanged", async () => {
-    const { user, requestDeletion } = await setupAccount();
+    const { requestDeletion, user } = await setupAccount();
     await expect(requestDeletion("wrong@example.com")).rejects.toMatchObject({
       code: "confirmationMismatch",
     });
@@ -232,7 +232,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: account deletion fails after organization manifests were written, should: roll back every deletion and manifest", async () => {
-    const { user, addOrganization, requestDeletion } = await setupAccount();
+    const { addOrganization, requestDeletion, user } = await setupAccount();
     const { organization } = await addOrganization("owner");
     const transaction = prisma.$transaction.bind(prisma);
     vi.spyOn(prisma, "$transaction").mockImplementation(((
@@ -304,7 +304,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: concurrent and repeated admissions, should: return the same durable job and recovery token", async () => {
-    const { user, requestDeletion } = await setupAccount();
+    const { requestDeletion, user } = await setupAccount();
     const results = await Promise.all([
       requestDeletion(),
       requestDeletion(),
@@ -326,7 +326,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: a new owned shared membership committed before admission locks the account, should: refresh authorization and reject deletion", async () => {
-    const { user, addOrganization, requestDeletion } = await setupAccount();
+    const { addOrganization, requestDeletion, user } = await setupAccount();
     const findUser = prisma.userAccount.findUnique.bind(prisma.userAccount);
     vi.spyOn(prisma.userAccount, "findUnique").mockImplementationOnce((async (
       args: Parameters<typeof findUser>[0],
@@ -347,7 +347,7 @@ describe("account deletion admission", () => {
   });
 
   test("given: an earlier explicit organization deletion, should: retain its cleanup dependency after removing the account", async () => {
-    const { user, addOrganization, requestDeletion } = await setupAccount();
+    const { addOrganization, requestDeletion, user } = await setupAccount();
     const { organization } = await addOrganization("owner");
     await requestOrganizationDeletion({
       confirmation: organization.name,

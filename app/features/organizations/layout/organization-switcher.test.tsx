@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: Test code */
+/* oxlint-disable typescript/no-non-null-assertion -- Test code */
 import userEvent from "@testing-library/user-event";
 import { createRoutesStub } from "react-router";
 import { describe, expect, test } from "vitest";
@@ -15,18 +15,18 @@ const createOrganization: Factory<
   OrganizationSwitcherProps["organizations"][0]
 > = ({
   id = createPopulatedOrganization().id,
-  slug = createPopulatedOrganization().slug,
-  name = createPopulatedOrganization().name,
   logo = createPopulatedOrganization().imageUrl,
+  name = createPopulatedOrganization().name,
+  slug = createPopulatedOrganization().slug,
   tier = getRandomTier(),
 } = {}) => ({ id, logo, name, slug, tier });
 
 const createProps: Factory<OrganizationSwitcherProps> = ({
+  currentOrganization = createOrganization({ name: "Work Org" }),
   organizations = [
     createOrganization({ name: "Home Org" }),
     createOrganization({ name: "Work Org" }),
   ],
-  currentOrganization = createOrganization({ name: "Work Org" }),
 } = {}) => ({ currentOrganization, organizations });
 
 describe("OrganizationSwitcher Component", () => {

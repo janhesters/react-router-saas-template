@@ -20,9 +20,9 @@ import {
 } from "~/components/ui/sidebar";
 
 type NavGroupItem = {
-  title: string;
   icon?: Icon;
   isActive?: boolean;
+  title: string;
 };
 
 export type NavGroupItemWithoutChildren = NavGroupItem & {
@@ -83,13 +83,11 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
                   <SidebarMenuSub>
                     {item.items?.map((subItem) => (
                       <SidebarMenuSubItem key={subItem.title}>
-                        <NavLink end to={subItem.url}>
-                          {({ isActive: childIsActive }) => (
-                            <SidebarMenuSubButton isActive={childIsActive}>
-                              <span>{subItem.title}</span>
-                            </SidebarMenuSubButton>
-                          )}
-                        </NavLink>
+                        <SidebarMenuSubButton
+                          render={<NavLink end to={subItem.url} />}
+                        >
+                          <span>{subItem.title}</span>
+                        </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     ))}
                   </SidebarMenuSub>
@@ -100,18 +98,14 @@ export function NavGroup({ className, items, size, title }: NavGroupProps) {
 
           return (
             <SidebarMenuItem key={item.title}>
-              <NavLink to={item.url}>
-                {({ isActive }) => (
-                  <SidebarMenuButton
-                    isActive={isActive}
-                    size={size}
-                    tooltip={item.title}
-                  >
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                )}
-              </NavLink>
+              <SidebarMenuButton
+                render={<NavLink to={item.url} />}
+                size={size}
+                tooltip={item.title}
+              >
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           );
         })}

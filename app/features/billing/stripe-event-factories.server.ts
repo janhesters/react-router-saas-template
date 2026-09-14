@@ -20,11 +20,11 @@ import type { Factory } from "~/utils/types";
 export const createStripeEventFactory: Factory<
   Omit<Stripe.Event, "data" | "type">
 > = ({
-  id = `evt_${createId()}`,
-  object = "event",
   api_version = "2025-04-30.basil",
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
+  id = `evt_${createId()}`,
   livemode = false,
+  object = "event",
   pending_webhooks = faker.number.int({ max: 5, min: 1 }),
   request = {
     id: null,

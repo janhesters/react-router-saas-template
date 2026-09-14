@@ -1,4 +1,5 @@
 import { reactRouter } from "@react-router/dev/vite";
+import transformImports from "@rolldown/plugin-transform-imports";
 import tailwindcss from "@tailwindcss/vite";
 import type { Plugin } from "vite";
 import { defineConfig } from "vite";
@@ -7,13 +8,14 @@ import { defineConfig as defineVitestConfig } from "vitest/config";
 // Custom plugin to handle .sudo files
 const sudoFilesPlugin = {
   name: "sudo-files",
-  transform(code: string, id: string) {
-    if (id.endsWith(".sudo")) {
+  transform: {
+    filter: { id: /\.sudo$/ },
+    handler(code: string) {
       return {
         code: `export default ${JSON.stringify(code)}`,
         map: undefined,
       };
-    }
+    },
   },
 };
 
@@ -39,7 +41,23 @@ function staticCacheHeaders(): Plugin {
 }
 
 const rootConfig = defineConfig({
+  // Skip unused re-exports in dependencies declared free of side effects.
+  build: { rolldownOptions: { experimental: { lazyBarrel: true } } },
   plugins: [
+    // Avoid resolving full dependency barrels through React Router's build hooks.
+    transformImports({
+      "@tabler/icons-react": {
+        preventFullImport: true,
+        transform: "@tabler/icons-react/dist/esm/icons/{{member}}.mjs",
+      },
+      "date-fns": {
+        preventFullImport: true,
+        transform: [
+          ["^formatDate$", "date-fns/format"],
+          ["*", "date-fns/{{member}}"],
+        ],
+      },
+    }),
     tailwindcss(),
     !process.env.VITEST && reactRouter(),
     staticCacheHeaders(),

@@ -25,13 +25,13 @@ import type { Factory } from "~/utils/types";
  * @returns A populated organization with given params.
  */
 export const createPopulatedOrganization: Factory<Organization> = ({
-  id = createId(),
-  name = faker.company.name(),
-  slug = slugify(`${name}-${createId()}`),
+  billingEmail = faker.internet.email(),
   updatedAt = faker.date.recent({ days: 10 }),
   createdAt = faker.date.past({ refDate: updatedAt, years: 1 }),
+  id = createId(),
   imageUrl = TEST_IMAGE_DATA_URL,
-  billingEmail = faker.internet.email(),
+  name = faker.company.name(),
+  slug = slugify(`${name}-${createId()}`),
   stripeCustomerId = `cus_${createId()}`,
   trialEnd = addDays(createdAt, 14),
 } = {}) => ({
@@ -57,12 +57,12 @@ export const createPopulatedOrganizationInviteLink: Factory<
 > = ({
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  creatorId = createId(),
+  deactivatedAt = null,
+  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
   id = createId(),
   organizationId = createId(),
-  creatorId = createId(),
-  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
   token = createId(),
-  deactivatedAt = null,
 } = {}) => ({
   createdAt,
   creatorId,
@@ -99,10 +99,10 @@ export const createPopulatedOrganizationMembership: Factory<
 > = ({
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
+  deactivatedAt = null,
   memberId = createId(),
   organizationId = createId(),
   role = "member",
-  deactivatedAt = null,
 } = {}) => ({
   createdAt,
   deactivatedAt,
@@ -123,14 +123,14 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
 > = ({
   updatedAt = faker.date.recent({ days: 1 }),
   createdAt = faker.date.recent({ days: 1, refDate: updatedAt }),
-  id = createId(),
-  organizationId = createId(),
-  invitedById = createId(),
-  email = faker.internet.email(),
-  token = createId(),
-  role = OrganizationMembershipRole.member,
-  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
   deactivatedAt = null,
+  email = faker.internet.email(),
+  expiresAt = faker.date.soon({ days: 3, refDate: addDays(updatedAt, 2) }),
+  id = createId(),
+  invitedById = createId(),
+  organizationId = createId(),
+  role = OrganizationMembershipRole.member,
+  token = createId(),
 } = {}) => ({
   createdAt,
   deactivatedAt,
@@ -157,8 +157,8 @@ export const createPopulatedOrganizationEmailInviteLink: Factory<
  * @returns An organization with membership count and subscriptions
  */
 export const createOrganizationWithMembershipsAndSubscriptions = ({
-  organization = createPopulatedOrganization(),
   memberCount = faker.number.int({ max: 10, min: 1 }),
+  organization = createPopulatedOrganization(),
   stripeSubscriptions = [
     createPopulatedStripeSubscriptionWithScheduleAndItemsWithPriceAndProduct(),
   ],

@@ -15,8 +15,8 @@ const createProps: Factory<BillingSidebarCardProps> = ({
       mid: 10,
     },
   },
-  state = "trialing",
   showButton = true,
+  state = "trialing",
   trialEndDate = new Date("2024-12-31"),
 } = {}) => ({ createSubscriptionModalProps, showButton, state, trialEndDate });
 

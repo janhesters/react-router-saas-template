@@ -41,7 +41,7 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const { user, organization } = await createUserWithOrgAndAddAsMember();
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
 
     // Mock token hash.
     const tokenHash = stringifyTokenHashData({
@@ -111,7 +111,7 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const { user, organization } = await createUserWithOrgAndAddAsMember();
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
 
     // Log in the user using cookies.
     await loginByCookie({ page, user });
@@ -605,7 +605,7 @@ test.describe(`${path} API route`, () => {
     await saveOrganizationInviteLinkToDatabase(link);
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Set the invite link cookie
@@ -653,7 +653,7 @@ test.describe(`${path} API route`, () => {
       });
 
     // Create the existing user that will log in
-    const { user: existingUser, organization: existingOrg } =
+    const { organization: existingOrg, user: existingUser } =
       await createUserWithOrgAndAddAsMember();
 
     // Create an email invite for this organization bound to the existing

@@ -243,7 +243,7 @@ test.describe(`${path} API route`, () => {
     page,
   }) => {
     // Create a test user account.
-    const { user, organization } = await createUserWithOrgAndAddAsMember();
+    const { organization, user } = await createUserWithOrgAndAddAsMember();
 
     // Log in the user using cookies.
     await loginByCookie({ page, user });
