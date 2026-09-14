@@ -1,0 +1,114 @@
+@utility clip-ambient-glow {
+  clip-path: polygon(
+    74.1% 44.1%,
+    100% 61.6%,
+    97.5% 26.9%,
+    85.5% 0.1%,
+    80.7% 2%,
+    72.5% 32.5%,
+    60.2% 62.4%,
+    52.4% 68.1%,
+    47.5% 58.3%,
+    45.2% 34.5%,
+    27.5% 76.7%,
+    0.1% 64.9%,
+    17.9% 100%,
+    27.6% 76.8%,
+    76.1% 97.7%,
+    74.1% 44.1%
+  );
+}
+
+@utility clip-cta-glow {
+  clip-path: polygon(
+    73.6% 51.7%,
+    91.7% 11.8%,
+    100% 46.4%,
+    97.4% 82.2%,
+    92.5% 84.9%,
+    75.7% 64%,
+    55.3% 47.5%,
+    46.5% 49.4%,
+    45% 62.9%,
+    50.3% 87.2%,
+    21.3% 64.1%,
+    0.1% 100%,
+    5.4% 51.1%,
+    21.4% 63.9%,
+    58.9% 0.2%,
+    73.6% 51.7%
+  );
+}
+
+@utility mask-fade-bottom {
+  mask-image: linear-gradient(to bottom, black 75%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, black 75%, transparent);
+}
+
+@utility light-rays-glow-left {
+  background: radial-gradient(
+    circle at 20% 15%,
+    color-mix(in srgb, var(--light-rays-color) 45%, transparent),
+    transparent 70%
+  );
+}
+
+@utility light-rays-glow-right {
+  background: radial-gradient(
+    circle at 80% 10%,
+    color-mix(in srgb, var(--light-rays-color) 35%, transparent),
+    transparent 75%
+  );
+}
+
+@utility talent-map-vignette {
+  background-image: radial-gradient(
+    circle at 50% 200%,
+    rgba(0, 0, 0, 0.2),
+    rgba(255, 255, 255, 0)
+  );
+}
+
+@utility glow-primary-diffuse {
+  background-image: radial-gradient(
+    68.54% 68.72% at 55.02% 31.46%,
+    --theme(--color-primary/0.06) 0,
+    hsla(0, 0%, 55%, 0.02) 50%,
+    --theme(--color-primary/0.01) 80%
+  );
+}
+
+@utility glow-primary-soft {
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    --theme(--color-primary/0.04) 0,
+    --theme(--color-primary/0.01) 80%,
+    transparent 100%
+  );
+}
+
+@utility glow-foreground-diffuse {
+  background-image: radial-gradient(
+    68.54% 68.72% at 55.02% 31.46%,
+    --theme(--color-foreground/0.06) 0,
+    hsla(0, 0%, 55%, 0.02) 50%,
+    --theme(--color-foreground/0.01) 80%
+  );
+}
+
+@utility glow-foreground-soft {
+  background-image: radial-gradient(
+    50% 50% at 50% 50%,
+    --theme(--color-foreground/0.04) 0,
+    --theme(--color-foreground/0.01) 80%,
+    transparent 100%
+  );
+}
+
+@utility transition-dimensions {
+  @apply transition-[width,height];
+}
+
+@utility transition-sidebar-card {
+  @apply transition-[opacity,transform,max-height];
+}

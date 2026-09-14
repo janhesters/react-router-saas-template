@@ -273,8 +273,8 @@ These MSW handlers simulate Supabase endpoints:
 #### Setting Up Authentication
 
 ```typescript
-import { createMockSupabaseSession } from '~/path/to/your-utils';
-import { setMockSession } from '~/path/to/mock-sessions';
+import { createMockSupabaseSession } from "~/path/to/your-utils";
+import { setMockSession } from "~/path/to/mock-sessions";
 
 // Create a mock session
 const mockSession = createMockSupabaseSession({ user: someUser });

@@ -4,10 +4,10 @@ import { useId } from "react";
 import { cn } from "~/lib/utils";
 
 export type Iphone15ProProps = {
-  width?: number;
   height?: number;
   src?: string;
   videoSrc?: string;
+  width?: number;
 } & SVGProps<SVGSVGElement>;
 
 export function Iphone15Pro({

@@ -152,7 +152,7 @@ export async function billingAction({
           seatsUsed: organization._count.memberships,
         });
 
-        // biome-ignore lint/style/noNonNullAssertion: Checkout sessions always have a URL
+        // oxlint-disable-next-line typescript/no-non-null-assertion -- Checkout sessions always have a URL
         return redirect(checkoutSession.url!);
       }
 

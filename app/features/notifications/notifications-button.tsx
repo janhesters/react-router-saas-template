@@ -94,7 +94,7 @@ export function NotificationsButton({
         {optimisticShowBadge && (
           <NotificationsDot
             blinking={true}
-            className="-top-0.5 -right-0.5 motion-reduce:-top-1.5 motion-reduce:-right-1.5 absolute"
+            className="absolute -top-0.5 -right-0.5 motion-reduce:-top-1.5 motion-reduce:-right-1.5"
           />
         )}
       </PopoverTrigger>
@@ -105,7 +105,7 @@ export function NotificationsButton({
         className="min-w-svw p-2 sm:w-md sm:min-w-[unset]"
       >
         <div className="flex items-center justify-between">
-          <p className="font-semibold text-base" id="notifications-header">
+          <p className="text-base font-semibold" id="notifications-header">
             {t("notifications")}
           </p>
 

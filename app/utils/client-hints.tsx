@@ -45,10 +45,7 @@ export function ClientHintCheck({ nonce }: { nonce: string }) {
 
   return (
     <script
-      /**
-       * biome-ignore lint/security/noDangerouslySetInnerHtml: This is how
-       * you're supposed to set client hints.
-       */
+      /* oxlint-disable-next-line react/no-danger -- This is how you're supposed to set client hints. */
       dangerouslySetInnerHTML={{
         __html: hintsUtils.getClientHintCheckScript(),
       }}

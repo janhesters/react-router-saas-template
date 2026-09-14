@@ -140,11 +140,11 @@ export async function retrieveActiveEmailInviteLinksFromDatabaseByOrganizationId
  * @returns The updated email invite link.
  */
 export async function updateEmailInviteLinkInDatabaseById({
-  id,
   emailInviteLink,
+  id,
 }: {
-  id: OrganizationEmailInviteLink["id"];
   emailInviteLink: Prisma.OrganizationEmailInviteLinkUncheckedUpdateInput;
+  id: OrganizationEmailInviteLink["id"];
 }) {
   return prisma.organizationEmailInviteLink.update({
     data: emailInviteLink,

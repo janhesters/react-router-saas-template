@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 
 import { describe, expect, onTestFinished, test } from "vitest";
 
@@ -147,7 +147,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = CANCEL_SUBSCRIPTION_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -179,7 +179,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", cancelListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -202,7 +202,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = KEEP_CURRENT_SUBSCRIPTION_INTENT;
 
     test("given: a member role, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -236,7 +236,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", listener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -272,7 +272,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", listener);
         });
 
-        const { user, organization, subscription } =
+        const { organization, subscription, user } =
           await setupUserWithOrgAndAddAsMember({
             lookupKey: priceLookupKeysByTierAndInterval.mid.monthly,
             role,
@@ -310,7 +310,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = OPEN_CHECKOUT_SESSION_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -341,7 +341,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", checkoutListener);
         });
 
-        const { user, organization } =
+        const { organization, user } =
           await setupUserWithTrialOrgAndAddAsMember({
             role,
           });
@@ -377,7 +377,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", checkoutListener);
         });
 
-        const { user, organization } =
+        const { organization, user } =
           await setupUserWithTrialOrgAndAddAsMember({
             role,
           });
@@ -423,7 +423,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", checkoutListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 
@@ -447,7 +447,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = RESUME_SUBSCRIPTION_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -481,7 +481,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", listener);
         });
 
-        const { user, organization, subscription } =
+        const { organization, subscription, user } =
           await setupUserWithOrgAndAddAsMember({
             role,
             subscription: createPopulatedStripeSubscriptionWithItemsAndPrice({
@@ -511,7 +511,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = SWITCH_SUBSCRIPTION_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -543,7 +543,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     ])(
       "given: invalid data $data, should: return validation errors",
       async ({ data, expected }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
 
@@ -558,7 +558,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     );
 
     test("given: an invalid lookup key, should: return a bad request", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.admin,
       });
 
@@ -592,7 +592,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", switchListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           lookupKey: getRandomLookupKey(),
           role,
         });
@@ -619,7 +619,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = UPDATE_BILLING_EMAIL_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -665,7 +665,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     ])(
       "given: invalid data $data, should: return validation errors",
       async ({ data, expected }) => {
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role: OrganizationMembershipRole.admin,
         });
 
@@ -696,7 +696,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", updateListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           organization: createPopulatedOrganization({
             billingEmail: "old@example.com",
           }),
@@ -735,7 +735,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
         });
 
         const currentEmail = "same@example.com";
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           organization: createPopulatedOrganization({
             billingEmail: currentEmail,
           }),
@@ -761,7 +761,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
     const intent = VIEW_INVOICES_INTENT;
 
     test("given: a valid request from a member, should: return a 403", async () => {
-      const { user, organization } = await setupUserWithOrgAndAddAsMember({
+      const { organization, user } = await setupUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.member,
       });
 
@@ -792,7 +792,7 @@ describe("/organizations/:organizationSlug/settings/billing route action", () =>
           server.events.removeListener("response:mocked", portalListener);
         });
 
-        const { user, organization } = await setupUserWithOrgAndAddAsMember({
+        const { organization, user } = await setupUserWithOrgAndAddAsMember({
           role,
         });
 

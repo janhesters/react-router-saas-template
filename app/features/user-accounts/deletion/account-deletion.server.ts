@@ -51,11 +51,11 @@ function isRetryableAdmissionError(error: unknown): boolean {
 
 /** Commit every deletion and cleanup obligation before calling any provider. */
 export async function requestAccountDeletion({
-  userId,
   confirmation,
+  userId,
 }: {
-  userId: string;
   confirmation: string;
+  userId: string;
 }): Promise<{ deletion: AccountDeletion; recoveryToken: string }> {
   for (let attempt = 0; ; attempt++) {
     const candidate = await prisma.userAccount.findUnique({

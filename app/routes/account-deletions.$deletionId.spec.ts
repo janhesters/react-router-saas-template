@@ -76,7 +76,7 @@ describe("account deletion recovery", () => {
   );
 
   test("given: a signed recovery cookie after the account is gone, should: show pending status without running cleanup", async () => {
-    const { deletion, cookie } = await setup();
+    const { cookie, deletion } = await setup();
     const response = await loader(await args(deletion.id, cookie));
     expect(response.data).toEqual({
       pageTitle: "Account deletion | React Router SaaS Template",
@@ -93,7 +93,7 @@ describe("account deletion recovery", () => {
   });
 
   test("given: provider cleanup failed, should: show retry status without identities, recovery secrets, or provider diagnostics", async () => {
-    const { deletion, cookie } = await setup();
+    const { cookie, deletion } = await setup();
     await prisma.accountDeletion.update({
       data: { lastError: "Sensitive provider diagnostic" },
       where: { id: deletion.id },
@@ -105,7 +105,7 @@ describe("account deletion recovery", () => {
   });
 
   test("given: a valid recovery cookie retries completed resources, should: show completion without requiring a login", async () => {
-    const { deletion, cookie } = await setup();
+    const { cookie, deletion } = await setup();
     await action(await args(deletion.id, cookie, "POST"));
     expect((await loader(await args(deletion.id, cookie))).data.status).toEqual(
       "completed",

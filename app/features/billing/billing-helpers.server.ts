@@ -25,11 +25,11 @@ export type StripeSubscriptionData = NonNullable<
 >;
 
 export function mapStripeSubscriptionDataToBillingPageProps({
-  organization,
   now,
+  organization,
 }: {
-  organization: OrganizationWithMembershipsAndSubscriptions;
   now: Date;
+  organization: OrganizationWithMembershipsAndSubscriptions;
 }): Omit<BillingPageProps, "createSubscriptionModalProps"> {
   const subscription = organization.stripeSubscriptions[0];
 
@@ -64,7 +64,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   );
 
   // 2. Use the first item to derive price, tier, and seats
-  // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
+  // oxlint-disable-next-line typescript/no-non-null-assertion -- check above ensures for null values
   const { price } = items[0]!;
 
   // 3. Parse max seats from metadata.max_seats (string or number)
@@ -103,7 +103,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   );
 
   // 8. Cancel or modify subscription modal props
-  const { tier, interval } = getTierAndIntervalForLookupKey(price.lookupKey);
+  const { interval, tier } = getTierAndIntervalForLookupKey(price.lookupKey);
   const cancelOrModifySubscriptionModalProps: CancelOrModifySubscriptionModalContentProps =
     {
       canCancelSubscription:
@@ -127,7 +127,7 @@ export function mapStripeSubscriptionDataToBillingPageProps({
   let pendingTier: Tier | undefined;
   let pendingInterval: Interval | undefined;
   if (nextPhase) {
-    const { tier, interval } = getTierAndIntervalForLookupKey(
+    const { interval, tier } = getTierAndIntervalForLookupKey(
       nextPhase.price.lookupKey,
     );
     pendingTier = tier;
@@ -150,9 +150,9 @@ export function mapStripeSubscriptionDataToBillingPageProps({
     pendingChange: nextPhase
       ? {
           pendingChangeDate: nextPhase.startDate,
-          // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
+          // oxlint-disable-next-line typescript/no-non-null-assertion -- check above ensures for null values
           pendingInterval: pendingInterval!,
-          // biome-ignore lint/style/noNonNullAssertion: check above ensures for null values
+          // oxlint-disable-next-line typescript/no-non-null-assertion -- check above ensures for null values
           pendingTier: pendingTier!,
         }
       : undefined,

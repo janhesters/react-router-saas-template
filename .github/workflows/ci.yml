@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   lint:
-    name: ⬣ Biome
+    name: ⬣ Oxlint and Oxfmt
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
@@ -37,10 +37,7 @@ jobs:
       - name: 📥 Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: 🛠️ Typegen
-        run: bun run typegen
-
-      - name: 🔬 Lint
+      - name: 🔬 Lint and verify shadcn rule enforcement
         run: bun run lint
 
   type-check:
@@ -86,11 +83,12 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:18-trixie
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: react_router_saas_test
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
         ports:
           - 5432:5432
         options: >-
@@ -131,11 +129,12 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:18-alpine
+        image: postgres:18-trixie
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: react_router_saas_test
+          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
         ports:
           - 5432:5432
         options: >-

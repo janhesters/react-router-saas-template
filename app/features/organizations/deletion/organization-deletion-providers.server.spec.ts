@@ -63,7 +63,7 @@ describe("organization provider cleanup", () => {
         );
       }),
       http.post(`${stripeUrl}/checkout/sessions/:id/expire`, ({ params }) => {
-        operations.push(`expire:${params.id}`);
+        operations.push(`expire:${String(params.id)}`);
         return HttpResponse.json(
           createStripeCheckoutSessionFactory({
             id: params.id as string,
@@ -99,7 +99,7 @@ describe("organization provider cleanup", () => {
       http.post(
         `${stripeUrl}/subscription_schedules/:id/cancel`,
         async ({ params, request }) => {
-          operations.push(`schedule:${params.id}`);
+          operations.push(`schedule:${String(params.id)}`);
           expect(
             new URLSearchParams(await request.text()).get("invoice_now"),
           ).toBe("false");
@@ -125,7 +125,7 @@ describe("organization provider cleanup", () => {
         );
       }),
       http.delete(`${stripeUrl}/subscriptions/:id`, ({ params }) => {
-        operations.push(`subscription:${params.id}`);
+        operations.push(`subscription:${String(params.id)}`);
         return HttpResponse.json(
           createStripeSubscriptionFactory({
             id: params.id as string,
@@ -134,7 +134,7 @@ describe("organization provider cleanup", () => {
         );
       }),
       http.delete(`${stripeUrl}/customers/:id`, ({ params }) => {
-        operations.push(`customer:${params.id}`);
+        operations.push(`customer:${String(params.id)}`);
         return HttpResponse.json({
           deleted: true,
           id: params.id,

@@ -6,7 +6,7 @@ import {
   removeImageFromStorage,
 } from "./storage-helpers.server";
 
-const { from, remove, findUsers, findOrganizations } = vi.hoisted(() => ({
+const { findOrganizations, findUsers, from, remove } = vi.hoisted(() => ({
   findOrganizations: vi.fn<() => Promise<{ imageUrl: string }[]>>(),
   findUsers: vi.fn<() => Promise<{ imageUrl: string }[]>>(),
   from: vi.fn(),

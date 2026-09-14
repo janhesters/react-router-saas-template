@@ -20,10 +20,10 @@ export const getRandomLookupKey = () =>
 /* Base factories */
 
 export const createPopulatedStripeProduct: Factory<StripeProduct> = ({
-  stripeId = `prod_${createId()}`,
   active = true,
-  name = faker.commerce.productName(),
   maxSeats = faker.number.int({ max: 100, min: 1 }),
+  name = faker.commerce.productName(),
+  stripeId = `prod_${createId()}`,
 } = {}) => ({ active, maxSeats, name, stripeId });
 
 /**
@@ -33,16 +33,16 @@ export const createPopulatedStripeProduct: Factory<StripeProduct> = ({
  * @returns A populated Stripe price with given params.
  */
 export const createPopulatedStripePrice: Factory<StripePrice> = ({
-  lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}_${createId()}`,
-  stripeId = `price_${createId()}`,
   active = true,
   currency = "usd",
-  productId = `prod_${createId()}`,
-  unitAmount = faker.number.int({ max: 50_000, min: 500 }),
   interval = faker.helpers.arrayElement([
     StripePriceInterval.month,
     StripePriceInterval.year,
   ]),
+  lookupKey = `${faker.word.noun()}_${faker.word.noun()}_${faker.word.noun()}_${createId()}`,
+  productId = `prod_${createId()}`,
+  stripeId = `price_${createId()}`,
+  unitAmount = faker.number.int({ max: 50_000, min: 500 }),
 } = {}) => ({
   active,
   currency,
@@ -62,13 +62,13 @@ export const createPopulatedStripePrice: Factory<StripePrice> = ({
 export const createPopulatedStripeSubscriptionSchedule: Factory<
   StripeSubscriptionSchedule
 > = ({
-  stripeId = `sub_sched_${createId()}`,
-  subscriptionId = createPopulatedStripeSubscription().stripeId,
   created = faker.date.past({ years: 1 }),
   currentPhaseStart = faker.date.past({ years: 1 }),
   currentPhaseEnd = currentPhaseStart
     ? faker.date.future({ refDate: currentPhaseStart, years: 1 })
     : null,
+  stripeId = `sub_sched_${createId()}`,
+  subscriptionId = createPopulatedStripeSubscription().stripeId,
 } = {}) => ({
   created,
   currentPhaseEnd,
@@ -86,12 +86,12 @@ export const createPopulatedStripeSubscriptionSchedule: Factory<
 export const createPopulatedStripeSubscriptionSchedulePhase: Factory<
   StripeSubscriptionSchedulePhase
 > = ({
-  id = createId(),
-  scheduleId = createPopulatedStripeSubscriptionSchedule().stripeId,
   startDate = faker.date.past({ years: 1 }),
   endDate = faker.date.future({ refDate: startDate, years: 1 }),
+  id = createId(),
   priceId = `price_${createId()}`,
   quantity = faker.number.int({ max: 100, min: 1 }),
+  scheduleId = createPopulatedStripeSubscriptionSchedule().stripeId,
 } = {}) => ({
   endDate,
   id,
@@ -110,11 +110,11 @@ export const createPopulatedStripeSubscriptionSchedulePhase: Factory<
 export const createPopulatedStripeSubscriptionItem: Factory<
   StripeSubscriptionItem
 > = ({
-  stripeId = `si_${createId()}`,
-  stripeSubscriptionId = `sub_${createId()}`,
   currentPeriodEnd = faker.date.future({ years: 1 }),
   currentPeriodStart = faker.date.past({ refDate: currentPeriodEnd, years: 1 }),
   priceId = `price_${createId()}`,
+  stripeId = `si_${createId()}`,
+  stripeSubscriptionId = `sub_${createId()}`,
 } = {}) => ({
   currentPeriodEnd,
   currentPeriodStart,
@@ -130,12 +130,12 @@ export const createPopulatedStripeSubscriptionItem: Factory<
  * @returns A populated Stripe subscription with given params.
  */
 export const createPopulatedStripeSubscription: Factory<StripeSubscription> = ({
-  stripeId = `sub_${createId()}`,
+  cancelAtPeriodEnd = false,
+  created = faker.date.past({ years: 1 }),
   organizationId = createId(),
   purchasedById = createId(),
-  created = faker.date.past({ years: 1 }),
-  cancelAtPeriodEnd = false,
   status = "active",
+  stripeId = `sub_${createId()}`,
 } = {}) => ({
   cancelAtPeriodEnd,
   created,
@@ -375,8 +375,8 @@ export function createPopulatedStripeSubscriptionWithItemsAndPrice(
 
 export type StripeSubscriptionWithScheduleAndItemsWithPriceAndProduct =
   StripeSubscription & {
-    schedule: StripeSubscriptionScheduleWithPhasesAndPrice;
     items: StripeSubscriptionItemWithPriceAndProduct[];
+    schedule: StripeSubscriptionScheduleWithPhasesAndPrice;
   };
 
 /**

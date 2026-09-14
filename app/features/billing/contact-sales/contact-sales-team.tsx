@@ -31,14 +31,14 @@ export function ContactSalesTeam({
 }: ContactSalesTeamProps) {
   const { t } = useTranslation("billing", { keyPrefix: "contactSales" });
 
-  const { form, fields } = useForm(contactSalesFormSchema, {
+  const { fields, form } = useForm(contactSalesFormSchema, {
     lastResult,
   });
 
   return (
     <Card>
       <CardHeader className="space-y-6">
-        <CardTitle className="text-5xl text-primary">
+        <CardTitle className="text-5xl" tone="primary">
           {t("contactSalesTitle")}
         </CardTitle>
 
@@ -146,7 +146,7 @@ export function ContactSalesTeam({
           </CardContent>
 
           <CardFooter className="flex flex-col items-start space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {t("submitDisclaimer")}
             </p>
 

@@ -1,7 +1,4 @@
-/**
- * biome-ignore-all lint/style/noMagicNumbers: The numbers are random numbers,
- * there is no good description for the numbers.
- */
+/* The numbers are random numbers, there is no good description for the numbers. */
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
@@ -19,14 +16,14 @@ interface LightRaysProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 type LightRay = {
-  id: string;
-  left: number;
-  rotate: number;
-  width: number;
-  swing: number;
   delay: number;
   duration: number;
+  id: string;
   intensity: number;
+  left: number;
+  rotate: number;
+  swing: number;
+  width: number;
 };
 
 const createRays = (count: number, cycle: number): LightRay[] => {
@@ -55,14 +52,14 @@ const createRays = (count: number, cycle: number): LightRay[] => {
 };
 
 const Ray = ({
-  left,
-  rotate,
-  width,
-  swing,
   delay,
   duration,
   intensity,
+  left,
   prefersReducedMotion,
+  rotate,
+  swing,
+  width,
 }: LightRay & { prefersReducedMotion?: boolean }) => {
   return (
     <motion.div
@@ -74,7 +71,7 @@ const Ray = ({
               rotate: [rotate - swing, rotate + swing, rotate - swing],
             }
       }
-      className="-top-[12%] -translate-x-1/2 pointer-events-none absolute left-(--ray-left) h-(--light-rays-length) w-(--ray-width) origin-top rounded-full bg-linear-to-b from-[color-mix(in_srgb,var(--light-rays-color)_70%,transparent)] to-transparent opacity-0 mix-blend-screen blur-(--light-rays-blur)"
+      className="pointer-events-none absolute -top-[12%] left-(--ray-left) h-(--light-rays-length) w-(--ray-width) origin-top -translate-x-1/2 rounded-full bg-linear-to-b from-[color-mix(in_srgb,var(--light-rays-color)_70%,transparent)] to-transparent opacity-0 mix-blend-screen blur-(--light-rays-blur)"
       initial={
         prefersReducedMotion
           ? { opacity: intensity * 0.3, rotate: rotate }
@@ -102,15 +99,15 @@ const Ray = ({
 };
 
 export function LightRays({
-  className,
-  style,
-  count = 7,
-  color = "rgba(160, 210, 255, 0.2)",
   blur = 36,
-  speed = 14,
+  className,
+  color = "rgba(160, 210, 255, 0.2)",
+  count = 7,
   length = "70vh",
   prefersReducedMotion = false,
   ref,
+  speed = 14,
+  style,
   ...props
 }: LightRaysProps) {
   const [rays, setRays] = useState<LightRay[]>([]);
@@ -140,23 +137,11 @@ export function LightRays({
       <div className="absolute inset-0 overflow-hidden">
         <div
           aria-hidden
-          className="absolute inset-0 opacity-60"
-          style={
-            {
-              background:
-                "radial-gradient(circle at 20% 15%, color-mix(in srgb, var(--light-rays-color) 45%, transparent), transparent 70%)",
-            } as CSSProperties
-          }
+          className="absolute inset-0 opacity-60 light-rays-glow-left"
         />
         <div
           aria-hidden
-          className="absolute inset-0 opacity-60"
-          style={
-            {
-              background:
-                "radial-gradient(circle at 80% 10%, color-mix(in srgb, var(--light-rays-color) 35%, transparent), transparent 75%)",
-            } as CSSProperties
-          }
+          className="absolute inset-0 opacity-60 light-rays-glow-right"
         />
         {rays.map((ray) => (
           <Ray

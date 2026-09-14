@@ -11,8 +11,8 @@ import {
   acceptInviteLink,
 } from "./organizations-helpers.server";
 import { createStripeSubscriptionFactory } from "~/features/billing/stripe-factories.server";
-import { requestAccountDeletion } from "~/features/user-accounts/deletion/account-deletion.server";
 import { cleanupAccountDeletionResource } from "~/features/user-accounts/deletion/account-deletion-providers.server";
+import { requestAccountDeletion } from "~/features/user-accounts/deletion/account-deletion.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { stripeHandlers } from "~/test/mocks/handlers/stripe";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";

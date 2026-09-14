@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 
 export type OrganizationInfoProps = {
-  organizationName: string;
   organizationLogoUrl: string;
+  organizationName: string;
 };
 
 export function OrganizationInfo({
-  organizationName,
   organizationLogoUrl,
+  organizationName,
 }: OrganizationInfoProps) {
   const { t } = useTranslation("organizations", {
     keyPrefix: "settings.general.organizationInfo",
@@ -19,8 +19,8 @@ export function OrganizationInfo({
     <div className="flex flex-col gap-y-6 sm:gap-y-8">
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="font-medium text-sm">{t("nameTitle")}</h2>
-          <p className="text-muted-foreground text-sm">
+          <h2 className="text-sm font-medium">{t("nameTitle")}</h2>
+          <p className="text-sm text-muted-foreground">
             {t("nameDescription")}
           </p>
         </div>
@@ -32,8 +32,8 @@ export function OrganizationInfo({
 
       <div className="grid gap-x-8 sm:grid-cols-2">
         <div className="space-y-1">
-          <h2 className="font-medium text-sm">{t("logoTitle")}</h2>
-          <p className="text-muted-foreground text-sm">
+          <h2 className="text-sm font-medium">{t("logoTitle")}</h2>
+          <p className="text-sm text-muted-foreground">
             {t("logoDescription")}
           </p>
         </div>

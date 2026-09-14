@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { describe, expect, test } from "vitest";
 
 import { action } from "./contact-sales";

@@ -35,11 +35,11 @@ export function getSidebarState(request: Request): boolean {
  * @returns The organization layout props containing organizations and user data
  */
 export function mapOnboardingUserToOrganizationLayoutProps({
-  user,
   organizationSlug,
+  user,
 }: {
-  user: OnboardingUser;
   organizationSlug: Organization["slug"];
+  user: OnboardingUser;
 }): {
   navUserProps: NavUserProps;
   organizationSwitcherProps: OrganizationSwitcherProps;
@@ -52,7 +52,7 @@ export function mapOnboardingUserToOrganizationLayoutProps({
     tier: getTierAndIntervalForLookupKey(
       // Actual plan if the organization has a subscription.
       membership.organization.stripeSubscriptions.length > 0
-        ? // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a subscription
+        ? // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a subscription
           membership.organization.stripeSubscriptions[0]!.items[0]!.price
             .lookupKey
         : // Default plan during the trial period.
@@ -110,7 +110,7 @@ export function mapOnboardingUserToBillingSidebarCardProps({
     currentMembership.role === OrganizationMembershipRole.owner;
 
   if (currentOrganization.stripeSubscriptions.length > 0) {
-    // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a subscription
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a subscription
     const subscription = currentOrganization.stripeSubscriptions[0]!;
     const isCancelled = subscription.status === "canceled";
     return isCancelled

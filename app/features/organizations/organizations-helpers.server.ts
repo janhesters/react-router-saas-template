@@ -105,12 +105,12 @@ export function findOrganizationIfUserIsMemberBySlug<
  */
 export async function requireUserIsMemberOfOrganization({
   context,
-  request,
   organizationSlug,
+  request,
 }: {
   context: Readonly<RouterContextProvider>;
-  request: Request;
   organizationSlug: Organization["slug"];
+  request: Request;
 }) {
   const { user } = await requireOnboardedUserAccountExists({
     context,
@@ -210,13 +210,13 @@ export async function acceptInviteLink({
 /** The result of securely accepting an email invite. */
 export type AcceptEmailInviteResult =
   | {
-      outcome: "accepted";
       organization: Pick<Organization, "id" | "name" | "slug">;
+      outcome: "accepted";
       role: OrganizationMembershipRole;
     }
   | {
-      outcome: "alreadyMember";
       organization: Pick<Organization, "id" | "name" | "slug">;
+      outcome: "alreadyMember";
     }
   | { outcome: "rejected" };
 
@@ -325,7 +325,7 @@ export const getOrganizationIsFull = (
  * @returns The invite info.
  */
 export async function getInviteInfoForAuthRoutes(request: Request) {
-  const { inviteLinkInfo, emailInviteInfo } = await promiseHash({
+  const { emailInviteInfo, inviteLinkInfo } = await promiseHash({
     emailInviteInfo: getValidEmailInviteInfo(request),
     inviteLinkInfo: getValidInviteLinkInfo(request),
   });

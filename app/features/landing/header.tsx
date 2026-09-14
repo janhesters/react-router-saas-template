@@ -32,7 +32,7 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
           </span>
         </Link>
 
-        <nav className="sm:-translate-x-1/2 sm:-translate-y-1/2 flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2">
+        <nav className="flex gap-2 sm:absolute sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2">
           <Link
             className={buttonVariants({ size: "sm", variant: "ghost" })}
             to="/pricing"

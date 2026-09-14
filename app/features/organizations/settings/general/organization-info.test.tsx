@@ -8,8 +8,8 @@ import { createRoutesStub, render, screen } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
 const createProps: Factory<OrganizationInfoProps> = ({
-  organizationName = createPopulatedOrganization().name,
   organizationLogoUrl = createPopulatedOrganization().imageUrl,
+  organizationName = createPopulatedOrganization().name,
 } = {}) => ({ organizationLogoUrl, organizationName });
 
 describe("OrganizationInfo Component", () => {

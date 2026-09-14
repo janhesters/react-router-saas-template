@@ -32,7 +32,7 @@ export function EditBillingEmailModalContent({
     keyPrefix: "billingPage.updateBillingEmailModal",
   });
 
-  const { form, fields } = useForm(updateBillingEmailSchema, {
+  const { fields, form } = useForm(updateBillingEmailSchema, {
     lastResult,
   });
 

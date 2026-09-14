@@ -15,7 +15,7 @@ function InputOTP({
     <OTPInput
       className={cn("disabled:cursor-not-allowed", className)}
       containerClassName={cn(
-        "cn-input-otp flex items-center has-disabled:opacity-50",
+        "flex items-center has-disabled:opacity-50",
         containerClassName,
       )}
       data-slot="input-otp"
@@ -39,8 +39,8 @@ function InputOTPGroup({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 function InputOTPSlot({
-  index,
   className,
+  index,
   ...props
 }: React.ComponentProps<"div"> & {
   index: number;
@@ -51,7 +51,7 @@ function InputOTPSlot({
   return (
     <div
       className={cn(
-        "relative flex size-9 items-center justify-center border-input border-y border-r text-sm shadow-xs outline-none transition-all first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:ring-[3px] data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30 dark:data-[active=true]:aria-invalid:ring-destructive/40",
+        "relative flex size-9 items-center justify-center border-y border-r border-input text-sm shadow-xs transition-all outline-none first:rounded-l-md first:border-l last:rounded-r-md aria-invalid:border-destructive data-[active=true]:z-10 data-[active=true]:border-ring data-[active=true]:ring-[3px] data-[active=true]:ring-ring/50 data-[active=true]:aria-invalid:border-destructive data-[active=true]:aria-invalid:ring-destructive/20 dark:bg-input/30 dark:data-[active=true]:aria-invalid:ring-destructive/40",
         className,
       )}
       data-active={isActive}
@@ -70,15 +70,11 @@ function InputOTPSlot({
 
 function InputOTPSeparator({ ...props }: React.ComponentProps<"div">) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: <hr /> can't have children
-    // biome-ignore lint/a11y/useFocusableInteractive: Should NOT be focusable
+    // oxlint-disable-next-line jsx-a11y/interactive-supports-focus -- Should NOT be focusable
     <div
       className="flex items-center [&_svg:not([class*='size-'])]:size-4"
       data-slot="input-otp-separator"
-      /**
-       * biome-ignore lint/a11y/useAriaPropsForRole: Decorative separator
-       * doesn't need additional ARIA props
-       */
+      /* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role, jsx-a11y/role-has-required-aria-props -- <hr /> can't have children; Decorative separator doesn't need additional ARIA props */
       role="separator"
       {...props}
     >

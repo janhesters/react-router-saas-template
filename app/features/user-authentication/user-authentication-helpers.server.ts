@@ -11,7 +11,7 @@ import { createSupabaseServerClient } from "./supabase.server";
  * @returns Redirect response to the login page.
  */
 export async function logout(request: Request, redirectTo = "/") {
-  const { supabase, headers } = createSupabaseServerClient({ request });
+  const { headers, supabase } = createSupabaseServerClient({ request });
   await supabase.auth.signOut();
   return redirect(safeRedirect(redirectTo), { headers });
 }

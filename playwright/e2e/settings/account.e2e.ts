@@ -247,11 +247,11 @@ test.describe("account settings", () => {
     page,
   }) => {
     test.setTimeout(40_000);
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.member,
     });
-    const { user: otherUser, organization: otherOrganization } =
+    const { organization: otherOrganization, user: otherUser } =
       await createUserWithOrgAndAddAsMember({
         role: OrganizationMembershipRole.owner,
       });
@@ -318,7 +318,7 @@ test.describe("account settings", () => {
     page,
   }) => {
     test.setTimeout(60_000);
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.owner,
     });
@@ -351,7 +351,7 @@ test.describe("account settings", () => {
     page,
   }) => {
     test.setTimeout(40_000);
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.owner,
     });
@@ -399,7 +399,7 @@ test.describe("account settings", () => {
   test("given: the last active owner of an organization with other members, should: require an ownership transfer and reject direct account deletion", async ({
     page,
   }) => {
-    const { user, organization } = await setupOrganizationAndLoginAsMember({
+    const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,
       role: OrganizationMembershipRole.owner,
     });

@@ -77,11 +77,11 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
           <Button
             aria-label={t("triggerButton")}
             className={cn(
-              "opacity-0 hover:bg-transparent focus:opacity-100 group-hover:opacity-100 group-focus:opacity-100 dark:hover:bg-transparent",
+              "opacity-0 group-hover:opacity-100 group-focus:opacity-100 focus:opacity-100",
               isOpen && "opacity-100",
             )}
             size="icon"
-            variant="outline"
+            variant="outline-static"
           />
         }
       >
@@ -109,8 +109,8 @@ export function NotificationMenu({ recipientId }: NotificationMenuProps) {
 }
 
 type BaseNotificationProps = {
-  recipientId: NotificationRecipient["id"];
   isRead: boolean;
+  recipientId: NotificationRecipient["id"];
 };
 
 /**

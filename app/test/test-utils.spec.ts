@@ -50,10 +50,10 @@ describe("teardownOrganizationAndMember()", () => {
   );
 
   test("given: related invitations, billing records, and notifications, should: cascade cleanup and retain shared prices and unrelated records", async () => {
-    const { organization, user, subscription } =
+    const { organization, subscription, user } =
       await setupUserWithOrgAndAddAsMember();
     const unrelated = await setupUserWithTrialOrgAndAddAsMember();
-    // biome-ignore lint/style/noNonNullAssertion: This fixture creates a subscription item.
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- This fixture creates a subscription item.
     const priceId = subscription.items[0]!.priceId;
 
     const invite = await prisma.organizationInviteLink.create({

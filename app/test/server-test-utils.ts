@@ -43,7 +43,7 @@ export async function setupUserWithTrialOrgAndAddAsMember(
 export async function setupUserWithOrgAndAddAsMember(
   ...args: Parameters<typeof createUserWithOrgAndAddAsMember>
 ) {
-  const { organization, user, subscription } =
+  const { organization, subscription, user } =
     await createUserWithOrgAndAddAsMember(...args);
 
   onTestFinished(async () => {

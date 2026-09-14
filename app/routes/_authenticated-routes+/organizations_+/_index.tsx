@@ -19,7 +19,7 @@ import { OrganizationMembershipRole } from "~/generated/browser";
 import { cn } from "~/lib/utils";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const { user } = await requireOnboardedUserAccountExists({
     context,
     request,
@@ -27,7 +27,7 @@ export async function loader({ request, context }: Route.LoaderArgs) {
   const i18n = getInstance(context);
 
   if (user.memberships.length === 1) {
-    // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a membership
+    // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a membership
     return redirect(`/organizations/${user.memberships[0]!.organization.slug}`);
   }
 
@@ -56,7 +56,7 @@ export default function OrganizationsRoute({
     <>
       <header className="flex h-(--header-height) items-center border-b">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between p-2">
-          <h1 className="font-medium text-base">{t("pageTitle")}</h1>
+          <h1 className="text-base font-medium">{t("pageTitle")}</h1>
 
           <ThemeToggle />
         </div>

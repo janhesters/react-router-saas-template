@@ -29,7 +29,7 @@ export default function OrganizationSettingsIndexRoute({
         return;
       }
 
-      navigate(
+      void navigate(
         href("/organizations/:organizationSlug/settings/general", {
           organizationSlug: params.organizationSlug,
         }),

@@ -90,8 +90,8 @@ test.describe("organization layout", () => {
   });
 
   test("given: a logged in user who is onboarded and a member of the organization, should: show the correct layout components", async ({
-    page,
     isMobile,
+    page,
   }) => {
     const { organization, user } = await setupOrganizationAndLoginAsMember({
       page,

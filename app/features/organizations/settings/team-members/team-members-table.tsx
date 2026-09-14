@@ -138,7 +138,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
               <CommandEmpty>{t("noRolesFound")}</CommandEmpty>
 
               <CommandGroup>
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
+                <CommandItem className="flex flex-col items-start space-y-1 p-0">
                   <button
                     className="px-4 py-2 text-start"
                     name="role"
@@ -147,13 +147,13 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   >
                     <p>{t("member")}</p>
 
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       {t("memberDescription")}
                     </p>
                   </button>
                 </CommandItem>
 
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
+                <CommandItem className="flex flex-col items-start space-y-1 p-0">
                   <button
                     className="px-4 py-2 text-start"
                     name="role"
@@ -162,14 +162,14 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   >
                     <p>{t("admin")}</p>
 
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       {t("adminDescription")}
                     </p>
                   </button>
                 </CommandItem>
 
                 {currentUserIsOwner && (
-                  <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
+                  <CommandItem className="flex flex-col items-start space-y-1 p-0">
                     <button
                       className="px-4 py-2 text-start"
                       name="role"
@@ -178,7 +178,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                     >
                       <p>{t("owner")}</p>
 
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-sm text-muted-foreground">
                         {t("ownerDescription")}
                       </p>
                     </button>
@@ -187,7 +187,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
 
                 <CommandSeparator />
 
-                <CommandItem className="teamaspace-y-1 flex flex-col items-start p-0">
+                <CommandItem className="flex flex-col items-start space-y-1 p-0">
                   <button
                     className="px-4 py-2 text-start"
                     name="role"
@@ -196,7 +196,7 @@ function RoleSwitcher({ currentUserIsOwner, member }: RoleSwitcherProps) {
                   >
                     <p>{t("deactivated")}</p>
 
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-sm text-muted-foreground">
                       {t("deactivatedDescription")}
                     </p>
                   </button>
@@ -234,7 +234,7 @@ const createColumns = ({
   {
     accessorKey: "name",
     cell: ({ row }) => {
-      return <div className="font-medium text-sm">{row.original.name}</div>;
+      return <div className="text-sm font-medium">{row.original.name}</div>;
     },
     header: t("nameHeader"),
   },
@@ -246,14 +246,11 @@ const createColumns = ({
     accessorKey: "status",
     cell: ({ row }) => {
       return (
-        <Badge
-          className="px-1.5 font-normal text-muted-foreground"
-          variant="outline"
-        >
+        <Badge variant="status">
           {row.original.status === "emailInvitePending" ? (
             <IconLoader />
           ) : (
-            <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400" />
+            <IconCircleCheckFilled className="fill-success dark:fill-success-soft" />
           )}
           {t(`status.${row.original.status}`)}
         </Badge>
@@ -321,7 +318,7 @@ export function TeamMembersTable({
     <div className="flex flex-col gap-4">
       <div className="overflow-hidden rounded-lg border">
         <Table>
-          <TableHeader className="sticky top-0 z-10 rounded-lg bg-muted">
+          <TableHeader className="sticky top-0 z-10" variant="muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
@@ -340,7 +337,7 @@ export function TeamMembersTable({
             ))}
           </TableHeader>
 
-          <TableBody className="**:data-[slot=table-cell]:font-light **:data-[slot=table-cell]:last:w-40 **:data-[slot=table-cell]:first:w-12">
+          <TableBody className="**:data-[slot=table-cell]:font-light **:data-[slot=table-cell]:first:w-12 **:data-[slot=table-cell]:last:w-40">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
@@ -373,9 +370,7 @@ export function TeamMembersTable({
 
       <div className="flex items-center justify-between px-4">
         <div className="hidden items-center gap-2 lg:flex">
-          <Label className="font-medium text-sm" htmlFor="rows-per-page">
-            {t("pagination.rowsPerPage")}
-          </Label>
+          <Label htmlFor="rows-per-page">{t("pagination.rowsPerPage")}</Label>
 
           <Select
             onValueChange={(value) => {
@@ -406,7 +401,7 @@ export function TeamMembersTable({
         </div>
 
         <div className="flex w-full items-center gap-8 lg:w-fit">
-          <div className="flex w-fit items-center justify-center font-medium text-sm">
+          <div className="flex w-fit items-center justify-center text-sm font-medium">
             {t("pagination.pageInfo", {
               current: table.state.pagination.pageIndex + 1,
               total: table.getPageCount(),
@@ -415,9 +410,10 @@ export function TeamMembersTable({
 
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Button
-              className="hidden h-8 w-8 p-0 lg:flex"
+              className="hidden h-8 w-8 lg:flex"
               disabled={!table.getCanPreviousPage()}
               onClick={() => table.setPageIndex(0)}
+              size="icon"
               variant="outline"
             >
               <span className="sr-only">{t("pagination.goToFirst")}</span>

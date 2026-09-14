@@ -25,7 +25,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { cn } from "~/lib/utils";
 
 function ColorSchemeButton({
   className,
@@ -37,7 +36,7 @@ function ColorSchemeButton({
 
   return (
     <DropdownMenuItem
-      className={cn("w-full", isActive && "text-primary [&_svg]:text-primary!")}
+      className="w-full"
       disabled={isActive}
       nativeButton
       render={
@@ -49,6 +48,7 @@ function ColorSchemeButton({
           value={value}
         />
       }
+      variant={isActive ? "primary" : "default"}
     />
   );
 }

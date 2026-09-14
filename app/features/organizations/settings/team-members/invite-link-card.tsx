@@ -27,7 +27,7 @@ import { Spinner } from "~/components/ui/spinner";
 import { cn } from "~/lib/utils";
 
 export type InviteLinkCardProps = {
-  inviteLink?: { href: string; expiryDate: string };
+  inviteLink?: { expiryDate: string; href: string };
   organizationIsFull?: boolean;
 };
 
@@ -35,7 +35,7 @@ export function InviteLinkCard({
   inviteLink,
   organizationIsFull = false,
 }: InviteLinkCardProps) {
-  const { t, i18n } = useTranslation("organizations", {
+  const { i18n, t } = useTranslation("organizations", {
     keyPrefix: "settings.teamMembers.inviteLink",
   });
   const hydrated = useHydrated();
@@ -88,7 +88,7 @@ export function InviteLinkCard({
         <>
           <CardContent>
             <div className="relative">
-              {/** biome-ignore lint/a11y/useAnchorContent: the a tag has an aria-label */}
+              {/* oxlint-disable-next-line jsx-a11y/anchor-has-content -- the a tag has an aria-label */}
               <a
                 aria-describedby="link-expiration-warning"
                 aria-label={t("goToLink")}
@@ -107,18 +107,14 @@ export function InviteLinkCard({
               </a>
 
               <Button
-                className={cn(
-                  "absolute top-0 right-0 rounded-l-none border border-transparent border-l hover:border-input",
-                  "border-l-input dark:hover:border-transparent",
-                  "dark:hover:border-l-input",
-                )}
+                className="absolute top-0 right-0"
                 disabled={!hydrated}
                 onClick={async () => {
                   const copied = await copyToClipboard(inviteLink.href);
                   setLinkCopied(copied);
                 }}
                 size="icon"
-                variant="ghost"
+                variant="input-action"
               >
                 {linkCopied ? (
                   <>
@@ -136,7 +132,7 @@ export function InviteLinkCard({
               </Button>
 
               <p
-                className="mt-1 flex text-muted-foreground text-xs"
+                className="mt-1 flex text-xs text-muted-foreground"
                 id="link-expiration-warning"
               >
                 <span className="grow">
@@ -204,7 +200,7 @@ export function InviteLinkCard({
             </div>
 
             <p
-              className="mt-2 flex items-center text-muted-foreground text-xs"
+              className="mt-2 flex items-center text-xs text-muted-foreground"
               id="link-regenerate-warning"
             >
               <IconAlertTriangle

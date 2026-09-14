@@ -13,12 +13,12 @@ import { uploadOwnedImage } from "~/utils/image-replacement.server";
  */
 export async function uploadUserAvatar({
   file,
-  userId,
   supabase,
+  userId,
 }: {
   file: File | FileUpload;
-  userId: string;
   supabase: SupabaseClient;
+  userId: string;
 }) {
   return uploadOwnedImage({
     file,

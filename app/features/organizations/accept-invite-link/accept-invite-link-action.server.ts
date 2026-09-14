@@ -21,8 +21,8 @@ const acceptInviteLinkSchema = z.object({
 });
 
 export async function acceptInviteLinkAction({
-  request,
   context,
+  request,
 }: Route.ActionArgs) {
   try {
     const i18n = getInstance(context);
@@ -33,7 +33,7 @@ export async function acceptInviteLinkAction({
 
     switch (data.intent) {
       case ACCEPT_INVITE_LINK_INTENT: {
-        const { supabase, headers } = createSupabaseServerClient({ request });
+        const { headers, supabase } = createSupabaseServerClient({ request });
         const {
           data: { user },
         } = await supabase.auth.getUser();

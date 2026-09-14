@@ -57,7 +57,7 @@ function DeleteAccountDialog({
       ),
     [email],
   );
-  const { form, fields, intent } = useForm(confirmationSchema, {
+  const { fields, form, intent } = useForm(confirmationSchema, {
     lastResult,
     shouldRevalidate: "onInput",
     shouldValidate: "onInput",
@@ -94,11 +94,11 @@ function DeleteAccountDialog({
         <DialogHeader>
           <DialogTitle>{t("dialogTitle")}</DialogTitle>
           <DialogDescription>{t("dialogDescription")}</DialogDescription>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {t("cleanupDescription")}
           </p>
           {implicitlyDeletedOrganizations.length > 0 && (
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               <Trans
                 components={{ 1: <strong className="text-foreground" /> }}
                 count={implicitlyDeletedOrganizations.length}
@@ -183,7 +183,7 @@ export function DangerZone(props: DangerZoneProps) {
       <h2 className="font-medium text-destructive" id="danger-zone-heading">
         {t("title")}
       </h2>
-      <Item className="border-destructive" variant="outline">
+      <Item variant="destructive">
         <ItemContent>
           <ItemTitle>{t("deleteTitle")}</ItemTitle>
           <ItemDescription

@@ -9,7 +9,7 @@ import { requireAuthenticatedUserWithMembershipsExists } from "~/features/user-a
 import { prisma } from "~/utils/database.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   const auth = await requireAuthenticatedUserWithMembershipsExists({
     context,
     request,
@@ -100,7 +100,7 @@ export default function SettingsAccountRoute({
             <h2 className="font-semibold" id="organization-deletions-title">
               {t("organizationDeletions.title")}
             </h2>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-sm text-muted-foreground">
               {t("organizationDeletions.description")}
             </p>
             <ul className="space-y-2">

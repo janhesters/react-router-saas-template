@@ -114,7 +114,7 @@ async function setupImage(
   kind: ImageKind,
   role: OrganizationMembershipRole = OrganizationMembershipRole.owner,
 ) {
-  const { user, organization } = await setupUserWithTrialOrgAndAddAsMember({
+  const { organization, user } = await setupUserWithTrialOrgAndAddAsMember({
     organization: createPopulatedOrganization({
       stripeCustomerId: null,
       trialEnd: new Date(Date.now() + 86_400_000),
@@ -161,18 +161,18 @@ async function setupImage(
   async function send({
     bytes = "new image bytes",
     extraFields = {} as Record<string, string>,
-    name = initialName,
     filename = "image.png",
+    name = initialName,
     type = "image/png",
   } = {}) {
     const formData = toFormData({
-      [kind === "avatar" ? "avatar" : "logo"]: new File([bytes], filename, {
-        type,
-      }),
       intent:
         kind === "avatar"
           ? UPDATE_USER_ACCOUNT_INTENT
           : UPDATE_ORGANIZATION_INTENT,
+      [kind === "avatar" ? "avatar" : "logo"]: new File([bytes], filename, {
+        type,
+      }),
       name,
       ...extraFields,
     });
@@ -271,7 +271,7 @@ describe.each(["avatar", "organization-logo"] as const)(
       { extension: "jpg", filename: "image.jpeg", type: "image/jpeg" },
     ])(
       "publishes readable $extension bytes before retiring the old image",
-      async ({ filename, type, extension }) => {
+      async ({ extension, filename, type }) => {
         const fixture = await setupImage(kind);
         let imageAtCleanup:
           | Awaited<ReturnType<typeof fixture.readPublished>>

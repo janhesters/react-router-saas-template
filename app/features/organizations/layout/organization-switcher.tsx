@@ -25,20 +25,20 @@ import type { Organization } from "~/generated/browser";
 
 type OrganizationSwitcherOrganization = {
   id: Organization["id"];
-  name: Organization["name"];
   logo: Organization["imageUrl"];
+  name: Organization["name"];
   slug: Organization["slug"];
   tier: Tier;
 };
 
 export type OrganizationSwitcherProps = {
-  organizations: OrganizationSwitcherOrganization[];
   currentOrganization?: OrganizationSwitcherOrganization;
+  organizations: OrganizationSwitcherOrganization[];
 };
 
 export function OrganizationSwitcher({
-  organizations,
   currentOrganization,
+  organizations,
 }: OrganizationSwitcherProps) {
   const { isMobile } = useSidebar();
   const { t } = useTranslation("organizations", {
@@ -62,7 +62,6 @@ export function OrganizationSwitcher({
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 // Playwright shouldn't try to click the button before it's hydrated
                 disabled={!hydrated}
                 size="lg"
@@ -76,7 +75,7 @@ export function OrganizationSwitcher({
                 src={currentOrganization.logo}
               />
 
-              <AvatarFallback className="rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+              <AvatarFallback className="rounded-lg" variant="sidebar">
                 {currentOrganization.name.slice(0, 2).toUpperCase()}
               </AvatarFallback>
             </Avatar>
@@ -98,14 +97,12 @@ export function OrganizationSwitcher({
 
           <DropdownMenuContent
             align="start"
-            className="min-w-(--radix-dropdown-menu-trigger-width) max-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:min-w-56 md:max-w-80"
+            className="max-w-(--radix-dropdown-menu-trigger-width) min-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:max-w-80 md:min-w-56"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
             <DropdownMenuGroup>
-              <DropdownMenuLabel className="text-muted-foreground text-xs">
-                {t("organizations")}
-              </DropdownMenuLabel>
+              <DropdownMenuLabel>{t("organizations")}</DropdownMenuLabel>
 
               {organizations.map((organization) => (
                 <Form key={organization.id} method="POST" replace>
@@ -113,6 +110,7 @@ export function OrganizationSwitcher({
                     className="w-full gap-2 p-2"
                     nativeButton
                     render={
+                      // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- DropdownMenuItem supplies the organization name as button content.
                       <button
                         name="intent"
                         type="submit"

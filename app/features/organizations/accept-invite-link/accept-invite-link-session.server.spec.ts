@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: Test code */
+/* oxlint-disable typescript/no-non-null-assertion -- Test code */
 import { addSeconds, subSeconds } from "date-fns";
 import { afterAll, describe, expect, test, vi } from "vitest";
 

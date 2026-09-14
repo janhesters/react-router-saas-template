@@ -20,7 +20,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
   return (
     <ol
       className={cn(
-        "wrap-break-word flex flex-wrap items-center gap-1.5 text-muted-foreground text-sm sm:gap-2.5",
+        "flex flex-wrap items-center gap-1.5 text-sm wrap-break-word text-muted-foreground sm:gap-2.5",
         className,
       )}
       data-slot="breadcrumb-list"
@@ -48,7 +48,7 @@ function BreadcrumbLink({
     defaultTagName: "a",
     props: mergeProps<"a">(
       {
-        className: cn("hover:text-foreground transition-colors", className),
+        className: cn("transition-colors hover:text-foreground", className),
       },
       props,
     ),
@@ -61,17 +61,13 @@ function BreadcrumbLink({
 
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   return (
-    /**
-     * biome-ignore lint/a11y/useSemanticElements: Shadcn uses `role="link"`
-     * deliberately to avoid confusing it for an actual `<a />`.
-     * biome-ignore lint/a11y/useFocusableInteractive: Shadcn uses `role="link"`
-     * deliberately to avoid confusing it for an actual `<a />`.
-     */
+    /* oxlint-disable-next-line jsx-a11y/interactive-supports-focus -- Shadcn uses `role="link"` deliberately to avoid confusing it for an actual `<a />`. */
     <span
       aria-current="page"
       aria-disabled="true"
       className={cn("font-normal text-foreground", className)}
       data-slot="breadcrumb-page"
+      /* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Shadcn uses `role="link"` deliberately to avoid confusing it for an actual `<a />`. */
       role="link"
       {...props}
     />

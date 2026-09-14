@@ -35,18 +35,24 @@ export function BentoCardEyeBrow({
 }: ComponentProps<"span">) {
   return (
     <span
-      className={cn("font-semibold text-primary text-sm", className)}
+      className={cn("text-sm font-semibold text-primary", className)}
       {...props}
     />
   );
 }
 
-export function BentoCardTitle({ className, ...props }: ComponentProps<"h3">) {
+export function BentoCardTitle({
+  children,
+  className,
+  ...props
+}: ComponentProps<"h3">) {
   return (
     <h3
-      className={cn("font-medium text-foreground text-lg", className)}
+      className={cn("text-lg font-medium text-foreground", className)}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   );
 }
 
@@ -56,7 +62,7 @@ export function BentoCardDescription({
 }: ComponentProps<"p">) {
   return (
     <p
-      className={cn("max-w-lg text-muted-foreground text-sm", className)}
+      className={cn("max-w-lg text-sm text-muted-foreground", className)}
       {...props}
     />
   );

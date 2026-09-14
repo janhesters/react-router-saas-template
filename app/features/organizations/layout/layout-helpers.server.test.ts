@@ -474,7 +474,7 @@ describe("switchSlugInRoute()", () => {
     },
   ])(
     "given: a route with a slug, should: return the route with the slug replaced",
-    ({ route, slug, expected }) => {
+    ({ expected, route, slug }) => {
       const actual = switchSlugInRoute(route, slug);
 
       expect(actual).toEqual(expected);

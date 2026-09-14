@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
@@ -24,13 +24,13 @@ const createPath = (organizationSlug: string) =>
  * Helper to create multiple notifications for a user in an organization
  */
 async function setup({
-  page,
   count = 1,
   markAsRead = false,
+  page,
 }: {
-  page: Page;
   count?: number;
   markAsRead?: boolean;
+  page: Page;
 }) {
   const { organization, user } = await setupOrganizationAndLoginAsMember({
     page,
@@ -106,7 +106,7 @@ test.describe("notifications", () => {
   test("given: a user with notifications, should: allow them to mark all as read", async ({
     page,
   }) => {
-    const { organization, user, notifications } = await setup({
+    const { notifications, organization, user } = await setup({
       count: 2,
       page,
     });
@@ -163,7 +163,7 @@ test.describe("notifications", () => {
     test("given: a user with a link notification, should: be able to mark them as read individually", async ({
       page,
     }) => {
-      const { organization, user, notifications } = await setup({
+      const { notifications, organization, user } = await setup({
         count: 3,
         page,
       });

@@ -58,7 +58,7 @@ describe("useCountdown()", () => {
   });
 
   test("given: a new initial time value, should: reset the countdown to the new value", () => {
-    const { result, rerender } = renderHook(
+    const { rerender, result } = renderHook(
       ({ initialSeconds }) => useCountdown(initialSeconds),
       { initialProps: { initialSeconds: 5 } },
     );

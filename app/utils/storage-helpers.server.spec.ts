@@ -48,7 +48,7 @@ describe("getBucketAndKeyFromUrl()", () => {
     },
   ])(
     "given: a url $url, should: return bucket $expected.bucket and key $expected.key",
-    ({ url, expected }) => {
+    ({ expected, url }) => {
       const actual = getBucketAndKeyFromUrl(url);
       expect(actual).toEqual(expected);
     },

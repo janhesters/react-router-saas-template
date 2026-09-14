@@ -10,13 +10,13 @@ import {
   vi,
 } from "vitest";
 
+import { cleanupOrganizationDeletionResource } from "./organization-deletion-providers.server";
 import {
   getOrganizationDeletionForUser,
   processOrganizationDeletion,
   recordDeletedOrganizationCustomer,
   requestOrganizationDeletion,
 } from "./organization-deletion.server";
-import { cleanupOrganizationDeletionResource } from "./organization-deletion-providers.server";
 import { withOrganizationMutationLock } from "./organization-mutation-lock.server";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
@@ -51,13 +51,13 @@ afterEach(() => {
 });
 
 async function setupOrganization({
+  deactivatedAt = null,
   organization: overrides = {},
   role = "owner",
-  deactivatedAt = null,
 }: {
+  deactivatedAt?: Date | null;
   organization?: Partial<Organization>;
   role?: OrganizationMembershipRole;
-  deactivatedAt?: Date | null;
 } = {}) {
   const user = createPopulatedUserAccount();
   const organization = createPopulatedOrganization({
@@ -95,9 +95,9 @@ async function setupOrganization({
 
 async function setupJob(
   resources: {
+    completedAt?: Date;
     kind: OrganizationDeletionResourceKind;
     target: string;
-    completedAt?: Date;
   }[] = [{ kind: "stripeCustomer", target: `cus_${createId()}` }],
 ) {
   const id = createId();

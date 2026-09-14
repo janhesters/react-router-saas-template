@@ -15,7 +15,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
 
   return (
     <Sonner
-      className="toaster group"
+      className="group"
       icons={{
         error: <IconAlertOctagon className="size-4" />,
         info: <IconInfoCircle className="size-4" />,

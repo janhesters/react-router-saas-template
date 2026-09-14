@@ -14,8 +14,8 @@ import type { Factory } from "~/utils/types";
 
 const createProps: Factory<EmailInviteCardProps> = ({
   currentUserIsOwner = false,
-  lastResult,
   isInvitingByEmail = false,
+  lastResult,
   organizationIsFull = false,
 } = {}) => ({
   currentUserIsOwner,

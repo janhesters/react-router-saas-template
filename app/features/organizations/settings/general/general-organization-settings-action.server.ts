@@ -36,8 +36,8 @@ const generalOrganizationSettingsActionSchema = coerceFormValue(
 );
 
 export async function generalOrganizationSettingsAction({
-  request,
   context,
+  request,
 }: Route.ActionArgs) {
   const { organization, role, user } = context.get(
     organizationMembershipContext,

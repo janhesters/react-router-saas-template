@@ -32,7 +32,7 @@ function CommandInput({
       <IconSearch className="size-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         className={cn(
-          "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+          "flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         data-slot="command-input"
@@ -49,7 +49,7 @@ function CommandList({
   return (
     <CommandPrimitive.List
       className={cn(
-        "max-h-[300px] scroll-py-1 overflow-y-auto overflow-x-hidden",
+        "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
         className,
       )}
       data-slot="command-list"
@@ -77,7 +77,7 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       className={cn(
-        "text-foreground [&_[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium",
+        "overflow-hidden p-1 text-foreground [&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground",
         className,
       )}
       data-slot="command-group"
@@ -92,7 +92,7 @@ function CommandSeparator({
 }: React.ComponentProps<typeof CommandPrimitive.Separator>) {
   return (
     <CommandPrimitive.Separator
-      className={cn("bg-border -mx-1 h-px", className)}
+      className={cn("-mx-1 h-px bg-border", className)}
       data-slot="command-separator"
       {...props}
     />
@@ -106,7 +106,7 @@ function CommandItem({
   return (
     <CommandPrimitive.Item
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
         className,
       )}
       data-slot="command-item"
@@ -122,7 +122,7 @@ function CommandShortcut({
   return (
     <span
       className={cn(
-        "ml-auto text-muted-foreground text-xs tracking-widest",
+        "ml-auto text-xs tracking-widest text-muted-foreground",
         className,
       )}
       data-slot="command-shortcut"

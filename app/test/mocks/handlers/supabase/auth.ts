@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 
 import { randomUUID } from "node:crypto";
 import { createId } from "@paralleldrive/cuid2";
@@ -373,7 +373,7 @@ const logoutMock = http.post(
 
 const deleteUserMock = http.delete(
   `${process.env.VITE_SUPABASE_URL}/auth/v1/admin/users/:id`,
-  async ({ request, params }) => {
+  async ({ params, request }) => {
     // Check for the presence of an Authorization header
     const authHeader = request.headers.get("Authorization");
 

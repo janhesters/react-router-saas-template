@@ -26,9 +26,9 @@ import {
 
 export type NavUserProps = {
   user: {
-    name: string;
-    email: string;
     avatar: string;
+    email: string;
+    name: string;
   };
 };
 
@@ -47,7 +47,6 @@ export function NavUser({ user }: NavUserProps) {
             render={
               <SidebarMenuButton
                 aria-label={t("userMenuButtonLabel")}
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 // Playwright shouldn't try to click the button before it's hydrated
                 disabled={!hydrated}
                 size="lg"
@@ -75,7 +74,7 @@ export function NavUser({ user }: NavUserProps) {
 
           <DropdownMenuContent
             align="end"
-            className="min-w-(--radix-dropdown-menu-trigger-width) max-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:min-w-56 md:max-w-80"
+            className="max-w-(--radix-dropdown-menu-trigger-width) min-w-(--radix-dropdown-menu-trigger-width) rounded-lg md:max-w-80 md:min-w-56"
             side={isMobile ? "bottom" : "right"}
             sideOffset={4}
           >
@@ -119,6 +118,7 @@ export function NavUser({ user }: NavUserProps) {
               <DropdownMenuItem
                 nativeButton
                 render={
+                  // oxlint-disable-next-line jsx-a11y/control-has-associated-label -- DropdownMenuItem supplies the translated button content.
                   <button
                     className="w-full"
                     name="intent"

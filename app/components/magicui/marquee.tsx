@@ -4,49 +4,49 @@ import { cn } from "~/lib/utils";
 
 type MarqueeProps = {
   /**
+   * Content to be displayed in the marquee
+   */
+  children: ReactNode;
+  /**
    * Optional CSS class name to apply custom styles
    */
   className?: string;
-  /**
-   * Whether to reverse the animation direction
-   * @default false
-   */
-  reverse?: boolean;
   /**
    * Whether to pause the animation on hover
    * @default false
    */
   pauseOnHover?: boolean;
   /**
-   * Content to be displayed in the marquee
+   * Number of times to repeat the content
+   * @default 4
    */
-  children: ReactNode;
+  repeat?: number;
+  /**
+   * Whether to reverse the animation direction
+   * @default false
+   */
+  reverse?: boolean;
   /**
    * Whether to animate vertically instead of horizontally
    * @default false
    */
   vertical?: boolean;
-  /**
-   * Number of times to repeat the content
-   * @default 4
-   */
-  repeat?: number;
 } & ComponentProps<"div">;
 
 export function Marquee({
-  className,
-  reverse = false,
-  pauseOnHover = false,
   children,
-  vertical = false,
+  className,
+  pauseOnHover = false,
   repeat = 4,
+  reverse = false,
+  vertical = false,
   ...props
 }: MarqueeProps) {
   return (
     <div
       {...props}
       className={cn(
-        "group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]",
+        "group flex [gap:var(--gap)] overflow-hidden p-2 [--duration:40s] [--gap:1rem]",
         {
           "flex-col": vertical,
           "flex-row": !vertical,
@@ -58,11 +58,11 @@ export function Marquee({
         <div
           className={cn("flex shrink-0 justify-around [gap:var(--gap)]", {
             "[animation-direction:reverse]": reverse,
-            "animate-marquee flex-row": !vertical,
             "animate-marquee-vertical flex-col": vertical,
+            "animate-marquee flex-row": !vertical,
             "group-hover:[animation-play-state:paused]": pauseOnHover,
           })}
-          // biome-ignore lint/suspicious/noArrayIndexKey: we lack a better key
+          // oxlint-disable-next-line react/no-array-index-key -- we lack a better key
           key={index}
         >
           {children}

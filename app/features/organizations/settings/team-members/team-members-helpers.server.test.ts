@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { faker } from "@faker-js/faker";
 import { createId } from "@paralleldrive/cuid2";
 import { describe, expect, test } from "vitest";

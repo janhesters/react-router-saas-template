@@ -151,6 +151,6 @@ export function AvatarUploadDescription({
   ...props
 }: ComponentProps<"p">) {
   return (
-    <p className={cn("text-muted-foreground text-xs", className)} {...props} />
+    <p className={cn("text-xs text-muted-foreground", className)} {...props} />
   );
 }

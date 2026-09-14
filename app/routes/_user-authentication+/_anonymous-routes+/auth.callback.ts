@@ -23,11 +23,11 @@ import { combineHeaders } from "~/utils/combine-headers.server";
 import { getSearchParameterFromRequest } from "~/utils/get-search-parameter-from-request.server";
 import { redirectWithToast } from "~/utils/toast.server";
 
-export async function loader({ request, context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
   try {
     const { supabase } = context.get(anonymousContext);
     const i18n = getInstance(context);
-    const { inviteLinkInfo, headers: inviteLinkHeaders } =
+    const { headers: inviteLinkHeaders, inviteLinkInfo } =
       await getValidInviteLinkInfo(request);
     const { emailInviteInfo, headers: emailInviteHeaders } =
       await getValidEmailInviteInfo(request);
@@ -39,8 +39,8 @@ export async function loader({ request, context }: Route.LoaderArgs) {
     }
 
     const {
-      error,
       data: { user },
+      error,
     } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {

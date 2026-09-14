@@ -135,7 +135,7 @@ export function CancelOrModifySubscriptionModalContent({
               </TabsList>
 
               {billingPeriod === "monthly" && (
-                <p className="text-primary text-sm">{t("saveAnnually")}</p>
+                <p className="text-sm text-primary">{t("saveAnnually")}</p>
               )}
             </div>
 
@@ -151,7 +151,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -199,7 +199,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -240,9 +240,9 @@ export function CancelOrModifySubscriptionModalContent({
                   </TierCard>
 
                   {/* High Tier */}
-                  <TierCard className="-mt-1.5 ring-2 ring-primary">
+                  <TierCard className="-mt-1.5" variant="featured">
                     <TierCardHeader>
-                      <TierCardTitle className="text-primary">
+                      <TierCardTitle tone="primary">
                         {t("plans.high.title")}
                         <Badge>{t("mostPopular")}</Badge>
                       </TierCardTitle>
@@ -251,7 +251,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -306,7 +306,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -357,7 +357,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -400,9 +400,9 @@ export function CancelOrModifySubscriptionModalContent({
                   </TierCard>
 
                   {/* High Tier */}
-                  <TierCard className="-mt-1.5 ring-2 ring-primary">
+                  <TierCard className="-mt-1.5" variant="featured">
                     <TierCardHeader>
-                      <TierCardTitle className="text-primary">
+                      <TierCardTitle tone="primary">
                         {t("plans.high.title")}
                         <Badge>{t("mostPopular")}</Badge>
                       </TierCardTitle>
@@ -411,7 +411,7 @@ export function CancelOrModifySubscriptionModalContent({
                         <Trans
                           components={{
                             1: (
-                              <span className="font-normal text-muted-foreground text-sm" />
+                              <span className="text-sm font-normal text-muted-foreground" />
                             ),
                           }}
                           i18nKey="pricing.price"
@@ -503,7 +503,7 @@ export function CancelOrModifySubscriptionModalContent({
           <Separator />
 
           <div className="@container/alert">
-            <Alert className="@5xl/alert:block flex flex-col gap-2">
+            <Alert className="flex flex-col gap-2 @5xl/alert:block">
               <AlertTitle>
                 {tModal("cancelSubscriptionBanner.title")}
               </AlertTitle>
@@ -513,9 +513,10 @@ export function CancelOrModifySubscriptionModalContent({
               </AlertDescription>
 
               <Button
-                className="@5xl/alert:-translate-y-1/2 @5xl/alert:absolute @5xl/alert:top-1/2 @5xl/alert:right-3 shadow-none"
+                className="@5xl/alert:absolute @5xl/alert:top-1/2 @5xl/alert:right-3 @5xl/alert:-translate-y-1/2"
                 disabled={isSubmitting}
                 onClick={onCancelSubscriptionClick}
+                shadow="none"
                 type="button"
                 variant="outline"
               >

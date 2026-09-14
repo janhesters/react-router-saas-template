@@ -9,13 +9,13 @@ import { cn } from "~/lib/utils";
 
 function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    // biome-ignore lint/a11y/useSemanticElements: Shadcn uses `role="list"`
     <div
       className={cn(
         "group/item-group flex w-full flex-col gap-4 has-data-[size=sm]:gap-2.5 has-data-[size=xs]:gap-2",
         className,
       )}
       data-slot="item-group"
+      /* oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Shadcn uses `role="list"` */
       role="list"
       {...props}
     />
@@ -37,7 +37,7 @@ function ItemSeparator({
 }
 
 const itemVariants = cva(
-  "[a]:hover:bg-muted rounded-md border text-sm w-full group/item focus-visible:border-ring focus-visible:ring-ring/50 flex items-center flex-wrap outline-none transition-colors duration-100 focus-visible:ring-[3px] [a]:transition-colors",
+  "group/item flex w-full flex-wrap items-center rounded-md border text-sm transition-colors duration-100 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [a]:transition-colors [a]:hover:bg-muted",
   {
     defaultVariants: {
       size: "default",
@@ -51,7 +51,8 @@ const itemVariants = cva(
       },
       variant: {
         default: "border-transparent",
-        muted: "bg-muted/50 border-transparent",
+        destructive: "border-destructive",
+        muted: "border-transparent bg-muted/50",
         outline: "border-border",
       },
     },
@@ -60,9 +61,9 @@ const itemVariants = cva(
 
 function Item({
   className,
-  variant = "default",
-  size = "default",
   render,
+  size = "default",
+  variant = "default",
   ...props
 }: useRender.ComponentProps<"div"> & VariantProps<typeof itemVariants>) {
   return useRender({
@@ -83,7 +84,7 @@ function Item({
 }
 
 const itemMediaVariants = cva(
-  "gap-2 group-has-[[data-slot=item-description]]/item:translate-y-0.5 group-has-[[data-slot=item-description]]/item:self-start flex shrink-0 items-center justify-center [&_svg]:pointer-events-none",
+  "flex shrink-0 items-center justify-center gap-2 group-has-[[data-slot=item-description]]/item:translate-y-0.5 group-has-[[data-slot=item-description]]/item:self-start [&_svg]:pointer-events-none",
   {
     defaultVariants: {
       variant: "default",
@@ -131,7 +132,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       className={cn(
-        "line-clamp-1 flex w-fit items-center gap-2 font-medium text-sm leading-snug underline-offset-4",
+        "line-clamp-1 flex w-fit items-center gap-2 text-sm leading-snug font-medium underline-offset-4",
         className,
       )}
       data-slot="item-title"
@@ -144,7 +145,7 @@ function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       className={cn(
-        "line-clamp-2 text-left font-normal text-muted-foreground text-sm leading-normal group-data-[size=xs]/item:text-xs [&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
+        "line-clamp-2 text-left text-sm leading-normal font-normal text-muted-foreground group-data-[size=xs]/item:text-xs [&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary",
         className,
       )}
       data-slot="item-description"

@@ -29,7 +29,7 @@ const json = (payload: unknown, init?: ResponseInit) =>
 const notAllowed = () =>
   json({ message: "Method Not Allowed" }, { status: 405 });
 
-const badRequest = (payload?: { message?: string; error?: string }) =>
+const badRequest = (payload?: { error?: string; message?: string }) =>
   json({ message: "Bad Request", ...payload }, { status: 400 });
 
 export const loader = () => notAllowed();

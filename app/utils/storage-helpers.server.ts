@@ -45,8 +45,8 @@ export type ImageKind = "avatar" | "organization-logo";
 
 type OwnedImage = {
   imageUrl: string;
-  ownerId: string;
   kind: ImageKind;
+  ownerId: string;
 };
 
 const imagePrefixes: Record<ImageKind, string> = {
@@ -59,13 +59,13 @@ const uniqueFilenamePattern =
   /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}\.[a-z\d]{1,16}$/i;
 
 export function createImageStorageKey({
+  extension,
   kind,
   ownerId,
-  extension,
 }: {
+  extension: string;
   kind: ImageKind;
   ownerId: string;
-  extension: string;
 }) {
   if (!ownerIdPattern.test(ownerId) || !extensionPattern.test(extension)) {
     throw new Error("Invalid image storage owner or extension");
@@ -104,7 +104,7 @@ function parseStorageImageUrl(imageUrl: string, normalizePath = false) {
   }
 }
 
-export function getOwnedImageKey({ imageUrl, ownerId, kind }: OwnedImage) {
+export function getOwnedImageKey({ imageUrl, kind, ownerId }: OwnedImage) {
   if (!ownerIdPattern.test(ownerId)) {
     return;
   }

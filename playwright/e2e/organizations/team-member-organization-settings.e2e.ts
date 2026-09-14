@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
 import type { Page } from "@playwright/test";
@@ -44,15 +44,15 @@ import { asyncForEach } from "~/utils/async-for-each.server";
 
 /** Helper to create multiple members with specific roles */
 async function setupMultipleMembers({
+  activeInviteLink = false, // Whether to create an active invite link initially
+  otherMemberRoles = [], // Array of roles for other members
   page,
   requestingUserRole,
-  otherMemberRoles = [], // Array of roles for other members
-  activeInviteLink = false, // Whether to create an active invite link initially
 }: {
+  activeInviteLink?: boolean;
+  otherMemberRoles?: OrganizationMembershipRole[];
   page: Page;
   requestingUserRole: OrganizationMembershipRole;
-  otherMemberRoles?: OrganizationMembershipRole[];
-  activeInviteLink?: boolean;
 }) {
   // Create the main user and log them in with the specified role
   const { organization, user: requestingUser } =
@@ -98,11 +98,11 @@ async function setupMultipleMembers({
 
 /** Teardown helper for multiple members */
 async function teardownMultipleMembers({
-  organization,
   allUsers,
+  organization,
 }: {
-  organization: Organization;
   allUsers: UserAccount[];
+  organization: Organization;
 }) {
   // Delete the organization (cascades memberships and invite links)
   await deleteOrganizationFromDatabaseById(organization.id);
@@ -213,7 +213,7 @@ test.describe("organization settings members page", () => {
         page,
         requestingUserRole: OrganizationMembershipRole.member,
       });
-      const { organization, requestingUser, otherUsers } = data;
+      const { organization, otherUsers, requestingUser } = data;
 
       await page.goto(getMembersPagePath(organization.slug));
 
@@ -290,7 +290,7 @@ test.describe("organization settings members page", () => {
         page,
         requestingUserRole: OrganizationMembershipRole.admin,
       });
-      const { organization, requestingUser, otherUsers } = data;
+      const { organization, otherUsers, requestingUser } = data;
       const memberUser = otherUsers.find((u) =>
         u.email.includes("test-member-member"),
       )!;
@@ -467,7 +467,7 @@ test.describe("organization settings members page", () => {
         page,
         requestingUserRole: OrganizationMembershipRole.owner,
       });
-      const { organization, requestingUser, otherUsers } = data;
+      const { organization, otherUsers, requestingUser } = data;
       const memberUser = otherUsers.find((u) =>
         u.email.includes("test-member-member"),
       )!;
@@ -700,8 +700,8 @@ test.describe("organization settings members page", () => {
     });
 
     test("given: an owner visits the organization team member settings page, should: allow regenerating and deactivating the link", async ({
-      page,
       browserName,
+      page,
     }) => {
       // Grant clipboard permissions for copy test
       if (browserName === "chromium") {

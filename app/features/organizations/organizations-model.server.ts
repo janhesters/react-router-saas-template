@@ -224,11 +224,11 @@ export async function updateOrganizationInDatabaseById({
  * @returns The updated organization.
  */
 export async function updateOrganizationInDatabaseBySlug({
-  slug,
   organization,
+  slug,
 }: {
-  slug: Organization["slug"];
   organization: Omit<Prisma.OrganizationUpdateInput, "id">;
+  slug: Organization["slug"];
 }) {
   return prisma.organization.update({ data: organization, where: { slug } });
 }

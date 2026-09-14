@@ -19,8 +19,8 @@ import { redirectWithToast } from "~/utils/toast.server";
 import { validateFormData } from "~/utils/validate-form-data.server";
 
 export async function onboardingUserAccountAction({
-  request,
   context,
+  request,
   url,
 }: Route.ActionArgs) {
   const { user } = await requireUserNeedsOnboarding({
@@ -81,7 +81,7 @@ export async function onboardingUserAccountAction({
     });
   }
 
-  const { inviteLinkInfo, headers: inviteLinkHeaders } =
+  const { headers: inviteLinkHeaders, inviteLinkInfo } =
     await getInviteInfoForAuthRoutes(request);
   const acceptedEmailInviteOrganizationSlug =
     getAcceptedEmailInviteOrganizationSlug(request);

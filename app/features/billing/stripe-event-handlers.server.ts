@@ -33,12 +33,12 @@ const retry = () =>
 const STRIPE_REQUEST_OPTIONS = { maxNetworkRetries: 1, timeout: 20_000 };
 
 async function withOrganizationCustomer({
-  organizationId,
   customerId,
+  organizationId,
   update,
 }: {
-  organizationId?: string;
   customerId?: string;
+  organizationId?: string;
   update: () => Promise<unknown>;
 }) {
   if (!organizationId || !customerId) {
@@ -132,7 +132,7 @@ export const handleStripeChargeDisputeClosedEvent = async (
 
     // cancel the first one (or adjust logic if you need something more nuanced)
     const cancelled = await stripeAdmin.subscriptions.cancel(
-      // biome-ignore lint/style/noNonNullAssertion: The check above ensures that there is a subscription
+      // oxlint-disable-next-line typescript/no-non-null-assertion -- The check above ensures that there is a subscription
       subsList.data[0]!.id,
     );
 

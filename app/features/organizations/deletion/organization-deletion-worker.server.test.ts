@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 
-import { processPendingOrganizationDeletions } from "./organization-deletion.server";
 import { startOrganizationDeletionWorker } from "./organization-deletion-worker.server";
+import { processPendingOrganizationDeletions } from "./organization-deletion.server";
 
 vi.mock("./organization-deletion.server", () => ({
   processPendingOrganizationDeletions: vi.fn(),

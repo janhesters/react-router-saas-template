@@ -45,7 +45,7 @@ export function CreateOrganizationFormCard({
   lastResult,
 }: CreateOrganizationFormCardProps) {
   const { t } = useTranslation("organizations", { keyPrefix: "new.form" });
-  const { form, fields } = useForm(
+  const { fields, form } = useForm(
     coerceFormValue(createOrganizationFormSchema),
     {
       lastResult,
@@ -110,7 +110,10 @@ export function CreateOrganizationFormCard({
                           className="size-16 rounded-lg md:size-24"
                           src=""
                         />
-                        <AvatarFallback className="size-16 rounded-lg border border-border md:size-24 dark:bg-input/30">
+                        <AvatarFallback
+                          className="size-16 rounded-lg md:size-24"
+                          variant="upload"
+                        >
                           <IconBuilding className="size-8 md:size-12" />
                         </AvatarFallback>
                       </Avatar>
@@ -160,7 +163,7 @@ export function CreateOrganizationFormCard({
         </CardFooter>
       </Card>
 
-      <div className="text-balance text-center text-muted-foreground text-xs [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
+      <div className="text-center text-xs text-balance text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary">
         <Trans
           components={{
             1: <Link to={href("/terms-of-service")} />,

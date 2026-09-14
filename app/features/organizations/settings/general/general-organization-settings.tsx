@@ -50,7 +50,7 @@ function WarningHoverCard({
   return (
     <HoverCard>
       <HoverCardTrigger
-        render={<Button className="h-auto p-0" type="button" variant="link" />}
+        render={<Button size="inline" type="button" variant="link" />}
       >
         {children}
       </HoverCardTrigger>
@@ -69,7 +69,7 @@ export function GeneralOrganizationSettings({
     keyPrefix: "settings.general",
   });
 
-  const { form, fields } = useForm(
+  const { fields, form } = useForm(
     coerceFormValue(updateOrganizationFormSchema),
     {
       lastResult,
@@ -168,7 +168,10 @@ export function GeneralOrganizationSettings({
                         src={organization.imageUrl ?? ""}
                       />
 
-                      <AvatarFallback className="size-16 rounded-lg border border-border text-lg md:size-24 md:text-2xl dark:bg-input/30">
+                      <AvatarFallback
+                        className="size-16 rounded-lg text-lg md:size-24 md:text-2xl"
+                        variant="upload"
+                      >
                         {organization.name.slice(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>

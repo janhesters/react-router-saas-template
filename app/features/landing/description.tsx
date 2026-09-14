@@ -16,8 +16,8 @@ const imageClassNames =
 export function Description() {
   const { t } = useTranslation("landing", { keyPrefix: "description" });
   const features = t("features", { returnObjects: true }) as {
-    title: string;
     description: string;
+    title: string;
   }[];
 
   return (
@@ -26,11 +26,11 @@ export function Description() {
         <div className="mx-auto grid max-w-2xl grid-cols-1 items-center gap-x-8 gap-y-16 sm:gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-2">
           <div className="lg:pr-8">
             <div className="lg:max-w-xl">
-              <h2 className="font-semibold text-base text-primary">
+              <h2 className="text-base font-semibold text-primary">
                 {t("eyebrow")}
               </h2>
 
-              <p className="mt-2 text-pretty font-semibold text-4xl text-foreground tracking-tight sm:text-5xl">
+              <p className="mt-2 text-4xl font-semibold tracking-tight text-pretty text-foreground sm:text-5xl">
                 {t("title")}
               </p>
 

@@ -23,7 +23,7 @@ test.describe("organizations invite link page", () => {
     async function setup(
       deactivatedAt?: OrganizationInviteLink["deactivatedAt"],
     ) {
-      const { user, organization } = await createUserWithOrgAndAddAsMember();
+      const { organization, user } = await createUserWithOrgAndAddAsMember();
       const link = createPopulatedOrganizationInviteLink({
         creatorId: user.id,
         deactivatedAt,
@@ -37,7 +37,7 @@ test.describe("organizations invite link page", () => {
     test("given: an invalid token, should: show a 404 page", async ({
       page,
     }) => {
-      const { user, organization } = await setup();
+      const { organization, user } = await setup();
 
       await page.goto(getInviteLinkPagePath("invalid-token"));
 
@@ -52,7 +52,7 @@ test.describe("organizations invite link page", () => {
     test("given: a valid token, should: redirect to the register page", async ({
       page,
     }) => {
-      const { link, user, organization } = await setup();
+      const { link, organization, user } = await setup();
 
       await page.goto(getInviteLinkPagePath(link.token));
 
@@ -81,7 +81,7 @@ test.describe("organizations invite link page", () => {
     test("given: a valid token for a deactivated invite link, should: show a 404 page ", async ({
       page,
     }) => {
-      const { link, user, organization } = await setup(new Date());
+      const { link, organization, user } = await setup(new Date());
 
       await page.goto(getInviteLinkPagePath(link.token));
 
@@ -112,11 +112,11 @@ test.describe("organizations invite link page", () => {
 
   test.describe("given: a logged in user", () => {
     async function setup({
-      page,
       deactivatedAt,
+      page,
     }: {
-      page: Page;
       deactivatedAt?: OrganizationInviteLink["deactivatedAt"];
+      page: Page;
     }) {
       const { auth, data } = await promiseHash({
         auth: setupOrganizationAndLoginAsMember({ page }),
@@ -160,7 +160,7 @@ test.describe("organizations invite link page", () => {
     test("given: a valid token accepted twice, should: join once and then show an informational toast", async ({
       page,
     }) => {
-      const { link, auth, data } = await setup({ page });
+      const { auth, data, link } = await setup({ page });
 
       await page.goto(getInviteLinkPagePath(link.token));
 
@@ -251,7 +251,7 @@ test.describe("organizations invite link page", () => {
     test("given: a valid token for a deactivated invite link, should: show a 404 page ", async ({
       page,
     }) => {
-      const { link, auth, data } = await setup({
+      const { auth, data, link } = await setup({
         deactivatedAt: new Date(),
         page,
       });
@@ -309,7 +309,7 @@ test.describe("organizations invite link page", () => {
     }) => {
       // Create an organization and make the user a member and log in as that
       // user
-      const { user, organization } = await setupOrganizationAndLoginAsMember({
+      const { organization, user } = await setupOrganizationAndLoginAsMember({
         lookupKey: priceLookupKeysByTierAndInterval.low.annual,
         page,
       });
@@ -373,7 +373,7 @@ test.describe("organizations invite link page", () => {
     test("given a valid token, should: lack any automatically detectable accessibility issues", async ({
       page,
     }) => {
-      const { link, auth, data } = await setup({ page });
+      const { auth, data, link } = await setup({ page });
 
       await page.goto(getInviteLinkPagePath(link.token));
 

@@ -78,7 +78,7 @@ export default async function handleRequest(
       streamTimeout + oneSecond,
     );
 
-    const { pipe, abort } = renderToPipeableStream(
+    const { abort, pipe } = renderToPipeableStream(
       <NonceProvider value={nonce}>
         <I18nextProvider i18n={getInstance(routerContext)}>
           <ServerRouter
@@ -90,6 +90,19 @@ export default async function handleRequest(
       </NonceProvider>,
       {
         nonce,
+        onError(error: unknown) {
+          const internalServerErrorStatusCode = 500;
+          responseStatusCode = internalServerErrorStatusCode;
+          // Log streaming rendering errors from inside the shell.  Don't log
+          // errors encountered during initial shell rendering since they'll
+          // reject and get logged in handleDocumentRequest.
+          if (shellRendered) {
+            console.error(error);
+          }
+        },
+        onShellError(error: unknown) {
+          reject(error as Error);
+        },
         [readyOption]() {
           shellRendered = true;
           const body = new PassThrough({
@@ -146,19 +159,6 @@ export default async function handleRequest(
           );
 
           pipe(body);
-        },
-        onError(error: unknown) {
-          const internalServerErrorStatusCode = 500;
-          responseStatusCode = internalServerErrorStatusCode;
-          // Log streaming rendering errors from inside the shell.  Don't log
-          // errors encountered during initial shell rendering since they'll
-          // reject and get logged in handleDocumentRequest.
-          if (shellRendered) {
-            console.error(error);
-          }
-        },
-        onShellError(error: unknown) {
-          reject(error as Error);
         },
       },
     );

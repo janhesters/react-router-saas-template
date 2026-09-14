@@ -19,8 +19,8 @@ import {
 import { TeamMembersTable } from "~/features/organizations/settings/team-members/team-members-table";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export async function loader({ request, params, context }: Route.LoaderArgs) {
-  const { user, role } = context.get(organizationMembershipContext);
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+  const { role, user } = context.get(organizationMembershipContext);
   const organization =
     await requireOrganizationWithMembersAndLatestInviteLinkExistsBySlug(
       params.organizationSlug,
@@ -76,9 +76,9 @@ export default function OrganizationMembersRoute({
     <div className="px-4 py-4 md:py-6 lg:px-6">
       <div className="@container/main mx-auto flex w-full max-w-5xl flex-col gap-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="font-semibold leading-none">{t("pageTitle")}</h2>
+          <h2 className="leading-none font-semibold">{t("pageTitle")}</h2>
 
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             {teamMemberTable.currentUsersRole === "member"
               ? t("descriptionMember")
               : t("description")}
@@ -90,7 +90,7 @@ export default function OrganizationMembersRoute({
         {organizationIsFull && (
           <div className="@container/alert">
             <Alert
-              className="@2xl/alert:block flex flex-col gap-2"
+              className="flex flex-col gap-2 @2xl/alert:block"
               variant="destructive"
             >
               <AlertTitle>{t("organizationIsFullAlert.title")}</AlertTitle>
@@ -116,7 +116,7 @@ export default function OrganizationMembersRoute({
         )}
 
         {teamMemberTable.currentUsersRole !== "member" && (
-          <div className="grid @3xl/main:grid-cols-2 grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs dark:*:data-[slot=card]:bg-card">
+          <div className="grid grid-cols-1 items-start gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @3xl/main:grid-cols-2 dark:*:data-[slot=card]:bg-card">
             <EmailInviteCard
               {...emailInviteCard}
               isInvitingByEmail={isInvitingByEmail}

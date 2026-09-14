@@ -16,7 +16,7 @@ export type InviteLinkInfoSessionData = z.infer<typeof inviteLinkSchema>;
 // Create the session storage instance
 // Note: We don't set a default maxAge here; it will be set dynamically
 // based on the invite link's expiration when committing the session.
-const { commitSession, getSession, destroySession } =
+const { commitSession, destroySession, getSession } =
   createCookieSessionStorage<InviteLinkInfoSessionData>({
     cookie: {
       httpOnly: true,

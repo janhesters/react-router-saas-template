@@ -44,14 +44,14 @@ async function setupOwners() {
 
 async function prepareRoleChange({
   organization,
-  user,
-  targetUserId,
   role,
+  targetUserId,
+  user,
 }: {
   organization: Organization;
-  user: UserAccount;
-  targetUserId: string;
   role: "member" | "admin" | "deactivated";
+  targetUserId: string;
+  user: UserAccount;
 }) {
   const request = await createAuthenticatedRequest({
     formData: toFormData({

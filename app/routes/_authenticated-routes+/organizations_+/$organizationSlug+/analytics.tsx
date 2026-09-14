@@ -4,7 +4,7 @@ import type { Route } from "./+types/analytics";
 import { getInstance } from "~/features/localization/i18next-middleware.server";
 import { getPageTitle } from "~/utils/get-page-title.server";
 
-export function loader({ params, context }: Route.LoaderArgs) {
+export function loader({ context, params }: Route.LoaderArgs) {
   const i18n = getInstance(context);
   const t = i18n.t.bind(i18n);
 

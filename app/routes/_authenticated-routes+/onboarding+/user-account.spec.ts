@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import { HttpResponse, http } from "msw";
 import { describe, expect, onTestFinished, test } from "vitest";
 
@@ -44,15 +44,15 @@ const createUrl = (acceptedOrganizationSlug?: string) =>
 const pattern = "/onboarding/user-account";
 
 async function sendAuthenticatedRequest({
-  userAccount,
   acceptedOrganizationSlug,
   formData,
   headers,
+  userAccount,
 }: {
-  userAccount: ReturnType<typeof createPopulatedUserAccount>;
   acceptedOrganizationSlug?: string;
   formData: FormData;
   headers?: Headers;
+  userAccount: ReturnType<typeof createPopulatedUserAccount>;
 }) {
   const request = await createAuthenticatedRequest({
     formData,

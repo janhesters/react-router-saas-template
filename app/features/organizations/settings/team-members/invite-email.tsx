@@ -1,15 +1,15 @@
 import { Button, Container, Html, Text } from "@react-email/components";
 
 type InviteEmailProps = {
+  buttonText: string;
+  buttonUrl: string;
+  callToAction: string;
+  description: string;
   /**
    * Pre-translated and interpolated strings from:
    * organizations.settings.team-members.invite-email.*
    */
   title: string;
-  description: string;
-  callToAction: string;
-  buttonText: string;
-  buttonUrl: string;
 };
 
 /**
@@ -33,11 +33,11 @@ type InviteEmailProps = {
  * ```
  */
 export function InviteEmail({
-  title,
-  description,
-  callToAction,
   buttonText,
   buttonUrl,
+  callToAction,
+  description,
+  title,
 }: InviteEmailProps) {
   return (
     <Html dir="ltr" lang="en">

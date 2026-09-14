@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./styles/decorations.css";
 
 @custom-variant dark {
   &:where(.dark *, .dark) {
@@ -247,7 +248,17 @@
   }
 }
 
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 @theme inline {
+  --color-success: var(--color-green-500);
+  --color-success-soft: var(--color-green-400);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

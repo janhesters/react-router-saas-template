@@ -7,10 +7,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     <div
       className="relative w-full overflow-x-auto"
       data-slot="table-container"
-      /**
-       * biome-ignore lint/a11y/noNoninteractiveTabindex: Scrollable region must
-       * be keyboard accessible per WCAG 2.1.1
-       */
+      /* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- Scrollable region must be keyboard accessible per WCAG 2.1.1 */
       tabIndex={0}
     >
       <table
@@ -22,10 +19,20 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   );
 }
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+function TableHeader({
+  className,
+  variant = "default",
+  ...props
+}: React.ComponentProps<"thead"> & {
+  variant?: "default" | "muted";
+}) {
   return (
     <thead
-      className={cn("[&_tr]:border-b", className)}
+      className={cn(
+        "[&_tr]:border-b",
+        variant === "muted" && "rounded-lg bg-muted",
+        className,
+      )}
       data-slot="table-header"
       {...props}
     />
@@ -72,7 +79,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       className={cn(
-        "h-10 whitespace-nowrap px-2 text-left align-middle font-medium text-foreground [&:has([role=checkbox])]:pr-0",
+        "h-10 px-2 text-left align-middle font-medium whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0",
         className,
       )}
       data-slot="table-head"
@@ -85,7 +92,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
   return (
     <td
       className={cn(
-        "whitespace-nowrap p-2 align-middle [&:has([role=checkbox])]:pr-0",
+        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0",
         className,
       )}
       data-slot="table-cell"
@@ -100,7 +107,7 @@ function TableCaption({
 }: React.ComponentProps<"caption">) {
   return (
     <caption
-      className={cn("mt-4 text-muted-foreground text-sm", className)}
+      className={cn("mt-4 text-sm text-muted-foreground", className)}
       data-slot="table-caption"
       {...props}
     />

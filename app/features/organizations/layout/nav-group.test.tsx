@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: Test code */
+/* oxlint-disable typescript/no-non-null-assertion -- Test code */
 import { faker } from "@faker-js/faker";
 import { IconHome, IconSettings } from "@tabler/icons-react";
 import userEvent from "@testing-library/user-event";
@@ -14,8 +14,8 @@ import type { Factory } from "~/utils/types";
 const createNavGroupItemWithoutChildren: Factory<
   NavGroupItemWithoutChildren
 > = ({
-  title = faker.lorem.words(2),
   icon = faker.helpers.arrayElement([IconHome, IconSettings]),
+  title = faker.lorem.words(2),
   url = faker.helpers.arrayElement([
     "/account",
     "/dashboard",
@@ -33,10 +33,10 @@ const createItemsWithoutChildren = (
     .map((url) => createNavGroupItemWithoutChildren({ url }));
 
 const createProps: Factory<NavGroupProps> = ({
+  className = faker.lorem.word(),
   items = createItemsWithoutChildren(2),
   size = "default",
   title,
-  className = faker.lorem.word(),
 } = {}) => ({ className, items, size, title });
 
 describe("NavGroup Component", () => {
@@ -63,6 +63,7 @@ describe("NavGroup Component", () => {
       if ("url" in item) {
         const link = screen.getByRole("link", { name: item.title });
         expect(link).toHaveAttribute("href", item.url);
+        expect(link.querySelector("a, button")).toBeNull();
       }
     }
   });
@@ -106,6 +107,115 @@ describe("NavGroup Component", () => {
     // Verify child items are now visible
     expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(screen.getByText("Security")).toBeInTheDocument();
+
+    for (const title of ["Profile", "Security"]) {
+      const link = screen.getByRole("link", { name: title });
+      expect(link.querySelector("a, button")).toBeNull();
+    }
+  });
+
+  test.each([
+    ["/settings/profile", "Settings"],
+    ["/settings-other", undefined],
+    ["/", "Home"],
+  ])(
+    "given: route %s, should: preserve NavLink matching and external links",
+    (path, activeTitle) => {
+      const props = createProps({
+        items: [
+          { title: "Home", url: "/" },
+          { title: "Settings", url: "/settings" },
+          { title: "Documentation", url: "https://example.com/docs" },
+        ],
+      });
+      const RouterStub = createRoutesStub([
+        { Component: () => <NavGroup {...props} />, path: "*" },
+      ]);
+
+      render(
+        <SidebarProvider>
+          <RouterStub initialEntries={[path]} />
+        </SidebarProvider>,
+      );
+
+      for (const title of ["Home", "Settings", "Documentation"]) {
+        const link = screen.getByRole("link", { name: title });
+        if (title === activeTitle) {
+          expect(link).toHaveAttribute("aria-current", "page");
+        } else {
+          expect(link).not.toHaveAttribute("aria-current");
+        }
+        expect(link.querySelector("a, button")).toBeNull();
+      }
+      expect(
+        screen.getByRole("link", { name: "Documentation" }),
+      ).toHaveAttribute("href", "https://example.com/docs");
+    },
+  );
+
+  test.each(["/settings/profile", "/settings/profile/details"])(
+    "given: child route %s, should: highlight submenu links only for exact matches",
+    async (path) => {
+      const user = userEvent.setup();
+      const childPath = "/settings/profile";
+      const props = createProps({
+        items: [
+          {
+            items: [{ title: "Profile", url: childPath }],
+            title: "Settings",
+          },
+        ],
+      });
+      const RouterStub = createRoutesStub([
+        { Component: () => <NavGroup {...props} />, path: "*" },
+      ]);
+
+      render(
+        <SidebarProvider>
+          <RouterStub initialEntries={[path]} />
+        </SidebarProvider>,
+      );
+
+      if (path !== childPath) {
+        await user.click(screen.getByRole("button", { name: "Settings" }));
+      }
+      const link = screen.getByRole("link", { name: "Profile" });
+      expect(link).toHaveAttribute("href", childPath);
+      expect(link.querySelector("a, button")).toBeNull();
+      if (path === childPath) {
+        expect(link).toHaveAttribute("aria-current", "page");
+      } else {
+        expect(link).not.toHaveAttribute("aria-current");
+      }
+    },
+  );
+
+  test("given: a collapsed sidebar, should: keep navigation links and their tooltips on the same element", async () => {
+    const user = userEvent.setup();
+    const path = "/settings";
+    const props = createProps({
+      items: [{ title: "Settings", url: path }],
+    });
+    const RouterStub = createRoutesStub([
+      { Component: () => <NavGroup {...props} />, path },
+    ]);
+
+    render(
+      <SidebarProvider defaultOpen={false}>
+        <RouterStub initialEntries={[path]} />
+      </SidebarProvider>,
+    );
+
+    const link = screen.getByRole("link", { name: "Settings" });
+    expect(link).toHaveAttribute("href", path);
+    expect(link).toHaveAttribute("aria-current", "page");
+    expect(link.querySelector("a, button")).toBeNull();
+    await user.hover(link);
+    expect(
+      await screen.findByText("Settings", {
+        selector: '[data-slot="tooltip-content"]',
+      }),
+    ).toBeVisible();
   });
 
   test("given: an active route, should: highlight the active navigation item", () => {

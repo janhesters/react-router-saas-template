@@ -37,12 +37,12 @@ export type OrganizationWithMembers = NonNullable<
 
 type Member = {
   avatar: string;
+  deactivatedAt: Date | undefined;
   email: string;
   id: string;
   isCurrentUser: boolean;
   name: string;
   role: OrganizationMembership["role"];
-  deactivatedAt: Date | undefined;
   status: "createdTheOrganization" | "joinedViaLink" | "emailInvitePending";
 };
 
@@ -112,18 +112,16 @@ export function mapOrganizationDataToTeamMemberSettingsProps({
               index,
           )
           .filter((invite) => !membershipEmails.has(invite.email))
-          .map(
-            (invite): Member => ({
-              avatar: "",
-              deactivatedAt: undefined,
-              email: invite.email,
-              id: invite.id,
-              isCurrentUser: false,
-              name: "",
-              role: invite.role,
-              status: "emailInvitePending",
-            }),
-          ),
+          .map((invite): Member => ({
+            avatar: "",
+            deactivatedAt: undefined,
+            email: invite.email,
+            id: invite.id,
+            isCurrentUser: false,
+            name: "",
+            role: invite.role,
+            status: "emailInvitePending",
+          })),
 
         // Then existing members
         ...organization.memberships.map((membership): Member => {

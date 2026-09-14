@@ -10,9 +10,9 @@ import { render, screen } from "~/test/react-test-utils";
 import type { Factory } from "~/utils/types";
 
 const createUser: Factory<NavUserProps["user"]> = ({
-  name = createPopulatedUserAccount().name,
-  email = createPopulatedUserAccount().email,
   avatar = createPopulatedUserAccount().imageUrl,
+  email = createPopulatedUserAccount().email,
+  name = createPopulatedUserAccount().name,
 } = {}) => ({ avatar, email, name });
 
 const createProps: Factory<NavUserProps> = ({ user = createUser() } = {}) => ({

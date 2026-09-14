@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: test code */
+/* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 
 import { expect, test } from "../../fixtures";

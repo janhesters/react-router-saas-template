@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -13,20 +12,17 @@ import {
 import { Iphone15Pro } from "~/components/magicui/iphone-15-pro";
 import { cn } from "~/lib/utils";
 
-const imageClassNames = "w-full rounded-t-lg h-full object-cover object-left";
-const imageFadeStyle: CSSProperties = {
-  maskImage: "linear-gradient(to bottom, black 75%, transparent)",
-  WebkitMaskImage: "linear-gradient(to bottom, black 75%, transparent)",
-};
+const imageClassNames =
+  "mask-fade-bottom w-full rounded-t-lg h-full object-cover object-left";
 
 type BentoCardTranslations = {
-  eyebrow?: string;
-  title: string;
   description: string;
+  eyebrow?: string;
   image?: {
-    light: string;
     dark: string;
+    light: string;
   };
+  title: string;
 };
 
 // Must match the number of cards in public/locales/en/landing.json > features.cards
@@ -47,9 +43,9 @@ export function Features() {
 
   return (
     <section className="px-4 py-24">
-      <h2 className="font-semibold text-base text-primary">{t("eyebrow")}</h2>
+      <h2 className="text-base font-semibold text-primary">{t("eyebrow")}</h2>
 
-      <p className="mt-2 max-w-lg text-pretty font-semibold text-4xl text-foreground sm:text-5xl">
+      <p className="mt-2 max-w-lg text-4xl font-semibold text-pretty text-foreground sm:text-5xl">
         {t("title")}
       </p>
 
@@ -88,7 +84,6 @@ export function Features() {
                 "dark:hidden",
               )}
               src="/images/app-billing-light.png"
-              style={imageFadeStyle}
             />
             <img
               alt={cards[1].image?.dark}
@@ -98,7 +93,6 @@ export function Features() {
                 "hidden dark:block",
               )}
               src="/images/app-billing-dark.png"
-              style={imageFadeStyle}
             />
           </BentoCardMedia>
 
@@ -116,7 +110,6 @@ export function Features() {
               alt={cards[2].image?.light}
               className={cn(imageClassNames, "object-center", "dark:hidden")}
               src="/images/authentication-light.png"
-              style={imageFadeStyle}
             />
             <img
               alt={cards[2].image?.dark}
@@ -126,7 +119,6 @@ export function Features() {
                 "hidden dark:block",
               )}
               src="/images/authentication-dark.png"
-              style={imageFadeStyle}
             />
           </BentoCardMedia>
 
@@ -142,16 +134,17 @@ export function Features() {
           <BentoCardMedia>
             <img
               alt={cards[3].image?.light}
-              className={cn("rounded-t-lg", "dark:hidden")}
+              className={cn("rounded-t-lg mask-fade-bottom", "dark:hidden")}
               src="/images/notifications-light.png"
-              style={imageFadeStyle}
             />
 
             <img
               alt={cards[3].image?.dark}
-              className={cn("rounded-t-lg", "hidden dark:block")}
+              className={cn(
+                "rounded-t-lg mask-fade-bottom",
+                "hidden dark:block",
+              )}
               src="/images/notifications-dark.png"
-              style={imageFadeStyle}
             />
           </BentoCardMedia>
 
