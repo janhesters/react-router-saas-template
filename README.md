@@ -943,6 +943,36 @@ six rules. See the [rule options](https://github.com/shadcn-ui/lint/blob/main/do
 and [component contracts](https://github.com/shadcn-ui/lint/blob/main/docs/design-systems.md)
 when changing the design system.
 
+### Continuous integration
+
+`.github/workflows/ci.yml` gives every check its own job, so a formatting slip
+and a failing test show up as two red checks instead of one:
+
+| Job                  | What it runs                                                        |
+| -------------------- | ------------------------------------------------------------------- |
+| ⬣ Oxlint             | `bun run check:lint`                                                |
+| 🧩 shadcn rules      | `bun run check:shadcn`                                              |
+| 💅 Oxfmt             | `bun run check:format`                                              |
+| ʦ TypeScript         | `bun run typecheck`                                                 |
+| ⚙️ commitlint        | Conventional-commit check over the pull request's commits           |
+| ⚡ Vitest            | `bun run test -- --coverage` against a Postgres service             |
+| 🎭 Playwright Chrome | `bun run test:e2e -- --project=chromium` against a Postgres service |
+| 🐳 Docker            | Builds the image and asserts its Node, Bun, and Prisma versions     |
+
+`bun run lint` chains the first three locally. CI keeps them apart so the first
+failure never hides the rest.
+
+Two composite actions hold the steps those jobs share:
+
+- `.github/actions/setup` installs Node from `.node-version`, Bun from
+  `.bun-version`, and dependencies with `bun install --frozen-lockfile`.
+- `.github/actions/setup-test-database` copies `.env.example`, resets the test
+  database schema, and generates types for the two database-backed jobs.
+
+The Docker job uses neither. The Dockerfile runs its own install, and
+`.dockerignore` excludes `node_modules`, `build`, and `.react-router`, so the
+runner's install never reaches the image.
+
 ### AI-Driven Development
 
 This template uses and was written with **AI-Driven Development (AIDD)**,

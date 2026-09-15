@@ -1,0 +1,24 @@
+name: Setup
+description: Install the pinned Node and Bun toolchain and this project's dependencies.
+
+runs:
+  using: composite
+  steps:
+    # Oxlint loads @shadcn/lint as a JS plugin, and the TypeScript, Vite, and
+    # Prisma CLIs resolve `node` through their shebang, so Bun alone is not
+    # enough. `package-manager-cache: false` keeps setup-node from looking for
+    # an npm lockfile this project does not have.
+    - name: ⎔ Setup node
+      uses: actions/setup-node@v7
+      with:
+        node-version-file: .node-version
+        package-manager-cache: false
+
+    - name: 🥟 Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .bun-version
+
+    - name: 📥 Install dependencies
+      run: bun install --frozen-lockfile
+      shell: bash
