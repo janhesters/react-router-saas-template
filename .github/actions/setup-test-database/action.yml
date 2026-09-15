@@ -1,0 +1,17 @@
+name: Setup test database
+description: Point the app at the Postgres service, reset its schema, and generate types.
+
+runs:
+  using: composite
+  steps:
+    - name: 🏄 Copy test env vars
+      run: cp .env.example .env
+      shell: bash
+
+    - name: 🛠 Setup Database
+      run: bun run test:db:reset
+      shell: bash
+
+    - name: 🛠️ Typegen
+      run: bun run typegen
+      shell: bash

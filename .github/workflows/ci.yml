@@ -16,29 +16,44 @@ permissions:
   pull-requests: read
 
 jobs:
-  lint:
-    name: ⬣ Oxlint and Oxfmt
+  oxlint:
+    name: ⬣ Oxlint
     runs-on: ubuntu-latest
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
 
-      - name: 🥟 Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
+      - name: 🔬 Lint
+        run: bun run check:lint
 
-      - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
+  shadcn:
+    name: 🧩 shadcn rules
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
 
-      - name: 🔬 Lint and verify shadcn rule enforcement
-        run: bun run lint
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
+
+      - name: 🧩 Verify shadcn rule enforcement
+        run: bun run check:shadcn
+
+  oxfmt:
+    name: 💅 Oxfmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v7
+
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
+
+      - name: 💅 Check formatting
+        run: bun run check:format
 
   type-check:
     name: ʦ TypeScript
@@ -47,19 +62,8 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
-
-      - name: 🥟 Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
 
       - name: 🔎 Type check
         run: bun run typecheck
@@ -81,6 +85,8 @@ jobs:
   vitest:
     name: ⚡ Vitest
     runs-on: ubuntu-latest
+    # Composite actions cannot declare services, so this block stays duplicated
+    # in the Playwright job below.
     services:
       postgres:
         image: postgres:18-trixie
@@ -98,28 +104,11 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
 
-      - name: 🥟 Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
-
-      - name: 🛠 Setup Database
-        run: bun run test:db:reset
-
-      - name: 🛠️ Typegen
-        run: bun run typegen
+      - name: 🐘 Setup test database
+        uses: ./.github/actions/setup-test-database
 
       - name: ⚡ Run vitest
         run: bun run test -- --coverage
@@ -144,31 +133,14 @@ jobs:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
 
-      - name: ⎔ Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version-file: .node-version
-          package-manager-cache: false
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
 
-      - name: 🥟 Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: 📥 Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: 🏄 Copy test env vars
-        run: cp .env.example .env
+      - name: 🐘 Setup test database
+        uses: ./.github/actions/setup-test-database
 
       - name: 🌐 Install Playwright Browsers
         run: bunx playwright install --with-deps chromium
-
-      - name: 🛠 Setup Database
-        run: bun run test:db:reset
-
-      - name: 🛠️ Typegen
-        run: bun run typegen
 
       - name: 🏗️ Build application
         run: bun run build
@@ -187,6 +159,9 @@ jobs:
   docker:
     name: 🐳 Docker
     runs-on: ubuntu-latest
+    # No toolchain setup: the Dockerfile runs its own `bun install`, and
+    # `.dockerignore` excludes `node_modules`, so the runner's install would
+    # never reach the image.
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
