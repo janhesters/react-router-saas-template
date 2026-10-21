@@ -1,92 +1,106 @@
-name: Pull Request
+name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-  pull_request: {}
+  # Drafts stay quiet: every job below checks `draft`, because `on` cannot.
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+  schedule:
+    # 00:20 UTC is 02:20 in Zurich in summer and 01:20 in winter. Cron speaks
+    # only UTC, and the top of the hour is when GitHub delays scheduled runs.
+    - cron: "20 0 * * *"
+  workflow_dispatch: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
+  actions: read
   contents: read
   pull-requests: read
 
 jobs:
-  oxlint:
-    name: ⬣ Oxlint
+  gate:
+    name: 🌙 Nightly gate
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    outputs:
+      changed: ${{ steps.compare.outputs.changed }}
     steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
+      - name: 🔎 Compare the branch with the last green nightly run
+        id: compare
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # The query stays in the URL: `gh api` turns a request with `-f`
+          # parameters into a POST.
+          verified=$(gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?event=schedule&status=success&branch=${GITHUB_REF_NAME}&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // ""')
+          if [ "${verified}" = "${GITHUB_SHA}" ]; then
+            echo "changed=false" >> "${GITHUB_OUTPUT}"
+            echo "⏭️ Skipped: \`${GITHUB_REF_NAME}\` still points at \`${GITHUB_SHA}\`, which the last nightly run proved green." >> "${GITHUB_STEP_SUMMARY}"
+          else
+            echo "changed=true" >> "${GITHUB_OUTPUT}"
+          fi
 
-      - name: 🧰 Setup toolchain
-        uses: ./.github/actions/setup
-
-      - name: 🔬 Lint
-        run: bun run check:lint
-
-  shadcn:
-    name: 🧩 shadcn rules
+  checks:
+    name: 🔬 Checks
     runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
-
-      - name: 🧰 Setup toolchain
-        uses: ./.github/actions/setup
-
-      - name: 🧩 Verify shadcn rule enforcement
-        run: bun run check:shadcn
-
-  oxfmt:
-    name: 💅 Oxfmt
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
-
-      - name: 🧰 Setup toolchain
-        uses: ./.github/actions/setup
-
-      - name: 💅 Check formatting
-        run: bun run check:format
-
-  type-check:
-    name: ʦ TypeScript
-    runs-on: ubuntu-latest
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
-
-      - name: 🧰 Setup toolchain
-        uses: ./.github/actions/setup
-
-      - name: 🔎 Type check
-        run: bun run typecheck
-
-  commitlint:
-    name: ⚙️ commitlint
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    needs: gate
+    # `!cancelled()` keeps this job alive when `gate` skips itself, which it
+    # does for every event but `schedule`.
+    if: >-
+      ${{ !cancelled()
+      && !github.event.pull_request.draft
+      && (github.event_name != 'schedule' || needs.gate.outputs.changed == 'true') }}
     steps:
       - name: ⬇️ Checkout repo
         uses: actions/checkout@v7
         with:
+          # commitlint reads every commit of the pull request.
           fetch-depth: 0
-      - name: ⚙️ commitlint
-        uses: wagoid/commitlint-github-action@v6
 
-  vitest:
-    name: ⚡ Vitest
+      - name: 🧰 Setup toolchain
+        uses: ./.github/actions/setup
+
+      # Each check runs even after an earlier one fails, so one slip never
+      # hides the rest. As five jobs these billed five runner minutes; as five
+      # steps they share this job's single rounded-up minute.
+      - name: 🔬 Lint
+        if: ${{ !cancelled() }}
+        run: bun run check:lint
+
+      - name: 🧩 Verify shadcn rule enforcement
+        if: ${{ !cancelled() }}
+        run: bun run check:shadcn
+
+      - name: 💅 Check formatting
+        if: ${{ !cancelled() }}
+        run: bun run check:format
+
+      - name: 🔎 Type check
+        if: ${{ !cancelled() }}
+        run: bun run typecheck
+
+      - name: ⚙️ commitlint
+        if: >-
+          ${{ !cancelled()
+          && github.event_name == 'pull_request'
+          && github.actor != 'dependabot[bot]' }}
+        uses: wagoid/commitlint-github-action@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  tests:
+    name: 🧪 Tests
     runs-on: ubuntu-latest
-    # Composite actions cannot declare services, so this block stays duplicated
-    # in the Playwright job below.
+    needs: gate
+    if: >-
+      ${{ !cancelled()
+      && !github.event.pull_request.draft
+      && (github.event_name != 'schedule' || needs.gate.outputs.changed == 'true') }}
     services:
       postgres:
         image: postgres:18-trixie
@@ -110,34 +124,15 @@ jobs:
       - name: 🐘 Setup test database
         uses: ./.github/actions/setup-test-database
 
+      # Vitest runs first: it is the quicker of the two, so a unit failure
+      # arrives before the browser install and the production build.
       - name: ⚡ Run vitest
         run: bun run test -- --coverage
 
-  playwright-chrome:
-    name: 🎭 Playwright Chrome
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:18-trixie
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: react_router_saas_test
-          POSTGRES_INITDB_ARGS: --auth=scram-sha-256
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres" --health-interval 10s
-          --health-timeout 5s --health-retries 5
-    steps:
-      - name: ⬇️ Checkout repo
-        uses: actions/checkout@v7
-
-      - name: 🧰 Setup toolchain
-        uses: ./.github/actions/setup
-
-      - name: 🐘 Setup test database
-        uses: ./.github/actions/setup-test-database
+      # Both suites share one database. Playwright starts from a clean schema,
+      # as it did when it had its own job.
+      - name: 🐘 Reset the test database
+        run: bun run test:db:reset
 
       - name: 🌐 Install Playwright Browsers
         run: bunx playwright install --with-deps chromium
@@ -146,11 +141,13 @@ jobs:
         run: bun run build
 
       - name: 🎭 Playwright Run Chrome
+        id: playwright
         run: bun run test:e2e -- --project=chromium
 
+      # A Vitest failure stops the job before Playwright writes a report.
       - name: 📸 Playwright Screenshots
         uses: actions/upload-artifact@v7
-        if: failure()
+        if: ${{ failure() && steps.playwright.outcome == 'failure' }}
         with:
           name: playwright-report
           path: playwright-report/
@@ -159,6 +156,13 @@ jobs:
   docker:
     name: 🐳 Docker
     runs-on: ubuntu-latest
+    needs: gate
+    # The image repeats what the application code already proved, so it waits
+    # for the nightly run instead of billing a minute on every pull request.
+    if: >-
+      ${{ !cancelled()
+      && github.event_name != 'pull_request'
+      && (github.event_name != 'schedule' || needs.gate.outputs.changed == 'true') }}
     # No toolchain setup: the Dockerfile runs its own `bun install`, and
     # `.dockerignore` excludes `node_modules`, so the runner's install would
     # never reach the image.

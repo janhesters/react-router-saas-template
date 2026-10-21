@@ -945,29 +945,45 @@ when changing the design system.
 
 ### Continuous integration
 
-`.github/workflows/ci.yml` gives every check its own job, so a formatting slip
-and a failing test show up as two red checks instead of one:
+`.github/workflows/ci.yml` runs three jobs:
 
-| Job                  | What it runs                                                        |
-| -------------------- | ------------------------------------------------------------------- |
-| ⬣ Oxlint             | `bun run check:lint`                                                |
-| 🧩 shadcn rules      | `bun run check:shadcn`                                              |
-| 💅 Oxfmt             | `bun run check:format`                                              |
-| ʦ TypeScript         | `bun run typecheck`                                                 |
-| ⚙️ commitlint        | Conventional-commit check over the pull request's commits           |
-| ⚡ Vitest            | `bun run test -- --coverage` against a Postgres service             |
-| 🎭 Playwright Chrome | `bun run test:e2e -- --project=chromium` against a Postgres service |
-| 🐳 Docker            | Builds the image and asserts its Node, Bun, and Prisma versions     |
+| Job       | What it runs                                                                                              |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| 🔬 Checks | `bun run check:lint`, `bun run check:shadcn`, `bun run check:format`, `bun run typecheck`, and commitlint |
+| 🧪 Tests  | `bun run test -- --coverage`, then `bun run test:e2e -- --project=chromium`, against a Postgres service   |
+| 🐳 Docker | Builds the image and asserts its Node, Bun, and Prisma versions                                           |
 
-`bun run lint` chains the first three locally. CI keeps them apart so the first
-failure never hides the rest.
+#### When CI runs
+
+- **On a pull request that is ready for review.** Marking a draft ready starts
+  the run, and each push to a ready pull request starts another. A draft runs
+  no job: every job stays skipped while `pull_request.draft` is true.
+- **Every night at 00:20 UTC** on `main`, which is 02:20 in Zurich in summer
+  and 01:20 in winter. The nightly run adds the Docker job. When `main` still
+  points at the commit the last green nightly run already proved, the 🌙
+  Nightly gate skips the suite and the run ends in seconds.
+- **On demand**, through `workflow_dispatch`. This always runs the full suite,
+  whether or not `main` has changed.
+- **Never on a push to `main` or `dev`.** The merge commit repeats what the
+  pull request's own run already proved.
+
+A runner bills at least a whole minute per job, and every job installs the
+toolchain and the dependencies again. Giving each check its own job buys a
+shorter wall-clock run and pays for it in billed minutes, so checks that share
+one setup share one job. Projects started from this template inherit that
+layout; split a job back out only when its wall time starts to hurt.
+
+Grouping them costs no diagnostics. Every step in the Checks job runs under
+`if: ${{ !cancelled() }}`, so a formatting slip still never hides a type error,
+and the failing step names itself in the job's log. Locally, `bun run validate`
+covers the same checks.
 
 Two composite actions hold the steps those jobs share:
 
 - `.github/actions/setup` installs Node from `.node-version`, Bun from
   `.bun-version`, and dependencies with `bun install --frozen-lockfile`.
 - `.github/actions/setup-test-database` copies `.env.example`, resets the test
-  database schema, and generates types for the two database-backed jobs.
+  database schema, and generates types for the Tests job.
 
 The Docker job uses neither. The Dockerfile runs its own install, and
 `.dockerignore` excludes `node_modules`, `build`, and `.react-router`, so the
@@ -1014,6 +1030,11 @@ Under `.cursor/rules/`, you'll find coding standards that AI follows:
   functional programming patterns, naming conventions, and code organization.
 - **jsx-and-tsx.mdc**: React proven approaches including component patterns, form
   handling, accessibility, and internationalization.
+
+#### Agent instructions
+
+[AGENTS.md](./AGENTS.md) points any coding agent at those rules and at this
+README, and tells it when CI runs.
 
 Learn more about AIDD and SudoLang in
 [The Art of Effortless Programming](https://leanpub.com/effortless-programming)
