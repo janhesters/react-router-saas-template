@@ -9,7 +9,10 @@ import {
   createStripeSubscriptionFactory,
   createStripeSubscriptionScheduleFactory,
 } from "~/features/billing/stripe-factories.server";
-import { stripeHandlers } from "~/test/mocks/handlers/stripe";
+import {
+  interruptedStripeResponse,
+  stripeHandlers,
+} from "~/test/mocks/handlers/stripe";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import { setupUserWithTrialOrgAndAddAsMember } from "~/test/server-test-utils";
 import { prisma } from "~/utils/database.server";
@@ -295,6 +298,39 @@ describe("organization provider cleanup", () => {
       ),
     );
     await expect(cleanupCustomer()).rejects.toThrow("permission_denied");
+  });
+
+  test("keeps customer deletion pending if Stripe cuts off its response and the customer still exists", async () => {
+    server.use(
+      http.get(`${stripeUrl}/customers/:id`, () =>
+        HttpResponse.json(createStripeCustomerFactory({ id: customerId })),
+      ),
+      http.delete(`${stripeUrl}/customers/:id`, interruptedStripeResponse),
+    );
+    await expect(cleanupCustomer()).rejects.toMatchObject({
+      type: "StripeConnectionError",
+    });
+  });
+
+  test("completes customer deletion if Stripe cuts off its response but confirms the customer is deleted", async () => {
+    let deleteRequested = false;
+    server.use(
+      http.get(`${stripeUrl}/customers/:id`, () =>
+        deleteRequested
+          ? HttpResponse.json({
+              deleted: true,
+              id: customerId,
+              object: "customer",
+            })
+          : HttpResponse.json(createStripeCustomerFactory({ id: customerId })),
+      ),
+      http.delete(`${stripeUrl}/customers/:id`, () => {
+        deleteRequested = true;
+        return interruptedStripeResponse();
+      }),
+    );
+    await expect(cleanupCustomer()).resolves.toBeUndefined();
+    expect(deleteRequested).toBe(true);
   });
 
   test("checks Supabase's returned error and accepts successful removal of an already absent object", async () => {

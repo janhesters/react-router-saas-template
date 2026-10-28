@@ -11,7 +11,10 @@ import {
 } from "~/features/billing/stripe-factories.server";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import { supabaseAdminClient } from "~/features/user-authentication/supabase.server";
-import { stripeHandlers } from "~/test/mocks/handlers/stripe";
+import {
+  interruptedStripeResponse,
+  stripeHandlers,
+} from "~/test/mocks/handlers/stripe";
 import { setupMockServerLifecycle } from "~/test/msw-test-utils";
 import { setupUserWithTrialOrgAndAddAsMember } from "~/test/server-test-utils";
 import { prisma } from "~/utils/database.server";
@@ -261,6 +264,46 @@ describe("account provider cleanup", () => {
       );
     }
     expect(update?.get("phases[1][trial_end]")).toEqual(String(now + 200));
+  });
+
+  test("given: Stripe cannot calculate tax for the seat update, should: keep the seat cleanup pending for retry", async () => {
+    const { current, organization } = await setupBilling();
+    server.use(
+      http.post(`${STRIPE_URL}/subscriptions/${current.id}`, () =>
+        HttpResponse.json(
+          {
+            error: {
+              code: "failed_tax_calculation",
+              message: "Tax calculation failed",
+              type: "api_error",
+            },
+          },
+          { headers: { "stripe-should-retry": "false" }, status: 400 },
+        ),
+      ),
+    );
+    await expect(
+      cleanupAccountDeletionResource({
+        kind: "billingSeats",
+        target: organization.id,
+      }),
+    ).rejects.toMatchObject({ code: "failed_tax_calculation" });
+  });
+
+  test("given: Stripe cuts off its response to the seat update, should: keep the seat cleanup pending for retry", async () => {
+    const { current, organization } = await setupBilling();
+    server.use(
+      http.post(
+        `${STRIPE_URL}/subscriptions/${current.id}`,
+        interruptedStripeResponse,
+      ),
+    );
+    await expect(
+      cleanupAccountDeletionResource({
+        kind: "billingSeats",
+        target: organization.id,
+      }),
+    ).rejects.toMatchObject({ type: "StripeConnectionError" });
   });
 
   test("given: an organization already deleted after the account request, should: leave its Stripe cleanup to the organization job", async () => {
