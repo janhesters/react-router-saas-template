@@ -94,6 +94,28 @@ describe("TeamMembersInviteLinkCard component", () => {
     ).toBeInTheDocument();
   });
 
+  test("given: an invite link, should: include the visible URL in the link's accessible name", () => {
+    const { slug } = createPopulatedOrganization();
+    const path = `/organizations/${slug}/settings/team-members`;
+    const href = faker.internet.url();
+    const props = createProps({
+      inviteLink: {
+        expiryDate:
+          createPopulatedOrganizationInviteLink().expiresAt.toISOString(),
+        href,
+      },
+    });
+    const RemixStub = createRoutesStub([
+      { Component: () => <InviteLinkCard {...props} />, path },
+    ]);
+
+    render(<RemixStub initialEntries={[path]} />);
+
+    expect(
+      screen.getByRole("link", { name: /go to the invite link's page/i }),
+    ).toHaveAccessibleName(expect.stringContaining(href));
+  });
+
   test("given: organization is full and no invite link, should: disable form", () => {
     const props = createProps({ organizationIsFull: true });
     const { slug } = createPopulatedOrganization();

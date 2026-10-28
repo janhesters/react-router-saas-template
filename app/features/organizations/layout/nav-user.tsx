@@ -46,13 +46,14 @@ export function NavUser({ user }: NavUserProps) {
           <DropdownMenuTrigger
             render={
               <SidebarMenuButton
-                aria-label={t("userMenuButtonLabel")}
                 // Playwright shouldn't try to click the button before it's hydrated
                 disabled={!hydrated}
                 size="lg"
               />
             }
           >
+            {/* Keep the visible name and email in the accessible name (WCAG 2.5.3). */}
+            <span className="sr-only">{t("userMenuButtonLabel")}</span>
             <Avatar className="h-8 w-8 rounded-lg after:rounded-lg">
               <AvatarImage
                 alt={user.name}
