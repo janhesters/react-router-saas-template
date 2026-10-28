@@ -57,8 +57,8 @@ when you update the template and change or amend its code.
 
 ## Getting started
 
-Install [Node.js 24 LTS](https://nodejs.org/en/download) and
-[Bun 1.4.0](https://bun.com/docs/installation). The repository pins both
+Install [Node.js 26.12.1](https://nodejs.org/en/download) and
+[Bun 1.4.4](https://bun.com/docs/installation). The repository pins both
 versions in `.node-version` and `.bun-version`.
 
 Get the code:
@@ -1208,8 +1208,8 @@ containers racing to change the database during a scaled deployment.
 
 ### Docker deployment
 
-The Docker image uses Bun 1.4.0 for dependency installation and package
-scripts. It includes Node.js 24.19.0 for React's streaming server renderer.
+The Docker image uses Bun 1.4.4 for dependency installation and package
+scripts. It includes Node.js 26.12.1 for React's streaming server renderer.
 
 Build the image with your public URL, apply migrations once, and start the
 server:
