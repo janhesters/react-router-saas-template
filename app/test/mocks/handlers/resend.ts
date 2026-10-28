@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
-import type { HttpHandler } from "msw";
-import { HttpResponse, http } from "msw";
+import type { HttpHandler } from "msw/http";
+import { HttpResponse, http } from "msw/http";
 
 import { requireHeader, writeEmail } from "../utils";
 

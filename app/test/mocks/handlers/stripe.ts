@@ -1,5 +1,5 @@
 /* oxlint-disable typescript/no-non-null-assertion -- test code */
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import type Stripe from "stripe";
 
 import {

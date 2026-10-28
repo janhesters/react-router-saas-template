@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { RequestHandler } from "msw";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 
 import { MOCK_STORAGE_DIR } from "./mock-storage";
 

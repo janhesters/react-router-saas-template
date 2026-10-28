@@ -1,4 +1,4 @@
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import type Stripe from "stripe";
 import { describe, expect, test } from "vitest";
 

@@ -1,4 +1,5 @@
-import { http, passthrough } from "msw";
+import { http } from "msw/http";
+import { passthrough } from "msw/utils/passthrough";
 
 const REMIX_DEV_PING = new URL(
   process?.env?.REMIX_DEV_ORIGIN ?? "http://test-origin",

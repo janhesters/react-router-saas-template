@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { addDays, subSeconds } from "date-fns";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { data } from "react-router";
 import { describe, expect, onTestFinished, test } from "vitest";
 

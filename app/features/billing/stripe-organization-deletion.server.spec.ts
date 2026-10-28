@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import type Stripe from "stripe";
 import { describe, expect, onTestFinished, test, vi } from "vitest";
 

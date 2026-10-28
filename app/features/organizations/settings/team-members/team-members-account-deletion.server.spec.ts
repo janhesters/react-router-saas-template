@@ -1,4 +1,4 @@
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { describe, expect, onTestFinished, test, vi } from "vitest";
 
 import { teamMembersAction } from "./team-members-action.server";

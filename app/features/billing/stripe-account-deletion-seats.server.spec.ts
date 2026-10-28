@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import {
