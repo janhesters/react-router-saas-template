@@ -18,7 +18,7 @@ import { afterAll, afterEach, beforeAll } from "vitest";
  * @example
  * ```ts
  * import { describe, expect, test } from 'vitest';
- * import { http, HttpResponse } from 'msw';
+ * import { http, HttpResponse } from 'msw/http';
  * import { setupMockServerLifecycle } from './test-utils';
  *
  * const handler = http.get('/api/example', () => {

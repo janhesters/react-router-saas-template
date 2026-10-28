@@ -1,5 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
-import { http } from "msw";
+import { http } from "msw/http";
 import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 
 import { action } from "./stripe.webhooks";

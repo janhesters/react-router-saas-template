@@ -1,5 +1,5 @@
 import type { i18n } from "i18next";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { describe, expect, onTestFinished, test } from "vitest";
 
 import {

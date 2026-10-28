@@ -1,4 +1,4 @@
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { afterEach, describe, expect, test, vi } from "vitest";
 
 // sendEmail reads env vars on each call, so stubs work with a static import.

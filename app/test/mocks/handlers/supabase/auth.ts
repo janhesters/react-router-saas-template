@@ -3,7 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { createId } from "@paralleldrive/cuid2";
 import type { RequestHandler } from "msw";
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { z } from "zod";
 
 import { writeEmail } from "../../utils";

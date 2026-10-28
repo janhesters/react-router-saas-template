@@ -2,7 +2,7 @@ import type { RequestHandler } from "msw";
 import type { SetupServer } from "msw/node";
 import { setupServer } from "msw/node";
 
-import { onUnhandledRequest } from "./msw-utils";
+import { onUnhandledFrame } from "./msw-utils";
 import { remixPingHandler } from "./msw-utils.server";
 
 /**
@@ -28,7 +28,7 @@ function setup(handlers: RequestHandler[]) {
 }
 
 function start(server: SetupServer) {
-  server.listen({ onUnhandledRequest });
+  server.listen({ onUnhandledFrame });
   console.info("🔶 MSW mock server running ...");
 
   process.once("SIGINT", () => {
