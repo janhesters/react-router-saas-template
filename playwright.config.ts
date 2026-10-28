@@ -4,6 +4,8 @@ import { defineConfig, devices } from "@playwright/test";
 // and the dev server (webServer.env.TZ).
 process.env.TZ = "UTC";
 
+const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -33,23 +35,32 @@ export default defineConfig({
   testMatch: "*.e2e.ts",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: process.env.APP_URL ?? "http://localhost:3000",
+    baseURL: appUrl,
     timezoneId: "UTC",
     trace: process.env.CI ? "on-first-retry" : "retain-on-failure",
   },
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: process.env.CI ? "bun run start" : "bun run dev",
-    env: {
-      EMAIL_MOCKS: "true",
-      MOCKS: "true",
-      NODE_ENV: "test",
-      TZ: "UTC",
+  webServer: [
+    {
+      command: process.env.CI ? "bun run start" : "bun run dev",
+      env: {
+        EMAIL_MOCKS: "true",
+        MOCKS: "true",
+        NODE_ENV: "test",
+        TZ: "UTC",
+      },
+      reuseExistingServer: !process.env.CI,
+      url: appUrl,
     },
-    reuseExistingServer: !process.env.CI,
-    url: process.env.APP_URL ?? "http://localhost:3000",
-  },
+    {
+      // Serves the app over HTTPS the way Fly.io's edge does in production.
+      command: `bun playwright/tls-terminating-proxy.ts --port 8443 --target ${appUrl}`,
+      ignoreHTTPSErrors: true,
+      reuseExistingServer: !process.env.CI,
+      url: "https://localhost:8443",
+    },
+  ],
   /* Opt out of parallel tests. */
   workers: 1,
 });

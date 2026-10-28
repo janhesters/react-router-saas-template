@@ -11,6 +11,10 @@ COPY package.json bun.lock ./
 RUN --mount=type=cache,target=/root/.bun/install/cache \
     bun install --frozen-lockfile --ignore-scripts
 COPY . .
+# React Router reads these while building to decide which public hosts may
+# submit forms. See "Trusted hosts for forms" in the README.
+ARG APP_URL
+ARG ADDITIONAL_ACTION_ORIGINS
 RUN bun run build
 
 FROM base AS production-dependencies-env

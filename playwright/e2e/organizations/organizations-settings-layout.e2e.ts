@@ -1,6 +1,7 @@
 /* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
+import type { Page } from "@playwright/test";
 
 import { expect, test } from "../../fixtures";
 import {
@@ -8,6 +9,7 @@ import {
   loginAndSaveUserAccountToDatabase,
   setupOrganizationAndLoginAsMember,
 } from "../../utils";
+import { SWITCH_ORGANIZATION_INTENT } from "~/features/organizations/layout/sidebar-layout-constants";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
 import {
   addMembersToOrganizationInDatabaseById,
@@ -157,9 +159,12 @@ test.describe("organization settings layout", () => {
   });
 
   test.describe("organization switcher", () => {
-    test("given: a logged in user who is a member of multiple organizations, should: be able to switch the organization but stay on the same page for the picked organization", async ({
-      page,
-    }) => {
+    // Runs through a local proxy that terminates TLS and forwards plain HTTP,
+    // like Fly.io or Railway. React Router rejects these actions unless
+    // `allowedActionOrigins` lists the proxy's host, `localhost:8443`.
+    test.use({ baseURL: "https://localhost:8443", ignoreHTTPSErrors: true });
+
+    async function setupMemberOfTwoOrganizations({ page }: { page: Page }) {
       const { organization, user } = await setupOrganizationAndLoginAsMember({
         page,
       });
@@ -176,6 +181,15 @@ test.describe("organization settings layout", () => {
         user,
       });
 
+      return { organization, otherOrganization, user };
+    }
+
+    test("given: a logged in user who is a member of multiple organizations, should: be able to switch the organization but stay on the same page for the picked organization", async ({
+      page,
+    }) => {
+      const { organization, otherOrganization, user } =
+        await setupMemberOfTwoOrganizations({ page });
+
       await page.goto(`/organizations/${organization.slug}/settings/general`);
 
       await page
@@ -188,6 +202,42 @@ test.describe("organization settings layout", () => {
         .click();
 
       await expect(page).toHaveURL(
+        `/organizations/${otherOrganization.slug}/settings/general`,
+      );
+
+      await deleteOrganizationFromDatabaseById(otherOrganization.id);
+      await teardownOrganizationAndMember({ organization, user });
+    });
+
+    test("given: a switch request from an untrusted origin, should: reject it while the same request from the app's origin succeeds", async ({
+      page,
+    }) => {
+      const { organization, otherOrganization, user } =
+        await setupMemberOfTwoOrganizations({ page });
+      const currentPath = `/organizations/${organization.slug}/settings/general`;
+      const switchOrganization = (origin: string) =>
+        page.request.post(`/organizations/${organization.slug}`, {
+          form: {
+            currentPath,
+            intent: SWITCH_ORGANIZATION_INTENT,
+            organizationId: otherOrganization.id,
+          },
+          headers: { origin },
+          maxRedirects: 0,
+        });
+
+      const untrustedResponse = await switchOrganization(
+        "https://attacker.example",
+      );
+
+      expect(untrustedResponse.status()).toEqual(400);
+
+      const trustedResponse = await switchOrganization(
+        "https://localhost:8443",
+      );
+
+      expect(trustedResponse.status()).toEqual(302);
+      expect(trustedResponse.headers().location).toEqual(
         `/organizations/${otherOrganization.slug}/settings/general`,
       );
 
