@@ -1,0 +1,64 @@
+# PR #167 screenshots, review 1
+
+Invented data. Captured from production builds of main (1932e2e) and of the PR head, against the same seeded database, with reduced motion on.
+
+| Screen | Pixels that differ |
+| --- | --- |
+| account-dark-desktop | 0 |
+| account-dark-narrow | 0 |
+| account-light-desktop | 0 |
+| account-light-narrow | 0 |
+| contact-sales-dark-desktop | 0 |
+| contact-sales-dark-narrow | 0 |
+| contact-sales-light-desktop | 0 |
+| contact-sales-light-narrow | 0 |
+| dashboard-dark-desktop | 0 |
+| dashboard-dark-narrow | 0 |
+| dashboard-light-desktop | 0 |
+| dashboard-light-narrow | 0 |
+| landing-dark-desktop | 0 |
+| landing-dark-narrow | 0 |
+| landing-light-desktop | 0 |
+| landing-light-narrow | 0 |
+| login-dark-desktop | 17.3791 |
+| login-dark-narrow | 0 |
+| login-invalid-dark-desktop | 0 |
+| login-invalid-dark-narrow | 0 |
+| login-invalid-light-desktop | 0 |
+| login-invalid-light-narrow | 0 |
+| login-light-desktop | 23.2092 |
+| login-light-narrow | 0 |
+| onboarding-user-account-dark-desktop | 6524.1 |
+| onboarding-user-account-dark-narrow | 0 |
+| onboarding-user-account-light-desktop | 1779.95 |
+| onboarding-user-account-light-narrow | 0 |
+| organizations-new-dark-desktop | 0 |
+| organizations-new-dark-narrow | 0 |
+| organizations-new-light-desktop | 0 |
+| organizations-new-light-narrow | 0 |
+| org-switcher-open-dark-desktop | 0 |
+| org-switcher-open-light-desktop | 0 |
+| pricing-dark-desktop | 0 |
+| pricing-dark-narrow | 0 |
+| pricing-light-desktop | 0 |
+| pricing-light-narrow | 0 |
+| register-dark-desktop | 26.3621 |
+| register-dark-narrow | 0 |
+| register-light-desktop | 24.2366 |
+| register-light-narrow | 0 |
+| settings-billing-dark-desktop | 0 |
+| settings-billing-dark-narrow | 0 |
+| settings-billing-light-desktop | 0 |
+| settings-billing-light-narrow | 0 |
+| settings-billing-manage-plan-dark-desktop | 0 |
+| settings-billing-manage-plan-dark-narrow | 0 |
+| settings-billing-manage-plan-light-desktop | 0 |
+| settings-billing-manage-plan-light-narrow | 0 |
+| settings-general-dark-desktop | 0 |
+| settings-general-dark-narrow | 0 |
+| settings-general-light-desktop | 0 |
+| settings-general-light-narrow | 0 |
+| settings-members-dark-desktop | 0 |
+| settings-members-dark-narrow | 0 |
+| settings-members-light-desktop | 0 |
+| settings-members-light-narrow | 0 |
