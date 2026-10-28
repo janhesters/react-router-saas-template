@@ -137,8 +137,12 @@ jobs:
       - name: 🌐 Install Playwright Browsers
         run: bunx playwright install --with-deps chromium
 
+      # Trusts the HTTPS proxy that the organization switcher tests run
+      # through. Only test builds may trust it.
       - name: 🏗️ Build application
         run: bun run build
+        env:
+          ADDITIONAL_ACTION_ORIGINS: localhost:8443
 
       - name: 🎭 Playwright Run Chrome
         id: playwright

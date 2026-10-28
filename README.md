@@ -859,6 +859,22 @@ for selecting elements on the page semantically.
 To run these tests in development, run `bun run test:e2e` which will start the
 dev server for the app as well as the Playwright client.
 
+Playwright also starts `playwright/tls-terminating-proxy.ts`. It serves the app
+over HTTPS on `localhost:8443` and forwards plain HTTP to it, the way Fly.io or
+Railway do in production. The organization switcher tests run through it. On
+the production server, they fail when the
+[trusted hosts for forms](#trusted-hosts-for-forms) are missing. The dev server
+trusts the proxy's `X-Forwarded-Proto` header, so only a production build can
+show this. To run the suite against the production server, as CI does, build
+with the proxy's host trusted first:
+
+```bash
+ADDITIONAL_ACTION_ORIGINS=localhost:8443 bun run build
+CI=1 bun run test:e2e
+```
+
+Only test builds trust `localhost:8443`. Leave it out of every deployment.
+
 > **Note:** You might need to run `bunx playwright install` to install the
 > Playwright browsers before running your tests for the first time.
 
@@ -1195,10 +1211,11 @@ containers racing to change the database during a scaled deployment.
 The Docker image uses Bun 1.4.0 for dependency installation and package
 scripts. It includes Node.js 24.19.0 for React's streaming server renderer.
 
-Build the image, apply migrations once, and start the server:
+Build the image with your public URL, apply migrations once, and start the
+server:
 
 ```bash
-docker build --tag my-app .
+docker build --build-arg APP_URL=https://example.com --tag my-app .
 docker run --rm --env-file .env my-app bun run prisma:deploy
 docker run --env-file .env --publish 3000:3000 my-app
 ```
@@ -1206,7 +1223,9 @@ docker run --env-file .env --publish 3000:3000 my-app
 The final image includes the Prisma CLI, `prisma.config.ts`, the schema, and your
 committed migrations. Environment files stay outside the Docker build context.
 The public Supabase values are injected into the page at runtime, so Docker does
-not need build arguments for them.
+not need build arguments for them. `APP_URL` and `ADDITIONAL_ACTION_ORIGINS` are
+the exception: the build reads them to decide which hosts may submit forms. See
+[trusted hosts for forms](#trusted-hosts-for-forms).
 
 For Railway, import the GitHub repository and let Railway detect the Dockerfile.
 Add the runtime variables from `.env.example`, except `TEST_DATABASE_URL`. Set
@@ -1219,7 +1238,10 @@ bun run prisma:deploy
 
 After Railway creates the public domain, set `APP_URL` to that full HTTPS URL.
 Update the Supabase Site URL and the three allowed redirect URLs documented
-above, then redeploy.
+above, then redeploy. Railway passes a variable to the Docker build when the
+Dockerfile declares it with `ARG`, as this one does for `APP_URL` and
+`ADDITIONAL_ACTION_ORIGINS`. The redeploy rebuilds the image, so forms then work
+on the new domain.
 
 You can run the same image on any platform that supports Docker, including:
 
@@ -1236,7 +1258,9 @@ If you're familiar with deploying Node applications, the built-in app server is
 production-ready.
 
 Run `bun install --frozen-lockfile`, `bun run build`, and
-`bun run prisma:deploy` during the release. Deploy these files:
+`bun run prisma:deploy` during the release. Set `APP_URL`, and
+`ADDITIONAL_ACTION_ORIGINS` if you need it, before the build. See
+[trusted hosts for forms](#trusted-hosts-for-forms). Deploy these files:
 
 ```
 ├── package.json
@@ -1248,6 +1272,42 @@ Run `bun install --frozen-lockfile`, `bun run build`, and
 ├── prisma/
 └── prisma.config.ts
 ```
+
+### Trusted hosts for forms
+
+React Router rejects a form submission when the browser's `Origin` header
+doesn't match the request URL. This stops other sites from submitting forms in
+your users' names, which is called cross-site request forgery.
+
+Platforms like Fly.io, Railway, and Google Cloud Run put a proxy in front of the
+app. The browser talks HTTPS to the proxy, and the proxy forwards plain HTTP to
+the app. `react-router-serve` doesn't trust the proxy's `X-Forwarded-Proto`
+header, so it sees `http://` request URLs while the browser sends
+`Origin: https://...`. React Router then answers every form, including login and
+registration, with `400 Bad Request`, unless the host is trusted. See
+[issue #161](https://github.com/janhesters/react-router-saas-template/issues/161).
+
+`react-router.config.ts` trusts exactly these hosts, and no others:
+
+- The host of `APP_URL`, including its port, such as `example.com` for
+  `https://example.com`.
+- Each host in `ADDITIONAL_ACTION_ORIGINS`, a comma-separated list of the other
+  public hosts that serve the same app, such as
+  `www.example.com,my-app.fly.dev`.
+
+Both are read when you **build** the app, not when it starts. Set them in the
+build environment, and rebuild after you change them:
+
+```bash
+APP_URL=https://example.com ADDITIONAL_ACTION_ORIGINS=www.example.com bun run build
+```
+
+List every public host that serves the app, or forms on the missing host return
+`400`. Without `APP_URL`, the build trusts only `localhost:3000`, for local
+development. The build fails when `APP_URL` isn't a full `http` or `https` URL
+or its host is a wildcard such as `*.example.com`. It also fails when an
+`ADDITIONAL_ACTION_ORIGINS` entry has a scheme, a path, or a wildcard. Each host
+must name one host you control.
 
 ## Maintenance
 
