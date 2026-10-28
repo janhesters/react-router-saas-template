@@ -88,10 +88,8 @@ export function InviteLinkCard({
         <>
           <CardContent>
             <div className="relative">
-              {/* oxlint-disable-next-line jsx-a11y/anchor-has-content -- the a tag has an aria-label */}
               <a
                 aria-describedby="link-expiration-warning"
-                aria-label={t("goToLink")}
                 className={cn(
                   inputClassName,
                   "flex items-center pr-12 read-only:cursor-pointer read-only:opacity-100",
@@ -101,9 +99,9 @@ export function InviteLinkCard({
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                <span aria-hidden="true" className="w-full truncate">
-                  {inviteLink.href}
-                </span>
+                {/* Keep the visible URL in the accessible name (WCAG 2.5.3). */}
+                <span className="sr-only">{t("goToLink")}</span>
+                <span className="w-full truncate">{inviteLink.href}</span>
               </a>
 
               <Button

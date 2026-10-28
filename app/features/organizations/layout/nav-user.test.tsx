@@ -44,6 +44,27 @@ describe("NavUser Component", () => {
     ).not.toBeInTheDocument();
   });
 
+  test("given: user data, should: include the visible name and email in the user menu button's accessible name", () => {
+    const props = createProps();
+    const { user } = props;
+    const path = "/test";
+    const RouterStub = createRoutesStub([
+      { Component: () => <NavUser {...props} />, path },
+    ]);
+
+    render(
+      <SidebarProvider>
+        <RouterStub initialEntries={[path]} />
+      </SidebarProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /open user menu/i }),
+    ).toHaveAccessibleName(
+      expect.stringContaining(`${user.name} ${user.email}`),
+    );
+  });
+
   test("given: user data, should: render avatar fallback with initials when avatar fails to load", () => {
     const props = createProps({
       user: createUser({ avatar: "invalid-url" }),
