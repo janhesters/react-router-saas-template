@@ -1,6 +1,6 @@
 import { parseSubmission, report } from "@conform-to/react/future";
+import type { ParseFormDataOptions } from "@remix-run/form-data-parser";
 import { parseFormData } from "@remix-run/form-data-parser";
-import type { MultipartParserOptions } from "@remix-run/multipart-parser";
 import type * as z from "zod";
 
 import { badRequest } from "./http-responses.server";
@@ -10,7 +10,7 @@ import { badRequest } from "./http-responses.server";
  *
  * @param request - The HTTP request containing the form data to validate
  * @param schema - A Zod schema to validate the form data against
- * @param parserOptions - Optional multipart parser options for handling file
+ * @param parserOptions - Optional form data parser options for handling file
  * uploads
  * @returns A result object with either `{ success: true, data: T, submission: Submission }` on success
  * or `{ success: false, response: Response }` on validation failure
@@ -42,7 +42,7 @@ import { badRequest } from "./http-responses.server";
 export async function validateFormData<T extends z.ZodTypeAny>(
   request: Request,
   schema: T,
-  parserOptions?: MultipartParserOptions,
+  parserOptions?: ParseFormDataOptions,
 ) {
   const formData = parserOptions
     ? await parseFormData(request, parserOptions)
