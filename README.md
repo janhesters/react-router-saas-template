@@ -371,7 +371,7 @@ Learn more about Stripe testing [here](https://docs.stripe.com/testing).
 In a new terminal, forward webhooks to your local server:
 
 ```bash
-stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks
+stripe listen --latest --forward-to http://localhost:3000/api/v1/stripe/webhooks
 ```
 
 Keep this terminal open. This will print out your local webhook secret. You'll
@@ -386,6 +386,58 @@ You can manage your products and prices in the Stripe Dashboard.
    grab the API keys:
 
 - `STRIPE_SECRET_KEY` - The secret key of your Stripe account.
+
+#### API version
+
+The app uses the `stripe` SDK 23.0.1. Every request it sends to Stripe uses the
+API version `2026-09-30.endive`. `STRIPE_API_VERSION` in
+`app/features/billing/stripe-admin.server.ts` sets it. That is the version the
+SDK's TypeScript types describe. Your account's default API version does not
+change these requests.
+
+Webhook events work differently. Stripe formats each event in the API version
+of the endpoint that receives it, not in the version of the app's requests. The
+webhook handlers read only fields that both `2026-09-30.endive` and the previous
+`2026-08-26.dahlia` contain. The tests send events in both shapes, so an
+endpoint on either version keeps working after you deploy.
+
+When you upgrade `stripe`, type checking fails at `STRIPE_API_VERSION` until
+you set it to the new SDK's version. Read the SDK and API changelogs, then
+adapt the handlers, factories, and tests to what changed.
+
+Locally, `stripe listen` formats events in your account's default API version.
+Add `--latest` to get the newest API version. That matches `STRIPE_API_VERSION`
+while `2026-09-30.endive` is Stripe's newest version:
+
+```bash
+stripe listen --latest --forward-to http://localhost:3000/api/v1/stripe/webhooks
+```
+
+##### Keep a deployed webhook endpoint on its version
+
+Deploying this version needs no change to an existing webhook endpoint. Keep
+the endpoint, its API version, and its `STRIPE_WEBHOOK_SECRET`. When you create
+a new endpoint, choose the API version `2026-09-30.endive`.
+
+Don't move an existing endpoint to Endive by adding a second endpoint yet.
+Stripe can't change an endpoint's API version, so a move needs a second endpoint
+with its own signing secret, and the app checks only one secret:
+
+- While both endpoints exist, Stripe queues every delivery that the app
+  rejects and retries it later, in any order. A delayed
+  `customer.subscription.updated` event then overwrites newer billing state,
+  such as a cancellation, because the app saves each subscription snapshot as
+  it arrives.
+- Disabling the old endpoint ends the retries of its earlier failed deliveries.
+  A pending `checkout.session.completed` event, for example, then never reaches
+  the app.
+
+A safe move first needs app support that this template doesn't have: checking
+each endpoint with its own secret, ignoring the events of the endpoint that
+isn't in charge, and resolving the old endpoint's failed deliveries before you
+disable it. Stripe's
+[webhook versioning guide](https://docs.stripe.com/webhooks/versioning) shows
+how to run both endpoints side by side.
 
 #### Pricing
 
@@ -420,7 +472,7 @@ Do a fuzzy search for these limits.
 
 For local development, run your app with `bun run dev` and forward webhooks to
 your local server with
-`stripe listen --forward-to http://localhost:3000/api/v1/stripe/webhooks`.
+`stripe listen --latest --forward-to http://localhost:3000/api/v1/stripe/webhooks`.
 
 For production, follow the same instructions, but use the production URL of your
 app and make sure your app is deployed so it will accept the webhooks of the
