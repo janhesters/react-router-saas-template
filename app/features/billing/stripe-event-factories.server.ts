@@ -4,6 +4,7 @@ import type { Stripe } from "stripe";
 
 import { createPopulatedOrganization } from "../organizations/organizations-factories.server";
 import { createPopulatedUserAccount } from "../user-accounts/user-accounts-factories.server";
+import { STRIPE_API_VERSION } from "./stripe-admin.server";
 import {
   createStripeCheckoutSessionFactory,
   createStripeCustomerFactory,
@@ -20,7 +21,7 @@ import type { Factory } from "~/utils/types";
 export const createStripeEventFactory: Factory<
   Omit<Stripe.Event, "data" | "type">
 > = ({
-  api_version = "2025-04-30.basil",
+  api_version = STRIPE_API_VERSION,
   created = Math.floor(faker.date.recent({ days: 10 }).getTime() / 1000),
   id = `evt_${createId()}`,
   livemode = false,
@@ -45,6 +46,14 @@ export const createStripeCheckoutSessionCompletedEventFactory: Factory<
 > = ({
   data = { object: createStripeCheckoutSessionFactory() },
   type = "checkout.session.completed",
+  ...rest
+} = {}) => ({ ...createStripeEventFactory(rest), data, type });
+
+export const createStripeCustomerCreatedEventFactory: Factory<
+  Stripe.CustomerCreatedEvent
+> = ({
+  data = { object: createStripeCustomerFactory() },
+  type = "customer.created",
   ...rest
 } = {}) => ({ ...createStripeEventFactory(rest), data, type });
 
@@ -202,3 +211,52 @@ export const createStripeSubscriptionScheduleUpdatedEventFactory: Factory<
   type = "subscription_schedule.updated",
   ...rest
 } = {}) => ({ ...createStripeEventFactory(rest), data, type });
+
+/**
+ * A webhook endpoint renders events at the API version it was created with,
+ * not at the version this app sends requests with. Until the endpoint moves to
+ * `STRIPE_API_VERSION`, Stripe keeps delivering the shapes below. They are the
+ * `2026-08-26.dahlia` objects that stripe 22 described: the current factories
+ * without the fields that `2026-09-30.endive` added.
+ */
+export const PREVIOUS_STRIPE_API_VERSION = "2026-08-26.dahlia";
+
+/**
+ * Relabels an event and replaces its object with an older-version object.
+ */
+export const toPreviousApiEvent = <Event extends Stripe.Event, PreviousObject>(
+  event: Event,
+  object: PreviousObject,
+) => ({
+  ...event,
+  api_version: PREVIOUS_STRIPE_API_VERSION,
+  data: { ...event.data, object },
+});
+
+export const toPreviousApiCheckoutSession = ({
+  allowed_payment_method_types: _allowedPaymentMethodTypes,
+  ...session
+}: Stripe.Checkout.Session) => session;
+
+export const toPreviousApiProduct = ({
+  tax_details: _taxDetails,
+  ...product
+}: Stripe.Product) => product;
+
+export const toPreviousApiSubscription = ({
+  items,
+  trial_settings,
+  ...subscription
+}: Stripe.Subscription) => ({
+  ...subscription,
+  items: {
+    ...items,
+    data: items.data.map(({ current_trial: _currentTrial, ...item }) => item),
+  },
+  trial_settings: trial_settings && {
+    end_behavior: {
+      missing_payment_method:
+        trial_settings.end_behavior.missing_payment_method,
+    },
+  },
+});

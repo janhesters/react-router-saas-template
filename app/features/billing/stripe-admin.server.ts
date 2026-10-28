@@ -29,7 +29,19 @@ const isTestEnvironment = Boolean(process.env.MOCKS ?? process.env.VITEST);
  */
 const passthroughFetch = (...args: Parameters<typeof fetch>) => fetch(...args);
 
+/**
+ * The API version every request uses, independent of the account's default.
+ *
+ * It must equal the version this SDK release's types describe. Upgrading the
+ * `stripe` package fails type checking here until you move this pin to the new
+ * release's version and migrate the code that its changelog affects.
+ *
+ * See: https://docs.stripe.com/api/versioning
+ */
+export const STRIPE_API_VERSION = "2026-09-30.endive";
+
 export const stripeAdmin = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: STRIPE_API_VERSION,
   httpClient: isTestEnvironment
     ? Stripe.createFetchHttpClient(passthroughFetch)
     : undefined,

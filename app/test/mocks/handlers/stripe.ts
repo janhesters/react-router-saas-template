@@ -12,6 +12,21 @@ import {
   createStripeSubscriptionScheduleFactory,
 } from "~/features/billing/stripe-factories.server";
 
+/**
+ * A response that Stripe started to send but never finished, as when the
+ * connection drops mid-body. Stripe may have applied the request.
+ */
+export const interruptedStripeResponse = () =>
+  new HttpResponse(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('{"id":"'));
+        controller.error(new Error("socket hang up"));
+      },
+    }),
+    { headers: { "Content-Type": "application/json" }, status: 200 },
+  );
+
 const cancelSubscriptionMock = http.post(
   "https://api.stripe.com/v1/subscriptions/:subscriptionId/cancel",
   ({ params }) => {
@@ -64,32 +79,14 @@ const createCheckoutSessionMock = http.post(
       if (m) metadata[m[1]!] = value;
     }
 
-    // parse line_items[0][price] & line_items[0][quantity], etc.
-    const itemsMap: Record<number, { price?: string; quantity?: number }> = {};
-    for (const [key, value] of params.entries()) {
-      const m = /^line_items\[(\d+)]\[(price|quantity)]$/.exec(key);
-      if (m) {
-        const index = Number(m[1]);
-        itemsMap[index] = itemsMap[index] ?? {};
-        if (m[2] === "price") itemsMap[index].price = value;
-        else itemsMap[index].quantity = Number(value);
-      }
-    }
-    const line_items = Object.values(itemsMap).map((it) => ({
-      price: it.price!,
-      quantity: it.quantity!,
-    }));
-
+    // Stripe returns `line_items` only when the request expands them, and the
+    // app does not.
     const session = createStripeCheckoutSessionFactory({
       cancel_url,
       customer,
-      // @ts-expect-error - TODO: fix this
-      line_items,
       metadata,
       mode,
       success_url,
-      // if your tests inspect the items list, you can override:
-      // line_items: { object: 'list', data: line_items, has_more: false, url: '/v1/checkout/sessions/…' }
     });
 
     return HttpResponse.json(session);
@@ -369,16 +366,17 @@ const updateSubscriptionMock = http.post(
       overrides.cancel_at_period_end = cancelFlag === "true";
     }
     if (qty !== null) {
+      const price = paramsMap.get("items[0][price]");
       overrides.items = {
         data: [
-          {
-            id: `si_${subscriptionId}`,
-            // @ts-expect-error - TODO: fix this
-            price: paramsMap.get("items[0][price]")!,
+          createStripeSubscriptionItemFactory({
+            id: paramsMap.get("items[0][id]") ?? `si_${subscriptionId}`,
+            ...(price
+              ? { price: createStripePriceFactory({ id: price }) }
+              : {}),
             quantity: Number(qty),
             subscription: subscriptionId,
-            // minimal required fields…
-          },
+          }),
         ],
         has_more: false,
         object: "list",

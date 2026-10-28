@@ -27,6 +27,7 @@ export const createStripeProductFactory: Factory<Stripe.Product> = ({
   shippable = null,
   statement_descriptor = null,
   tax_code = "txcd_10103001",
+  tax_details = { performance_location: null, tax_code: "txcd_10103001" },
   type = "service",
   unit_label = "seat",
   updated = created,
@@ -47,6 +48,7 @@ export const createStripeProductFactory: Factory<Stripe.Product> = ({
   shippable,
   statement_descriptor,
   tax_code,
+  tax_details,
   type,
   unit_label,
   updated,
@@ -212,6 +214,7 @@ export const createStripeSubscriptionItemFactory: Factory<
   // realistic created within last 5 days
   created = Math.floor(faker.date.recent({ days: 5 }).getTime() / 1000),
   current_period_start = created,
+  current_trial = null,
   discounts = [],
   metadata = {},
   plan = {} as Stripe.Plan, // deprecated in favor of price
@@ -230,6 +233,7 @@ export const createStripeSubscriptionItemFactory: Factory<
   created,
   current_period_end,
   current_period_start,
+  current_trial,
   discounts,
   id,
   metadata,
@@ -312,6 +316,7 @@ export const createStripeSubscriptionFactory: Factory<Stripe.Subscription> = ({
   trial_end = null,
   trial_settings = {
     end_behavior: {
+      billing_cycle_anchor: null,
       missing_payment_method:
         "create_invoice" as Stripe.Subscription.TrialSettings.EndBehavior.MissingPaymentMethod,
     },
@@ -392,6 +397,7 @@ export const createStripeCheckoutSessionFactory: Factory<
   adaptive_pricing = null,
   after_expiration = null,
   allow_promotion_codes = null,
+  allowed_payment_method_types = null,
   amount_subtotal = faker.number.int({ max: 100_000, min: 1000 }),
   amount_total = amount_subtotal,
   automatic_tax = {
@@ -510,6 +516,7 @@ export const createStripeCheckoutSessionFactory: Factory<
   adaptive_pricing,
   after_expiration,
   allow_promotion_codes,
+  allowed_payment_method_types,
   amount_subtotal,
   amount_total,
   automatic_tax,
