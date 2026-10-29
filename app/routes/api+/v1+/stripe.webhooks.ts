@@ -1,4 +1,5 @@
 import type { Route } from "./+types/stripe.webhooks";
+import { summarizeStripeEvent } from "~/features/billing/billing-helpers.server";
 import { stripeAdmin } from "~/features/billing/stripe-admin.server";
 import {
   handleStripeChargeDisputeClosedEvent,
@@ -132,10 +133,9 @@ export async function action({ request }: Route.ActionArgs) {
         return json({ message: "OK" });
       }
       default: {
-        console.log("Stripe webhook unhandled event type:", event.type);
         console.log(
-          "Stripe webhook payload:",
-          JSON.stringify(payload, null, 2),
+          "Stripe webhook unhandled event:",
+          summarizeStripeEvent(event),
         );
 
         return json({ message: `Unhandled event type: ${event.type}` });

@@ -3,6 +3,7 @@ import type { Stripe } from "stripe";
 import { recordDeletedOrganizationCustomer } from "../organizations/deletion/organization-deletion.server";
 import { withOrganizationMutationLock } from "../organizations/deletion/organization-mutation-lock.server";
 import { updateOrganizationInDatabaseById } from "../organizations/organizations-model.server";
+import { summarizeStripeEvent } from "./billing-helpers.server";
 import { updateStripeCustomer } from "./stripe-helpers.server";
 import {
   deleteStripePriceFromDatabaseById,
@@ -81,13 +82,9 @@ async function saveSubscription(
   return saved;
 }
 
-const prettyPrint = (event: Stripe.Event) => {
-  console.log(
-    `unhandled Stripe event: ${event.type}`,
-    process.env.NODE_ENV === "development"
-      ? JSON.stringify(event, null, 2)
-      : "event not logged in production mode - look it up in the Stripe Dashboard",
-  );
+// Find the event's contents in the Stripe Dashboard by its logged ID.
+const logEventSummary = (event: Stripe.Event) => {
+  console.log("unhandled Stripe event:", summarizeStripeEvent(event));
 };
 
 export const handleStripeChargeDisputeClosedEvent = async (
@@ -141,7 +138,7 @@ export const handleStripeChargeDisputeClosedEvent = async (
       cancelled.id,
     );
   } catch (error) {
-    prettyPrint(event);
+    logEventSummary(event);
     console.error(
       "Error cancelling subscription on dispute.closed",
       getErrorMessage(error),
@@ -188,11 +185,11 @@ export const handleStripeCheckoutSessionCompletedEvent = async (
       });
     } else {
       console.error("No organization ID found in checkout session metadata");
-      prettyPrint(event);
+      logEventSummary(event);
     }
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error(
       "Error handling Stripe checkout session completed event",
       message,
@@ -260,11 +257,11 @@ export const handleStripeCustomerDeletedEvent = async (
         });
       });
     } else {
-      prettyPrint(event);
+      logEventSummary(event);
     }
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error handling Stripe customer deleted event", message);
   }
 
@@ -286,7 +283,7 @@ export const handleStripeCustomerSubscriptionCreatedEvent = async (
     });
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error creating Stripe subscription", message);
     return retry();
   }
@@ -301,7 +298,7 @@ export const handleStripeCustomerSubscriptionDeletedEvent = async (
     await updateStripeSubscriptionFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating deleted Stripe subscription", message);
   }
 
@@ -323,7 +320,7 @@ export const handleStripeCustomerSubscriptionUpdatedEvent = async (
     });
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating Stripe subscription", message);
     return retry();
   }
@@ -338,7 +335,7 @@ export const handleStripePriceCreatedEvent = async (
     await saveStripePriceFromAPIToDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error creating Stripe price", message);
   }
 
@@ -352,7 +349,7 @@ export const handleStripePriceDeletedEvent = async (
     await deleteStripePriceFromDatabaseById(event.data.object.id);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error deleting Stripe price", message);
   }
 
@@ -366,7 +363,7 @@ export const handleStripePriceUpdatedEvent = async (
     await updateStripePriceFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating Stripe price", message);
   }
 
@@ -380,7 +377,7 @@ export const handleStripeProductCreatedEvent = async (
     await saveStripeProductFromAPIToDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error creating Stripe product", message);
   }
 
@@ -394,7 +391,7 @@ export const handleStripeProductDeletedEvent = async (
     await deleteStripeProductFromDatabaseById(event.data.object.id);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error deleting Stripe product", message);
   }
 
@@ -408,7 +405,7 @@ export const handleStripeProductUpdatedEvent = async (
     await updateStripeProductFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating Stripe product", message);
   }
 
@@ -422,7 +419,7 @@ export const handleStripeSubscriptionScheduleCreatedEvent = async (
     await saveStripeSubscriptionScheduleFromAPIToDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error creating Stripe subscription schedule", message);
   }
 
@@ -436,7 +433,7 @@ export const handleStripeSubscriptionScheduleExpiringEvent = async (
     await updateStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating Stripe subscription schedule", message);
   }
 
@@ -450,7 +447,7 @@ export const handleStripeSubscriptionScheduleUpdatedEvent = async (
     await updateStripeSubscriptionScheduleFromAPIInDatabase(event.data.object);
   } catch (error) {
     const message = getErrorMessage(error);
-    prettyPrint(event);
+    logEventSummary(event);
     console.error("Error updating Stripe subscription schedule", message);
   }
 
