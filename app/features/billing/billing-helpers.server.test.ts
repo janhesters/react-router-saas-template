@@ -18,8 +18,11 @@ import {
   extractBaseUrl,
   getCreateSubscriptionModalProps,
   mapStripeSubscriptionDataToBillingPageProps,
+  summarizeStripeEvent,
 } from "./billing-helpers.server";
 import type { BillingPageProps } from "./billing-page";
+import { createStripeCustomerDeletedEventFactory } from "./stripe-event-factories.server";
+import { createStripeCustomerFactory } from "./stripe-factories.server";
 import { StripePriceInterval } from "~/generated/client";
 
 describe.skipIf(!!process.env.CI)(
@@ -393,4 +396,46 @@ describe("getCreateSubscriptionModalProps()", () => {
       },
     });
   });
+});
+
+describe("summarizeStripeEvent()", () => {
+  test("given: an event with customer details and metadata, should: return only its ID and type", () => {
+    const event = createStripeCustomerDeletedEventFactory({
+      data: {
+        object: createStripeCustomerFactory({
+          email: "ada.sentinel@example.com",
+          metadata: { internalNote: "sentinel-metadata-secret" },
+          name: "Ada Sentinel",
+        }),
+      },
+    });
+
+    const actual = summarizeStripeEvent(event);
+    const expected = { id: event.id, type: "customer.deleted" };
+
+    expect(actual).toEqual(expected);
+  });
+
+  test.each([
+    { event: {}, expected: {}, name: "no ID and no type" },
+    {
+      event: { id: { nested: "sentinel-nested-id" }, type: "invoice.paid" },
+      expected: { type: "invoice.paid" },
+      name: "an object-valued ID",
+    },
+    {
+      event: { id: 42, type: { nested: "sentinel-nested-type" } },
+      expected: {},
+      name: "a numeric ID and an object-valued type",
+    },
+    { event: { id: null, type: null }, expected: {}, name: "null fields" },
+  ])(
+    "given: $name, should: omit the fields which are not strings",
+    ({ event, expected }) => {
+      const actual = summarizeStripeEvent(event);
+
+      expect(actual).toEqual(expected);
+      expect(JSON.stringify(actual)).not.toContain("sentinel");
+    },
+  );
 });

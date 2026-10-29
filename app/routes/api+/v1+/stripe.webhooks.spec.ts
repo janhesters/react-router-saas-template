@@ -2,7 +2,7 @@ import { createId } from "@paralleldrive/cuid2";
 import { http } from "msw/http";
 import { afterEach, describe, expect, onTestFinished, test, vi } from "vitest";
 
-import { action } from "./stripe.webhooks";
+import { action, loader } from "./stripe.webhooks";
 import {
   STRIPE_API_VERSION,
   stripeAdmin,
@@ -10,8 +10,10 @@ import {
 import {
   createStripeCheckoutSessionCompletedEventFactory,
   createStripeCustomerCreatedEventFactory,
+  createStripeCustomerDeletedEventFactory,
   createStripeCustomerSubscriptionCreatedEventFactory,
   createStripeCustomerSubscriptionUpdatedEventFactory,
+  createStripeEventFactory,
   createStripeProductCreatedEventFactory,
   PREVIOUS_STRIPE_API_VERSION,
   toPreviousApiCheckoutSession,
@@ -28,6 +30,7 @@ import {
   createStripeSubscriptionItemFactory,
 } from "~/features/billing/stripe-factories.server";
 import { createPopulatedOrganization } from "~/features/organizations/organizations-factories.server";
+import { captureConsole } from "~/test/console-test-utils";
 import {
   interruptedStripeResponse,
   stripeHandlers,
@@ -138,6 +141,76 @@ const retrieveSubscription = (stripeId: string) =>
     include: { items: true },
     where: { stripeId },
   });
+
+// Invented customer and payment details which must never reach a log.
+const privateDetails = {
+  cardFingerprint: "fp_SentinelCardFingerprint",
+  city: "Sentinelburg",
+  clientSecret: "pi_sentinel_secret_SentinelClientSecret",
+  email: "ada.sentinel@example.com",
+  line1: "17 Sentinel Lane",
+  metadataSecret: "sentinel-metadata-secret",
+  name: "Ada Sentinel",
+};
+
+// The route has no case for this event type, so it reaches the default branch.
+const createUnhandledPaymentFailedEvent = () => {
+  const address = {
+    city: privateDetails.city,
+    country: "CH",
+    line1: privateDetails.line1,
+    line2: null,
+    postal_code: "8000",
+    state: null,
+  };
+  return {
+    ...createStripeEventFactory(),
+    data: {
+      object: {
+        amount: 4900,
+        client_secret: privateDetails.clientSecret,
+        currency: "chf",
+        customer: `cus_${createId()}`,
+        id: `pi_${createId()}`,
+        last_payment_error: {
+          code: "card_declined",
+          payment_method: {
+            billing_details: {
+              address,
+              email: privateDetails.email,
+              name: privateDetails.name,
+            },
+            card: {
+              brand: "visa",
+              exp_month: 4,
+              exp_year: 2031,
+              fingerprint: privateDetails.cardFingerprint,
+              last4: "4242",
+            },
+            id: `pm_${createId()}`,
+            object: "payment_method",
+          },
+        },
+        metadata: { internalNote: privateDetails.metadataSecret },
+        object: "payment_intent",
+        receipt_email: privateDetails.email,
+        shipping: { address, name: privateDetails.name },
+        status: "requires_payment_method",
+      },
+    },
+    type: "payment_intent.payment_failed",
+  };
+};
+
+// Pretty-printed like a hand-written body, so a re-serialized body would no
+// longer match its signature.
+const formatted = (event: object) => JSON.stringify(event, null, 2);
+
+const expectNoPrivateDetails = (output: string) => {
+  for (const value of Object.values(privateDetails)) {
+    expect(output).not.toContain(value);
+  }
+};
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -293,6 +366,152 @@ describe(`${pattern} route action`, () => {
       expect(
         await prisma.stripeProduct.count({ where: { stripeId: product.id } }),
       ).toEqual(1);
+    });
+
+    test("given: no stripe-signature header, should: reject it with a 400 without logging it", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+      const payload = formatted(createUnhandledPaymentFailedEvent());
+
+      const response = await sendWebhook(
+        new Request(url, { body: payload, method: "POST" }),
+      );
+
+      expect(response.status).toEqual(400);
+      expect(await response.json()).toEqual({
+        message: "Missing stripe-signature header",
+      });
+      expect(logs.calls).toEqual([]);
+    });
+
+    test("given: a correctly signed body which is not JSON, should: reject it with a 400 without logging it", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+
+      const response = await sendWebhook(
+        signedRequest({ payload: "{ not json" }),
+      );
+
+      expect(response.status).toEqual(400);
+      expect(await response.json()).toEqual({
+        error: expect.stringContaining("Webhook Error: "),
+        message: "Bad Request",
+      });
+      expect(logs.calls).toEqual([]);
+    });
+
+    test.each(["DELETE", "PUT"])(
+      "given: a %s request, should: return a 405",
+      async (method) => {
+        const response = await sendWebhook(new Request(url, { method }));
+
+        expect(response.status).toEqual(405);
+        expect(await response.json()).toEqual({
+          message: "Method Not Allowed",
+        });
+      },
+    );
+
+    test("given: a GET request, should: return a 405", async () => {
+      const response = loader();
+
+      expect(response.status).toEqual(405);
+      expect(await response.json()).toEqual({ message: "Method Not Allowed" });
+    });
+  });
+
+  describe("diagnostic logging", () => {
+    test("given: a correctly signed unhandled event with customer and payment details, should: log only its ID and type", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+      const event = createUnhandledPaymentFailedEvent();
+      const payload = formatted(event);
+      const request = signedRequest({ payload });
+      const signature = request.headers.get("stripe-signature") ?? "";
+
+      const response = await sendWebhook(request);
+
+      expect(response.status).toEqual(200);
+      expect(await response.json()).toEqual({
+        message: "Unhandled event type: payment_intent.payment_failed",
+      });
+      const output = logs.output();
+      expectNoPrivateDetails(output);
+      expect(output).not.toContain(event.data.object.id);
+      expect(output).not.toContain(signature);
+      expect(output).not.toContain(signingSecret);
+      expect(logs.calls).toEqual([
+        [
+          "log",
+          "Stripe webhook unhandled event:",
+          { id: event.id, type: "payment_intent.payment_failed" },
+        ],
+      ]);
+    });
+
+    test("given: a correctly signed event whose ID is an object and whose type is missing, should: log neither and still answer with a 200", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+      const { type: _type, ...event } = createUnhandledPaymentFailedEvent();
+      const payload = formatted({
+        ...event,
+        id: { nested: privateDetails.metadataSecret },
+      });
+
+      const response = await sendWebhook(signedRequest({ payload }));
+
+      expect(response.status).toEqual(200);
+      expect(await response.json()).toEqual({
+        message: "Unhandled event type: undefined",
+      });
+      expectNoPrivateDetails(logs.output());
+      expect(logs.calls).toEqual([
+        ["log", "Stripe webhook unhandled event:", {}],
+      ]);
+    });
+
+    test("given: a correctly signed event the route ignores, should: answer OK without logging it", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+      const payload = formatted({
+        ...createUnhandledPaymentFailedEvent(),
+        type: "payment_intent.succeeded",
+      });
+
+      const response = await sendWebhook(signedRequest({ payload }));
+
+      expect(response.status).toEqual(200);
+      expect(await response.json()).toEqual({ message: "OK" });
+      expect(logs.calls).toEqual([]);
+    });
+
+    test("given: a correctly signed 'customer.deleted' event without an organization, should: pass it to its handler, which logs only its ID and type", async () => {
+      vi.stubEnv("STRIPE_WEBHOOK_SECRET", signingSecret);
+      const logs = captureConsole();
+      const event = createStripeCustomerDeletedEventFactory({
+        data: {
+          object: createStripeCustomerFactory({
+            email: privateDetails.email,
+            metadata: { internalNote: privateDetails.metadataSecret },
+            name: privateDetails.name,
+          }),
+        },
+      });
+
+      const response = await sendWebhook(
+        signedRequest({ payload: formatted(event) }),
+      );
+
+      expect(response.status).toEqual(200);
+      expect(await response.json()).toEqual({ message: "OK" });
+      expectNoPrivateDetails(logs.output());
+      expect(logs.calls).toEqual([
+        [
+          "log",
+          "unhandled Stripe event:",
+          { id: event.id, type: "customer.deleted" },
+        ],
+      ]);
     });
   });
 

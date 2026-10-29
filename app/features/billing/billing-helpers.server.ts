@@ -189,3 +189,19 @@ export function getCreateSubscriptionModalProps(
     },
   };
 }
+
+/**
+ * Copies a Stripe event's ID and type for diagnostics, and nothing else, so a
+ * log never receives the event's body, customer details, or metadata. Fields
+ * which are not strings are left out.
+ */
+export const summarizeStripeEvent = ({
+  id,
+  type,
+}: {
+  id?: unknown;
+  type?: unknown;
+}): { id?: string; type?: string } => ({
+  ...(typeof id === "string" && { id }),
+  ...(typeof type === "string" && { type }),
+});
