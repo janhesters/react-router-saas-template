@@ -641,6 +641,7 @@ describe(`${pattern} route action`, () => {
       const logError = vi
         .spyOn(console, "error")
         .mockImplementation(() => undefined);
+      const retrieveCustomer = vi.spyOn(stripeAdmin.customers, "retrieve");
       const { organization } = await setupUserWithTrialOrgAndAddAsMember({
         organization: createPopulatedOrganization({ stripeCustomerId: null }),
       });
@@ -653,15 +654,12 @@ describe(`${pattern} route action`, () => {
           interruptedStripeResponse,
         ),
       );
+      const event = createStripeCustomerCreatedEventFactory({
+        data: { object: customer },
+      });
 
       const response = await sendWebhook(
-        signedRequest({
-          payload: JSON.stringify(
-            createStripeCustomerCreatedEventFactory({
-              data: { object: customer },
-            }),
-          ),
-        }),
+        signedRequest({ payload: JSON.stringify(event) }),
       );
 
       expect(response.status).toEqual(500);
@@ -670,12 +668,13 @@ describe(`${pattern} route action`, () => {
       });
       // Stripe 23 reports a cut-off body as a connection failure, not as an
       // API error, so the handler cannot mistake it for a provider answer.
-      expect(logError).toHaveBeenCalledWith(
-        "Error recording Stripe customer",
-        expect.stringContaining(
-          "An error occurred with our connection to Stripe",
-        ),
-      );
+      await expect(
+        retrieveCustomer.mock.results[0]?.value,
+      ).rejects.toMatchObject({ type: "StripeConnectionError" });
+      expect(logError).toHaveBeenCalledWith("Error recording Stripe customer", {
+        id: event.id,
+        type: "customer.created",
+      });
       expect(
         await prisma.organization.findUniqueOrThrow({
           select: { stripeCustomerId: true },
