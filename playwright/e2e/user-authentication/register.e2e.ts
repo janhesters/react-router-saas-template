@@ -154,20 +154,23 @@ test.describe("register page", () => {
 
   test.describe("google registration", () => {
     const supabaseOrigin = new URL(process.env.VITE_SUPABASE_URL).origin;
-    const supabaseAuthUrl = `${supabaseOrigin}/auth/v1/**`;
 
     // Answers Supabase's Google authorization redirect with a mock Google
-    // sign-in page, and aborts every other Supabase auth request, so no
-    // request reaches the real Supabase or Google.
-    const mockGoogleAuthorization = async (route: Route) => {
-      const url = new URL(route.request().url());
+    // sign-in page. Every other request that leaves the app is aborted, so
+    // nothing reaches Supabase, Google or any other host. Images fall back to
+    // the shared fixture, which reports external ones.
+    const mockGoogleAuthorization =
+      (appOrigin: string) => async (route: Route) => {
+        const request = route.request();
+        const url = new URL(request.url());
 
-      if (
-        url.pathname === "/auth/v1/authorize" &&
-        url.searchParams.get("provider") === "google"
-      ) {
-        await route.fulfill({
-          body: `
+        if (
+          url.origin === supabaseOrigin &&
+          url.pathname === "/auth/v1/authorize" &&
+          url.searchParams.get("provider") === "google"
+        ) {
+          await route.fulfill({
+            body: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -179,16 +182,22 @@ test.describe("register page", () => {
   <p>to continue to vpszwsdvgeeazuheoxfw.supabase.co</p>
 </body>
 </html>
-          `,
-          contentType: "text/html",
-        });
-      } else {
-        await route.abort("blockedbyclient");
-      }
-    };
+            `,
+            contentType: "text/html",
+          });
+        } else if (
+          url.origin === appOrigin ||
+          request.resourceType() === "image"
+        ) {
+          await route.fallback();
+        } else {
+          await route.abort("blockedbyclient");
+        }
+      };
 
-    test.beforeEach(async ({ page }) => {
-      await page.route(supabaseAuthUrl, mockGoogleAuthorization);
+    test.beforeEach(async ({ baseURL, page }) => {
+      const appOrigin = new URL(baseURL ?? "http://localhost:3000").origin;
+      await page.route("**/*", mockGoogleAuthorization(appOrigin));
     });
 
     test.afterEach(async ({ page }) => {
