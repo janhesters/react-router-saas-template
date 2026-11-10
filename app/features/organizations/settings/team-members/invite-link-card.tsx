@@ -57,6 +57,8 @@ export function InviteLinkCard({
   }, [inviteLink?.href]);
 
   const navigation = useNavigation();
+  // The navigation keeps its form data while it submits and while it then
+  // refreshes the page's data, so these stay true until the page settles.
   const isCreatingNewLink =
     navigation.formData?.get("intent") === CREATE_NEW_INVITE_LINK_INTENT;
   const isDeactivatingLink =
@@ -179,7 +181,9 @@ export function InviteLinkCard({
 
               <Form method="POST" replace>
                 <Button
-                  disabled={isDeactivatingLink}
+                  // Regenerating and deactivating overlap otherwise, and the
+                  // regeneration could still save a new link on the server.
+                  disabled={isSubmitting}
                   name="intent"
                   type="submit"
                   value="deactivateInviteLink"
