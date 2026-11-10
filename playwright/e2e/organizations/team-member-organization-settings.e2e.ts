@@ -1,7 +1,7 @@
 /* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import type { Page } from "@playwright/test";
+import type { Page, Request } from "@playwright/test";
 
 import { expect, test } from "../../fixtures";
 import {
@@ -21,6 +21,7 @@ import {
 } from "~/features/organizations/organizations-factories.server";
 import {
   retrieveLatestInviteLinkFromDatabaseByOrganizationId,
+  retrieveOrganizationInviteLinkFromDatabaseById,
   saveOrganizationInviteLinkToDatabase,
 } from "~/features/organizations/organizations-invite-link-model.server";
 import {
@@ -28,6 +29,10 @@ import {
   deleteOrganizationFromDatabaseById,
   saveOrganizationToDatabase,
 } from "~/features/organizations/organizations-model.server";
+import {
+  CREATE_NEW_INVITE_LINK_INTENT,
+  DEACTIVATE_INVITE_LINK_INTENT,
+} from "~/features/organizations/settings/team-members/team-members-constants";
 import { createPopulatedUserAccount } from "~/features/user-accounts/user-accounts-factories.server";
 import {
   deleteUserAccountFromDatabaseById,
@@ -114,6 +119,20 @@ async function teardownMultipleMembers({
 
 const getMembersPagePath = (slug: string) =>
   `/organizations/${slug}/settings/members`;
+
+/** An invite link page URL whose only query is a nonempty token. */
+const inviteLinkHref =
+  /^https?:\/\/[^/]+\/organizations\/invite-link\?token=[^&#]+$/;
+
+const getInviteLinkToken = (href: string) =>
+  new URL(href).searchParams.get("token");
+
+/** The intent of a form submitted to the members page's action, if any. */
+const getMembersActionIntent = (request: Request) =>
+  request.method() === "POST" &&
+  new URL(request.url()).pathname.endsWith("/settings/members.data")
+    ? new URLSearchParams(request.postData() ?? "").get("intent")
+    : null;
 
 test.describe("organization settings members page", () => {
   // ========================================================================
@@ -699,93 +718,165 @@ test.describe("organization settings members page", () => {
       await teardownMultipleMembers(data);
     });
 
-    test("given: an owner visits the organization team member settings page, should: allow regenerating and deactivating the link", async ({
-      browserName,
-      page,
-    }) => {
-      // Grant clipboard permissions for copy test
-      if (browserName === "chromium") {
-        await page
-          .context()
-          .grantPermissions(["clipboard-read", "clipboard-write"]);
-      }
-
-      const data = await setupMultipleMembers({
-        activeInviteLink: true, // Start with a link
+    for (const regeneration of ["fast", "delayed"] as const) {
+      test(`given: an owner visits the organization team member settings page and regeneration is ${regeneration}, should: allow regenerating and deactivating the link`, async ({
+        browserName,
         page,
-        requestingUserRole: OrganizationMembershipRole.owner,
+      }) => {
+        // Grant clipboard permissions for copy test
+        if (browserName === "chromium") {
+          await page
+            .context()
+            .grantPermissions(["clipboard-read", "clipboard-write"]);
+        }
+
+        const data = await setupMultipleMembers({
+          activeInviteLink: true, // Start with a link
+          page,
+          requestingUserRole: OrganizationMembershipRole.owner,
+        });
+        const { inviteLink, organization } = data;
+
+        // Records the order in which the page submits invite link actions.
+        const submittedIntents: string[] = [];
+        const recordIntent = (request: Request) => {
+          const intent = getMembersActionIntent(request);
+          if (intent) submittedIntents.push(intent);
+        };
+        page.on("request", recordIntent);
+
+        // The delayed case holds the regeneration request until the test has
+        // seen the page wait for it, then lets it reach the real action.
+        let releaseRegeneration = () => {};
+        const regenerationReleased = new Promise<void>((resolve) => {
+          releaseRegeneration = resolve;
+        });
+        let markRegenerationHeld = () => {};
+        const regenerationHeld = new Promise<void>((resolve) => {
+          markRegenerationHeld = resolve;
+        });
+        if (regeneration === "delayed") {
+          await page.route(
+            `**${getMembersPagePath(organization.slug)}.data`,
+            async (route) => {
+              if (
+                getMembersActionIntent(route.request()) ===
+                CREATE_NEW_INVITE_LINK_INTENT
+              ) {
+                markRegenerationHeld();
+                await regenerationReleased;
+              }
+              await route.fallback();
+            },
+          );
+        }
+
+        try {
+          await page.goto(getMembersPagePath(organization.slug));
+
+          const createButton = page.getByRole("button", {
+            name: /create new invite link/i,
+          });
+          const linkDisplay = page.getByRole("link", {
+            name: /go to the invite link's page/i,
+          });
+          const copyButton = page.getByRole("button", {
+            name: /copy invite link/i,
+          });
+          const regenerateButton = page.getByRole("button", {
+            name: /regenerate link/i,
+          });
+          const deactivateButton = page.getByRole("button", {
+            name: /deactivate link/i,
+          });
+
+          // Initial state (link exists)
+          await expect(createButton).toBeHidden();
+          await expect(linkDisplay).toBeVisible();
+          await expect(copyButton).toBeVisible();
+          await expect(regenerateButton).toBeVisible();
+          await expect(deactivateButton).toBeVisible();
+
+          // Test Copy
+          await copyButton.click();
+          await expect(
+            page.getByRole("button", { name: /invite link copied/i }),
+          ).toBeVisible();
+
+          if (browserName === "chromium") {
+            const clipboardText = await page.evaluate(
+              "navigator.clipboard.readText()",
+            );
+            expect(clipboardText).toEqual(
+              expect.stringContaining("/organizations/invite-link?token="),
+            );
+          }
+
+          // Test Regenerate
+          // The page shows the seeded link before regeneration.
+          await expect(linkDisplay).toHaveAttribute("href", inviteLinkHref);
+          const oldHref = (await linkDisplay.getAttribute("href"))!;
+          expect(getInviteLinkToken(oldHref)).toEqual(inviteLink!.token);
+
+          await regenerateButton.click();
+
+          if (regeneration === "delayed") {
+            await regenerationHeld;
+            await expect(
+              page.getByRole("button", { name: /regenerating/i }),
+            ).toBeDisabled();
+            await expect(linkDisplay).toHaveAttribute("href", oldHref);
+            releaseRegeneration();
+          }
+
+          // Wait until the page shows a new valid link.
+          await expect(linkDisplay).not.toHaveAttribute("href", oldHref);
+          await expect(linkDisplay).toHaveAttribute("href", inviteLinkHref);
+          const newToken = getInviteLinkToken(
+            (await linkDisplay.getAttribute("href"))!,
+          );
+          expect(newToken).not.toEqual(inviteLink!.token);
+
+          // The new link is the organization's active one, and the old one is
+          // inactive.
+          const activeLink =
+            await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
+              organization.id,
+            );
+          expect(activeLink?.token).toEqual(newToken);
+          const oldLink = await retrieveOrganizationInviteLinkFromDatabaseById(
+            inviteLink!.id,
+          );
+          expect(oldLink?.deactivatedAt).toBeInstanceOf(Date);
+          expect(submittedIntents).toEqual([CREATE_NEW_INVITE_LINK_INTENT]);
+
+          // Test Deactivate
+          await deactivateButton.click();
+
+          // After deactivation: Create button visible, others hidden
+          await expect(createButton).toBeVisible();
+          await expect(linkDisplay).toBeHidden();
+          await expect(regenerateButton).toBeHidden();
+          await expect(deactivateButton).toBeHidden();
+          expect(submittedIntents).toEqual([
+            CREATE_NEW_INVITE_LINK_INTENT,
+            DEACTIVATE_INVITE_LINK_INTENT,
+          ]);
+
+          // Verify in DB
+          const latestLink =
+            await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
+              organization.id,
+            );
+          expect(latestLink).toBeNull(); // No active link
+        } finally {
+          releaseRegeneration();
+          page.off("request", recordIntent);
+          await page.unrouteAll({ behavior: "ignoreErrors" });
+          await teardownMultipleMembers(data);
+        }
       });
-      const { organization } = data;
-
-      await page.goto(getMembersPagePath(organization.slug));
-
-      const createButton = page.getByRole("button", {
-        name: /create new invite link/i,
-      });
-      const linkDisplay = page.getByRole("link", {
-        name: /go to the invite link's page/i,
-      });
-      const copyButton = page.getByRole("button", {
-        name: /copy invite link/i,
-      });
-      const regenerateButton = page.getByRole("button", {
-        name: /regenerate link/i,
-      });
-      const deactivateButton = page.getByRole("button", {
-        name: /deactivate link/i,
-      });
-
-      // Initial state (link exists)
-      await expect(createButton).toBeHidden();
-      await expect(linkDisplay).toBeVisible();
-      await expect(copyButton).toBeVisible();
-      await expect(regenerateButton).toBeVisible();
-      await expect(deactivateButton).toBeVisible();
-
-      // Test Copy
-      await copyButton.click();
-      await expect(
-        page.getByRole("button", { name: /invite link copied/i }),
-      ).toBeVisible();
-
-      if (browserName === "chromium") {
-        const clipboardText = await page.evaluate(
-          "navigator.clipboard.readText()",
-        );
-        expect(clipboardText).toEqual(
-          expect.stringContaining("/organizations/invite-link?token="),
-        );
-      }
-
-      // Test Regenerate
-      // It lets the user generate a new link.
-      const oldLink = await page
-        .getByRole("link", { name: /go to the invite link's page/i })
-        .getAttribute("href");
-      await page.getByRole("button", { name: /regenerate link/i }).click();
-      expect(
-        page
-          .getByRole("link", { name: /go to the invite link's page/i })
-          .getAttribute("href"),
-      ).not.toEqual(oldLink);
-      // Test Deactivate
-      await deactivateButton.click();
-
-      // After deactivation: Create button visible, others hidden
-      await expect(createButton).toBeVisible();
-      await expect(linkDisplay).toBeHidden();
-      await expect(regenerateButton).toBeHidden();
-      await expect(deactivateButton).toBeHidden();
-
-      // Verify in DB
-      const latestLink =
-        await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
-          organization.id,
-        );
-      expect(latestLink).toBeNull(); // No active link
-
-      await teardownMultipleMembers(data);
-    });
+    }
   });
 
   test.describe("Send Email To Invite Users", () => {
