@@ -1,7 +1,7 @@
 /* oxlint-disable typescript/no-non-null-assertion -- test code */
 import AxeBuilder from "@axe-core/playwright";
 import { faker } from "@faker-js/faker";
-import type { Page, Request } from "@playwright/test";
+import type { Locator, Page, Request, Response, Route } from "@playwright/test";
 
 import { expect, test } from "../../fixtures";
 import {
@@ -133,6 +133,132 @@ const getMembersActionIntent = (request: Request) =>
   new URL(request.url()).pathname.endsWith("/settings/members.data")
     ? new URLSearchParams(request.postData() ?? "").get("intent")
     : null;
+
+/**
+ * Matches the members page's data URL for one organization: its action POSTs
+ * and the loader GETs that refresh the page afterwards.
+ */
+const isMembersDataUrl = (slug: string) => (url: URL) =>
+  url.pathname === `${getMembersPagePath(slug)}.data`;
+
+/**
+ * Holds one request in a route handler until the test releases it. `held`
+ * resolves once the handler holds the request.
+ */
+function createRequestGate() {
+  let release = () => {};
+  const released = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let markHeld = (_request: Request) => {};
+  const held = new Promise<Request>((resolve) => {
+    markHeld = resolve;
+  });
+  const gate = {
+    held,
+    async hold(request: Request) {
+      gate.request = request;
+      markHeld(request);
+      await released;
+    },
+    isReleased: false,
+    release() {
+      gate.isReleased = true;
+      release();
+    },
+    request: undefined as Request | undefined,
+    /** Releases the request and waits until its response finished, if any. */
+    async settle() {
+      gate.release();
+      await gate.request?.response().then((response) => response?.finished());
+    },
+  };
+  return gate;
+}
+
+/**
+ * Activates a submit button the way a user's click does, without Playwright's
+ * wait for an enabled element, and reports whether its form fired a submit
+ * event. A disabled button fires none, so nothing submits.
+ */
+const activateNatively = (button: Locator) =>
+  button.evaluate((element) => {
+    const { form } = element as HTMLButtonElement;
+    if (!form) throw new Error("The button is not inside a form.");
+    let submitted = false;
+    const recordSubmit = () => {
+      submitted = true;
+    };
+    form.addEventListener("submit", recordSubmit);
+    (element as HTMLButtonElement).click();
+    form.removeEventListener("submit", recordSubmit);
+    return submitted;
+  });
+
+/**
+ * Records each change of a button's disabled state, with the invite link the
+ * page shows at that moment. React Router renders its navigation states in a
+ * transition, so the page can show one a little after it starts. The record
+ * still shows a button that became usable while the old link was on screen.
+ * The returned function stops the recording and reads it.
+ */
+async function recordDisabledChanges(button: Locator, link: Locator) {
+  const linkElement = await link.elementHandle();
+  const recording = await button.evaluateHandle((element, linkElement) => {
+    const changes: { disabled: boolean; href: string | null }[] = [];
+    const observer = new MutationObserver(() => {
+      changes.push({
+        disabled: (element as HTMLButtonElement).disabled,
+        href: linkElement!.getAttribute("href"),
+      });
+    });
+    observer.observe(element, { attributeFilter: ["disabled"] });
+    return { changes, observer };
+  }, linkElement);
+  return () =>
+    recording.evaluate(({ changes, observer }) => {
+      observer.disconnect();
+      return changes;
+    });
+}
+
+/**
+ * Logs the members page's data requests and their responses in the order the
+ * browser reports them, so a test can attach them as evidence.
+ */
+function logMembersDataTraffic(page: Page, slug: string) {
+  const isMembersData = isMembersDataUrl(slug);
+  const log: string[] = [];
+  const describe = (request: Request) =>
+    [request.method(), getMembersActionIntent(request)]
+      .filter(Boolean)
+      .join(" ");
+  const onRequest = (request: Request) => {
+    if (isMembersData(new URL(request.url())))
+      log.push(`request ${describe(request)}`);
+  };
+  const onResponse = (response: Response) => {
+    if (isMembersData(new URL(response.url())))
+      log.push(`response ${response.status()} ${describe(response.request())}`);
+  };
+  const onRequestFailed = (request: Request) => {
+    if (isMembersData(new URL(request.url())))
+      log.push(
+        `failed ${describe(request)}: ${request.failure()?.errorText ?? ""}`,
+      );
+  };
+  page.on("request", onRequest);
+  page.on("response", onResponse);
+  page.on("requestfailed", onRequestFailed);
+  return {
+    log,
+    stop() {
+      page.off("request", onRequest);
+      page.off("response", onResponse);
+      page.off("requestfailed", onRequestFailed);
+    },
+  };
+}
 
 test.describe("organization settings members page", () => {
   // ========================================================================
@@ -722,7 +848,7 @@ test.describe("organization settings members page", () => {
       test(`given: an owner visits the organization team member settings page and regeneration is ${regeneration}, should: allow regenerating and deactivating the link`, async ({
         browserName,
         page,
-      }) => {
+      }, testInfo) => {
         // Grant clipboard permissions for copy test
         if (browserName === "chromium") {
           await page
@@ -744,27 +870,30 @@ test.describe("organization settings members page", () => {
           if (intent) submittedIntents.push(intent);
         };
         page.on("request", recordIntent);
+        const traffic = logMembersDataTraffic(page, organization.slug);
 
-        // The delayed case holds the regeneration request until the test has
-        // seen the page wait for it, then lets it reach the real action.
-        let releaseRegeneration = () => {};
-        const regenerationReleased = new Promise<void>((resolve) => {
-          releaseRegeneration = resolve;
-        });
-        let markRegenerationHeld = () => {};
-        const regenerationHeld = new Promise<void>((resolve) => {
-          markRegenerationHeld = resolve;
-        });
+        // The delayed case holds the regeneration request, and then the page
+        // refresh that follows it, until the test has checked the page while
+        // each one is pending. Both then reach the real server unchanged.
+        const regenerationGate = createRequestGate();
+        const refreshGate = createRequestGate();
         if (regeneration === "delayed") {
           await page.route(
-            `**${getMembersPagePath(organization.slug)}.data`,
+            isMembersDataUrl(organization.slug),
             async (route) => {
+              const request = route.request();
               if (
-                getMembersActionIntent(route.request()) ===
-                CREATE_NEW_INVITE_LINK_INTENT
+                !regenerationGate.request &&
+                getMembersActionIntent(request) ===
+                  CREATE_NEW_INVITE_LINK_INTENT
               ) {
-                markRegenerationHeld();
-                await regenerationReleased;
+                await regenerationGate.hold(request);
+              } else if (
+                regenerationGate.isReleased &&
+                !refreshGate.request &&
+                request.method() === "GET"
+              ) {
+                await refreshGate.hold(request);
               }
               await route.fallback();
             },
@@ -785,6 +914,9 @@ test.describe("organization settings members page", () => {
           });
           const regenerateButton = page.getByRole("button", {
             name: /regenerate link/i,
+          });
+          const regeneratingButton = page.getByRole("button", {
+            name: /regenerating/i,
           });
           const deactivateButton = page.getByRole("button", {
             name: /deactivate link/i,
@@ -818,24 +950,51 @@ test.describe("organization settings members page", () => {
           const oldHref = (await linkDisplay.getAttribute("href"))!;
           expect(getInviteLinkToken(oldHref)).toEqual(inviteLink!.token);
 
+          const readDeactivateChanges =
+            regeneration === "delayed"
+              ? await recordDisabledChanges(deactivateButton, linkDisplay)
+              : undefined;
           await regenerateButton.click();
 
           if (regeneration === "delayed") {
-            await regenerationHeld;
-            await expect(
-              page.getByRole("button", { name: /regenerating/i }),
-            ).toBeDisabled();
+            // While the regeneration request is pending, the page shows its
+            // feedback, and Deactivate can't submit.
+            await regenerationGate.held;
+            await expect(regeneratingButton).toBeDisabled();
+            await expect(deactivateButton).toBeDisabled();
+            expect(await activateNatively(deactivateButton)).toBe(false);
             await expect(linkDisplay).toHaveAttribute("href", oldHref);
-            releaseRegeneration();
+            regenerationGate.release();
+
+            // The action finished, and the page refresh that shows its result
+            // is pending. Deactivate still can't submit.
+            await refreshGate.held;
+            const regenerationResponse =
+              await regenerationGate.request!.response();
+            expect(regenerationResponse?.status()).toEqual(201);
+            await expect(regeneratingButton).toBeDisabled();
+            await expect(deactivateButton).toBeDisabled();
+            expect(await activateNatively(deactivateButton)).toBe(false);
+            await expect(linkDisplay).toHaveAttribute("href", oldHref);
+            expect(submittedIntents).toEqual([CREATE_NEW_INVITE_LINK_INTENT]);
+            refreshGate.release();
           }
 
           // Wait until the page shows a new valid link.
           await expect(linkDisplay).not.toHaveAttribute("href", oldHref);
           await expect(linkDisplay).toHaveAttribute("href", inviteLinkHref);
-          const newToken = getInviteLinkToken(
-            (await linkDisplay.getAttribute("href"))!,
-          );
+          const newHref = (await linkDisplay.getAttribute("href"))!;
+          const newToken = getInviteLinkToken(newHref);
           expect(newToken).not.toEqual(inviteLink!.token);
+
+          if (readDeactivateChanges) {
+            // Deactivate was disabled from the start of the regeneration and
+            // became usable only together with the new link.
+            expect(await readDeactivateChanges()).toEqual([
+              { disabled: true, href: oldHref },
+              { disabled: false, href: newHref },
+            ]);
+          }
 
           // The new link is the organization's active one, and the old one is
           // inactive.
@@ -851,6 +1010,8 @@ test.describe("organization settings members page", () => {
           expect(submittedIntents).toEqual([CREATE_NEW_INVITE_LINK_INTENT]);
 
           // Test Deactivate
+          await expect(regenerateButton).toBeEnabled();
+          await expect(deactivateButton).toBeEnabled();
           await deactivateButton.click();
 
           // After deactivation: Create button visible, others hidden
@@ -870,13 +1031,154 @@ test.describe("organization settings members page", () => {
             );
           expect(latestLink).toBeNull(); // No active link
         } finally {
-          releaseRegeneration();
+          await regenerationGate.settle();
+          await refreshGate.settle();
           page.off("request", recordIntent);
+          traffic.stop();
           await page.unrouteAll({ behavior: "ignoreErrors" });
+          await testInfo.attach("members-data-traffic", {
+            body: traffic.log.join("\n"),
+            contentType: "text/plain",
+          });
           await teardownMultipleMembers(data);
         }
       });
     }
+
+    test("given: an owner regenerates the invite link and the action rejects the request (injected failure), should: restore the controls, keep the old link, and allow deactivating it", async ({
+      page,
+    }, testInfo) => {
+      const data = await setupMultipleMembers({
+        activeInviteLink: true,
+        page,
+        requestingUserRole: OrganizationMembershipRole.owner,
+      });
+      const { inviteLink, organization } = data;
+
+      const submittedIntents: string[] = [];
+      const recordIntent = (request: Request) => {
+        const intent = getMembersActionIntent(request);
+        if (intent) submittedIntents.push(intent);
+      };
+      page.on("request", recordIntent);
+      const traffic = logMembersDataTraffic(page, organization.slug);
+
+      // Injected failure: the first regeneration request is held, then sent
+      // to the real action with an unknown intent. The action's own form
+      // validation rejects it with a 400 before it writes anything. Nothing
+      // fakes a response.
+      const regenerationGate = createRequestGate();
+      const isMembersData = isMembersDataUrl(organization.slug);
+      const injectFailure = async (route: Route) => {
+        const request = route.request();
+        if (
+          !regenerationGate.request &&
+          getMembersActionIntent(request) === CREATE_NEW_INVITE_LINK_INTENT
+        ) {
+          await regenerationGate.hold(request);
+          await route.fallback({
+            postData: new URLSearchParams({
+              intent: "injectedInvalidIntent",
+            }).toString(),
+          });
+          return;
+        }
+        await route.fallback();
+      };
+      await page.route(isMembersData, injectFailure);
+
+      try {
+        await page.goto(getMembersPagePath(organization.slug));
+        // Only the hydrated page submits to the data URL the gate holds.
+        await page.waitForFunction(
+          () => globalThis.history.scrollRestoration === "manual",
+        );
+
+        const createButton = page.getByRole("button", {
+          name: /create new invite link/i,
+        });
+        const linkDisplay = page.getByRole("link", {
+          name: /go to the invite link's page/i,
+        });
+        const regenerateButton = page.getByRole("button", {
+          name: /regenerate link/i,
+        });
+        const regeneratingButton = page.getByRole("button", {
+          name: /regenerating/i,
+        });
+        const deactivateButton = page.getByRole("button", {
+          name: /deactivate link/i,
+        });
+
+        await expect(linkDisplay).toHaveAttribute("href", inviteLinkHref);
+        const oldHref = (await linkDisplay.getAttribute("href"))!;
+        expect(getInviteLinkToken(oldHref)).toEqual(inviteLink!.token);
+
+        const readDeactivateChanges = await recordDisabledChanges(
+          deactivateButton,
+          linkDisplay,
+        );
+        await regenerateButton.click();
+
+        // Pending: the page shows the regeneration feedback, and Deactivate
+        // can't submit.
+        await regenerationGate.held;
+        await expect(regeneratingButton).toBeDisabled();
+        await expect(deactivateButton).toBeDisabled();
+        expect(await activateNatively(deactivateButton)).toBe(false);
+        regenerationGate.release();
+
+        // The action rejects the request.
+        const regenerationResponse = await regenerationGate.request!.response();
+        expect(regenerationResponse?.status()).toEqual(400);
+
+        // Settled: both controls work again, and the old link is unchanged on
+        // the page and in the database.
+        await expect(regeneratingButton).toBeHidden();
+        await expect(regenerateButton).toBeEnabled();
+        await expect(deactivateButton).toBeEnabled();
+        await expect(linkDisplay).toHaveAttribute("href", oldHref);
+        expect(await readDeactivateChanges()).toEqual([
+          { disabled: true, href: oldHref },
+          { disabled: false, href: oldHref },
+        ]);
+        const activeLink =
+          await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
+            organization.id,
+          );
+        expect(activeLink?.id).toEqual(inviteLink!.id);
+        expect(activeLink?.token).toEqual(inviteLink!.token);
+        expect(submittedIntents).toEqual([CREATE_NEW_INVITE_LINK_INTENT]);
+
+        // Without the injected failure, Deactivate works.
+        await page.unroute(isMembersData, injectFailure);
+        await deactivateButton.click();
+
+        await expect(createButton).toBeVisible();
+        await expect(linkDisplay).toBeHidden();
+        await expect(regenerateButton).toBeHidden();
+        await expect(deactivateButton).toBeHidden();
+        expect(submittedIntents).toEqual([
+          CREATE_NEW_INVITE_LINK_INTENT,
+          DEACTIVATE_INVITE_LINK_INTENT,
+        ]);
+        expect(
+          await retrieveLatestInviteLinkFromDatabaseByOrganizationId(
+            organization.id,
+          ),
+        ).toBeNull();
+      } finally {
+        await regenerationGate.settle();
+        page.off("request", recordIntent);
+        traffic.stop();
+        await page.unrouteAll({ behavior: "ignoreErrors" });
+        await testInfo.attach("members-data-traffic", {
+          body: traffic.log.join("\n"),
+          contentType: "text/plain",
+        });
+        await teardownMultipleMembers(data);
+      }
+    });
   });
 
   test.describe("Send Email To Invite Users", () => {
