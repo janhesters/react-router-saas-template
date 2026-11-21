@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import type { Route } from "@playwright/test";
 
 import { expect, test } from "../../fixtures";
 import {
@@ -6,6 +7,7 @@ import {
   setupEmailInviteCookie,
   setupInviteLinkCookie,
   setupOrganizationAndLoginAsMember,
+  waitForHydration,
 } from "../../utils";
 import { EMAIL_INVITE_INFO_SESSION_NAME } from "~/features/organizations/accept-email-invite/accept-email-invite-constants";
 import { INVITE_LINK_INFO_SESSION_NAME } from "~/features/organizations/accept-invite-link/accept-invite-link-constants";
@@ -151,15 +153,22 @@ test.describe("register page", () => {
   });
 
   test.describe("google registration", () => {
-    test("given: a logged out user, should: log the user and redirect to the google login page", async ({
-      page,
-    }) => {
-      // Mock the Supabase OAuth authorize endpoint to return a mock Google sign-in page
-      await page.route("**/auth/v1/authorize*", async (route) => {
-        const url = new URL(route.request().url());
-        const provider = url.searchParams.get("provider");
+    const supabaseOrigin = new URL(process.env.VITE_SUPABASE_URL).origin;
 
-        if (provider === "google") {
+    // Answers Supabase's Google authorization redirect with a mock Google
+    // sign-in page. Every other request that leaves the app is aborted, so
+    // nothing reaches Supabase, Google or any other host. Images fall back to
+    // the shared fixture, which reports external ones.
+    const mockGoogleAuthorization =
+      (appOrigin: string) => async (route: Route) => {
+        const request = route.request();
+        const url = new URL(request.url());
+
+        if (
+          url.origin === supabaseOrigin &&
+          url.pathname === "/auth/v1/authorize" &&
+          url.searchParams.get("provider") === "google"
+        ) {
           await route.fulfill({
             body: `
 <!DOCTYPE html>
@@ -176,20 +185,48 @@ test.describe("register page", () => {
             `,
             contentType: "text/html",
           });
+        } else if (
+          url.origin === appOrigin ||
+          request.resourceType() === "image"
+        ) {
+          await route.fallback();
         } else {
-          await route.continue();
+          await route.abort("blockedbyclient");
         }
-      });
+      };
 
+    test.beforeEach(async ({ baseURL, page }) => {
+      const appOrigin = new URL(baseURL ?? "http://localhost:3000").origin;
+      await page.route("**/*", mockGoogleAuthorization(appOrigin));
+    });
+
+    test.afterEach(async ({ page }) => {
+      await page.unrouteAll();
+    });
+
+    test("given: a logged out user, should: log the user and redirect to the google login page", async ({
+      baseURL,
+      page,
+    }) => {
       await page.goto(path);
+      // Before hydration, the form submits natively, and the browser follows
+      // the redirect to Supabase without asking the mock.
+      await waitForHydration(page);
 
       // Click the Google registration button.
-      const googleRegistrationButton = page.getByRole("button", {
-        name: /continue with google/i,
-      });
-      await googleRegistrationButton.click();
+      await page.getByRole("button", { name: /continue with google/i }).click();
 
       // Check that the user is redirected to the google login page.
+      await page.waitForURL(
+        (url) =>
+          url.origin === supabaseOrigin &&
+          url.pathname === "/auth/v1/authorize",
+      );
+      const authorizationUrl = new URL(page.url());
+      expect(authorizationUrl.searchParams.get("provider")).toEqual("google");
+      expect(authorizationUrl.searchParams.get("redirect_to")).toEqual(
+        new URL("/auth/callback", baseURL).toString(),
+      );
       await expect(
         page.getByRole("heading", { level: 1, name: /sign in/i }),
       ).toBeVisible();

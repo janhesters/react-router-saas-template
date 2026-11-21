@@ -61,6 +61,23 @@ export const getPath = (page: Page | APIResponse) => {
 };
 
 /**
+ * Waits until React has hydrated the page. Until then, a `<Form>` submits
+ * natively, and the browser follows the action's redirect without asking
+ * Playwright's routes, so a mocked external redirect target goes unanswered.
+ *
+ * React Router's `<ScrollRestoration />` sets `history.scrollRestoration` to
+ * "manual" in an effect, which runs only once React has committed the
+ * hydrated page. React Router's router exists earlier, while hydration can
+ * still wait for the page's translations, so it doesn't show readiness.
+ *
+ * @param page - The Playwright page to wait on.
+ * @returns A promise that resolves once the page is hydrated.
+ */
+export async function waitForHydration(page: Page) {
+  await page.waitForFunction(() => history.scrollRestoration === "manual");
+}
+
+/**
  * Fake logs in a user by setting the necessary Supabase auth cookies.
  * This allows testing authenticated routes without going through the actual
  * login flow.
