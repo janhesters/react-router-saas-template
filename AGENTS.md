@@ -4,6 +4,14 @@
 the style guide. The rules under `.cursor/rules/` apply to the files their
 globs match. The [README](./README.md) documents the application itself.
 
+## Agent notes
+
+[docs/agent-notes.md](docs/agent-notes.md) holds lessons from earlier work, such as test, browser and tooling traps. Read the matching note when your task touches the area.
+
+When you learn something lasting about this repo, or find a note that's wrong,
+list it under **Lessons** in your PR description. Your PM collects these into
+the notes once a week for Jan's review; don't edit the notes in a feature PR.
+
 ## When CI runs
 
 `.github/workflows/ci.yml` runs on a pull request **only once it is ready for
